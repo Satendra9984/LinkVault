@@ -1,0 +1,48 @@
+{
+  "folders": [
+    {
+      "title" : "flutter",
+      "folders" : ["1", "2"]
+    },
+    {
+      "title" : "flutter_pub.dev",
+      "folders" : [
+        {
+          "title" : "flutter",
+          "folders" : [
+            {
+              "title" : "flutter",
+              "folders" : [],
+              "links": []
+            },
+            {
+              "title" : "flutter",
+              "folders" : [],
+              "links": []
+            }
+          ],
+          "links": []
+        },
+        {
+          "title" : "flutter",
+          "folders" : [],
+          "links": []
+        },
+        {
+          "title" : "flutter",
+          "folders" : [],
+          "links": []
+        }
+      ]
+    },
+    {
+      "title" : "articles",
+      "folders" : []
+    },
+    {
+      "title" : "news",
+      "folders" : []
+    }
+  ],
+  "links": []
+}
