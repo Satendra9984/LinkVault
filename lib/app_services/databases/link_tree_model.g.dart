@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'link_tree_model.dart';
+part of '../../app_models/link_tree_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator

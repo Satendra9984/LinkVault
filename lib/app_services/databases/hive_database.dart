@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
-import 'link_tree_model.dart';
+import '../../app_models/link_tree_model.dart';
 
 class HiveService {
   final LinkTree defaultLinkTreeBoxValue = LinkTree(

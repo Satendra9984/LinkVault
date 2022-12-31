@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -7,7 +6,7 @@ import 'package:web_link_store/app_providers/receive_text.dart';
 import 'package:web_link_store/app_screens/store_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
-import '../app_services/databases/link_tree_model.dart';
+import '../app_models/link_tree_model.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -66,10 +65,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: StorePage(
-        linkTree: _getBaseTree().id,
-      ),
+    return StorePage(
+      linkTree: _getBaseTree().id,
+      folderName: 'WebLinkStore',
     );
   }
 }

@@ -1,26 +1,27 @@
-import 'dart:async';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web_link_store/app_providers/receive_text.dart';
 import 'package:web_link_store/app_screens/add_folder_screen.dart';
-import 'package:web_link_store/app_screens/favicons.dart';
+import 'package:web_link_store/app_widgets/favicons.dart';
 import 'package:web_link_store/app_screens/update_folder_screen.dart';
 import 'package:web_link_store/app_screens/update_url_screen.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
+import 'package:web_link_store/app_widgets/circular_neomorphic_button.dart';
 import 'package:web_link_store/app_widgets/folder_icon_button.dart';
-import '../app_services/databases/link_tree_model.dart';
+import '../app_models/link_tree_model.dart';
 import '../app_widgets/preview_grid.dart';
 import 'add_url_screen.dart';
 
 class StorePage extends StatefulWidget {
-  final String linkTree;
-  const StorePage({Key? key, required this.linkTree}) : super(key: key);
+  final String linkTree, folderName;
+  const StorePage({
+    Key? key,
+    required this.linkTree,
+    required this.folderName,
+  }) : super(key: key);
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -38,10 +39,9 @@ class _StorePageState extends State<StorePage> {
 
   void setView({String view = 'Icons'}) {
     setState(() {
-      // print('view --> $view');
       _view = view;
     });
-    // todo : update linkTree
+    // update linkTree
     LinkTree newLinkTree = _getLinkTree(widget.linkTree);
     if (view == 'Icons') {
       newLinkTree.isFavicon = true;
@@ -76,7 +76,7 @@ class _StorePageState extends State<StorePage> {
 
             if (subLinkTree != null) {
               folderList.add(subLinkTree);
-              debugPrint('${subLinkTree.folderName}\n');
+              // debugPrint('${subLinkTree.folderName}\n');
             }
           }
           urlList = linkTree.urls;
@@ -102,18 +102,27 @@ class _StorePageState extends State<StorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.white,
+      // backgroundColor: Colors.black,
+      extendBody: true,
       appBar: AppBar(
-        // backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'WebLinkStore',
+        toolbarHeight: 75,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey.shade900
+            : Colors.white,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          widget.folderName,
           style: TextStyle(
-              // color: Colors.black,
-              ),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey.shade300
+                : Colors.grey.shade800,
+          ),
         ),
         actions: [
-          IconButton(
+          RoundedNeomorphicButton(
             onPressed: () {
               Navigator.of(context)
                   .push(
@@ -128,13 +137,16 @@ class _StorePageState extends State<StorePage> {
                   );
               _initializeLinkTreeList();
             },
-            icon: const Icon(
+            child: Icon(
               Icons.create_new_folder_outlined,
-              // color: Colors.black,
+              color: Colors.grey.shade600,
             ),
-            tooltip: 'add folder',
           ),
-          IconButton(
+          RoundedNeomorphicButton(
+            child: Icon(
+              Icons.add_link,
+              color: Colors.grey.shade600,
+            ),
             onPressed: () {
               Navigator.of(context)
                   .push(
@@ -149,199 +161,197 @@ class _StorePageState extends State<StorePage> {
                   );
               _initializeLinkTreeList();
             },
-            icon: const Icon(
-              Icons.add_link,
-              // color: Colors.black,
-            ),
-            tooltip: 'add link',
           ),
-          PopupMenuButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(
-                color: Theme.of(context).primaryColor,
-                width: 1.4,
+          RoundedNeomorphicButton(
+            onPressed: () {},
+            child: PopupMenuButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 1.4,
+                ),
               ),
+              child: Icon(
+                Icons.settings,
+                color: Colors.grey.shade600,
+              ),
+              itemBuilder: (context) {
+                return [
+                  const PopupMenuItem(
+                    child: Text('Icons only'),
+                    value: 'Icons',
+                  ),
+                  const PopupMenuItem(
+                    child: Text('Preview only'),
+                    value: 'Preview',
+                  ),
+                  const PopupMenuItem(
+                    child: Text('Icons && Preview'),
+                    value: 'Icons && Preview',
+                  ),
+                ];
+              },
+              onSelected: (String value) {
+                setView(view: value);
+              },
             ),
-            icon: const Icon(
-              Icons.settings,
-              // color: CupertinoColors.black,
-            ),
-            itemBuilder: (context) {
-              return [
-                const PopupMenuItem(
-                  child: Text('Icons only'),
-                  value: 'Icons',
-                ),
-                const PopupMenuItem(
-                  child: Text('Preview only'),
-                  value: 'Preview',
-                ),
-                const PopupMenuItem(
-                  child: Text('Icons && Preview'),
-                  value: 'Icons && Preview',
-                ),
-              ];
-            },
-            onSelected: (String value) {
-              setView(view: value);
-            },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.all(10),
-              child: AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: folderList.length,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
-                itemBuilder: (context, index) {
-                  return FolderIconButton(
-                    folder: folderList[index],
-                    onLongPress: () {
-                      Navigator.of(context)
-                          .push(
-                            CupertinoPageRoute(
-                              builder: (context) => UpdateFolder(
-                                rootFolder: _getLinkTree(widget.linkTree),
-                                subFolderIndex: index,
+      body: Container(
+        // height: MediaQuery.of(context).size.height + 10,
+        // decoration: const BoxDecoration(
+        //   image: DecorationImage(
+        //     image: AssetImage('assets/images/a_man_reading.png'),
+        //     fit: BoxFit.cover,
+        //     alignment: Alignment.center,
+        //     opacity: 0.55,
+        //   ),
+        // ),
+        child: SingleChildScrollView(
+          child: Column(
+            // mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.all(10),
+                child: AlignedGridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: folderList.length,
+                  crossAxisCount: _getCount(),
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
+                  itemBuilder: (context, index) {
+                    return FolderIconButton(
+                      folder: folderList[index],
+                      onLongPress: () {
+                        Navigator.of(context)
+                            .push(
+                              CupertinoPageRoute(
+                                builder: (context) => UpdateFolder(
+                                  rootFolder: _getLinkTree(widget.linkTree),
+                                  subFolderIndex: index,
+                                ),
                               ),
-                            ),
-                          )
-                          .then(
-                            (value) => _initializeLinkTreeList(),
-                          );
-                    },
-                    onPress: () {
-                      Navigator.of(context)
-                          .push(
-                            CupertinoPageRoute(
-                              builder: (context) =>
-                                  StorePage(linkTree: folderList[index].id),
-                            ),
-                          )
-                          .then(
-                            (value) => _initializeLinkTreeList(),
-                          );
-                    },
-                  );
-                },
+                            )
+                            .then(
+                              (value) => _initializeLinkTreeList(),
+                            );
+                      },
+                      onPress: () {
+                        Navigator.of(context)
+                            .push(
+                              CupertinoPageRoute(
+                                builder: (context) => StorePage(
+                                  linkTree: folderList[index].id,
+                                  folderName: folderList[index].folderName,
+                                ),
+                              ),
+                            )
+                            .then(
+                              (value) => _initializeLinkTreeList(),
+                            );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-            SizedBox(
-              height: folderList.isEmpty ? 0 : 20,
-            ),
-            _view == 'Icons' || _view == 'Icons && Preview'
-                ? Container(
-                    margin: const EdgeInsets.all(10),
-                    child: Column(
-                      children: [
-                        AlignedGridView.count(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: urlList.length,
-                          crossAxisCount: _getCount(),
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          itemBuilder: (context, ind) {
-                            return FaviconsGrid(
-                              imageUrl: urlList[ind],
-                              onLongPress: () {
-                                Navigator.of(context)
-                                    .push(
-                                      CupertinoPageRoute(
-                                        builder: (context) => UpdateUrlScreen(
-                                          rootFolder:
-                                              _getLinkTree(widget.linkTree),
-                                          urlIndex: ind,
-                                        ),
+              SizedBox(
+                height: folderList.isEmpty ? 0 : 20,
+              ),
+              if (_view == 'Icons' || _view == 'Icons && Preview')
+                Container(
+                  margin: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      AlignedGridView.count(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: urlList.length,
+                        crossAxisCount: _getCount(),
+                        mainAxisSpacing: 4,
+                        crossAxisSpacing: 4,
+                        itemBuilder: (context, ind) {
+                          return FaviconsGrid(
+                            imageUrl: urlList[ind],
+                            onLongPress: () {
+                              Navigator.of(context)
+                                  .push(
+                                    CupertinoPageRoute(
+                                      builder: (context) => UpdateUrlScreen(
+                                        rootFolder:
+                                            _getLinkTree(widget.linkTree),
+                                        urlIndex: ind,
                                       ),
-                                    )
-                                    .then(
-                                      (value) => _initializeLinkTreeList(),
-                                    );
-                              },
-                              onPress: () async {
-                                if (await canLaunchUrl(
-                                    Uri.parse(urlList[ind]['url']))) {
-                                  await launchUrl(
-                                      Uri.parse(urlList[ind]['url']));
-                                } else {
-                                  throw 'Could not launch ${urlList[ind]['url']}';
-                                }
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(
-                          height: 50,
-                        ),
-                      ],
-                    ),
-                  )
-                : const Text(''),
-            _view == 'Preview' || _view == 'Icons && Preview'
-                ? Container(
-                    margin: const EdgeInsets.all(10),
-                    child: Column(
-                      children: [
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: urlList.length,
-                          itemBuilder: (context, ind) {
-                            return Column(
-                              children: [
-                                Preview(
-                                  webUrl: urlList[ind],
-                                  onLongPress: () {
-                                    Navigator.of(context)
-                                        .push(
-                                          CupertinoPageRoute(
-                                            builder: (context) =>
-                                                UpdateUrlScreen(
-                                              rootFolder:
-                                                  _getLinkTree(widget.linkTree),
-                                              urlIndex: ind,
-                                            ),
+                                    ),
+                                  )
+                                  .then(
+                                    (value) => _initializeLinkTreeList(),
+                                  );
+                            },
+                            onPress: () async {
+                              if (await canLaunchUrl(
+                                  Uri.parse(urlList[ind]['url']))) {
+                                await launchUrl(Uri.parse(urlList[ind]['url']));
+                              } else {
+                                throw 'Could not launch ${urlList[ind]['url']}';
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              if (_view == 'Preview' || _view == 'Icons && Preview')
+                Container(
+                  margin: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: urlList.length,
+                        itemBuilder: (context, ind) {
+                          return Column(
+                            children: [
+                              Preview(
+                                webUrl: urlList[ind],
+                                onLongPress: () {
+                                  Navigator.of(context)
+                                      .push(
+                                        CupertinoPageRoute(
+                                          builder: (context) => UpdateUrlScreen(
+                                            rootFolder:
+                                                _getLinkTree(widget.linkTree),
+                                            urlIndex: ind,
                                           ),
-                                        )
-                                        .then(
-                                          (value) => _initializeLinkTreeList(),
-                                        );
-                                  },
-                                  onPress: () async {
-                                    if (await canLaunchUrl(
-                                        Uri.parse(urlList[ind]['url']))) {
-                                      await launchUrl(
-                                          Uri.parse(urlList[ind]['url']));
-                                    } else {
-                                      throw 'Could not launch ${urlList[ind]['url']}';
-                                    }
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                const Divider(
-                                  thickness: 1.3,
-                                )
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  )
-                : const Text(''),
-          ],
+                                        ),
+                                      )
+                                      .then(
+                                        (value) => _initializeLinkTreeList(),
+                                      );
+                                },
+                                onPress: () async {
+                                  if (await canLaunchUrl(
+                                      Uri.parse(urlList[ind]['url']))) {
+                                    await launchUrl(
+                                        Uri.parse(urlList[ind]['url']));
+                                  } else {
+                                    throw 'Could not launch ${urlList[ind]['url']}';
+                                  }
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Consumer(
@@ -396,13 +406,13 @@ class _StorePageState extends State<StorePage> {
     );
   }
 
-  _launchURL(String url) async {
-    if (await canLaunchUrlString(url)) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
+  // _launchURL(String url) async {
+  //   if (await canLaunchUrlString(url)) {
+  //     await launchUrl(Uri.parse(url));
+  //   } else {
+  //     throw 'Could not launch $url';
+  //   }
+  // }
 }
 
 /// @{https://pub.dev/packages/flutter_layout_grid#sizing-of-columns-and-rows}

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:html/parser.dart';
@@ -20,7 +19,7 @@ class FetchPreviewDetails {
       }
 
       // do : handle exception in next line
-      debugPrint('title--> $title');
+      // debugPrint('title--> $title');
       try {
         title ??= document.getElementsByTagName('title')[0].text;
       } catch (e) {
@@ -133,21 +132,21 @@ class FetchPreviewDetails {
 
     if (title.startsWith('https://')) {
       title = title.substring(8, title.length);
-      debugPrint('gettitle1 --> $title');
+      // debugPrint('gettitle1 --> $title');
     }
     if (title.startsWith('www.')) {
       title = title.substring(4, title.length);
-      debugPrint('gettitle2 --> $title');
+      // debugPrint('gettitle2 --> $title');
     }
     int firstSlashIndex = title.indexOf('/');
     if (firstSlashIndex != -1) {
       debugPrint(firstSlashIndex.toString());
       title = title.substring(0, firstSlashIndex);
-      debugPrint('gettitle3 --> $title');
+      // debugPrint('gettitle3 --> $title');
     }
     if (title.endsWith('.com')) {
       title = title.substring(0, title.length - 4);
-      debugPrint('gettitle4 --> $title');
+      // debugPrint('gettitle4 --> $title');
     }
 
     return title;
@@ -162,13 +161,22 @@ class FetchPreviewDetails {
 
       return bytes;
     } catch (e) {
-      Uint8List bytes = (await NetworkAssetBundle(Uri.parse(url)).load(
-        'https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=$url&size=64',
-      ))
-          .buffer
-          .asUint8List();
+      try {
+        Uint8List bytes = (await NetworkAssetBundle(Uri.parse(url)).load(
+          'https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=$url&size=64',
+        ))
+            .buffer
+            .asUint8List();
 
-      return bytes;
+        return bytes;
+      } catch (e) {
+        // Uint8 bytes = await rootBundle.load('assets/images/click.png');
+        final ByteData _bytes =
+            await rootBundle.load('assets/images/click3d.png');
+        final Uint8List list = _bytes.buffer.asUint8List();
+
+        return list;
+      }
     }
   }
 }

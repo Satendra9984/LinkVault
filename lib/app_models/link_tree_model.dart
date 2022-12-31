@@ -1,17 +1,22 @@
 import 'package:hive/hive.dart';
-
-part 'link_tree_model.g.dart';
+part '../app_services/databases/link_tree_model.g.dart';
 
 @HiveType(typeId: 1)
 class LinkTree {
   @HiveField(0)
   final String id;
 
+  /// id of this LinkTree
+
   @HiveField(1)
   final String folderName;
 
+  /// name of the current folder
+
   @HiveField(2)
   final List<String> subFolders;
+
+  /// for storing id of subfolders
 
   /// changed this field from string to map
   @HiveField(3)
@@ -30,7 +35,8 @@ class LinkTree {
         'width': desc['width'] ?? 0,
     },
   */
-  /// TODO : OTHER DATA FOR INDIVIDUAL PAGE CONFIGURATION
+
+  /// OTHER DATA FOR INDIVIDUAL PAGE CONFIGURATION
   @HiveField(4)
   bool isPreview = false;
   @HiveField(5)

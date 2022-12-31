@@ -1,22 +1,19 @@
-// import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PreviewAspectRatio extends StatelessWidget {
   final Map<String, dynamic> imageData;
   final void Function() onPress;
 
-  PreviewAspectRatio({
+  const PreviewAspectRatio({
     Key? key,
     required this.imageData,
     required this.onPress,
   }) : super(key: key);
 
-  bool isPressed = false;
-
   @override
   Widget build(BuildContext context) {
-    Offset distance = const Offset(0.0, 4.5);
-    double blur = 8.0;
+    Offset distance = const Offset(0.0, 3.5);
+    double blur = 4.0;
 
     EdgeInsets _padding = const EdgeInsets.all(1);
     return GestureDetector(
@@ -26,27 +23,30 @@ class PreviewAspectRatio extends StatelessWidget {
           Container(
             height: 190,
             width: double.infinity,
-            // padding: const EdgeInsets.all(2.5),
+            padding: const EdgeInsets.all(3.5),
             alignment: Alignment.center,
             margin:
                 const EdgeInsets.only(left: 2.5, right: 2.5, top: 5, bottom: 5),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white30),
               boxShadow: [
                 BoxShadow(
                   blurRadius: blur,
                   offset: distance,
-                  color: Colors.white,
-                  // inset: isPressed,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.grey.shade600,
                 ),
                 BoxShadow(
                   blurRadius: blur,
                   offset: -distance,
-                  color: const Color(0xFFA7A9AF),
-                  // inset: isPressed,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade100,
                 ),
               ],
-              color: const Color(0xFFEFEEEE),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade900
+                  : Colors.white,
               borderRadius: BorderRadius.circular(13.0),
             ),
             child: ClipRRect(
@@ -57,11 +57,8 @@ class PreviewAspectRatio extends StatelessWidget {
                   try {
                     return Image.memory(imageData['favicon']);
                   } catch (e) {
-                    // print('i in ascpect --> $imageData');
                     return Image.asset(
                       'assets/images/icon3.png',
-                      // height: 150,
-                      // width: 200,
                     );
                   }
                 },
@@ -69,23 +66,34 @@ class PreviewAspectRatio extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            imageData['image_title'],
-            softWrap: true,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          Text(
-            imageData['description'],
-            softWrap: true,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade400,
+          Container(
+            padding: const EdgeInsets.only(left: 5),
+            child: Column(
+              children: [
+                Text(
+                  imageData['image_title'],
+                  softWrap: true,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade800,
+                  ),
+                ),
+                Text(
+                  imageData['description'],
+                  softWrap: true,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

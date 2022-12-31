@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:web_link_store/app_models/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
-import '../app_services/databases/link_tree_model.dart';
+import '../app_models/link_tree_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
@@ -125,11 +125,10 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                             url = value;
                           },
                           keyboardType: TextInputType.multiline,
-                          // maxLength: 30
                           maxLines: null,
                           minLines: 2,
                           cursorHeight: 30,
-                          cursorWidth: 5,
+                          cursorWidth: 2.5,
                           decoration: kInputDecoration.copyWith(
                             hintText: 'https://google.com',
                             hintStyle: TextStyle(
@@ -151,11 +150,10 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                             urlTitle = value;
                           },
                           keyboardType: TextInputType.multiline,
-                          // maxLength: 30
                           maxLines: null,
                           minLines: 2,
                           cursorHeight: 30,
-                          cursorWidth: 5,
+                          cursorWidth: 2.5,
                           decoration: kInputDecoration.copyWith(
                             hintText: 'title',
                             hintStyle: TextStyle(
@@ -180,7 +178,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                           maxLines: null,
                           minLines: 3,
                           cursorHeight: 30,
-                          cursorWidth: 5,
+                          cursorWidth: 2.5,
                           decoration: kInputDecoration.copyWith(
                             hintText: 'save your important details here',
                             hintStyle: TextStyle(

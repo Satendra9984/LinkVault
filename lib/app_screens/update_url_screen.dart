@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../app_services/databases/hive_database.dart';
-import '../app_services/databases/link_tree_model.dart';
+import '../app_models/link_tree_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
@@ -92,7 +92,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
           ),
           IconButton(
             onPressed: () async {
-              if (url != null && url.isNotEmpty) {
+              if (url.isNotEmpty) {
                 await Share.share(url);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -135,10 +135,10 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     maxLines: null,
                     minLines: 2,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'url',
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                           // color: Colors.grey.shade500,
                           ),
                     ),
@@ -162,7 +162,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     minLines: 2,
                     // maxLength: ,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'url title',
                       hintStyle: TextStyle(
@@ -188,7 +188,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     maxLines: null,
                     minLines: 3,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

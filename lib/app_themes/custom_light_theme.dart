@@ -6,6 +6,7 @@ class AppTheme {
 
   static final ThemeData lightTheme = ThemeData(
     scaffoldBackgroundColor: Colors.white,
+    fontFamily: 'Ubuntu',
     colorScheme: const ColorScheme.light(),
     primaryColor: Colors.white,
     brightness: Brightness.light,
@@ -28,7 +29,7 @@ class AppTheme {
   static final ThemeData dartTheme = ThemeData(
     scaffoldBackgroundColor: Colors.grey.shade900,
     colorScheme: const ColorScheme.dark(),
-    // primaryColor: Colors.grey,
+    fontFamily: 'Ubuntu',
     primarySwatch: Colors.grey,
     // brightness: Brightness.dark,
   );

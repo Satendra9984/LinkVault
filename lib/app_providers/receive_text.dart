@@ -16,6 +16,6 @@ class ReceiveTextNotifier extends StateNotifier<ReceiveText> {
     receiveText.isSharing = share;
     receiveText.receivedText = text;
     state = receiveText;
-    print('isSharing --> $share, receivedText --> $text');
+    // print('isSharing --> $share, receivedText --> $text');
   }
 }

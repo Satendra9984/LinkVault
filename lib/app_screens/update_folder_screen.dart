@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_services/databases/hive_database.dart';
-import '../app_services/databases/link_tree_model.dart';
+import '../app_models/link_tree_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
@@ -151,7 +151,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     keyboardType: TextInputType.text,
                     maxLength: 30,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'folder',
                       hintStyle: TextStyle(
@@ -177,7 +177,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     maxLines: null,
                     minLines: 3,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

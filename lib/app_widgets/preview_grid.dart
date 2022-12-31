@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:web_link_store/app_models/fetch_preview_details.dart';
 import 'package:web_link_store/app_widgets/preview_aspect.dart';
 import 'package:web_link_store/app_widgets/preview_row.dart';
@@ -37,14 +33,13 @@ class _PreviewState extends State<Preview> {
     if (height != 0 && width != 0) {
       setState(() {
         sAspectRatio = width / height;
-        print('ration --> $sAspectRatio');
+        // print('ration --> $sAspectRatio');
       });
     }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     _fetchPreviewDetails = FetchPreviewDetails();
     setDimensions();
     super.initState();

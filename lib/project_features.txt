@@ -1,2 +1,1 @@
-todo : receive text input in the app
-todo : add preview option
+

@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:web_link_store/app_screens/home_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
-import 'package:web_link_store/app_services/databases/link_tree_model.dart';
+import 'package:web_link_store/app_models/link_tree_model.dart';
 
 import 'app_themes/custom_light_theme.dart';
 
@@ -49,7 +49,6 @@ class _MyAppState extends State<MyApp> {
       home: const HomePage(),
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.dartTheme,
-      // home: TestScreen(),
       themeMode: ThemeMode.system,
     );
   }

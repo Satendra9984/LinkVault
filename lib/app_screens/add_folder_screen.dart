@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_services/databases/link_tree_model.dart';
+import 'package:web_link_store/app_models/link_tree_model.dart';
 import 'package:web_link_store/constants.dart';
 
 import '../app_widgets/text_input.dart';
@@ -92,7 +92,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     keyboardType: TextInputType.text,
                     maxLength: 30,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'folder',
                       hintStyle: TextStyle(
@@ -117,7 +117,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     maxLines: null,
                     minLines: 3,
                     cursorHeight: 30,
-                    cursorWidth: 5,
+                    cursorWidth: 2.5,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

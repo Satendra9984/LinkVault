@@ -22,10 +22,6 @@ class _FaviconsGridState extends State<FaviconsGrid> {
 
   @override
   void initState() {
-    // TODO: implement initState
-    // print(widget.imageUrl);
-    // print('image url --> ${widget.imageUrl['url']}');
-
     super.initState();
   }
 
@@ -33,10 +29,10 @@ class _FaviconsGridState extends State<FaviconsGrid> {
   Widget build(BuildContext context) {
     Offset distance =
         isPressed ? const Offset(3.5, 3.5) : const Offset(2.5, 2.5);
-    double blur = isPressed ? 2.0 : 3.0;
+    double blur = isPressed ? 2.0 : 5.0;
 
     EdgeInsets _padding =
-        isPressed ? const EdgeInsets.all(8) : const EdgeInsets.all(3);
+        isPressed ? const EdgeInsets.all(8) : const EdgeInsets.all(5);
 
     return Listener(
       onPointerUp: (_) {
@@ -72,7 +68,6 @@ class _FaviconsGridState extends State<FaviconsGrid> {
                   fit: BoxFit.contain,
                   alignment: Alignment.center,
                 ),
-                // border: Border.all(color: Colors.white30),
                 boxShadow: [
                   BoxShadow(
                     blurRadius: blur,
@@ -116,7 +111,12 @@ class _FaviconsGridState extends State<FaviconsGrid> {
                 widget.imageUrl['url_title'],
                 softWrap: true,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600,
+                ),
               ),
             ),
           ],

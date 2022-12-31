@@ -1,10 +1,6 @@
-// import 'package:flutter/cupertino.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
-import 'package:web_link_store/app_services/databases/link_tree_model.dart';
-
-import '../app_screens/update_folder_screen.dart';
+import 'package:web_link_store/app_models/link_tree_model.dart';
 
 class FolderIconButton extends StatefulWidget {
   final LinkTree folder;
@@ -28,20 +24,16 @@ class _FolderIconButtonState extends State<FolderIconButton> {
   @override
   void initState() {
     super.initState();
-    if (kDebugMode) {
-      print('linktree folder --> ${widget.folder.folderName}\n');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     Offset distance =
-        isPressed ? const Offset(3.5, 3.5) : const Offset(2.5, 2.5);
-    double blur = isPressed ? 2.0 : 3.0;
+        isPressed ? const Offset(3.5, 3.5) : const Offset(3.5, 3.5);
+    double blur = isPressed ? 2.0 : 3.5;
 
     EdgeInsets _padding =
         isPressed ? const EdgeInsets.all(5) : const EdgeInsets.all(1.99);
-
     return Listener(
       onPointerUp: (_) {
         setState(() {
@@ -62,7 +54,6 @@ class _FolderIconButtonState extends State<FolderIconButton> {
           });
         },
         child: Column(
-          // mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedContainer(
               height: 60,
@@ -72,18 +63,26 @@ class _FolderIconButtonState extends State<FolderIconButton> {
               alignment: Alignment.center,
               margin: const EdgeInsets.only(left: 10, right: 10, top: 5),
               decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: Theme.of(context).brightness == Brightness.dark
+                      ? [Colors.black26, Colors.black38]
+                      : [Colors.white, Colors.grey.shade200],
+                ),
                 image: const DecorationImage(
                   image: AssetImage('assets/images/click.png'),
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
                 ),
+                borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
                     blurRadius: blur,
                     offset: distance,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.black
-                        : Colors.grey.shade500,
+                        : Colors.grey.shade400,
                     inset: isPressed,
                   ),
                   BoxShadow(
@@ -91,14 +90,13 @@ class _FolderIconButtonState extends State<FolderIconButton> {
                     offset: -distance,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey.shade800
-                        : Colors.grey.shade100,
+                        : Colors.white,
                     inset: isPressed,
                   ),
                 ],
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.grey.shade900
                     : Colors.white,
-                borderRadius: BorderRadius.circular(13.0),
               ),
               child: Image.asset(
                 'assets/images/icon3.png',
@@ -108,17 +106,16 @@ class _FolderIconButtonState extends State<FolderIconButton> {
             Container(
               padding:
                   const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
-
               alignment: Alignment.center,
-              // fit: FlexFit.loose,
               child: Text(
                 widget.folder.folderName.toString(),
                 softWrap: true,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  // overflow: TextOverflow.visible,
-                  color: Colors.grey.shade500,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade500
+                      : Colors.grey.shade800,
                 ),
               ),
             ),
