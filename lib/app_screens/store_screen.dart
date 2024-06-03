@@ -58,7 +58,7 @@ class _StorePageState extends State<StorePage> {
     double screenWidth = MediaQuery.of(context).size.width;
     int screenWidthInt = screenWidth.toInt();
     // print('width --> $screenWidthInt\n');
-    int count = screenWidthInt ~/ 85;
+    int count = screenWidthInt ~/ 88;
     return count;
   }
 
@@ -103,16 +103,14 @@ class _StorePageState extends State<StorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // backgroundColor: Colors.black,
-      extendBody: true,
+      // extendBody: true,
       appBar: AppBar(
         toolbarHeight: 75,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey.shade900
-            : Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        // shape: RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.circular(20),
+        // ),
         title: Text(
           widget.folderName,
           style: TextStyle(
@@ -139,13 +137,13 @@ class _StorePageState extends State<StorePage> {
             },
             child: Icon(
               Icons.create_new_folder_outlined,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade900,
             ),
           ),
           RoundedNeomorphicButton(
             child: Icon(
               Icons.add_link,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade900,
             ),
             onPressed: () {
               Navigator.of(context)
@@ -174,7 +172,7 @@ class _StorePageState extends State<StorePage> {
               ),
               child: Icon(
                 Icons.settings,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade900,
               ),
               itemBuilder: (context) {
                 return [
@@ -200,183 +198,213 @@ class _StorePageState extends State<StorePage> {
         ],
       ),
       body: Container(
-        // height: MediaQuery.of(context).size.height + 10,
-        // decoration: const BoxDecoration(
-        //   image: DecorationImage(
-        //     image: AssetImage('assets/images/a_man_reading.png'),
-        //     fit: BoxFit.cover,
-        //     alignment: Alignment.center,
-        //     opacity: 0.55,
-        //   ),
-        // ),
+        margin: const EdgeInsets.all(12),
         child: SingleChildScrollView(
           child: Column(
-            // mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                child: AlignedGridView.count(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: folderList.length,
-                  crossAxisCount: _getCount(),
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
-                  itemBuilder: (context, index) {
-                    return FolderIconButton(
-                      folder: folderList[index],
-                      onLongPress: () {
-                        Navigator.of(context)
-                            .push(
-                              CupertinoPageRoute(
-                                builder: (context) => UpdateFolder(
-                                  rootFolder: _getLinkTree(widget.linkTree),
-                                  subFolderIndex: index,
-                                ),
-                              ),
-                            )
-                            .then(
-                              (value) => _initializeLinkTreeList(),
-                            );
-                      },
-                      onPress: () {
-                        Navigator.of(context)
-                            .push(
-                              CupertinoPageRoute(
-                                builder: (context) => StorePage(
-                                  linkTree: folderList[index].id,
-                                  folderName: folderList[index].folderName,
-                                ),
-                              ),
-                            )
-                            .then(
-                              (value) => _initializeLinkTreeList(),
-                            );
-                      },
-                    );
-                  },
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Folders",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-              SizedBox(
-                height: folderList.isEmpty ? 0 : 20,
-              ),
-              if (_view == 'Icons' || _view == 'Icons && Preview')
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      AlignedGridView.count(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: urlList.length,
-                        crossAxisCount: _getCount(),
-                        mainAxisSpacing: 4,
-                        crossAxisSpacing: 4,
-                        itemBuilder: (context, ind) {
-                          return FaviconsGrid(
-                            imageUrl: urlList[ind],
-                            onLongPress: () {
-                              Navigator.of(context)
-                                  .push(
-                                    CupertinoPageRoute(
-                                      builder: (context) => UpdateUrlScreen(
-                                        rootFolder:
-                                            _getLinkTree(widget.linkTree),
-                                        urlIndex: ind,
-                                      ),
-                                    ),
-                                  )
-                                  .then(
-                                    (value) => _initializeLinkTreeList(),
-                                  );
-                            },
-                            onPress: () async {
-                              if (await canLaunchUrl(
-                                  Uri.parse(urlList[ind]['url']))) {
-                                await launchUrl(Uri.parse(urlList[ind]['url']));
-                              } else {
-                                throw 'Could not launch ${urlList[ind]['url']}';
-                              }
-                            },
+              const SizedBox(height: 8.0),
+              AlignedGridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: folderList.length,
+                crossAxisCount: _getCount(),
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 2.0,
+                itemBuilder: (context, index) {
+                  return FolderIconButton(
+                    folder: folderList[index],
+                    onLongPress: () {
+                      Navigator.of(context)
+                          .push(
+                            CupertinoPageRoute(
+                              builder: (context) => UpdateFolder(
+                                rootFolder: _getLinkTree(widget.linkTree),
+                                subFolderIndex: index,
+                              ),
+                            ),
+                          )
+                          .then(
+                            (value) => _initializeLinkTreeList(),
                           );
-                        },
+                    },
+                    onPress: () {
+                      Navigator.of(context)
+                          .push(
+                            CupertinoPageRoute(
+                              builder: (context) => StorePage(
+                                linkTree: folderList[index].id,
+                                folderName: folderList[index].folderName,
+                              ),
+                            ),
+                          )
+                          .then(
+                            (value) => _initializeLinkTreeList(),
+                          );
+                    },
+                  );
+                },
+              ),
+              SizedBox(height: folderList.isEmpty ? 0 : 20),
+              if (_view == 'Icons' || _view == 'Icons && Preview')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        "Links",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    AlignedGridView.count(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: urlList.length,
+                      crossAxisCount: _getCount(),
+                      mainAxisSpacing: 4,
+                      crossAxisSpacing: 4,
+                      itemBuilder: (context, ind) {
+                        return FaviconsGrid(
+                          imageUrl: urlList[ind],
+                          onLongPress: () {
+                            Navigator.of(context)
+                                .push(
+                                  CupertinoPageRoute(
+                                    builder: (context) => UpdateUrlScreen(
+                                      rootFolder: _getLinkTree(widget.linkTree),
+                                      urlIndex: ind,
+                                    ),
+                                  ),
+                                )
+                                .then(
+                                  (value) => _initializeLinkTreeList(),
+                                );
+                          },
+                          onPress: () async {
+                            if (await canLaunchUrl(
+                                Uri.parse(urlList[ind]['url']))) {
+                              await launchUrl(Uri.parse(urlList[ind]['url']));
+                            } else {
+                              throw 'Could not launch ${urlList[ind]['url']}';
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               if (_view == 'Preview' || _view == 'Icons && Preview')
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: urlList.length,
-                        itemBuilder: (context, ind) {
-                          return Column(
-                            children: [
-                              Preview(
-                                webUrl: urlList[ind],
-                                onLongPress: () {
-                                  Navigator.of(context)
-                                      .push(
-                                        CupertinoPageRoute(
-                                          builder: (context) => UpdateUrlScreen(
-                                            rootFolder:
-                                                _getLinkTree(widget.linkTree),
-                                            urlIndex: ind,
-                                          ),
-                                        ),
-                                      )
-                                      .then(
-                                        (value) => _initializeLinkTreeList(),
-                                      );
-                                },
-                                onPress: () async {
-                                  if (await canLaunchUrl(
-                                      Uri.parse(urlList[ind]['url']))) {
-                                    await launchUrl(
-                                        Uri.parse(urlList[ind]['url']));
-                                  } else {
-                                    throw 'Could not launch ${urlList[ind]['url']}';
-                                  }
-                                },
-                              ),
-                            ],
-                          );
-                        },
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        "Link Descriptions",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: urlList.length,
+                      itemBuilder: (context, ind) {
+                        return Column(
+                          children: [
+                            Preview(
+                              webUrl: urlList[ind],
+                              onLongPress: () {
+                                Navigator.of(context)
+                                    .push(
+                                      CupertinoPageRoute(
+                                        builder: (context) => UpdateUrlScreen(
+                                          rootFolder:
+                                              _getLinkTree(widget.linkTree),
+                                          urlIndex: ind,
+                                        ),
+                                      ),
+                                    )
+                                    .then(
+                                      (value) => _initializeLinkTreeList(),
+                                    );
+                              },
+                              onPress: () async {
+                                if (await canLaunchUrl(
+                                    Uri.parse(urlList[ind]['url']))) {
+                                  await launchUrl(
+                                      Uri.parse(urlList[ind]['url']));
+                                } else {
+                                  throw 'Could not launch ${urlList[ind]['url']}';
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
             ],
           ),
         ),
       ),
+      persistentFooterAlignment: AlignmentDirectional.bottomCenter,
       bottomNavigationBar: Consumer(
         builder: (BuildContext context, WidgetRef ref, Widget? child) {
           final receiveNotifier = ref.watch(receiveTextProvider);
           final changeNotifier = ref.read(receiveTextProvider.notifier);
 
+          final TextStyle labelStyle = TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade800,
+          );
+
           return receiveNotifier.isSharing == true
-              ? BottomNavigationBar(
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: IconButton(
-                        onPressed: () {
+              ? BottomAppBar(
+                // alignment: Alignment.bottomCenter,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
                           changeNotifier.changeState(false, '');
                         },
-                        icon: const Icon(
-                          Icons.cancel_outlined,
-                          // size: 30,
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.cancel_outlined,
+                              color: Colors.redAccent,
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'Cancel',
+                              style: labelStyle,
+                            ),
+                          ],
                         ),
                       ),
-                      label: 'Cancel',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: IconButton(
-                        onPressed: () {
+                      GestureDetector(
+                        onTap: () {
                           Navigator.of(context).push(
                             CupertinoPageRoute(builder: (ctx) {
                               return AddUrlScreen(
@@ -384,22 +412,30 @@ class _StorePageState extends State<StorePage> {
                                 sharedUrl: receiveNotifier.receivedText,
                               );
                             }),
-
+                
                             /// changed to false again
                           ).then((value) {
                             changeNotifier.changeState(false, '');
                             _initializeLinkTreeList();
                           });
                         },
-                        icon: const Icon(
-                          Icons.copy_outlined,
-                          // size: 30,
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.file_copy ,
+                              color: Colors.blueAccent,
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'Paste',
+                              style: labelStyle,
+                            ),
+                          ],
                         ),
                       ),
-                      label: 'Paste',
-                    ),
-                  ],
-                )
+                    ],
+                  ),
+              )
               : const Text('');
         },
       ),

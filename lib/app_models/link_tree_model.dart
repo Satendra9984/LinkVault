@@ -3,22 +3,22 @@ part '../app_services/databases/link_tree_model.g.dart';
 
 @HiveType(typeId: 1)
 class LinkTree {
+  /// id of this LinkTree
   @HiveField(0)
   final String id;
 
-  /// id of this LinkTree
 
+  /// name of the current folder
   @HiveField(1)
   final String folderName;
 
-  /// name of the current folder
 
+  /// for storing id of subfolders
   @HiveField(2)
   final List<String> subFolders;
 
-  /// for storing id of subfolders
 
-  /// changed this field from string to map
+  /// list of urls in this folder
   @HiveField(3)
   final List<Map<String, dynamic>> urls;
 

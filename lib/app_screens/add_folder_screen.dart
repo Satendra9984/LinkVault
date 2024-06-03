@@ -46,7 +46,6 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
         ),
       );
     }
-    Navigator.pop(context);
   }
 
   @override
@@ -58,12 +57,17 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
                 saveFolder();
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Saving'),
+                    backgroundColor: Colors.green,
+                    content: Text(
+                      'Saving',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 );
               }
@@ -71,8 +75,6 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
             icon: const Icon(Icons.check),
           ),
         ],
-        // elevation: 0,
-        // backgroundColor: Colors.transparent,
       ),
       body: Form(
         key: _formKey,

@@ -6,7 +6,6 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:web_link_store/app_screens/home_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
 import 'package:web_link_store/app_models/link_tree_model.dart';
-
 import 'app_themes/custom_light_theme.dart';
 
 /// Before you can use the hive, you need to initialize it.
@@ -47,8 +46,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
+      // theme: ThemeData.from(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3CAC7C))),
+      // darkTheme: AppTheme.dartTheme,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.dartTheme,
       themeMode: ThemeMode.system,
     );
   }

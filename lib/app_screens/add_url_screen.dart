@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:web_link_store/app_models/fetch_preview_details.dart';
+import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
 import '../app_models/link_tree_model.dart';
 import '../app_widgets/text_input.dart';

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:web_link_store/app_providers/receive_text.dart';
+import 'package:web_link_store/app_screens/dashboard.dart';
 import 'package:web_link_store/app_screens/store_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
@@ -17,7 +18,8 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   late StreamSubscription _intentDataStreamSubscription;
-
+  late final PageController _pageController;
+  int _currentIndex = 0;
   LinkTree _getBaseTree() {
     final HiveService hiveService = HiveService();
     LinkTree? n = hiveService.getTreeData(kRootDirectory);
@@ -34,25 +36,36 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _intentDataStreamSubscription =
 
         /// This is used when app is running
-        ReceiveSharingIntent.getTextStream().listen((String value) {
+        ReceiveSharingIntent.instance.getMediaStream().listen((value) {
       final rec = ref.read(receiveTextProvider.notifier);
-      if (value.isNotEmpty) {
-        rec.changeState(true, value);
-      } else {
-        rec.changeState(false, '');
+
+      for (var file in value) {
+        if (file.type == SharedMediaType.text) {
+          if (value.isNotEmpty) {
+            rec.changeState(true, file.path);
+          } else {
+            rec.changeState(false, '');
+          }
+        }
       }
     });
 
     /// This stream is used when app is closed
-    ReceiveSharingIntent.getInitialText().then((String? value) {
+    ReceiveSharingIntent.instance.getInitialMedia().then((value) {
       final rec = ref.read(receiveTextProvider.notifier);
-      if (value != null && value.isNotEmpty) {
-        rec.changeState(true, value);
-      } else {
-        rec.changeState(false, '');
+
+      for (var file in value) {
+        if (file.type == SharedMediaType.text) {
+          if (value.isNotEmpty) {
+            rec.changeState(true, file.path);
+          } else {
+            rec.changeState(false, '');
+          }
+        }
       }
     });
   }
@@ -60,14 +73,47 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _intentDataStreamSubscription.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return StorePage(
-      linkTree: _getBaseTree().id,
-      folderName: 'WebLinkStore',
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (currentPage) {
+          _pageController.jumpToPage(currentPage);
+          setState(() {
+            _currentIndex = currentPage;
+          });
+        },
+        selectedItemColor: const Color(0xff3cac7c),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.line_style_rounded,
+            ),
+            label: 'Store',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.dashboard,
+            ),
+            label: 'Utils',
+          ),
+        ],
+      ),
+      body: PageView(
+        controller: _pageController,
+        children: [
+          StorePage(
+            linkTree: _getBaseTree().id,
+            folderName: 'WebLinkStore',
+          ),
+          const DashboardScreen(),
+        ],
+      ),
     );
   }
 }

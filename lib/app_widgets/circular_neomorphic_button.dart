@@ -1,8 +1,4 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 
 class RoundedNeomorphicButton extends StatelessWidget {
   final Function() onPressed;
@@ -12,8 +8,8 @@ class RoundedNeomorphicButton extends StatelessWidget {
     required this.child,
     required this.onPressed,
   }) : super(key: key);
-  final Offset distance = const Offset(2.5, 2.5);
-  final double blur = 6.0;
+  final Offset distance = const Offset(1.5, 1.5);
+  final double blur = 3.0;
 
   @override
   Widget build(BuildContext context) {

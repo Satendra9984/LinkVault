@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:web_link_store/app_models/fetch_preview_details.dart';
+import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
 import 'package:web_link_store/app_widgets/preview_aspect.dart';
 import 'package:web_link_store/app_widgets/preview_row.dart';
 
