@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 
 class FaviconsGrid extends StatefulWidget {
-  final Map<String, dynamic> imageUrl;
+  final Map imageUrl;
   final void Function() onLongPress;
   final void Function() onPress;
 
@@ -27,9 +26,9 @@ class _FaviconsGridState extends State<FaviconsGrid> {
 
   @override
   Widget build(BuildContext context) {
-    Offset distance =
-        isPressed ? const Offset(0.5, 0.5) : const Offset(1.0, 1.0);
-    double blur = isPressed ? 2.0 : 1.0;
+    // Offset distance =
+    //     isPressed ? const Offset(0.5, 0.5) : const Offset(1.0, 1.0);
+    // double blur = isPressed ? 2.0 : 1.0;
 
     EdgeInsets _padding =
         isPressed ? const EdgeInsets.all(8) : const EdgeInsets.all(5);
@@ -113,12 +112,16 @@ class _FaviconsGridState extends State<FaviconsGrid> {
                 widget.imageUrl['url_title'],
                 softWrap: true,
                 textAlign: TextAlign.center,
+                maxLines: 2,
                 style: TextStyle(
+                  height: 1.1,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.grey.shade500
                       : Colors.grey.shade700,
+
+                      
                 ),
               ),
             ),

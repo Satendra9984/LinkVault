@@ -13,57 +13,53 @@ class TextInput extends StatelessWidget {
   }) : super(key: key);
 
   /// for container decoration
-  final double blur = 6.0;
-  final Offset distance = const Offset(3.5, 3.5);
+  final double blur = 2.0;
+  final Offset distance = const Offset(1.0, 1.0);
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: const TextStyle(
             fontSize: 16,
-            // TODO : APPLY FONTFAMILY
-            // fontFamily: 'Montserrat',
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(
-          height: 5,
-        ),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                blurRadius: blur,
-                offset: distance,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black
-                    : Colors.grey.shade600,
-              ),
-              BoxShadow(
-                blurRadius: blur,
-                offset: -distance,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey.shade800
-                    : Colors.white,
-              ),
-            ],
+            border: Border.all(color: Colors.grey.shade500),
+
+            // boxShadow: [
+            //   BoxShadow(
+            //     blurRadius: blur,
+            //     offset: distance,
+            //     color: Theme.of(context).brightness == Brightness.dark
+            //         ? Colors.black
+            //         : Colors.grey.shade500,
+            //   ),
+            //   BoxShadow(
+            //     blurRadius: blur,
+            //     offset: -distance,
+            //     color: Theme.of(context).brightness == Brightness.dark
+            //         ? Colors.grey.shade700
+            //         : Colors.white,
+            //   ),
+            // ],
 
             /// BoxShadow for neon glow
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.grey.shade900
-                : Colors.white,
-            borderRadius: BorderRadius.circular(13.0),
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12.0),
             // border: Border.all(color: Colors.grey),
           ),
           child: formField,
-        ),
-        const SizedBox(
-          height: 20,
         ),
       ],
     );

@@ -65,13 +65,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// [TODO] : add recent visited folders functionality
-              Text(
-                "Recent Folders",
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w500,
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Recent Folders",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
+              const SizedBox(height: 16.0),
               AlignedGridView.count(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
@@ -105,15 +109,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   );
                 },
               ),
+              const SizedBox(height: 48.0),
 
               /// [TODO] : add recent visited urls functionality
-              Text(
-                "Recent Links",
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w500,
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Recent Links",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
+              const SizedBox(height: 16.0),
               AlignedGridView.count(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
@@ -123,7 +132,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisSpacing: 2.0,
                 itemBuilder: (context, index) {
                   return FaviconsGrid(
-                      imageUrl: _recentUrl[index] as Map<String, dynamic>,
+                      imageUrl: _recentUrl[index],
                       onLongPress: () {
                         // Navigator.of(context)
                         //     .push(
@@ -150,22 +159,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
 
               /// [TODO] : add favourite folders functionality
-              Text(
-                "Favourite Folders",
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(height: 48.0),
+
+              /// [TODO] : add recent visited urls functionality
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Favourite Folders",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
+              const SizedBox(height: 16.0),
 
               /// [TODO] : add favourite urls functionality
-              Text(
-                "Favourite Links",
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(height: 48.0),
+
+              /// [TODO] : add recent visited urls functionality
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Favourite Links",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
+              const SizedBox(height: 16.0),
             ],
           ),
         ),

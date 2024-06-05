@@ -32,7 +32,7 @@ class _FolderIconButtonState extends State<FolderIconButton> {
       onTap: widget.onPress,
       onLongPress: widget.onLongPress,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
@@ -45,9 +45,10 @@ class _FolderIconButtonState extends State<FolderIconButton> {
             alignment: Alignment.center,
             child: Text(
               widget.folder.folderName.toString(),
-              softWrap: true,
+              maxLines: 2,
               textAlign: TextAlign.center,
               style: TextStyle(
+                height: 1.1,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade700,

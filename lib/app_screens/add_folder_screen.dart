@@ -19,6 +19,30 @@ class AddFolderScreen extends StatefulWidget {
 class _AddFolderScreenState extends State<AddFolderScreen> {
   final _formKey = GlobalKey<FormState>();
   String title = '', desc = '';
+  bool _favourite = false;
+  String _selectedCategory = "";
+  final List<String> _predefinedCategories = [
+    'Work',
+    'Personal',
+    'News',
+    'Social Media',
+    'Entertainment',
+    'Shopping',
+    'Education',
+    'Finance',
+    'Health',
+    'Travel',
+    'Recipes',
+    'Technology',
+    'Sports',
+    'Music',
+    'Books',
+    'Research',
+    'Projects',
+    'Blogs',
+    'Tutorials',
+    'Utilities'
+  ];
 
   void saveFolder() {
     final isValid = _formKey.currentState!.validate();
@@ -47,6 +71,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
         ),
       );
     }
+  }
+
+  @override
+  void initState() {
+    _selectedCategory = _predefinedCategories.first;
+    super.initState();
   }
 
   @override
@@ -81,8 +111,8 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
         key: _formKey,
         child: SingleChildScrollView(
           child: Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.all(5),
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -110,6 +140,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     },
                   ),
                 ),
+                const SizedBox(height: 20.0),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(
@@ -131,6 +162,75 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                       return null;
                     },
                   ),
+                ),
+                const SizedBox(height: 20.0),
+
+                // IS fAVOURITE
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      activeColor: Colors.green,
+                      inactiveTrackColor: Colors.red,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20.0),
+
+                // Selected Category
+                const Text(
+                  'Categories',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+
+                Wrap(
+                  spacing: 12.0,
+                  runSpacing: 8.0,
+                  children:
+                      List.generate(_predefinedCategories.length, (index) {
+                    var category = _predefinedCategories[index];
+                    bool isSelected = category == _selectedCategory;
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        _selectedCategory = category;
+                      }),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4.0),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.green : Colors.white,
+                          border: Border.all(
+                            color: isSelected ? Colors.green : Colors.black,
+                          ),
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
