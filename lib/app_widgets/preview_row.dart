@@ -14,8 +14,8 @@ class PreviewRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Offset distance = const Offset(0.0, 3.0);
-    double blur = 4.0;
+    Offset distance = const Offset(0.0, 0.0);
+    double blur = 0.0;
 
     EdgeInsets _padding = const EdgeInsets.all(5);
     return GestureDetector(

@@ -1,22 +1,19 @@
 import 'package:hive/hive.dart';
-part '../app_services/databases/link_tree_model.g.dart';
+part 'link_tree_folder_model.g.dart';
 
 @HiveType(typeId: 1)
-class LinkTree {
+class LinkTreeFolder {
   /// id of this LinkTree
   @HiveField(0)
   final String id;
-
 
   /// name of the current folder
   @HiveField(1)
   final String folderName;
 
-
   /// for storing id of subfolders
   @HiveField(2)
   final List<String> subFolders;
-
 
   /// list of urls in this folder
   @HiveField(3)
@@ -44,7 +41,7 @@ class LinkTree {
 
   /// enum isGridView / isListView
 
-  LinkTree({
+  LinkTreeFolder({
     required this.id,
     required this.subFolders,
     required this.urls,

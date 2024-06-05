@@ -7,7 +7,7 @@ import 'package:web_link_store/app_screens/dashboard.dart';
 import 'package:web_link_store/app_screens/store_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
-import '../app_models/link_tree_model.dart';
+import '../app_models/link_tree_folder_model.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,9 +20,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   late StreamSubscription _intentDataStreamSubscription;
   late final PageController _pageController;
   int _currentIndex = 0;
-  LinkTree _getBaseTree() {
+  LinkTreeFolder _getBaseTree() {
     final HiveService hiveService = HiveService();
-    LinkTree? n = hiveService.getTreeData(kRootDirectory);
+    LinkTreeFolder? n = hiveService.getTreeData(kRootDirectory);
 
     if (n != null) {
       return n;
@@ -109,7 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           StorePage(
             linkTree: _getBaseTree().id,
-            folderName: 'WebLinkStore',
+            folderName: 'Link Vault',
           ),
           const DashboardScreen(),
         ],

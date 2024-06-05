@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_model.dart';
+import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
 class UpdateFolder extends StatefulWidget {
-  final LinkTree rootFolder;
+  final LinkTreeFolder rootFolder;
   final int subFolderIndex;
   const UpdateFolder({
     Key? key,
@@ -26,14 +26,14 @@ class _UpdateFolderState extends State<UpdateFolder> {
   void saveFolder() {
     final isValid = _formKey.currentState!.validate();
     final HiveService hiveService = HiveService();
-    LinkTree linkTree = hiveService
+    LinkTreeFolder linkTree = hiveService
         .getTreeData(widget.rootFolder.subFolders[widget.subFolderIndex])!;
 
     if (isValid) {
       _formKey.currentState!.save();
 
       hiveService.update(
-        LinkTree(
+        LinkTreeFolder(
           id: widget.rootFolder.subFolders[widget.subFolderIndex],
           folderName: title,
           subFolders: widget.rootFolder.subFolders,
@@ -47,7 +47,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
   void deleteFolder(String id) {
     /// get folder
-    LinkTree? linkTree = hs.getTreeData(id);
+    LinkTreeFolder? linkTree = hs.getTreeData(id);
 
     if (linkTree != null) {
       List<String> keys = linkTree.subFolders;
@@ -71,7 +71,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
     List<String> fold = widget.rootFolder.subFolders;
     fold.removeAt(widget.subFolderIndex);
 
-    LinkTree rTree = LinkTree(
+    LinkTreeFolder rTree = LinkTreeFolder(
       id: widget.rootFolder.id,
       subFolders: fold,
       folderName: widget.rootFolder.folderName,

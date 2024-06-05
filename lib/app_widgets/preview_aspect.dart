@@ -12,8 +12,8 @@ class PreviewAspectRatio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Offset distance = const Offset(0.0, 3.5);
-    double blur = 4.0;
+    Offset distance = const Offset(0.0, 0.0);
+    double blur = 0.0;
 
     EdgeInsets _padding = const EdgeInsets.all(1);
     return GestureDetector(
@@ -67,7 +67,7 @@ class PreviewAspectRatio extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.only(left: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: Column(
               children: [
                 Text(
@@ -75,13 +75,14 @@ class PreviewAspectRatio extends StatelessWidget {
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14.5,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey.shade400
                         : Colors.grey.shade800,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   imageData['description'],
                   softWrap: true,

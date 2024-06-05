@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_models/link_tree_model.dart';
+import 'package:web_link_store/app_models/link_tree_folder_model.dart';
 import 'package:web_link_store/constants.dart';
 
 import '../app_widgets/text_input.dart';
@@ -24,11 +24,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
-      LinkTree linkTree = HiveService().getTreeData(widget.rootFolderKey)!;
+      LinkTreeFolder linkTree =
+          HiveService().getTreeData(widget.rootFolderKey)!;
       final HiveService hiveService = HiveService();
       String time = DateTime.now().millisecondsSinceEpoch.toString();
       hiveService.add(
-        LinkTree(
+        LinkTreeFolder(
           id: time,
           folderName: title,
           subFolders: [],
@@ -38,7 +39,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
       List<String> fold = linkTree.subFolders;
       fold.add(time);
       hiveService.update(
-        LinkTree(
+        LinkTreeFolder(
           id: widget.rootFolderKey,
           folderName: linkTree.folderName,
           subFolders: fold,

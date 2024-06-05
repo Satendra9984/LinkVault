@@ -9,7 +9,7 @@ class RoundedNeomorphicButton extends StatelessWidget {
     required this.onPressed,
   }) : super(key: key);
   final Offset distance = const Offset(1.5, 1.5);
-  final double blur = 3.0;
+  final double blur = 2.0;
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +19,13 @@ class RoundedNeomorphicButton extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: Theme.of(context).brightness == Brightness.dark
-                ? [Colors.grey.shade800, Colors.black]
-                : [Colors.white, Colors.grey.shade200],
-          ),
+          // gradient: LinearGradient(
+          //   begin: Alignment.topLeft,
+          //   end: Alignment.bottomRight,
+          //   colors: Theme.of(context).brightness == Brightness.dark
+          //       ? [Colors.grey.shade800, Colors.black]
+          //       : [Colors.white, Colors.grey.shade200],
+          // ),
           shape: BoxShape.circle,
           border: Border.all(style: BorderStyle.none),
           boxShadow: [

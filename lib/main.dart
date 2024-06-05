@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:web_link_store/app_screens/home_screen.dart';
 import 'package:web_link_store/app_services/databases/database_constants.dart';
-import 'package:web_link_store/app_models/link_tree_model.dart';
+import 'package:web_link_store/app_models/link_tree_folder_model.dart';
 import 'app_themes/custom_light_theme.dart';
 
 /// Before you can use the hive, you need to initialize it.
@@ -16,11 +16,15 @@ void main() async {
   Hive.init(directory.path);
 
   /// register typeAdapters
-  Hive.registerAdapter(LinkTreeAdapter());
+  Hive.registerAdapter(LinkTreeFolderAdapter());
 
   /// opening hive box for all nested_folders and url's
   /// of type LinkTreeAdapter
-  await Hive.openBox<LinkTree>(kLinkTreeBox);
+  await Hive.openBox<LinkTreeFolder>(kLinkTreeBox);
+  await Hive.openBox(kRecentLinkTreeFolders);
+  await Hive.openBox(kRecentLinks);
+
+
 
   /// box for checking if the url is receiving
   // await Hive.openBox(isReceivingUrl);

@@ -47,11 +47,6 @@ class _PreviewState extends State<Preview> {
 
   @override
   Widget build(BuildContext context) {
-    Offset distance =
-        isPressed ? const Offset(2.5, 2.5) : const Offset(3.5, 3.5);
-    double blur = isPressed ? 3.0 : 6.0;
-
-    EdgeInsets _padding = const EdgeInsets.all(1);
 
     return GestureDetector(
       onTap: null,

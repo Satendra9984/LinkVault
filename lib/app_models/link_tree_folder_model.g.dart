@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of '../../app_models/link_tree_model.dart';
+part of 'link_tree_folder_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class LinkTreeAdapter extends TypeAdapter<LinkTree> {
+class LinkTreeFolderAdapter extends TypeAdapter<LinkTreeFolder> {
   @override
   final int typeId = 1;
 
   @override
-  LinkTree read(BinaryReader reader) {
+  LinkTreeFolder read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return LinkTree(
+    return LinkTreeFolder(
       id: fields[0] as String,
       subFolders: (fields[2] as List).cast<String>(),
       urls: (fields[3] as List)
@@ -28,7 +28,7 @@ class LinkTreeAdapter extends TypeAdapter<LinkTree> {
   }
 
   @override
-  void write(BinaryWriter writer, LinkTree obj) {
+  void write(BinaryWriter writer, LinkTreeFolder obj) {
     writer
       ..writeByte(6)
       ..writeByte(0)
@@ -51,7 +51,7 @@ class LinkTreeAdapter extends TypeAdapter<LinkTree> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LinkTreeAdapter &&
+      other is LinkTreeFolderAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

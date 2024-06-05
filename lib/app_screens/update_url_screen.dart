@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_model.dart';
+import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
 class UpdateUrlScreen extends StatefulWidget {
-  final LinkTree rootFolder;
+  final LinkTreeFolder rootFolder;
   final int urlIndex;
   const UpdateUrlScreen({
     Key? key,
@@ -39,7 +39,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
 
       listUrl[widget.urlIndex] = url;
 
-      LinkTree newLinkTree = LinkTree(
+      LinkTreeFolder newLinkTree = LinkTreeFolder(
         id: widget.rootFolder.id,
         subFolders: widget.rootFolder.subFolders,
         urls: listUrl,
@@ -53,7 +53,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
 
   void deleteFolder(String id) {
     /// get folder
-    LinkTree linkTree = hs.getTreeData(id)!;
+    LinkTreeFolder linkTree = hs.getTreeData(id)!;
 
     linkTree.urls.removeAt(widget.urlIndex);
     hs.update(linkTree);

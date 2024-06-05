@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_model.dart';
+import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
@@ -29,7 +29,8 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
-      LinkTree linkTree = HiveService().getTreeData(widget.rootFolderKey)!;
+      LinkTreeFolder linkTree =
+          HiveService().getTreeData(widget.rootFolderKey)!;
       final HiveService hiveService = HiveService();
       final FetchPreviewDetails fetchPreviewDetails = FetchPreviewDetails();
       Map<String, dynamic> idata = await fetchPreviewDetails.fetch(url);
@@ -57,7 +58,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
 
       /// update linktree
       hiveService.update(
-        LinkTree(
+        LinkTreeFolder(
             id: linkTree.id,
             subFolders: linkTree.subFolders,
             urls: listUrl,
