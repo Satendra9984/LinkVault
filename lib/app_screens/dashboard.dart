@@ -8,7 +8,6 @@ import 'package:web_link_store/app_screens/update_folder_screen.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
 import 'package:web_link_store/app_widgets/favicons.dart';
 import 'package:web_link_store/app_widgets/folder_icon_button.dart';
-import 'package:web_link_store/app_widgets/preview_grid.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -18,14 +17,30 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final List<LinkTreeFolder> _recentFolders = [];
-  final List<Map> _recentUrl = [];
+  final List<LinkTreeFolder> _recentFolders = [], _favouriteFolder = [];
+  final List<Map> _recentUrl = [], _favouriteLinks = [];
 
   void _initializeRecentFoldersList() {
     List<LinkTreeFolder> recentFolders = HiveService().getRecentFolders();
     _recentFolders.addAll(recentFolders);
 
     debugPrint('[log] : ${_recentFolders.length}');
+  }
+
+  void _initializeFavouriteFoldersList() {
+    List<String> favouriteFoldersId = HiveService().getFavouriteFolders();
+
+    List<LinkTreeFolder> favouriteFolders = [];
+
+    for (String id in favouriteFoldersId) {
+      LinkTreeFolder folder = HiveService().getTreeData(id)!;
+
+      _favouriteFolder.add(folder);
+    }
+
+    _favouriteFolder.addAll(favouriteFolders);
+
+    debugPrint('[log] :  favourite ${_favouriteFolder.length}');
   }
 
   void _initializeRecentUrlsList() {
@@ -35,10 +50,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     debugPrint('[log] : ${_recentUrl.length}');
   }
 
+  void _initializeFavouriteUrlsList() {
+    List<Map> recentFolders = HiveService().getFavouriteLinks();
+    _favouriteLinks.addAll(recentFolders);
+
+    debugPrint('[log] : ${_favouriteLinks.length}');
+  }
+
   @override
   void initState() {
     _initializeRecentFoldersList();
+    _initializeFavouriteFoldersList();
     _initializeRecentUrlsList();
+    _initializeFavouriteUrlsList();
     super.initState();
   }
 
@@ -84,21 +108,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   return FolderIconButton(
                     folder: _recentFolders[index],
                     onLongPress: () async {
-                      // Navigator.of(context).push(
-                      //   CupertinoPageRoute(
-                      //     builder: (context) => UpdateFolder(
-                      //       rootFolder: _getLinkTree(widget.linkTree),
-                      //       subFolderIndex: index,
-                      //     ),
-                      //   ),
-                      // );
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (context) => UpdateFolder(
+                            currentFolder: _recentFolders[index],
+                          ),
+                        ),
+                      );
                     },
                     onPress: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
                           builder: (context) => StorePage(
-                            parentFolderId: _recentFolders[index].id
-                          ),
+                              parentFolderId: _recentFolders[index].id),
                         ),
                       );
                     },
@@ -149,7 +171,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              
+              AlignedGridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _favouriteFolder.length,
+                crossAxisCount: _getCount(),
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 2.0,
+                itemBuilder: (context, index) {
+                  return FolderIconButton(
+                    folder: _favouriteFolder[index],
+                    onLongPress: () async {
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (context) => UpdateFolder(
+                            currentFolder: _favouriteFolder[index],
+                          ),
+                        ),
+                      );
+                    },
+                    onPress: () {
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (context) => StorePage(
+                              parentFolderId: _favouriteFolder[index].id),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
               const SizedBox(height: 48.0),
 
               /// [TODO] : Add Favourite urls functionality
@@ -161,7 +212,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-
+              AlignedGridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _favouriteLinks.length,
+                crossAxisCount: _getCount(),
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 2.0,
+                itemBuilder: (context, index) {
+                  return FaviconsGrid(
+                      imageUrl: _favouriteLinks[index],
+                      onLongPress: () {},
+                      onPress: () async {
+                        if (await canLaunchUrl(
+                            Uri.parse(_favouriteLinks[index]['url']))) {
+                          await launchUrl(Uri.parse(_favouriteLinks[index]['url']));
+                        } else {
+                          throw 'Could not launch ${_favouriteLinks[index]['url']}';
+                        }
+                      });
+                },
+              ),
 
             ],
           ),

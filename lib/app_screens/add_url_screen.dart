@@ -21,7 +21,7 @@ class AddUrlScreen extends StatefulWidget {
 
 class _AddUrlScreenState extends State<AddUrlScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isSaving = false;
+  bool _isSaving = false, _favourite = false;
   String url = '', urlTitle = '';
   String? desc = '';
 
@@ -37,6 +37,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
       idata['url_title'] = urlTitle;
       idata['user_note'] = desc ?? '';
       idata['url'] = url;
+      idata['is_favourite'] = _favourite;
       /*
       {
       'url' : url,
@@ -72,6 +73,9 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
           folderName: linkTree.folderName,
         ),
       );
+      if (_favourite) {
+       await hiveService.addFavouriteLinks(idata);
+      }
 
       /// update linktree
     }
@@ -180,6 +184,30 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                             return null;
                           },
                         ),
+                      ),
+
+                      const SizedBox(height: 20.0),
+
+                      // IS fAVOURITE
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Favourite',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Switch.adaptive(
+                            value: _favourite,
+                            onChanged: (value) => setState(() {
+                              _favourite = !_favourite;
+                            }),
+                            activeColor: Colors.green,
+                            inactiveTrackColor: Colors.red,
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 20.0),

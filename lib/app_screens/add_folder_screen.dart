@@ -45,7 +45,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     'Utilities'
   ];
 
-  void saveFolder() {
+  Future<void> saveFolder() async{
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
@@ -54,18 +54,21 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
       String newFolderId = DateTime.now().millisecondsSinceEpoch.toString();
 
       // Adding new folder in folders table in Hive DB
-      hiveService.add(
-        LinkTreeFolder(
-          id: newFolderId,
-          parentFolderId: widget.parentFolderId,
-          folderName: title,
-          subFolders: [],
-          urls: [],
-          isFavourite: _favourite,
-          category: _selectedCategory.isEmpty ? "Default" : _selectedCategory,
-          description: _desc,
-        ),
+      LinkTreeFolder newFolder = LinkTreeFolder(
+        id: newFolderId,
+        parentFolderId: widget.parentFolderId,
+        folderName: title,
+        subFolders: [],
+        urls: [],
+        isFavourite: _favourite,
+        category: _selectedCategory.isEmpty ? "Default" : _selectedCategory,
+        description: _desc,
       );
+      hiveService.add(newFolder);
+
+      if (_favourite) {
+        await hiveService.addFavouriteFolder(newFolder.id);
+      }
 
       // Now will update its parent Folders List
       LinkTreeFolder? parentFolder =
@@ -109,12 +112,11 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
           IconButton(
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                saveFolder();
+                await saveFolder();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     backgroundColor: Colors.green,
-                    
                     content: Center(
                       child: Text(
                         'Saving',

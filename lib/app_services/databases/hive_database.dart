@@ -38,7 +38,7 @@ class HiveService {
     box.delete(key);
   }
 
-  // <------------------------------ RECENT FOLDERS ----------------------------->
+  // <------------------------------ RECENT FOLDERS ---------------------------->
 
   Future<void> addRecentFolder(LinkTreeFolder linkFolder) async {
     Box box = Hive.box(kRecentLinkTreeFolders);
@@ -126,57 +126,86 @@ class HiveService {
     return recentFolders.cast<Map>();
   }
 
+  // <------------------------------ Favourite Folders -------------------------->
 
+  Future<void> addFavouriteFolder(String linkFolderId) async {
+    Box box = Hive.box(kFavouriteLinkTreeFolders);
 
+    List<String> prevRecFoldList = getFavouriteFolders();
 
- // <------------------------------ Favourite Folders -------------------------->
-
-  Future<void> addFavouriteFolder(LinkTreeFolder linkFolder) async {
-    Box box = Hive.box(kLinkTreeBox);
-
-    List<LinkTreeFolder> prevRecFoldList = getRecentFolders();
-
-    // prevRecFoldList.add(linkFolder);
     // Check if already exist
     for (int i = 0; i < prevRecFoldList.length; i++) {
-      LinkTreeFolder folder = prevRecFoldList[i];
+      String folder = prevRecFoldList[i];
 
-      if (folder.id == linkFolder.id) {
+      if (folder == linkFolderId) {
         prevRecFoldList.removeAt(i);
       }
     }
 
-    prevRecFoldList.add(linkFolder);
+    prevRecFoldList.add(linkFolderId);
 
-    if (prevRecFoldList.length > 10) {
-      int lastIndextoremove = prevRecFoldList.length - 10 - 1;
-      prevRecFoldList.removeRange(
-        0,
-        lastIndextoremove,
-      );
-    }
-
-    await box.put(kRecentLinkTreeFolders, prevRecFoldList);
+    await box.put(kFavouriteLinkTreeFolders, prevRecFoldList);
+    // getFavouriteFolders();
   }
 
-  List<LinkTreeFolder> getFavouriteFolders() {
+  List<String> getFavouriteFolders() {
     // getting the linkTree box
-    Box box = Hive.box(kRecentLinkTreeFolders);
+    Box box = Hive.box(kFavouriteLinkTreeFolders);
 
     // getting the data from the local database
     List<dynamic> recentFolders = box.get(
-      kRecentLinkTreeFolders,
+      kFavouriteLinkTreeFolders,
+      defaultValue: [],
+    );
+
+    // print(recentFolders);
+    // returning the treeData
+    return recentFolders.cast<String>();
+  }
+
+
+  // <------------------------------ Favourite LINKS ----------------------------->
+
+  Future<void> addFavouriteLinks(Map link) async {
+    Box box = Hive.box(kFavouriteLinks);
+
+    List<Map> prevRecLinkList = getFavouriteLinks();
+
+    // prevRecFoldList.add(linkFolder);
+    // Check if already exist
+    for (int i = 0; i < prevRecLinkList.length; i++) {
+      Map clink = prevRecLinkList[i];
+
+      if (clink['url'] == link['url']) {
+        prevRecLinkList.removeAt(i);
+      }
+    }
+
+    prevRecLinkList.add(link);
+
+    // if (prevRecLinkList.length > 10) {
+    //   int lastIndextoremove = prevRecLinkList.length - 10 - 1;
+    //   prevRecLinkList.removeRange(
+    //     0,
+    //     lastIndextoremove,
+    //   );
+    // }
+
+    await box.put(kFavouriteLinks, prevRecLinkList);
+  }
+
+  List<Map> getFavouriteLinks() {
+    // getting the linkTree box
+    Box box = Hive.box(kFavouriteLinks);
+
+    // getting the data from the local database
+    List<dynamic> recentFolders = box.get(
+      kFavouriteLinks,
       defaultValue: [],
     );
 
     // returning the treeData
-    return recentFolders.cast<LinkTreeFolder>();
+    return recentFolders.cast<Map>();
   }
-
-
-
-
-
-
 
 }

@@ -45,25 +45,28 @@ class _UpdateFolderState extends State<UpdateFolder> {
     'Utilities'
   ];
 
-  void saveFolder() {
+  Future<void> saveFolder() async{
     final isValid = _formKey.currentState!.validate();
     final HiveService hiveService = HiveService();
 
     if (isValid) {
       _formKey.currentState!.save();
 
-      hiveService.update(
-        LinkTreeFolder(
-          id: widget.currentFolder.id,
-          folderName: _title,
-          parentFolderId: widget.currentFolder.parentFolderId,
-          subFolders: widget.currentFolder.subFolders,
-          urls: widget.currentFolder.urls,
-          description: _desc,
-          isFavourite: _favourite,
-          category: _selectedCategory,
-        ),
+      LinkTreeFolder updatedFolder = LinkTreeFolder(
+        id: widget.currentFolder.id,
+        folderName: _title,
+        parentFolderId: widget.currentFolder.parentFolderId,
+        subFolders: widget.currentFolder.subFolders,
+        urls: widget.currentFolder.urls,
+        description: _desc,
+        isFavourite: _favourite,
+        category: _selectedCategory,
       );
+
+      hiveService.update(updatedFolder);
+      if (_favourite && widget.currentFolder.isFavourite == false) {
+       await hiveService.addFavouriteFolder(updatedFolder.id);
+      }
     }
 
     Navigator.pop(context);
@@ -143,9 +146,9 @@ class _UpdateFolderState extends State<UpdateFolder> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
+            onPressed: () async{
               if (_formKey.currentState!.validate()) {
-                saveFolder();
+               await saveFolder();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Saving'),

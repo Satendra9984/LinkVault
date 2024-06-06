@@ -23,8 +23,9 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   HiveService hs = HiveService();
   String url = '', urlTitle = '';
   String? desc;
+  bool _favourite = false;
 
-  void saveFolder() {
+  Future<void> saveFolder() async{
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
@@ -34,19 +35,28 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
       url['url'] = this.url;
       url['url_title'] = urlTitle;
       url['description'] = desc ?? '';
+      url['is_favourite'] = _favourite;
 
       List<Map<String, dynamic>> listUrl = widget.rootFolder.urls;
 
       listUrl[widget.urlIndex] = url;
 
-      // LinkTreeFolder newLinkTree = LinkTreeFolder(
-      //   id: widget.rootFolder.id,
-      //   subFolders: widget.rootFolder.subFolders,
-      //   urls: listUrl,
-      //   folderName: widget.rootFolder.folderName,
-      // );
+      LinkTreeFolder newLinkTree = LinkTreeFolder(
+        id: widget.rootFolder.id,
+        subFolders: widget.rootFolder.subFolders,
+        urls: listUrl,
+        folderName: widget.rootFolder.folderName,
+        parentFolderId: widget.rootFolder.parentFolderId,
+        description: widget.rootFolder.description,
+        isFavourite: widget.rootFolder.isFavourite,
+        category: widget.rootFolder.category,
+      );
 
-      // hs.update(newLinkTree);
+      hs.update(newLinkTree);
+
+      if (_favourite) {
+       await  hs.addFavouriteLinks(url);
+      }
     }
     Navigator.pop(context);
   }
@@ -59,13 +69,18 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
     hs.update(linkTree);
   }
 
-  @override
-  void initState() {
-    super.initState();
-
+  _initialize() {
     url = widget.rootFolder.urls[widget.urlIndex]['url'];
     urlTitle = widget.rootFolder.urls[widget.urlIndex]['url_title'];
     desc = widget.rootFolder.urls[widget.urlIndex]['description'];
+    _favourite =
+        widget.rootFolder.urls[widget.urlIndex]['is_favourite'] ?? false;
+  }
+
+  @override
+  void initState() {
+    _initialize();
+    super.initState();
   }
 
   @override
@@ -119,8 +134,8 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
         key: _formKey,
         child: SingleChildScrollView(
           child: Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.all(5),
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -150,6 +165,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     },
                   ),
                 ),
+                const SizedBox(height: 20.0),
                 TextInput(
                   label: 'URL Title',
                   formField: TextFormField(
@@ -177,6 +193,28 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     },
                   ),
                 ),
+                const SizedBox(height: 20.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      activeColor: Colors.green,
+                      inactiveTrackColor: Colors.red,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(
