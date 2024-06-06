@@ -22,15 +22,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   int _currentIndex = 0;
   LinkTreeFolder _getBaseTree() {
     final HiveService hiveService = HiveService();
-    LinkTreeFolder? n = hiveService.getTreeData(kRootDirectory);
+    LinkTreeFolder? baseFolder = hiveService.getTreeData(kRootDirectory);
 
-    if (n != null) {
-      return n;
+    if (baseFolder != null) {
+      return baseFolder;
     }
-    hiveService.add(hiveService.defaultLinkTreeBoxValue);
-    // debugPrint('lintTree --> ${n!.id}\n${n!.urls}\n${n.folders}\n');
-    n = hiveService.getTreeData(kRootDirectory);
-    return n!;
+    hiveService.add(
+      LinkTreeFolder(
+        id: kRootDirectory,
+        parentFolderId: kRootDirectory + "Parent",
+        subFolders: [],
+        urls: [],
+        folderName: 'LinkVault',
+      ),
+    );
+
+    baseFolder = hiveService.getTreeData(kRootDirectory);
+    return baseFolder!;
   }
 
   @override
@@ -108,8 +116,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         controller: _pageController,
         children: [
           StorePage(
-            linkTree: _getBaseTree().id,
-            folderName: 'Link Vault',
+            parentFolderId: _getBaseTree().id
           ),
           const DashboardScreen(),
         ],

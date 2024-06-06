@@ -18,31 +18,38 @@ class LinkTreeFolderAdapter extends TypeAdapter<LinkTreeFolder> {
     };
     return LinkTreeFolder(
       id: fields[0] as String,
-      subFolders: (fields[2] as List).cast<String>(),
-      urls: (fields[3] as List)
+      parentFolderId: fields[1] as String,
+      subFolders: (fields[3] as List).cast<String>(),
+      urls: (fields[4] as List)
           .map((dynamic e) => (e as Map).cast<String, dynamic>())
           .toList(),
-      folderName: fields[1] as String,
-      isPreview: fields[4] as bool,
-    )..isFavicon = fields[5] as bool;
+      folderName: fields[2] as String,
+      isFavourite: fields[5] as bool,
+      category: fields[6] as String?,
+      description: fields[7] as String?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, LinkTreeFolder obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.folderName)
+      ..write(obj.parentFolderId)
       ..writeByte(2)
-      ..write(obj.subFolders)
+      ..write(obj.folderName)
       ..writeByte(3)
-      ..write(obj.urls)
+      ..write(obj.subFolders)
       ..writeByte(4)
-      ..write(obj.isPreview)
+      ..write(obj.urls)
       ..writeByte(5)
-      ..write(obj.isFavicon);
+      ..write(obj.isFavourite)
+      ..writeByte(6)
+      ..write(obj.category)
+      ..writeByte(7)
+      ..write(obj.description);
   }
 
   @override

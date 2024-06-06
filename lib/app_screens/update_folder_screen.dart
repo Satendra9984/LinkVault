@@ -6,12 +6,10 @@ import '../app_widgets/text_input.dart';
 import '../constants.dart';
 
 class UpdateFolder extends StatefulWidget {
-  final LinkTreeFolder rootFolder;
-  final int subFolderIndex;
+  final LinkTreeFolder currentFolder;
   const UpdateFolder({
     Key? key,
-    required this.subFolderIndex,
-    required this.rootFolder,
+    required this.currentFolder,
   }) : super(key: key);
 
   @override
@@ -20,33 +18,60 @@ class UpdateFolder extends StatefulWidget {
 
 class _UpdateFolderState extends State<UpdateFolder> {
   final _formKey = GlobalKey<FormState>();
-  HiveService hs = HiveService();
-  String title = '', desc = '';
+  String _title = '';
+  String? _desc = '';
+  bool _favourite = false;
+  String _selectedCategory = "";
+  final List<String> _predefinedCategories = [
+    'Work',
+    'Personal',
+    'News',
+    'Social Media',
+    'Entertainment',
+    'Shopping',
+    'Education',
+    'Finance',
+    'Health',
+    'Travel',
+    'Recipes',
+    'Technology',
+    'Sports',
+    'Music',
+    'Books',
+    'Research',
+    'Projects',
+    'Blogs',
+    'Tutorials',
+    'Utilities'
+  ];
 
   void saveFolder() {
     final isValid = _formKey.currentState!.validate();
     final HiveService hiveService = HiveService();
-    LinkTreeFolder linkTree = hiveService
-        .getTreeData(widget.rootFolder.subFolders[widget.subFolderIndex])!;
 
     if (isValid) {
       _formKey.currentState!.save();
 
       hiveService.update(
         LinkTreeFolder(
-          id: widget.rootFolder.subFolders[widget.subFolderIndex],
-          folderName: title,
-          subFolders: widget.rootFolder.subFolders,
-          urls: widget.rootFolder.urls,
+          id: widget.currentFolder.id,
+          folderName: _title,
+          parentFolderId: widget.currentFolder.parentFolderId,
+          subFolders: widget.currentFolder.subFolders,
+          urls: widget.currentFolder.urls,
+          description: _desc,
+          isFavourite: _favourite,
+          category: _selectedCategory,
         ),
       );
     }
-    debugPrint('linkTree id --> ${linkTree.id}\n${linkTree.folderName}\n');
+
     Navigator.pop(context);
   }
 
-  void deleteFolder(String id) {
+  void deleteSubFolders(String id) {
     /// get folder
+    HiveService hs = HiveService();
     LinkTreeFolder? linkTree = hs.getTreeData(id);
 
     if (linkTree != null) {
@@ -56,9 +81,8 @@ class _UpdateFolderState extends State<UpdateFolder> {
         return;
       }
       for (String key in keys) {
-        /// deleting subfolders
-        deleteFolder(key);
-        hs.delete(key);
+        deleteSubFolders(key);
+        // hs.delete(key);
       }
 
       /// update folder list of root folder
@@ -67,29 +91,46 @@ class _UpdateFolderState extends State<UpdateFolder> {
   }
 
   /// update root folder list
-  void updateRootFolderList() {
-    List<String> fold = widget.rootFolder.subFolders;
-    fold.removeAt(widget.subFolderIndex);
+  void updateParentFolderList() {
+    HiveService hs = HiveService();
+
+    LinkTreeFolder parentFolder =
+        hs.getTreeData(widget.currentFolder.parentFolderId)!;
+    List<String> fold = parentFolder.subFolders;
+    fold.removeWhere((element) => element == widget.currentFolder.id);
 
     LinkTreeFolder rTree = LinkTreeFolder(
-      id: widget.rootFolder.id,
+      id: parentFolder.id,
+      parentFolderId: parentFolder.parentFolderId,
       subFolders: fold,
-      folderName: widget.rootFolder.folderName,
-      urls: widget.rootFolder.urls,
+      folderName: parentFolder.folderName,
+      urls: parentFolder.urls,
+      description: parentFolder.description,
+      isFavourite: parentFolder.isFavourite,
+      category: parentFolder.category,
     );
 
     hs.update(rTree);
   }
 
+  void _initializeData() {
+    HiveService hs = HiveService();
+    LinkTreeFolder currentFolder = hs.getTreeData(widget.currentFolder.id)!;
+
+    // debugPrint(
+    //     '[log] : ${currentFolder.folderName} ${currentFolder.description} ${currentFolder.category} ${currentFolder.isFavourite}');
+    _title = currentFolder.folderName;
+    _desc = currentFolder.description;
+    _favourite = currentFolder.isFavourite;
+    _selectedCategory = currentFolder.category ?? "Default";
+
+    // setState(() {});
+  }
+
   @override
   void initState() {
+    _initializeData();
     super.initState();
-
-    title = hs
-            .getTreeData(widget.rootFolder.subFolders[widget.subFolderIndex])
-            ?.folderName ??
-        '';
-    // desc = widget.rootFolder.
   }
 
   @override
@@ -116,15 +157,9 @@ class _UpdateFolderState extends State<UpdateFolder> {
           ),
           IconButton(
             onPressed: () {
-              Future.delayed(const Duration(milliseconds: 100), () {
-                deleteFolder(
-                    widget.rootFolder.subFolders[widget.subFolderIndex]);
-
-                /// update current folder list
-                updateRootFolderList();
-              }).then(
-                (value) => Navigator.of(context).pop(),
-              );
+              deleteSubFolders(widget.currentFolder.id);
+              updateParentFolderList();
+              Navigator.of(context).pop();
             },
             icon: const Icon(Icons.delete),
           ),
@@ -136,17 +171,17 @@ class _UpdateFolderState extends State<UpdateFolder> {
         key: _formKey,
         child: SingleChildScrollView(
           child: Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.all(5),
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextInput(
                   label: 'Folder Name',
                   formField: TextFormField(
-                    initialValue: title,
+                    initialValue: _title,
                     onChanged: (value) {
-                      title = value;
+                      _title = value;
                     },
                     keyboardType: TextInputType.text,
                     maxLength: 30,
@@ -160,18 +195,19 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter title';
+                        return 'Please enter _title';
                       }
                       return null;
                     },
                   ),
                 ),
+                const SizedBox(height: 20.0),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(
-                    initialValue: desc.toString(),
+                    initialValue: _desc,
                     onChanged: (value) {
-                      desc = value;
+                      _desc = value;
                     },
                     keyboardType: TextInputType.multiline,
                     maxLines: null,
@@ -188,6 +224,75 @@ class _UpdateFolderState extends State<UpdateFolder> {
                       return null;
                     },
                   ),
+                ),
+                const SizedBox(height: 20.0),
+
+                // IS fAVOURITE
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      activeColor: Colors.green,
+                      inactiveTrackColor: Colors.red,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20.0),
+
+                // Selected Category
+                const Text(
+                  'Categories',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+
+                Wrap(
+                  spacing: 12.0,
+                  runSpacing: 8.0,
+                  children:
+                      List.generate(_predefinedCategories.length, (index) {
+                    var category = _predefinedCategories[index];
+                    bool isSelected = category == _selectedCategory;
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        _selectedCategory = category;
+                      }),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4.0),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.green : Colors.white,
+                          border: Border.all(
+                            color: isSelected ? Colors.green : Colors.black,
+                          ),
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),

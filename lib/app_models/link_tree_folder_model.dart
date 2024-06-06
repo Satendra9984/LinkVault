@@ -7,16 +7,19 @@ class LinkTreeFolder {
   @HiveField(0)
   final String id;
 
-  /// name of the current folder
   @HiveField(1)
+  final String parentFolderId;
+
+  /// name of the current folder
+  @HiveField(2)
   final String folderName;
 
   /// for storing id of subfolders
-  @HiveField(2)
+  @HiveField(3)
   final List<String> subFolders;
 
   /// list of urls in this folder
-  @HiveField(3)
+  @HiveField(4)
   final List<Map<String, dynamic>> urls;
 
   /*
@@ -34,18 +37,23 @@ class LinkTreeFolder {
   */
 
   /// OTHER DATA FOR INDIVIDUAL PAGE CONFIGURATION
-  @HiveField(4)
-  bool isPreview = false;
   @HiveField(5)
-  bool isFavicon = true;
+  bool isFavourite;
 
-  /// enum isGridView / isListView
+  @HiveField(6)
+  String? category;
+
+  @HiveField(7)
+  String? description;
 
   LinkTreeFolder({
     required this.id,
+    required this.parentFolderId,
     required this.subFolders,
     required this.urls,
     required this.folderName,
-    this.isPreview = false,
+    this.isFavourite = false,
+    this.category = 'Default',
+    this.description,
   });
 }

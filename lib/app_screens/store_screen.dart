@@ -9,18 +9,16 @@ import 'package:web_link_store/app_widgets/favicons.dart';
 import 'package:web_link_store/app_screens/update_folder_screen.dart';
 import 'package:web_link_store/app_screens/update_url_screen.dart';
 import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_widgets/circular_neomorphic_button.dart';
 import 'package:web_link_store/app_widgets/folder_icon_button.dart';
 import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/preview_grid.dart';
 import 'add_url_screen.dart';
 
 class StorePage extends StatefulWidget {
-  final String linkTree, folderName;
+  final String parentFolderId;
   const StorePage({
     Key? key,
-    required this.linkTree,
-    required this.folderName,
+    required this.parentFolderId,
   }) : super(key: key);
 
   @override
@@ -30,6 +28,7 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   final backgroundColor = const Color(0xFFE7ECEF);
   String _view = 'Icons';
+  String _folderName = "";
   List<LinkTreeFolder> folderList = [];
   List<Map<String, dynamic>> urlList = [];
 
@@ -41,17 +40,17 @@ class _StorePageState extends State<StorePage> {
     setState(() {
       _view = view;
     });
-    // update linkTree
-    LinkTreeFolder newLinkTree = _getLinkTree(widget.linkTree);
-    if (view == 'Icons') {
-      newLinkTree.isFavicon = true;
-    } else if (view == 'Preview') {
-      newLinkTree.isPreview = true;
-    } else if (view == 'Icons && Preview') {
-      newLinkTree.isPreview = true;
-      newLinkTree.isFavicon = true;
-    }
-    HiveService().update(newLinkTree);
+    // update parentFolderId
+    // LinkTreeFolder newLinkTree = _getLinkTree(widget.parentFolderId);
+    // if (view == 'Icons') {
+    //   newLinkTree.isFavicon = true;
+    // } else if (view == 'Preview') {
+    //   newLinkTree.isPreview = true;
+    // } else if (view == 'Icons && Preview') {
+    //   newLinkTree.isPreview = true;
+    //   newLinkTree.isFavicon = true;
+    // }
+    // HiveService().update(newLinkTree);
   }
 
   int _getCount() {
@@ -65,22 +64,23 @@ class _StorePageState extends State<StorePage> {
   void _initializeLinkTreeList() {
     HiveService hiveService = HiveService();
 
-    LinkTreeFolder? linkTree = hiveService.getTreeData(widget.linkTree);
-    if (linkTree != null) {
-      List<String> keys = linkTree.subFolders;
+    LinkTreeFolder? parentFolderId =
+        hiveService.getTreeData(widget.parentFolderId);
+
+    if (parentFolderId != null) {
+      List<String> keys = parentFolderId.subFolders;
       setState(
         () {
+          _folderName = parentFolderId.folderName;
           folderList = [];
           for (String id in keys) {
             LinkTreeFolder? subLinkTree = hiveService.getTreeData(id);
 
             if (subLinkTree != null) {
               folderList.add(subLinkTree);
-              // debugPrint('${subLinkTree.folderName}\n');
             }
           }
-          urlList = linkTree.urls;
-          // _view = _view;
+          urlList = parentFolderId.urls;
         },
       );
     }
@@ -89,8 +89,6 @@ class _StorePageState extends State<StorePage> {
   @override
   initState() {
     super.initState();
-
-    /// initializing lists
     _initializeLinkTreeList();
   }
 
@@ -107,11 +105,12 @@ class _StorePageState extends State<StorePage> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 5,
         title: Text(
-          widget.folderName,
+          _folderName,
           style: TextStyle(
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.grey.shade300
                 : Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
@@ -147,7 +146,7 @@ class _StorePageState extends State<StorePage> {
                             .push(
                               CupertinoPageRoute(
                                 builder: (ctx) => AddFolderScreen(
-                                  rootFolderKey: widget.linkTree,
+                                  parentFolderId: widget.parentFolderId,
                                 ),
                               ),
                             )
@@ -156,7 +155,7 @@ class _StorePageState extends State<StorePage> {
                             );
                         _initializeLinkTreeList();
                       },
-                      child: Container(
+                      child: SizedBox(
                         height: 60,
                         width: 60,
                         child: Column(
@@ -204,8 +203,8 @@ class _StorePageState extends State<StorePage> {
                           .push(
                         CupertinoPageRoute(
                           builder: (context) => UpdateFolder(
-                            rootFolder: _getLinkTree(widget.linkTree),
-                            subFolderIndex: index,
+                            currentFolder: _getLinkTree(folderList[index].id),
+                            
                           ),
                         ),
                       )
@@ -223,8 +222,7 @@ class _StorePageState extends State<StorePage> {
                           .push(
                         CupertinoPageRoute(
                           builder: (context) => StorePage(
-                            linkTree: folderList[index].id,
-                            folderName: folderList[index].folderName,
+                            parentFolderId: folderList[index].id,
                           ),
                         ),
                       )
@@ -305,7 +303,7 @@ class _StorePageState extends State<StorePage> {
                               .push(
                                 CupertinoPageRoute(
                                   builder: (ctx) => AddUrlScreen(
-                                    rootFolderKey: widget.linkTree,
+                                    rootFolderKey: widget.parentFolderId,
                                   ),
                                 ),
                               )
@@ -362,7 +360,8 @@ class _StorePageState extends State<StorePage> {
                             .push(
                               CupertinoPageRoute(
                                 builder: (context) => UpdateUrlScreen(
-                                  rootFolder: _getLinkTree(widget.linkTree),
+                                  rootFolder:
+                                      _getLinkTree(widget.parentFolderId),
                                   urlIndex: index,
                                 ),
                               ),
@@ -401,7 +400,8 @@ class _StorePageState extends State<StorePage> {
                                 .push(
                                   CupertinoPageRoute(
                                     builder: (context) => UpdateUrlScreen(
-                                      rootFolder: _getLinkTree(widget.linkTree),
+                                      rootFolder:
+                                          _getLinkTree(widget.parentFolderId),
                                       urlIndex: ind,
                                     ),
                                   ),
@@ -470,7 +470,7 @@ class _StorePageState extends State<StorePage> {
                           Navigator.of(context).push(
                             CupertinoPageRoute(builder: (ctx) {
                               return AddUrlScreen(
-                                rootFolderKey: widget.linkTree,
+                                rootFolderKey: widget.parentFolderId,
                                 sharedUrl: receiveNotifier.receivedText,
                               );
                             }),

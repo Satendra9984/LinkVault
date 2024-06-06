@@ -24,10 +24,8 @@ void main() async {
   await Hive.openBox(kRecentLinkTreeFolders);
   await Hive.openBox(kRecentLinks);
 
-
-
-  /// box for checking if the url is receiving
-  // await Hive.openBox(isReceivingUrl);
+  await Hive.openBox(kFavouriteLinkTreeFolders);
+  await Hive.openBox(kFavouriteLinks);
 
   /// running the app
   runApp(

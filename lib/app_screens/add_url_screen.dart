@@ -56,14 +56,24 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
       /// add idata to the list
       listUrl.insert(listUrl.length, idata);
 
-      /// update linktree
+      LinkTreeFolder? parentFolder =
+          hiveService.getTreeData(widget.rootFolderKey);
+
+      if (parentFolder == null) return;
       hiveService.update(
         LinkTreeFolder(
-            id: linkTree.id,
-            subFolders: linkTree.subFolders,
-            urls: listUrl,
-            folderName: linkTree.folderName),
+          id: linkTree.id,
+          parentFolderId: parentFolder.id,
+          description: linkTree.description,
+          isFavourite: linkTree.isFavourite,
+          category: linkTree.category,
+          subFolders: linkTree.subFolders,
+          urls: listUrl,
+          folderName: linkTree.folderName,
+        ),
       );
+
+      /// update linktree
     }
     Navigator.pop(context);
   }
@@ -113,8 +123,8 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
               key: _formKey,
               child: SingleChildScrollView(
                 child: Container(
-                  margin: const EdgeInsets.all(10),
-                  padding: const EdgeInsets.all(5),
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -144,6 +154,8 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                           },
                         ),
                       ),
+                      const SizedBox(height: 20.0),
+
                       TextInput(
                         label: 'TITLE',
                         formField: TextFormField(
@@ -169,6 +181,9 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                           },
                         ),
                       ),
+
+                      const SizedBox(height: 20.0),
+
                       TextInput(
                         label: 'Add Note',
                         formField: TextFormField(
@@ -193,11 +208,9 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                       ),
 
                       /// todo : add preview
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      const Text(
-                          'TODO: Add url name\nTODO: Add insert at variable field\n todo : add preview show\n'),
+                      const SizedBox(height: 20),
+                      // const Text(
+                      //     'TODO: Add url name\nTODO: Add insert at variable field\n todo : add preview show\n'),
                     ],
                   ),
                 ),

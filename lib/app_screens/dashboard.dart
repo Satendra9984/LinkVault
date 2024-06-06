@@ -60,19 +60,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// [TODO] : add recent visited folders functionality
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Recent Folders",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w500,
-                  ),
+              /// Add recent visited folders functionality
+              const Text(
+                "Recent Folders",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 16.0),
@@ -100,8 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
                           builder: (context) => StorePage(
-                            linkTree: _recentFolders[index].id,
-                            folderName: _recentFolders[index].folderName,
+                            parentFolderId: _recentFolders[index].id
                           ),
                         ),
                       );
@@ -111,15 +107,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 48.0),
 
-              /// [TODO] : add recent visited urls functionality
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Recent Links",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w500,
-                  ),
+              /// Recently visited urls functionality
+              const Text(
+                "Recent Links",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 16.0),
@@ -133,20 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 itemBuilder: (context, index) {
                   return FaviconsGrid(
                       imageUrl: _recentUrl[index],
-                      onLongPress: () {
-                        // Navigator.of(context)
-                        //     .push(
-                        //       CupertinoPageRoute(
-                        //         builder: (context) => UpdateUrlScreen(
-                        //           rootFolder: _getLinkTree(widget.linkTree),
-                        //           urlIndex: ind,
-                        //         ),
-                        //       ),
-                        //     )
-                        //     .then(
-                        //       (value) => _initializeLinkTreeList(),
-                        //     );
-                      },
+                      onLongPress: () {},
                       onPress: () async {
                         if (await canLaunchUrl(
                             Uri.parse(_recentUrl[index]['url']))) {
@@ -158,37 +138,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
 
-              /// [TODO] : add favourite folders functionality
               const SizedBox(height: 48.0),
 
-              /// [TODO] : add recent visited urls functionality
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Favourite Folders",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w500,
-                  ),
+              /// [TODO] : Add favourite folders functionality
+              const Text(
+                "Favourite Folders",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              
+              const SizedBox(height: 48.0),
+
+              /// [TODO] : Add Favourite urls functionality
+              const Text(
+                "Favourite Links",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 16.0),
 
-              /// [TODO] : add favourite urls functionality
-              const SizedBox(height: 48.0),
 
-              /// [TODO] : add recent visited urls functionality
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Favourite Links",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16.0),
             ],
           ),
         ),

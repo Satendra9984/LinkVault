@@ -6,10 +6,10 @@ import 'package:web_link_store/constants.dart';
 import '../app_widgets/text_input.dart';
 
 class AddFolderScreen extends StatefulWidget {
-  final String rootFolderKey;
+  final String parentFolderId;
   const AddFolderScreen({
     Key? key,
-    required this.rootFolderKey,
+    required this.parentFolderId,
   }) : super(key: key);
 
   @override
@@ -18,7 +18,8 @@ class AddFolderScreen extends StatefulWidget {
 
 class _AddFolderScreenState extends State<AddFolderScreen> {
   final _formKey = GlobalKey<FormState>();
-  String title = '', desc = '';
+  String title = '';
+  String? _desc;
   bool _favourite = false;
   String _selectedCategory = "";
   final List<String> _predefinedCategories = [
@@ -48,26 +49,44 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
-      LinkTreeFolder linkTree =
-          HiveService().getTreeData(widget.rootFolderKey)!;
+
       final HiveService hiveService = HiveService();
-      String time = DateTime.now().millisecondsSinceEpoch.toString();
+      String newFolderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Adding new folder in folders table in Hive DB
       hiveService.add(
         LinkTreeFolder(
-          id: time,
+          id: newFolderId,
+          parentFolderId: widget.parentFolderId,
           folderName: title,
           subFolders: [],
           urls: [],
+          isFavourite: _favourite,
+          category: _selectedCategory.isEmpty ? "Default" : _selectedCategory,
+          description: _desc,
         ),
       );
-      List<String> fold = linkTree.subFolders;
-      fold.add(time);
+
+      // Now will update its parent Folders List
+      LinkTreeFolder? parentFolder =
+          hiveService.getTreeData(widget.parentFolderId);
+      if (parentFolder == null) return;
+
+      // Changing the sublist of parent folder
+      List<String> parentFoldersNewSubfolders = parentFolder.subFolders;
+      parentFoldersNewSubfolders.add(newFolderId);
+
+      // Update parent folder in the DB
       hiveService.update(
         LinkTreeFolder(
-          id: widget.rootFolderKey,
-          folderName: linkTree.folderName,
-          subFolders: fold,
-          urls: linkTree.urls,
+          id: parentFolder.id,
+          parentFolderId: parentFolder.parentFolderId,
+          folderName: parentFolder.folderName,
+          subFolders: parentFoldersNewSubfolders,
+          urls: parentFolder.urls,
+          isFavourite: parentFolder.isFavourite,
+          description: parentFolder.description,
+          category: parentFolder.category,
         ),
       );
     }
@@ -95,9 +114,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     backgroundColor: Colors.green,
-                    content: Text(
-                      'Saving',
-                      style: TextStyle(color: Colors.white),
+                    
+                    content: Center(
+                      child: Text(
+                        'Saving',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 );
@@ -145,7 +167,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                   label: 'Description',
                   formField: TextFormField(
                     onChanged: (value) {
-                      desc = value;
+                      _desc = value;
                     },
                     keyboardType: TextInputType.multiline,
                     maxLines: null,

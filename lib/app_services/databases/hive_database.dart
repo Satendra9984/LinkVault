@@ -3,22 +3,12 @@ import 'package:web_link_store/app_services/databases/database_constants.dart';
 import '../../app_models/link_tree_folder_model.dart';
 
 class HiveService {
-  final LinkTreeFolder defaultLinkTreeBoxValue = LinkTreeFolder(
-    id: kRootDirectory,
-    folderName: kRootDirectory,
-    subFolders: [],
-    urls: [],
-  );
-
   /// -----------* read tree structure *-------------
   LinkTreeFolder? getTreeData(String key) {
     // getting the linkTree box
     Box<LinkTreeFolder> box = Hive.box<LinkTreeFolder>(kLinkTreeBox);
-
     // getting the data from the local database
-    LinkTreeFolder? tree = box.get(
-      key,
-    );
+    LinkTreeFolder? tree = box.get(key);
     // returning the treeData
     return tree;
   }
@@ -27,7 +17,6 @@ class HiveService {
   void add(LinkTreeFolder data) {
     // getting the linkTree box
     Box box = Hive.box<LinkTreeFolder>(kLinkTreeBox);
-
     // adding new LinkTree in database with a unique key
     box.put(data.id, data);
   }
@@ -36,7 +25,6 @@ class HiveService {
   void update(LinkTreeFolder data) {
     // getting the linkTree box
     Box<LinkTreeFolder> box = Hive.box<LinkTreeFolder>(kLinkTreeBox);
-
     // updating new LinkTree in database with a unique key
     box.put(data.id, data);
   }
@@ -94,8 +82,6 @@ class HiveService {
     return recentFolders.cast<LinkTreeFolder>();
   }
 
-
-
   // <------------------------------ RECENT LINKS ----------------------------->
 
   Future<void> addRecentLinks(Map link) async {
@@ -139,4 +125,58 @@ class HiveService {
     // returning the treeData
     return recentFolders.cast<Map>();
   }
+
+
+
+
+ // <------------------------------ Favourite Folders -------------------------->
+
+  Future<void> addFavouriteFolder(LinkTreeFolder linkFolder) async {
+    Box box = Hive.box(kLinkTreeBox);
+
+    List<LinkTreeFolder> prevRecFoldList = getRecentFolders();
+
+    // prevRecFoldList.add(linkFolder);
+    // Check if already exist
+    for (int i = 0; i < prevRecFoldList.length; i++) {
+      LinkTreeFolder folder = prevRecFoldList[i];
+
+      if (folder.id == linkFolder.id) {
+        prevRecFoldList.removeAt(i);
+      }
+    }
+
+    prevRecFoldList.add(linkFolder);
+
+    if (prevRecFoldList.length > 10) {
+      int lastIndextoremove = prevRecFoldList.length - 10 - 1;
+      prevRecFoldList.removeRange(
+        0,
+        lastIndextoremove,
+      );
+    }
+
+    await box.put(kRecentLinkTreeFolders, prevRecFoldList);
+  }
+
+  List<LinkTreeFolder> getFavouriteFolders() {
+    // getting the linkTree box
+    Box box = Hive.box(kRecentLinkTreeFolders);
+
+    // getting the data from the local database
+    List<dynamic> recentFolders = box.get(
+      kRecentLinkTreeFolders,
+      defaultValue: [],
+    );
+
+    // returning the treeData
+    return recentFolders.cast<LinkTreeFolder>();
+  }
+
+
+
+
+
+
+
 }

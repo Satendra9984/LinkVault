@@ -39,14 +39,14 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
 
       listUrl[widget.urlIndex] = url;
 
-      LinkTreeFolder newLinkTree = LinkTreeFolder(
-        id: widget.rootFolder.id,
-        subFolders: widget.rootFolder.subFolders,
-        urls: listUrl,
-        folderName: widget.rootFolder.folderName,
-      );
+      // LinkTreeFolder newLinkTree = LinkTreeFolder(
+      //   id: widget.rootFolder.id,
+      //   subFolders: widget.rootFolder.subFolders,
+      //   urls: listUrl,
+      //   folderName: widget.rootFolder.folderName,
+      // );
 
-      hs.update(newLinkTree);
+      // hs.update(newLinkTree);
     }
     Navigator.pop(context);
   }
