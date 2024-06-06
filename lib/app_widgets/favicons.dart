@@ -53,43 +53,15 @@ class _FaviconsGridState extends State<FaviconsGrid> {
           });
         },
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             AnimatedContainer(
-              height: 60,
-              width: 60,
+              height: 56,
+              width: 56,
               duration: const Duration(milliseconds: 30),
               padding: _padding,
               alignment: Alignment.center,
               margin: const EdgeInsets.only(left: 10, right: 10, top: 5),
-              // decoration: BoxDecoration(
-              //   image: const DecorationImage(
-              //     image: AssetImage('assets/images/click.png'),
-              //     fit: BoxFit.contain,
-              //     alignment: Alignment.center,
-              //   ),
-              //   boxShadow: [
-              //     BoxShadow(
-              //       blurRadius: blur,
-              //       offset: distance,
-              //       color: Theme.of(context).brightness == Brightness.dark
-              //           ? Colors.black
-              //           : Colors.grey.shade600,
-              //       inset: isPressed,
-              //     ),
-              //     BoxShadow(
-              //       blurRadius: blur,
-              //       offset: -distance,
-              //       color: Theme.of(context).brightness == Brightness.dark
-              //           ? Colors.grey.shade800
-              //           : Colors.grey.shade100,
-              //       inset: isPressed,
-              //     ),
-              //   ],
-              //   color: Theme.of(context).brightness == Brightness.dark
-              //       ? Colors.grey.shade900
-              //       : Colors.white,
-              //   borderRadius: BorderRadius.circular(8.0),
-              // ),
              
              
               child: ClipRRect(
@@ -104,7 +76,6 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               ),
             ),
             Container(
-              // margin: const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 5),
               padding:
                   const EdgeInsets.only(left: 4, right: 4),
               alignment: Alignment.center,

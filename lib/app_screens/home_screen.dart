@@ -88,32 +88,41 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (currentPage) {
-          _pageController.jumpToPage(currentPage);
-          setState(() {
-            _currentIndex = currentPage;
-          });
-        },
-        selectedItemColor: const Color(0xff3cac7c),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.line_style_rounded,
+      bottomNavigationBar: Material(
+        elevation: 8.0,
+        shadowColor: Colors.grey.shade800,
+        child: BottomNavigationBar(
+          elevation: 4.0,
+         
+          currentIndex: _currentIndex,
+          onTap: (currentPage) {
+            _pageController.jumpToPage(currentPage);
+            setState(() {
+              _currentIndex = currentPage;
+            });
+          },
+          selectedItemColor: const Color(0xff3cac7c),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.line_style_rounded,
+              ),
+              label: 'Store',
             ),
-            label: 'Store',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.dashboard,
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.dashboard,
+              ),
+              label: 'Utils',
             ),
-            label: 'Utils',
-          ),
-        ],
+          ],
+        ),
       ),
       body: PageView(
         controller: _pageController,
+        onPageChanged: (index) => setState(() {
+          _currentIndex = index;
+        }),
         children: [
           StorePage(
             parentFolderId: _getBaseTree().id

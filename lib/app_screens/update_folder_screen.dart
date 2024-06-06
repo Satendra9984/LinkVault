@@ -45,7 +45,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
     'Utilities'
   ];
 
-  Future<void> saveFolder() async{
+  Future<void> saveFolder() async {
     final isValid = _formKey.currentState!.validate();
     final HiveService hiveService = HiveService();
 
@@ -65,7 +65,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
       hiveService.update(updatedFolder);
       if (_favourite && widget.currentFolder.isFavourite == false) {
-       await hiveService.addFavouriteFolder(updatedFolder.id);
+        await hiveService.addFavouriteFolder(updatedFolder.id);
       }
     }
 
@@ -90,6 +90,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
       /// update folder list of root folder
       hs.delete(id);
+      /// [TODO] : DELETE FROM FAVOURITE AND RECENT FOLDERS LIST
     }
   }
 
@@ -140,15 +141,29 @@ class _UpdateFolderState extends State<UpdateFolder> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Update Folder',
-          style: TextStyle(),
+          style: TextStyle(
+            color: Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         actions: [
           IconButton(
-            onPressed: () async{
+            onPressed: () {
+              deleteSubFolders(widget.currentFolder.id);
+              updateParentFolderList();
+              Navigator.of(context).pop();
+            },
+            icon: Icon(
+              Icons.remove_circle_rounded,
+              color: Colors.red.shade400,
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
-               await saveFolder();
+                await saveFolder();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Saving'),
@@ -156,17 +171,13 @@ class _UpdateFolderState extends State<UpdateFolder> {
                 );
               }
             },
-            icon: const Icon(Icons.check),
-          ),
-          IconButton(
-            onPressed: () {
-              deleteSubFolders(widget.currentFolder.id);
-              updateParentFolderList();
-              Navigator.of(context).pop();
-            },
-            icon: const Icon(Icons.delete),
+            icon: const Icon(
+              Icons.check_circle,
+              color: Color(0xff3cac7c),
+            ),
           ),
         ],
+
         // elevation: 0,
         // backgroundColor: Colors.transparent,
       ),

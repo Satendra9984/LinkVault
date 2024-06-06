@@ -40,35 +40,31 @@ class HiveService {
 
   // <------------------------------ RECENT FOLDERS ---------------------------->
 
-  Future<void> addRecentFolder(LinkTreeFolder linkFolder) async {
+  Future<void> addRecentFolder(String linkFolderId) async {
     Box box = Hive.box(kRecentLinkTreeFolders);
 
-    List<LinkTreeFolder> prevRecFoldList = getRecentFolders();
+    List<String> prevRecFoldList = getRecentFolders();
 
     // prevRecFoldList.add(linkFolder);
     // Check if already exist
     for (int i = 0; i < prevRecFoldList.length; i++) {
-      LinkTreeFolder folder = prevRecFoldList[i];
+      String folder = prevRecFoldList[i];
 
-      if (folder.id == linkFolder.id) {
+      if (folder == linkFolderId) {
         prevRecFoldList.removeAt(i);
       }
     }
 
-    prevRecFoldList.add(linkFolder);
-
-    if (prevRecFoldList.length > 10) {
-      int lastIndextoremove = prevRecFoldList.length - 10 - 1;
-      prevRecFoldList.removeRange(
-        0,
-        lastIndextoremove,
-      );
+    if (prevRecFoldList.length > 9) {
+      prevRecFoldList.removeRange(9, prevRecFoldList.length);
     }
+    // prevRecFoldList.add(linkFolderId);
+    List<String> newlist = [linkFolderId, ...prevRecFoldList];
 
-    await box.put(kRecentLinkTreeFolders, prevRecFoldList);
+    await box.put(kRecentLinkTreeFolders, newlist);
   }
 
-  List<LinkTreeFolder> getRecentFolders() {
+  List<String> getRecentFolders() {
     // getting the linkTree box
     Box box = Hive.box(kRecentLinkTreeFolders);
 
@@ -79,7 +75,7 @@ class HiveService {
     );
 
     // returning the treeData
-    return recentFolders.cast<LinkTreeFolder>();
+    return recentFolders.cast<String>();
   }
 
   // <------------------------------ RECENT LINKS ----------------------------->
@@ -163,7 +159,6 @@ class HiveService {
     return recentFolders.cast<String>();
   }
 
-
   // <------------------------------ Favourite LINKS ----------------------------->
 
   Future<void> addFavouriteLinks(Map link) async {
@@ -207,5 +202,4 @@ class HiveService {
     // returning the treeData
     return recentFolders.cast<Map>();
   }
-
 }

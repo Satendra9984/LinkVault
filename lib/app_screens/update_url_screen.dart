@@ -25,7 +25,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   String? desc;
   bool _favourite = false;
 
-  Future<void> saveFolder() async{
+  Future<void> saveFolder() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
@@ -55,7 +55,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
       hs.update(newLinkTree);
 
       if (_favourite) {
-       await  hs.addFavouriteLinks(url);
+        await hs.addFavouriteLinks(url);
       }
     }
     Navigator.pop(context);
@@ -87,15 +87,28 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Update Url',
-          style: TextStyle(),
+          style: TextStyle(
+            color: Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: () {
+              deleteFolder(widget.rootFolder.id);
+              Navigator.of(context).pop();
+            },
+            icon: Icon(
+              Icons.remove_circle_rounded,
+              color: Colors.red.shade800,
+            ),
+          ),
+          IconButton(
+            onPressed: () async{
               if (_formKey.currentState!.validate()) {
-                saveFolder();
+                await saveFolder();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Saving'),
@@ -103,7 +116,10 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                 );
               }
             },
-            icon: const Icon(Icons.check),
+            icon: const Icon(
+              Icons.check_circle,
+              color: Color(0xff3cac7c),
+            ),
           ),
           IconButton(
             onPressed: () async {
@@ -119,13 +135,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
             },
             icon: const Icon(Icons.share),
           ),
-          IconButton(
-            onPressed: () {
-              deleteFolder(widget.rootFolder.id);
-              Navigator.of(context).pop();
-            },
-            icon: const Icon(Icons.delete),
-          ),
+          
         ],
         // elevation: 0,
         // backgroundColor: Colors.transparent,

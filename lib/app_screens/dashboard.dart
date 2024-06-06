@@ -21,8 +21,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Map> _recentUrl = [], _favouriteLinks = [];
 
   void _initializeRecentFoldersList() {
-    List<LinkTreeFolder> recentFolders = HiveService().getRecentFolders();
-    _recentFolders.addAll(recentFolders);
+    List<String> recentFolders = HiveService().getRecentFolders();
+
+    for (String id in recentFolders) {
+      _recentFolders.add(HiveService().getTreeData(id)!);
+    }
+    // _recentFolders.addAll(recentFolders);
 
     debugPrint('[log] : ${_recentFolders.length}');
   }
@@ -68,23 +72,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double utilsgap = 32;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 75,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 5,
         title: Text(
-          '',
+          'Dashboard',
           style: TextStyle(
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.grey.shade300
                 : Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -97,37 +104,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _recentFolders.length,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 2.0,
-                itemBuilder: (context, index) {
-                  return FolderIconButton(
-                    folder: _recentFolders[index],
-                    onLongPress: () async {
-                      Navigator.of(context).push(
-                        CupertinoPageRoute(
-                          builder: (context) => UpdateFolder(
-                            currentFolder: _recentFolders[index],
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
+                  ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
+                ),
+                child: AlignedGridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _recentFolders.length,
+                  crossAxisCount: _getCount(),
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 2.0,
+                  itemBuilder: (context, index) {
+                    return FolderIconButton(
+                      folder: _recentFolders[index],
+                      onLongPress: () async {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) => UpdateFolder(
+                              currentFolder: _recentFolders[index],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    onPress: () {
-                      Navigator.of(context).push(
-                        CupertinoPageRoute(
-                          builder: (context) => StorePage(
-                              parentFolderId: _recentFolders[index].id),
-                        ),
-                      );
-                    },
-                  );
-                },
+                        );
+                      },
+                      onPress: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) => StorePage(
+                                parentFolderId: _recentFolders[index].id),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              const SizedBox(height: 48.0),
+              SizedBox(height: utilsgap),
 
               /// Recently visited urls functionality
               const Text(
@@ -138,29 +155,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _recentUrl.length,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 2.0,
-                itemBuilder: (context, index) {
-                  return FaviconsGrid(
-                      imageUrl: _recentUrl[index],
-                      onLongPress: () {},
-                      onPress: () async {
-                        if (await canLaunchUrl(
-                            Uri.parse(_recentUrl[index]['url']))) {
-                          await launchUrl(Uri.parse(_recentUrl[index]['url']));
-                        } else {
-                          throw 'Could not launch ${_recentUrl[index]['url']}';
-                        }
-                      });
-                },
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
+                  ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
+                ),
+                child: AlignedGridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _recentUrl.length,
+                  crossAxisCount: _getCount(),
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 2.0,
+                  itemBuilder: (context, index) {
+                    return FaviconsGrid(
+                        imageUrl: _recentUrl[index],
+                        onLongPress: () {},
+                        onPress: () async {
+                          if (await canLaunchUrl(
+                              Uri.parse(_recentUrl[index]['url']))) {
+                            await launchUrl(
+                                Uri.parse(_recentUrl[index]['url']));
+                          } else {
+                            throw 'Could not launch ${_recentUrl[index]['url']}';
+                          }
+                        });
+                  },
+                ),
               ),
 
-              const SizedBox(height: 48.0),
+              SizedBox(height: utilsgap),
 
               /// [TODO] : Add favourite folders functionality
               const Text(
@@ -171,37 +199,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _favouriteFolder.length,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 2.0,
-                itemBuilder: (context, index) {
-                  return FolderIconButton(
-                    folder: _favouriteFolder[index],
-                    onLongPress: () async {
-                      Navigator.of(context).push(
-                        CupertinoPageRoute(
-                          builder: (context) => UpdateFolder(
-                            currentFolder: _favouriteFolder[index],
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
+                  ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
+                ),
+                child: AlignedGridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _favouriteFolder.length,
+                  crossAxisCount: _getCount(),
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 2.0,
+                  itemBuilder: (context, index) {
+                    return FolderIconButton(
+                      folder: _favouriteFolder[index],
+                      onLongPress: () async {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) => UpdateFolder(
+                              currentFolder: _favouriteFolder[index],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    onPress: () {
-                      Navigator.of(context).push(
-                        CupertinoPageRoute(
-                          builder: (context) => StorePage(
-                              parentFolderId: _favouriteFolder[index].id),
-                        ),
-                      );
-                    },
-                  );
-                },
+                        );
+                      },
+                      onPress: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) => StorePage(
+                                parentFolderId: _favouriteFolder[index].id),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              const SizedBox(height: 48.0),
+              SizedBox(height: utilsgap),
 
               /// [TODO] : Add Favourite urls functionality
               const Text(
@@ -212,28 +250,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _favouriteLinks.length,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 2.0,
-                itemBuilder: (context, index) {
-                  return FaviconsGrid(
-                      imageUrl: _favouriteLinks[index],
-                      onLongPress: () {},
-                      onPress: () async {
-                        if (await canLaunchUrl(
-                            Uri.parse(_favouriteLinks[index]['url']))) {
-                          await launchUrl(Uri.parse(_favouriteLinks[index]['url']));
-                        } else {
-                          throw 'Could not launch ${_favouriteLinks[index]['url']}';
-                        }
-                      });
-                },
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
+                  ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
+                ),
+                child: AlignedGridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _favouriteLinks.length,
+                  crossAxisCount: _getCount(),
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 2.0,
+                  itemBuilder: (context, index) {
+                    return FaviconsGrid(
+                        imageUrl: _favouriteLinks[index],
+                        onLongPress: () {},
+                        onPress: () async {
+                          if (await canLaunchUrl(
+                              Uri.parse(_favouriteLinks[index]['url']))) {
+                            await launchUrl(
+                                Uri.parse(_favouriteLinks[index]['url']));
+                          } else {
+                            throw 'Could not launch ${_favouriteLinks[index]['url']}';
+                          }
+                        });
+                  },
+                ),
               ),
 
+              SizedBox(height: utilsgap),
             ],
           ),
         ),

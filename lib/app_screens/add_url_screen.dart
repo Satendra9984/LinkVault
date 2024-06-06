@@ -74,7 +74,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
         ),
       );
       if (_favourite) {
-       await hiveService.addFavouriteLinks(idata);
+        await hiveService.addFavouriteLinks(idata);
       }
 
       /// update linktree
@@ -94,23 +94,28 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Add Url',
+          style: TextStyle(
+            color: Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                setState(() {
-                  _isSaving = true;
-                });
+                // setState(() {
+                //   _isSaving = true;
+                // });
                 await saveUrl();
-                setState(() {
-                  _isSaving = false;
-                });
+                // setState(() {
+                //   _isSaving = false;
+                // });
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Saved'),
+                    backgroundColor: Colors.green,
+                    content: Center(child: Text('Saved')),
                   ),
                 );
               }
@@ -122,7 +127,11 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
         // backgroundColor: Colors.transparent,
       ),
       body: _isSaving
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator.adaptive(
+                backgroundColor: Colors.green.shade800,
+              ),
+            )
           : Form(
               key: _formKey,
               child: SingleChildScrollView(

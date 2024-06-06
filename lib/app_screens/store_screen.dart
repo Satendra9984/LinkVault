@@ -101,8 +101,8 @@ class _StorePageState extends State<StorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 75,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        // toolbarHeight: 75,
+        // backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 5,
         title: Text(
           _folderName,
@@ -115,186 +115,35 @@ class _StorePageState extends State<StorePage> {
         ),
       ),
       body: Container(
-        margin: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(horizontal: 20.0,vertical: 12.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Folders",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w500,
+              const Text(
+                "Folders",
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
                   ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
                 ),
-              ),
-              const SizedBox(height: 16.0),
-              AlignedGridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: folderList.length + 1,
-                crossAxisCount: _getCount(),
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 2.0,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.of(context)
-                            .push(
-                              CupertinoPageRoute(
-                                builder: (ctx) => AddFolderScreen(
-                                  parentFolderId: widget.parentFolderId,
-                                ),
-                              ),
-                            )
-                            .then(
-                              (value) => _initializeLinkTreeList(),
-                            );
-                        _initializeLinkTreeList();
-                      },
-                      child: SizedBox(
-                        height: 60,
-                        width: 60,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.create_new_folder_outlined,
-                              size: 28.0,
-                              color: Colors.grey.shade800,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                right: 8,
-                                top: 5,
-                                bottom: 5,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Add Folder',
-                                softWrap: true,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.grey.shade500
-                                      : Colors.grey.shade800,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  index = index - 1;
-                  return FolderIconButton(
-                    folder: folderList[index],
-                    onLongPress: () async {
-                      Navigator.of(context)
-                          .push(
-                        CupertinoPageRoute(
-                          builder: (context) => UpdateFolder(
-                            currentFolder: _getLinkTree(folderList[index].id),
-                            
-                          ),
-                        ),
-                      )
-                          .then(
-                        (value) async {
-                          _initializeLinkTreeList();
-                          await HiveService()
-                              .addRecentFolder(folderList[index]);
-                          debugPrint('[log] : added recent folder');
-                        },
-                      );
-                    },
-                    onPress: () {
-                      Navigator.of(context)
-                          .push(
-                        CupertinoPageRoute(
-                          builder: (context) => StorePage(
-                            parentFolderId: folderList[index].id,
-                          ),
-                        ),
-                      )
-                          .then(
-                        (value) async {
-                          _initializeLinkTreeList();
-                          await HiveService()
-                              .addRecentFolder(folderList[index]);
-                          debugPrint('[log] : added recent folder');
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 50),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Links",
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    PopupMenuButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(
-                          color: Theme.of(context).primaryColor,
-                          width: 1.4,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.settings,
-                        color: Colors.grey.shade900,
-                      ),
-                      itemBuilder: (context) {
-                        return [
-                          const PopupMenuItem(
-                            child: Text('Icons only'),
-                            value: 'Icons',
-                          ),
-                          const PopupMenuItem(
-                            child: Text('Preview only'),
-                            value: 'Preview',
-                          ),
-                          // const PopupMenuItem(
-                          //   child: Text('Icons && Preview'),
-                          //   value: 'Icons && Preview',
-                          // ),
-                        ];
-                      },
-                      onSelected: (String value) {
-                        setView(view: value);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              if (_view == 'Icons' || _view == 'Icons && Preview')
-                AlignedGridView.count(
+                child: AlignedGridView.count(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: urlList.length + 1,
+                  itemCount: folderList.length + 1,
                   crossAxisCount: _getCount(),
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 2.0,
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       return GestureDetector(
@@ -302,8 +151,8 @@ class _StorePageState extends State<StorePage> {
                           Navigator.of(context)
                               .push(
                                 CupertinoPageRoute(
-                                  builder: (ctx) => AddUrlScreen(
-                                    rootFolderKey: widget.parentFolderId,
+                                  builder: (ctx) => AddFolderScreen(
+                                    parentFolderId: widget.parentFolderId,
                                   ),
                                 ),
                               )
@@ -320,7 +169,7 @@ class _StorePageState extends State<StorePage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.add_link_rounded,
+                                Icons.create_new_folder_outlined,
                                 size: 28.0,
                                 color: Colors.grey.shade800,
                               ),
@@ -333,7 +182,7 @@ class _StorePageState extends State<StorePage> {
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  'Add Link',
+                                  'Add Folder',
                                   softWrap: true,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
@@ -351,39 +200,204 @@ class _StorePageState extends State<StorePage> {
                         ),
                       );
                     }
-
+                
                     index = index - 1;
-                    return FaviconsGrid(
-                      imageUrl: urlList[index],
-                      onLongPress: () {
+                    return FolderIconButton(
+                      folder: folderList[index],
+                      onLongPress: () async {
                         Navigator.of(context)
                             .push(
-                              CupertinoPageRoute(
-                                builder: (context) => UpdateUrlScreen(
-                                  rootFolder:
-                                      _getLinkTree(widget.parentFolderId),
-                                  urlIndex: index,
-                                ),
-                              ),
-                            )
+                          CupertinoPageRoute(
+                            builder: (context) => UpdateFolder(
+                              currentFolder: _getLinkTree(folderList[index].id),
+                              
+                            ),
+                          ),
+                        )
                             .then(
-                              (value) => _initializeLinkTreeList(),
-                            );
+                          (value) async {
+                            _initializeLinkTreeList();
+                            await HiveService()
+                                .addRecentFolder(folderList[index].id);
+                            debugPrint('[log] : added recent folder');
+                          },
+                        );
                       },
-                      onPress: () async {
-                        if (await canLaunchUrl(
-                            Uri.parse(urlList[index]['url']))) {
-                          await launchUrl(Uri.parse(urlList[index]['url']));
-                        } else {
-                          throw 'Could not launch ${urlList[index]['url']}';
-                        }
-
-                        //  _initializeLinkTreeList();
-                        await HiveService().addRecentLinks(urlList[index]);
-                        debugPrint('[log] : added recent url');
+                      onPress: () {
+                        Navigator.of(context)
+                            .push(
+                          CupertinoPageRoute(
+                            builder: (context) => StorePage(
+                              parentFolderId: folderList[index].id,
+                            ),
+                          ),
+                        )
+                            .then(
+                          (value) async {
+                            _initializeLinkTreeList();
+                            await HiveService()
+                                .addRecentFolder(folderList[index].id);
+                            debugPrint('[log] : added recent folder');
+                          },
+                        );
                       },
                     );
                   },
+                ),
+              ),
+              const SizedBox(height: 50),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Links",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  PopupMenuButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1.4,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.grey.shade900,
+                    ),
+                    itemBuilder: (context) {
+                      return [
+                        const PopupMenuItem(
+                          child: Text('Icons only'),
+                          value: 'Icons',
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Preview only'),
+                          value: 'Preview',
+                        ),
+                        // const PopupMenuItem(
+                        //   child: Text('Icons && Preview'),
+                        //   value: 'Icons && Preview',
+                        // ),
+                      ];
+                    },
+                    onSelected: (String value) {
+                      setView(view: value);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              if (_view == 'Icons' || _view == 'Icons && Preview')
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade100,
+                  ),
+                  borderRadius: BorderRadius.circular(16.0),
+                  color: Colors.grey.shade50,
+                ),
+                  child: AlignedGridView.count(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: urlList.length + 1,
+                    crossAxisCount: _getCount(),
+                    mainAxisSpacing: 4,
+                    crossAxisSpacing: 4,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context)
+                                .push(
+                                  CupertinoPageRoute(
+                                    builder: (ctx) => AddUrlScreen(
+                                      rootFolderKey: widget.parentFolderId,
+                                    ),
+                                  ),
+                                )
+                                .then(
+                                  (value) => _initializeLinkTreeList(),
+                                );
+                            _initializeLinkTreeList();
+                          },
+                          child: SizedBox(
+                            height: 60,
+                            width: 60,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_link_rounded,
+                                  size: 28.0,
+                                  color: Colors.grey.shade800,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    left: 8,
+                                    right: 8,
+                                    top: 5,
+                                    bottom: 5,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Add Link',
+                                    softWrap: true,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.grey.shade500
+                                          : Colors.grey.shade800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                  
+                      index = index - 1;
+                      return FaviconsGrid(
+                        imageUrl: urlList[index],
+                        onLongPress: () {
+                          Navigator.of(context)
+                              .push(
+                                CupertinoPageRoute(
+                                  builder: (context) => UpdateUrlScreen(
+                                    rootFolder:
+                                        _getLinkTree(widget.parentFolderId),
+                                    urlIndex: index,
+                                  ),
+                                ),
+                              )
+                              .then(
+                                (value) => _initializeLinkTreeList(),
+                              );
+                        },
+                        onPress: () async {
+                          if (await canLaunchUrl(
+                              Uri.parse(urlList[index]['url']))) {
+                            await launchUrl(Uri.parse(urlList[index]['url']));
+                          } else {
+                            throw 'Could not launch ${urlList[index]['url']}';
+                          }
+                  
+                          //  _initializeLinkTreeList();
+                          await HiveService().addRecentLinks(urlList[index]);
+                          debugPrint('[log] : added recent url');
+                        },
+                      );
+                    },
+                  ),
                 ),
               if (_view == 'Preview' || _view == 'Icons && Preview')
                 ListView.builder(

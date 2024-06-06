@@ -38,7 +38,7 @@ class _FolderIconButtonState extends State<FolderIconButton> {
           Icon(
             Icons.folder_rounded,
             size: 48.0,
-            color: const Color(0xff3cac7c).withOpacity(0.85),
+            color: const Color(0xff3cac7c).withOpacity(0.99),
           ),
           Container(
             padding: const EdgeInsets.only(left: 4, right: 4),

@@ -30,6 +30,7 @@ void main() async {
   /// running the app
   runApp(
     const ProviderScope(
+
       child: MyApp(),
     ),
   );
@@ -48,10 +49,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
-      // theme: ThemeData.from(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3CAC7C))),
+      // theme: ThemeData.from(colorScheme: ColorScheme.fromSeed(seedColor: Colors.white)),
       // darkTheme: AppTheme.dartTheme,
       theme: AppTheme.lightTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
     );
   }
 }

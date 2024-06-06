@@ -105,8 +105,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           'Add Folder',
+          style: TextStyle(
+            color: Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         actions: [
           IconButton(
