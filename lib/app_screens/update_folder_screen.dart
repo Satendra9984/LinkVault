@@ -72,7 +72,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
     Navigator.pop(context);
   }
 
-  void deleteSubFolders(String id) {
+  Future<void> deleteSubFolders(String id) async {
     /// get folder
     HiveService hs = HiveService();
     LinkTreeFolder? linkTree = hs.getTreeData(id);
@@ -90,8 +90,14 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
       /// update folder list of root folder
       hs.delete(id);
-      /// [TODO] : DELETE FROM FAVOURITE AND RECENT FOLDERS LIST
     }
+  }
+
+  Future<void> deleteFromFavouriteAndRecent(String id) async {
+    /// DELETE FROM FAVOURITE AND RECENT FOLDERS LIST
+    HiveService hs = HiveService();
+    await hs.removeFavouriteFolder(id);
+    await hs.removeRecentFolder(id);
   }
 
   /// update root folder list
@@ -150,8 +156,9 @@ class _UpdateFolderState extends State<UpdateFolder> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
+            onPressed: () async {
               deleteSubFolders(widget.currentFolder.id);
+              await deleteFromFavouriteAndRecent(widget.currentFolder.id);
               updateParentFolderList();
               Navigator.of(context).pop();
             },

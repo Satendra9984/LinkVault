@@ -115,7 +115,7 @@ class _StorePageState extends State<StorePage> {
         ),
       ),
       body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20.0,vertical: 12.0),
+        margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,8 +162,8 @@ class _StorePageState extends State<StorePage> {
                           _initializeLinkTreeList();
                         },
                         child: SizedBox(
-                          height: 60,
-                          width: 60,
+                          // height: 60,
+                          // width: 60,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -200,17 +200,16 @@ class _StorePageState extends State<StorePage> {
                         ),
                       );
                     }
-                
+
                     index = index - 1;
                     return FolderIconButton(
                       folder: folderList[index],
-                      onLongPress: () async {
+                      onDoubleTap: () async {
                         Navigator.of(context)
                             .push(
                           CupertinoPageRoute(
                             builder: (context) => UpdateFolder(
                               currentFolder: _getLinkTree(folderList[index].id),
-                              
                             ),
                           ),
                         )
@@ -294,13 +293,13 @@ class _StorePageState extends State<StorePage> {
               if (_view == 'Icons' || _view == 'Icons && Preview')
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.shade100,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey.shade100,
+                    ),
+                    borderRadius: BorderRadius.circular(16.0),
+                    color: Colors.grey.shade50,
                   ),
-                  borderRadius: BorderRadius.circular(16.0),
-                  color: Colors.grey.shade50,
-                ),
                   child: AlignedGridView.count(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
@@ -364,7 +363,7 @@ class _StorePageState extends State<StorePage> {
                           ),
                         );
                       }
-                  
+
                       index = index - 1;
                       return FaviconsGrid(
                         imageUrl: urlList[index],
@@ -390,7 +389,7 @@ class _StorePageState extends State<StorePage> {
                           } else {
                             throw 'Could not launch ${urlList[index]['url']}';
                           }
-                  
+
                           //  _initializeLinkTreeList();
                           await HiveService().addRecentLinks(urlList[index]);
                           debugPrint('[log] : added recent url');
@@ -407,34 +406,48 @@ class _StorePageState extends State<StorePage> {
                   itemBuilder: (context, ind) {
                     return Column(
                       children: [
-                        Preview(
-                          webUrl: urlList[ind],
-                          onLongPress: () {
-                            Navigator.of(context)
-                                .push(
-                                  CupertinoPageRoute(
-                                    builder: (context) => UpdateUrlScreen(
-                                      rootFolder:
-                                          _getLinkTree(widget.parentFolderId),
-                                      urlIndex: ind,
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.grey.shade100,
+                            ),
+                            borderRadius: BorderRadius.circular(16.0),
+                            color: Colors.grey.shade50,
+                          ),
+                          child: Preview(
+                            webUrl: urlList[ind],
+                            onLongPress: () {
+                              Navigator.of(context)
+                                  .push(
+                                    CupertinoPageRoute(
+                                      builder: (context) => UpdateUrlScreen(
+                                        rootFolder:
+                                            _getLinkTree(widget.parentFolderId),
+                                        urlIndex: ind,
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .then(
-                                  (value) => _initializeLinkTreeList(),
-                                );
-                          },
-                          onPress: () async {
-                            if (await canLaunchUrl(
-                                Uri.parse(urlList[ind]['url']))) {
-                              await launchUrl(Uri.parse(urlList[ind]['url']));
-                            } else {
-                              throw 'Could not launch ${urlList[ind]['url']}';
-                            }
-                            await HiveService().addRecentLinks(urlList[ind]);
-                            debugPrint('[log] : added recent url');
-                          },
+                                  )
+                                  .then(
+                                    (value) => _initializeLinkTreeList(),
+                                  );
+                            },
+                            onPress: () async {
+                              if (await canLaunchUrl(
+                                  Uri.parse(urlList[ind]['url']))) {
+                                await launchUrl(Uri.parse(urlList[ind]['url']));
+                              } else {
+                                throw 'Could not launch ${urlList[ind]['url']}';
+                              }
+                              await HiveService().addRecentLinks(urlList[ind]);
+                              debugPrint('[log] : added recent url');
+                            },
+                          ),
                         ),
+                        Divider(
+                          color: Colors.grey.shade200,
+                        ),
+                        // const SizedBox(height: 16.0),
                       ],
                     );
                   },

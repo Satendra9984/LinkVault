@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
+// import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:web_link_store/app_models/link_tree_folder_model.dart';
 
 class FolderIconButton extends StatefulWidget {
   final LinkTreeFolder folder;
   final void Function() onPress;
-  final void Function() onLongPress;
+  final void Function() onDoubleTap;
 
   const FolderIconButton(
       {Key? key,
       required this.folder,
       required this.onPress,
-      required this.onLongPress})
+      required this.onDoubleTap})
       : super(key: key);
 
   @override
@@ -30,7 +30,7 @@ class _FolderIconButtonState extends State<FolderIconButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onPress,
-      onLongPress: widget.onLongPress,
+      onDoubleTap: widget.onDoubleTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,

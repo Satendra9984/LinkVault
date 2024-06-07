@@ -64,6 +64,18 @@ class HiveService {
     await box.put(kRecentLinkTreeFolders, newlist);
   }
 
+  Future<void> removeRecentFolder(String id) async {
+    Box box = Hive.box(kRecentLinkTreeFolders);
+
+    List<String> prevRecFoldList = getRecentFolders();
+
+    // prevRecFoldList.add(linkFolder);
+    // Check if already exist
+    prevRecFoldList.removeWhere((element) => element == id);
+
+    await box.put(kRecentLinkTreeFolders, prevRecFoldList);
+  }
+
   List<String> getRecentFolders() {
     // getting the linkTree box
     Box box = Hive.box(kRecentLinkTreeFolders);
@@ -143,6 +155,19 @@ class HiveService {
     await box.put(kFavouriteLinkTreeFolders, prevRecFoldList);
     // getFavouriteFolders();
   }
+
+  Future<void> removeFavouriteFolder(String id) async {
+    Box box = Hive.box(kFavouriteLinkTreeFolders);
+
+    List<String> prevRecFoldList = getFavouriteFolders();
+
+    // prevRecFoldList.add(linkFolder);
+    // Check if already exist
+    prevRecFoldList.removeWhere((element) => element == id);
+
+    await box.put(kFavouriteLinkTreeFolders, prevRecFoldList);
+  }
+
 
   List<String> getFavouriteFolders() {
     // getting the linkTree box

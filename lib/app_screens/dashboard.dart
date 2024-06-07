@@ -123,14 +123,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   itemBuilder: (context, index) {
                     return FolderIconButton(
                       folder: _recentFolders[index],
-                      onLongPress: () async {
-                        Navigator.of(context).push(
-                          CupertinoPageRoute(
-                            builder: (context) => UpdateFolder(
-                              currentFolder: _recentFolders[index],
-                            ),
-                          ),
-                        );
+                      onDoubleTap: () async {
+                        // Navigator.of(context).push(
+                        //   CupertinoPageRoute(
+                        //     builder: (context) => UpdateFolder(
+                        //       currentFolder: _recentFolders[index],
+                        //     ),
+                        //   ),
+                        // );
                       },
                       onPress: () {
                         Navigator.of(context).push(
@@ -218,14 +218,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   itemBuilder: (context, index) {
                     return FolderIconButton(
                       folder: _favouriteFolder[index],
-                      onLongPress: () async {
-                        Navigator.of(context).push(
-                          CupertinoPageRoute(
-                            builder: (context) => UpdateFolder(
-                              currentFolder: _favouriteFolder[index],
-                            ),
-                          ),
-                        );
+                      onDoubleTap: () async {
+                        // Navigator.of(context).push(
+                        //   CupertinoPageRoute(
+                        //     builder: (context) => UpdateFolder(
+                        //       currentFolder: _favouriteFolder[index],
+                        //     ),
+                        //   ),
+                        // );
                       },
                       onPress: () {
                         Navigator.of(context).push(

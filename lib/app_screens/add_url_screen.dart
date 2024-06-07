@@ -105,13 +105,13 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
           IconButton(
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                // setState(() {
-                //   _isSaving = true;
-                // });
+                setState(() {
+                  _isSaving = true;
+                });
                 await saveUrl();
-                // setState(() {
-                //   _isSaving = false;
-                // });
+                setState(() {
+                  _isSaving = false;
+                });
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     backgroundColor: Colors.green,
