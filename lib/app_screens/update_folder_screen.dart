@@ -208,6 +208,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     maxLength: 30,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'folder',
                       hintStyle: TextStyle(
@@ -235,6 +236,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     minLines: 3,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

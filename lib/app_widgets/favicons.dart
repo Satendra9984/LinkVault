@@ -2,12 +2,12 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 
 class FaviconsGrid extends StatefulWidget {
   final Map imageUrl;
-  final void Function() onLongPress;
+  final void Function() onDoubleTap;
   final void Function() onPress;
 
   const FaviconsGrid({
     Key? key,
-    required this.onLongPress,
+    required this.onDoubleTap,
     required this.onPress,
     required this.imageUrl,
   }) : super(key: key);
@@ -46,8 +46,8 @@ class _FaviconsGridState extends State<FaviconsGrid> {
       },
       child: GestureDetector(
         onTap: widget.onPress,
-        onLongPress: () {
-          widget.onLongPress();
+        onDoubleTap: () {
+          widget.onDoubleTap();
           setState(() {
             isPressed = !isPressed;
           });
@@ -62,8 +62,6 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               padding: _padding,
               alignment: Alignment.center,
               margin: const EdgeInsets.only(left: 10, right: 10, top: 5),
-             
-             
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image.memory(
@@ -76,8 +74,7 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               ),
             ),
             Container(
-              padding:
-                  const EdgeInsets.only(left: 4, right: 4),
+              padding: const EdgeInsets.only(left: 4, right: 4),
               alignment: Alignment.center,
               child: Text(
                 widget.imageUrl['url_title'],
@@ -91,8 +88,6 @@ class _FaviconsGridState extends State<FaviconsGrid> {
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.grey.shade500
                       : Colors.grey.shade700,
-
-                      
                 ),
               ),
             ),

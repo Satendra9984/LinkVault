@@ -367,7 +367,7 @@ class _StorePageState extends State<StorePage> {
                       index = index - 1;
                       return FaviconsGrid(
                         imageUrl: urlList[index],
-                        onLongPress: () {
+                        onDoubleTap: () {
                           Navigator.of(context)
                               .push(
                                 CupertinoPageRoute(
@@ -417,7 +417,7 @@ class _StorePageState extends State<StorePage> {
                           ),
                           child: Preview(
                             webUrl: urlList[ind],
-                            onLongPress: () {
+                            onDoubleTap: () {
                               Navigator.of(context)
                                   .push(
                                     CupertinoPageRoute(

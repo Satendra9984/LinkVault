@@ -174,7 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   itemBuilder: (context, index) {
                     return FaviconsGrid(
                         imageUrl: _recentUrl[index],
-                        onLongPress: () {},
+                        onDoubleTap: () {},
                         onPress: () async {
                           if (await canLaunchUrl(
                               Uri.parse(_recentUrl[index]['url']))) {
@@ -269,7 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   itemBuilder: (context, index) {
                     return FaviconsGrid(
                         imageUrl: _favouriteLinks[index],
-                        onLongPress: () {},
+                        onDoubleTap: () {},
                         onPress: () async {
                           if (await canLaunchUrl(
                               Uri.parse(_favouriteLinks[index]['url']))) {

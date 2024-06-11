@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
 import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
@@ -23,23 +24,25 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   HiveService hs = HiveService();
   String url = '', urlTitle = '';
   String? desc;
-  bool _favourite = false;
+  bool _favourite = false, _isSaving = false;
 
-  Future<void> saveFolder() async {
+  Future<void> saveUrl() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
       // todo : update url
+      final FetchPreviewDetails fetchPreviewDetails = FetchPreviewDetails();
+      Map<String, dynamic> idata = await fetchPreviewDetails.fetch(url);
 
-      Map<String, dynamic> url = widget.rootFolder.urls[widget.urlIndex];
-      url['url'] = this.url;
-      url['url_title'] = urlTitle;
-      url['description'] = desc ?? '';
-      url['is_favourite'] = _favourite;
+      // Map<String, dynamic> url = widget.rootFolder.urls[widget.urlIndex];
+      idata['url'] = url;
+      idata['url_title'] = urlTitle;
+      idata['description'] = desc ?? '';
+      idata['is_favourite'] = _favourite;
 
       List<Map<String, dynamic>> listUrl = widget.rootFolder.urls;
 
-      listUrl[widget.urlIndex] = url;
+      listUrl[widget.urlIndex] = idata;
 
       LinkTreeFolder newLinkTree = LinkTreeFolder(
         id: widget.rootFolder.id,
@@ -55,7 +58,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
       hs.update(newLinkTree);
 
       if (_favourite) {
-        await hs.addFavouriteLinks(url);
+        await hs.addFavouriteLinks(idata);
       }
     }
     Navigator.pop(context);
@@ -105,22 +108,50 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
               color: Colors.red.shade800,
             ),
           ),
-          IconButton(
-            onPressed: () async{
-              if (_formKey.currentState!.validate()) {
-                await saveFolder();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Saving'),
+          _isSaving
+              ? Center(
+                  child: CircularProgressIndicator.adaptive(
+                    backgroundColor: Colors.green.shade800,
                   ),
-                );
-              }
-            },
-            icon: const Icon(
-              Icons.check_circle,
-              color: Color(0xff3cac7c),
-            ),
-          ),
+                )
+              : IconButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      setState(() {
+                        _isSaving = true;
+                      });
+
+                      try {
+                        await saveUrl();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.green,
+                            content: Center(child: Text('Saved')),
+                          ),
+                        );
+                      } catch (e) {
+                        debugPrint('[log][error] : $e');
+                        setState(() {
+                          _isSaving = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.red,
+                            content: Center(
+                              child: Text(
+                                'Something Went wrong.',
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.check_circle,
+                    color: Color(0xff3cac7c),
+                  ),
+                ),
           IconButton(
             onPressed: () async {
               if (url.isNotEmpty) {
@@ -135,7 +166,6 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
             },
             icon: const Icon(Icons.share),
           ),
-          
         ],
         // elevation: 0,
         // backgroundColor: Colors.transparent,
@@ -161,6 +191,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     minLines: 2,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'url',
                       hintStyle: const TextStyle(
@@ -189,6 +220,8 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     // maxLength: ,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
+
                     decoration: kInputDecoration.copyWith(
                       hintText: 'url title',
                       hintStyle: TextStyle(
@@ -237,6 +270,8 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     minLines: 3,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
+                    showCursor: true,
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

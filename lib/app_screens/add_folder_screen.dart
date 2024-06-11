@@ -154,6 +154,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     maxLength: 30,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'folder',
                       hintStyle: TextStyle(
@@ -180,6 +181,8 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     minLines: 3,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
+                                        cursorColor: const Color(0xff3cac7c),
+
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

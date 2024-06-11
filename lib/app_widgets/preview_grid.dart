@@ -5,11 +5,11 @@ import 'package:web_link_store/app_widgets/preview_row.dart';
 
 class Preview extends StatefulWidget {
   final Map<String, dynamic> webUrl;
-  final void Function() onLongPress;
+  final void Function() onDoubleTap;
   final void Function() onPress;
   const Preview({
     Key? key,
-    required this.onLongPress,
+    required this.onDoubleTap,
     required this.webUrl,
     required this.onPress,
   }) : super(key: key);
@@ -47,11 +47,10 @@ class _PreviewState extends State<Preview> {
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: null,
-      onLongPress: () {
-        widget.onLongPress();
+      onDoubleTap: () {
+        widget.onDoubleTap();
         setState(() {
           isPressed = !isPressed;
         });

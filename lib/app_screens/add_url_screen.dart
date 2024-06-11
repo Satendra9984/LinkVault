@@ -102,157 +102,178 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                setState(() {
-                  _isSaving = true;
-                });
-                await saveUrl();
-                setState(() {
-                  _isSaving = false;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: Colors.green,
-                    content: Center(child: Text('Saved')),
+          _isSaving
+              ? Center(
+                  child: CircularProgressIndicator.adaptive(
+                    backgroundColor: Colors.green.shade800,
                   ),
-                );
-              }
-            },
-            icon: const Icon(Icons.check),
-          ),
+                )
+              : IconButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      setState(() {
+                        _isSaving = true;
+                      });
+
+                      try {
+                        await saveUrl();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.green,
+                            content: Center(child: Text('Saved')),
+                          ),
+                        );
+                      } catch (e) {
+                        debugPrint('[log][error] : $e');
+                        setState(() {
+                          _isSaving = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.red,
+                            content: Center(
+                              child: Text(
+                                'Something Went wrong.',
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.check),
+                ),
         ],
         // elevation: 0,
         // backgroundColor: Colors.transparent,
       ),
-      body: _isSaving
-          ? Center(
-              child: CircularProgressIndicator.adaptive(
-                backgroundColor: Colors.green.shade800,
-              ),
-            )
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.all(12),
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextInput(
-                        label: 'URL',
-                        formField: TextFormField(
-                          initialValue: url,
-                          onChanged: (value) {
-                            url = value;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          minLines: 2,
-                          cursorHeight: 30,
-                          cursorWidth: 2.5,
-                          decoration: kInputDecoration.copyWith(
-                            hintText: 'https://google.com',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a url';
-                            }
-                            return null;
-                          },
-                        ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextInput(
+                  label: 'URL',
+                  formField: TextFormField(
+                    initialValue: url,
+                    onChanged: (value) {
+                      url = value;
+                    },
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    minLines: 2,
+                    cursorHeight: 30,
+                    cursorWidth: 2.5,
+                                        cursorColor: const Color(0xff3cac7c),
+
+                    decoration: kInputDecoration.copyWith(
+                      hintText: 'https://google.com',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
                       ),
-                      const SizedBox(height: 20.0),
-
-                      TextInput(
-                        label: 'TITLE',
-                        formField: TextFormField(
-                          onChanged: (value) {
-                            urlTitle = value;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          minLines: 2,
-                          cursorHeight: 30,
-                          cursorWidth: 2.5,
-                          decoration: kInputDecoration.copyWith(
-                            hintText: 'title',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a title';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 20.0),
-
-                      // IS fAVOURITE
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Favourite',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Switch.adaptive(
-                            value: _favourite,
-                            onChanged: (value) => setState(() {
-                              _favourite = !_favourite;
-                            }),
-                            activeColor: Colors.green,
-                            inactiveTrackColor: Colors.red,
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20.0),
-
-                      TextInput(
-                        label: 'Add Note',
-                        formField: TextFormField(
-                          onChanged: (value) {
-                            desc = value;
-                          },
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          minLines: 3,
-                          cursorHeight: 30,
-                          cursorWidth: 2.5,
-                          decoration: kInputDecoration.copyWith(
-                            hintText: 'save your important details here',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                          validator: (value) {
-                            return null;
-                          },
-                        ),
-                      ),
-
-                      /// todo : add preview
-                      const SizedBox(height: 20),
-                      // const Text(
-                      //     'TODO: Add url name\nTODO: Add insert at variable field\n todo : add preview show\n'),
-                    ],
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a url';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-              ),
+                const SizedBox(height: 20.0),
+
+                TextInput(
+                  label: 'TITLE',
+                  formField: TextFormField(
+                    onChanged: (value) {
+                      urlTitle = value;
+                    },
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    minLines: 2,
+                    cursorHeight: 30,
+                    cursorWidth: 2.5,
+                                        cursorColor: const Color(0xff3cac7c),
+
+                    decoration: kInputDecoration.copyWith(
+                      hintText: 'title',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a title';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20.0),
+
+                // IS fAVOURITE
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      activeColor: Colors.green,
+                      inactiveTrackColor: Colors.red,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20.0),
+
+                TextInput(
+                  label: 'Add Note',
+                  formField: TextFormField(
+                    onChanged: (value) {
+                      desc = value;
+                    },
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    minLines: 3,
+                    cursorHeight: 30,
+                    cursorWidth: 2.5,
+                                        cursorColor: const Color(0xff3cac7c),
+
+                    decoration: kInputDecoration.copyWith(
+                      hintText: 'save your important details here',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+                ),
+
+                /// todo : add preview
+                const SizedBox(height: 20),
+                // const Text(
+                //     'TODO: Add url name\nTODO: Add insert at variable field\n todo : add preview show\n'),
+              ],
             ),
+          ),
+        ),
+      ),
     );
   }
 }
