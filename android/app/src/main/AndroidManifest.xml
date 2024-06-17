@@ -31,7 +31,7 @@
     </queries>
 
     <application
-        android:label="web_link_store"
+        android:label="LinkVault"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">
