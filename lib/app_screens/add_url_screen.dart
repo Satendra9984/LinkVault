@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
+import 'package:link_vault/app_services/url_parsing/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
 import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
@@ -168,8 +168,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                     minLines: 2,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
-                                        cursorColor: const Color(0xff3cac7c),
-
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'https://google.com',
                       hintStyle: TextStyle(
@@ -197,8 +196,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                     minLines: 2,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
-                                        cursorColor: const Color(0xff3cac7c),
-
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'title',
                       hintStyle: TextStyle(
@@ -251,8 +249,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                     minLines: 3,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
-                                        cursorColor: const Color(0xff3cac7c),
-
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

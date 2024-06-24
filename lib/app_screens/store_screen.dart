@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web_link_store/app_providers/receive_text.dart';
-import 'package:web_link_store/app_screens/add_folder_screen.dart';
-import 'package:web_link_store/app_widgets/favicons.dart';
-import 'package:web_link_store/app_screens/update_folder_screen.dart';
-import 'package:web_link_store/app_screens/update_url_screen.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_widgets/folder_icon_button.dart';
+import 'package:link_vault/app_providers/receive_text.dart';
+import 'package:link_vault/app_screens/add_folder_screen.dart';
+import 'package:link_vault/app_widgets/favicons.dart';
+import 'package:link_vault/app_screens/update_folder_screen.dart';
+import 'package:link_vault/app_screens/update_url_screen.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_widgets/folder_icon_button.dart';
 import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/preview_grid.dart';
 import 'add_url_screen.dart';
@@ -384,8 +384,9 @@ class _StorePageState extends State<StorePage> {
                         },
                         onPress: () async {
                           if (await canLaunchUrl(
-                              Uri.parse(urlList[index]['url']))) {
-                            await launchUrl(Uri.parse(urlList[index]['url']));
+                              Uri.parse(urlList[index]['url'].toString()))) {
+                            await launchUrl(
+                                Uri.parse(urlList[index]['url'].toString()));
                           } else {
                             throw 'Could not launch ${urlList[index]['url']}';
                           }
@@ -434,8 +435,9 @@ class _StorePageState extends State<StorePage> {
                             },
                             onPress: () async {
                               if (await canLaunchUrl(
-                                  Uri.parse(urlList[ind]['url']))) {
-                                await launchUrl(Uri.parse(urlList[ind]['url']));
+                                  Uri.parse(urlList[ind]['url'].toString()))) {
+                                await launchUrl(
+                                    Uri.parse(urlList[ind]['url'].toString()));
                               } else {
                                 throw 'Could not launch ${urlList[ind]['url']}';
                               }

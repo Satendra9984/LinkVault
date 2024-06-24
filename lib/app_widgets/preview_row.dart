@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class PreviewRowWidget extends StatelessWidget {
@@ -59,10 +61,10 @@ class PreviewRowWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image.memory(
-                  imageData['favicon'],
+                  imageData['favicon'] as Uint8List,
                   errorBuilder: (context, object, stackTrace) {
                     try {
-                      return Image.memory(imageData['favicon']);
+                      return Image.memory(imageData['favicon'] as Uint8List);
                     } catch (e) {
                       return Image.asset(
                         'assets/images/icon3.png',
@@ -84,7 +86,7 @@ class PreviewRowWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    imageData['image_title'],
+                    imageData['image_title'].toString(),
                     softWrap: true,
                     textAlign: TextAlign.start,
                     style: TextStyle(
@@ -96,7 +98,7 @@ class PreviewRowWidget extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    imageData['description'],
+                    imageData['description'].toString(),
                     softWrap: true,
                     textAlign: TextAlign.start,
                     style: TextStyle(

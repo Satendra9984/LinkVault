@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:web_link_store/app_providers/receive_text.dart';
-import 'package:web_link_store/app_screens/dashboard.dart';
-import 'package:web_link_store/app_screens/store_screen.dart';
-import 'package:web_link_store/app_services/databases/database_constants.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_providers/receive_text.dart';
+import 'package:link_vault/app_screens/dashboard.dart';
+import 'package:link_vault/app_screens/store_screen.dart';
+import 'package:link_vault/app_services/databases/database_constants.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
 import '../app_models/link_tree_folder_model.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -33,7 +33,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         parentFolderId: kRootDirectory + "Parent",
         subFolders: [],
         urls: [],
-        folderName: 'LinkVault',
+        folderName: 'link_vault',
       ),
     );
 
@@ -93,7 +93,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         shadowColor: Colors.grey.shade800,
         child: BottomNavigationBar(
           elevation: 4.0,
-         
           currentIndex: _currentIndex,
           onTap: (currentPage) {
             _pageController.jumpToPage(currentPage);
@@ -124,9 +123,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           _currentIndex = index;
         }),
         children: [
-          StorePage(
-            parentFolderId: _getBaseTree().id
-          ),
+          StorePage(parentFolderId: _getBaseTree().id),
           const DashboardScreen(),
         ],
       ),

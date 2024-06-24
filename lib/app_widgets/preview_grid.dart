@@ -1,7 +1,9 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
-import 'package:web_link_store/app_widgets/preview_aspect.dart';
-import 'package:web_link_store/app_widgets/preview_row.dart';
+import 'package:link_vault/app_services/url_parsing/fetch_preview_details.dart';
+import 'package:link_vault/app_widgets/preview_aspect.dart';
+import 'package:link_vault/app_widgets/preview_row.dart';
 
 class Preview extends StatefulWidget {
   final Map<String, dynamic> webUrl;
@@ -26,9 +28,9 @@ class _PreviewState extends State<Preview> {
 
   void setDimensions() {
     Map<String, dynamic> size =
-        Map<String, dynamic>.from(widget.webUrl['size']);
-    double height = size['height'];
-    double width = size['width'];
+        Map<String, dynamic>.from(widget.webUrl['size'] as Map);
+    double height = size['height'] as double;
+    double width = size['width'] as double;
 
     if (height != 0 && width != 0) {
       setState(() {

@@ -2,12 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web_link_store/app_models/link_tree_folder_model.dart';
-import 'package:web_link_store/app_screens/store_screen.dart';
-import 'package:web_link_store/app_screens/update_folder_screen.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_widgets/favicons.dart';
-import 'package:web_link_store/app_widgets/folder_icon_button.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_screens/store_screen.dart';
+import 'package:link_vault/app_screens/update_folder_screen.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_widgets/favicons.dart';
+import 'package:link_vault/app_widgets/folder_icon_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -177,9 +177,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         onDoubleTap: () {},
                         onPress: () async {
                           if (await canLaunchUrl(
-                              Uri.parse(_recentUrl[index]['url']))) {
+                              Uri.parse(_recentUrl[index]['url'].toString()))) {
                             await launchUrl(
-                                Uri.parse(_recentUrl[index]['url']));
+                                Uri.parse(_recentUrl[index]['url'].toString()));
                           } else {
                             throw 'Could not launch ${_recentUrl[index]['url']}';
                           }
@@ -271,10 +271,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         imageUrl: _favouriteLinks[index],
                         onDoubleTap: () {},
                         onPress: () async {
-                          if (await canLaunchUrl(
-                              Uri.parse(_favouriteLinks[index]['url']))) {
-                            await launchUrl(
-                                Uri.parse(_favouriteLinks[index]['url']));
+                          if (await canLaunchUrl(Uri.parse(
+                              _favouriteLinks[index]['url'].toString()))) {
+                            await launchUrl(Uri.parse(
+                                _favouriteLinks[index]['url'].toString()));
                           } else {
                             throw 'Could not launch ${_favouriteLinks[index]['url']}';
                           }

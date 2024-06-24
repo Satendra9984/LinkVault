@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:web_link_store/app_services/databases/database_constants.dart';
+import 'package:link_vault/app_services/databases/database_constants.dart';
 import '../../app_models/link_tree_folder_model.dart';
 
 class HiveService {
@@ -84,7 +84,7 @@ class HiveService {
     List<dynamic> recentFolders = box.get(
       kRecentLinkTreeFolders,
       defaultValue: [],
-    );
+    ) as List;
 
     // returning the treeData
     return recentFolders.cast<String>();
@@ -128,7 +128,7 @@ class HiveService {
     List<dynamic> recentFolders = box.get(
       kRecentLinks,
       defaultValue: [],
-    );
+    ) as List;
 
     // returning the treeData
     return recentFolders.cast<Map>();
@@ -168,16 +168,15 @@ class HiveService {
     await box.put(kFavouriteLinkTreeFolders, prevRecFoldList);
   }
 
-
   List<String> getFavouriteFolders() {
     // getting the linkTree box
     Box box = Hive.box(kFavouriteLinkTreeFolders);
 
     // getting the data from the local database
-    List<dynamic> recentFolders = box.get(
+    final recentFolders = box.get(
       kFavouriteLinkTreeFolders,
       defaultValue: [],
-    );
+    ) as List;
 
     // print(recentFolders);
     // returning the treeData
@@ -219,10 +218,10 @@ class HiveService {
     Box box = Hive.box(kFavouriteLinks);
 
     // getting the data from the local database
-    List<dynamic> recentFolders = box.get(
+    final recentFolders = box.get(
       kFavouriteLinks,
       defaultValue: [],
-    );
+    ) as List;
 
     // returning the treeData
     return recentFolders.cast<Map>();

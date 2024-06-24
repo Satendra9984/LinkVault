@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:web_link_store/app_services/url_parsing/fetch_preview_details.dart';
+import 'package:link_vault/app_services/url_parsing/fetch_preview_details.dart';
 import '../app_services/databases/hive_database.dart';
 import '../app_models/link_tree_folder_model.dart';
 import '../app_widgets/text_input.dart';
@@ -73,11 +73,12 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   }
 
   _initialize() {
-    url = widget.rootFolder.urls[widget.urlIndex]['url'];
-    urlTitle = widget.rootFolder.urls[widget.urlIndex]['url_title'];
-    desc = widget.rootFolder.urls[widget.urlIndex]['description'];
+    url = widget.rootFolder.urls[widget.urlIndex]['url'].toString();
+    urlTitle = widget.rootFolder.urls[widget.urlIndex]['url_title'].toString();
+    desc = widget.rootFolder.urls[widget.urlIndex]['description'].toString();
     _favourite =
-        widget.rootFolder.urls[widget.urlIndex]['is_favourite'] ?? false;
+        (widget.rootFolder.urls[widget.urlIndex]['is_favourite'] as bool?) ??
+            false;
   }
 
   @override

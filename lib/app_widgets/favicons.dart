@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 
 class FaviconsGrid extends StatefulWidget {
@@ -65,7 +67,7 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image.memory(
-                  widget.imageUrl['favicon'],
+                  widget.imageUrl['favicon']as Uint8List,
                   errorBuilder: (context, object, stackTrace) {
                     return Image.asset('assets/images/click.png');
                   },
@@ -77,7 +79,7 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               padding: const EdgeInsets.only(left: 4, right: 4),
               alignment: Alignment.center,
               child: Text(
-                widget.imageUrl['url_title'],
+                widget.imageUrl['url_title'].toString(),
                 softWrap: true,
                 textAlign: TextAlign.center,
                 maxLines: 2,

@@ -1,4 +1,4 @@
-package com.example.web_link_store
+package com.example.link_vault
 
 import io.flutter.embedding.android.FlutterActivity
 

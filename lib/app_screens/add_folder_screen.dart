@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_models/link_tree_folder_model.dart';
-import 'package:web_link_store/constants.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/constants.dart';
 
 import '../app_widgets/text_input.dart';
 
@@ -45,7 +45,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     'Utilities'
   ];
 
-  Future<void> saveFolder() async{
+  Future<void> saveFolder() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
@@ -105,7 +105,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           'Add Folder',
           style: TextStyle(
             color: Colors.grey.shade800,
@@ -181,8 +181,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     minLines: 3,
                     cursorHeight: 30,
                     cursorWidth: 2.5,
-                                        cursorColor: const Color(0xff3cac7c),
-
+                    cursorColor: const Color(0xff3cac7c),
                     decoration: kInputDecoration.copyWith(
                       hintText: 'save your important details here',
                       hintStyle: TextStyle(

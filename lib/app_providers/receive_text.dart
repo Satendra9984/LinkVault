@@ -1,5 +1,5 @@
 import 'package:riverpod/riverpod.dart';
-import 'package:web_link_store/app_models/receive_text_model.dart';
+import 'package:link_vault/app_models/receive_text_model.dart';
 
 final receiveTextProvider =
     StateNotifierProvider<ReceiveTextNotifier, ReceiveText>(

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class PreviewAspectRatio extends StatelessWidget {
@@ -52,10 +54,10 @@ class PreviewAspectRatio extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               child: Image.memory(
-                imageData['image'],
+                imageData['image']as Uint8List,
                 errorBuilder: (context, object, stackTrace) {
                   try {
-                    return Image.memory(imageData['favicon']);
+                    return Image.memory(imageData['favicon'] as Uint8List);
                   } catch (e) {
                     return Image.asset(
                       'assets/images/icon3.png',
@@ -71,7 +73,7 @@ class PreviewAspectRatio extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  imageData['image_title'],
+                  imageData['image_title'].toString(),
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: TextStyle(
@@ -84,7 +86,7 @@ class PreviewAspectRatio extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  imageData['description'],
+                  imageData['description'].toString(),
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: TextStyle(
