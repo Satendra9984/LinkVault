@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/failure.dart';
@@ -86,12 +88,26 @@ class AuthRepositoryImpl {
   }
 
   Future<Either<Failure, void>> signOut() async {
-    throw UnimplementedError();
+    try {
+      await _authRemoteDataSourcesImpl.signOut();
+      return Right(unit);
+    } catch (e) {
+      return Left(AuthFailure(message: 'Could signout ', statusCode: 402));
+    }
   }
 
-  Future<Either<Failure, void>> sendPasswordResetLink({
+  Future<Either<Failure, Unit>> sendPasswordResetLink({
     required String emailAddress,
   }) async {
-    throw UnimplementedError();
+    try {
+      return Right(unit);
+
+      await _authRemoteDataSourcesImpl.sendPasswordResetLink(
+        emailAddress: emailAddress,
+      );
+      return Right(unit);
+    } catch (e) {
+      return Left(AuthFailure(message: 'Could Not Process ', statusCode: 402));
+    }
   }
 }

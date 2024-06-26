@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 
@@ -83,5 +85,23 @@ class AuthRemoteDataSourcesImpl {
       );
     }
     return null;
+  }
+
+  Future<void> signOut() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      throw AuthException(message: 'Something Went Wrong', statusCode: 402);
+    }
+  }
+
+  Future<void> sendPasswordResetLink({
+    required String emailAddress,
+  }) async {
+    try {
+     await  _auth.sendPasswordResetEmail(email: emailAddress);
+    } catch (e) {
+      throw AuthException(message: 'Something Went Wrong', statusCode: 402);
+    }
   }
 }

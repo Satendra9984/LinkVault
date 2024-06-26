@@ -7,6 +7,7 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
+import 'package:link_vault/src/auth/presentation/pages/forget_password/forget_password_home.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/password_reset.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
 import 'package:link_vault/src/auth/presentation/widgets/container_button.dart';
@@ -168,20 +169,13 @@ class _LoginPageState extends State<LoginPage> {
                         TextButton(
                           onPressed: () {
                             // [TODO]:COMPLETE FORGET PASSWORD
-                            // if (state.authenticationStates ==
-                            //     AuthenticationStates.signedIn) {
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (ctx) => BlocProvider(
-                                  create: (context) => ForgetPasswordCubit(
-                                    authRepoIml: authcubit.authRepositoryImpl,
-                                  ),
-                                  child: const ForgetPasswordResetPage(),
-                                ),
+                                builder: (ctx) => const ForgetPasswordResetPage(),
                               ),
                             );
-                            // }
                           },
                           child: const Text(
                             'Forget Password?',

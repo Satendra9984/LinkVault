@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/forget_password_states.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/check_email_page.dart';
@@ -87,15 +88,16 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
               BlocConsumer<ForgetPasswordCubit, ForgetPasswordState>(
                 listener: (context, state) {
                   if (state.forgetPasswordStates ==
-                      ForgetPasswordStates.resetPasswordLinkSentSuccessfully) {
-                    Navigator.pushReplacement(
+                      ForgetPasswordStates
+                          .resetPasswordLinkSentSuccessfully) {
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (ctx) => const CheckYourEmailPage(),
                       ),
                     );
                   }
-
+    
                   if (state.forgetPasswordStates ==
                       ForgetPasswordStates.errorSendingResetPasswordLink) {
                     // [TODO] : SHOW ERROR SCAFFOLD MESSAGE

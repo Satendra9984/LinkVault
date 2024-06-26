@@ -9,4 +9,11 @@ enum AuthenticationStates {
   signingUp,
   signedUp,
   errorSigningUp,
+
+
+
+  // 
+  signingOut,
+  signedOut,
+  errorSigningOut,
 }

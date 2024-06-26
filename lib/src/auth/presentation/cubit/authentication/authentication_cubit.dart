@@ -9,7 +9,6 @@ import 'package:link_vault/src/onboarding/presentation/models/loading_states.dar
 part 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
-
   AuthenticationCubit({
     required AuthRepositoryImpl authRepositoryImpl,
   })  : _authRepositoryImpl = authRepositoryImpl,
@@ -20,7 +19,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         );
   final AuthRepositoryImpl _authRepositoryImpl;
 
-   AuthRepositoryImpl get authRepositoryImpl => _authRepositoryImpl;
+  AuthRepositoryImpl get authRepositoryImpl => _authRepositoryImpl;
 
   Future<void> signUpWithEmailAndPassword({
     required String name,
@@ -74,6 +73,28 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.signedIn,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> signOut() async {
+    emit(state.copyWith(authenticationStates: AuthenticationStates.signingOut));
+    final result = await _authRepositoryImpl.signOut();
+
+    result.fold(
+      (failed) {
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.errorSigningOut,
+          ),
+        );
+      },
+      (result) {
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.signedOut,
           ),
         );
       },

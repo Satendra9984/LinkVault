@@ -2,9 +2,11 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 
@@ -66,6 +68,19 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
                   ),
+                ),
+                const SizedBox(height: 16),
+                BlocBuilder<ForgetPasswordCubit, ForgetPasswordState>(
+                  builder: (context, state) {
+                    return Text(
+                      state.email,
+                      style: TextStyle(
+                        color: ColourPallette.textDarkColor,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
