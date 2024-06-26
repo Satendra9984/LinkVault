@@ -1,44 +1,52 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
-import 'package:link_vault/src/auth/presentation/pages/signup_page.dart';
-import 'package:link_vault/src/auth/presentation/widgets/container_button.dart';
+import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 
-// ignore: public_member_api_docs
-class LoginPage extends StatefulWidget {
-  // static const routeName = '/login';
-
-  const LoginPage({super.key});
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+  static const routeName = '/signUp';
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _submitForm(AuthenticationCubit authenticationCubit) {
+  void _submitForm(AuthenticationCubit cubit) {
     if (_formKey.currentState!.validate()) {
-      authenticationCubit.signInWithEmailAndPassword(
+      cubit.signUpWithEmailAndPassword(
+        name: _nameController.text,
         email: _emailController.text,
         password: _passwordController.text,
       );
     }
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your name';
+    }
+    return null;
   }
 
   String? _validateEmail(String? value) {
@@ -68,16 +76,6 @@ class _LoginPageState extends State<LoginPage> {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      // appBar: AppBar(
-      //   backgroundColor: ColourPallette.white,
-      //   title: Text(
-      //     'Welcome Back',
-      //     style: TextStyle(
-      //       fontWeight: FontWeight.bold,
-      //       color: Colors.grey.shade800,
-      //     ),
-      //   ),
-      // ),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
@@ -86,12 +84,10 @@ class _LoginPageState extends State<LoginPage> {
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              // mainAxisSize: MainAxisSize.max,
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -99,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         const SizedBox(height: gap * 2),
                         Text(
-                          'Welcome Back',
+                          "Let's Get Started",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.grey.shade800,
@@ -107,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         Text(
-                          'Login to continue',
+                          'By Creating an Account',
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             color: Colors.grey.shade600,
@@ -127,64 +123,49 @@ class _LoginPageState extends State<LoginPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: SvgPicture.asset(
-                      // 'assets/images/login.svg',
-                      'assets/images/login_password.svg',
-                    
+                      MediaRes.login,
                       semanticsLabel: 'Login Logo',
                     ),
                   ),
                 ),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    CustomTextFormField(
+                      controller: _nameController,
+                      labelText: 'Name',
+                      keyboardType: TextInputType.name,
+                      validator: _validateName,
+                    ),
+                    const SizedBox(height: gap * .5),
                     CustomTextFormField(
                       controller: _emailController,
                       labelText: 'Email',
                       keyboardType: TextInputType.emailAddress,
                       validator: _validateEmail,
                     ),
-                    const SizedBox(height: gap * 0.5),
+                    const SizedBox(height: gap * .5),
                     CustomTextFormField(
                       controller: _passwordController,
                       labelText: 'Password',
                       obscureText: true,
                       validator: _validatePassword,
                     ),
-                    // const SizedBox(height: gap),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () {
-                        // [TODO]:COMPLETE FORGET PASSWORD
-                      },
-                      child: const Text(
-                        'Forget Password?',
-                        style: TextStyle(
-                          color: ColourPallette.salemgreen,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
+                    const SizedBox(height: 2 * gap),
                     BlocConsumer<AuthenticationCubit, AuthenticationState>(
                       listener: (context, state) {
-                        debugPrint(
-                            '[log] : authstate ${state.authenticationStates}');
-
+                        debugPrint('[log] : authstate $state');
                         if (state.authenticationStates ==
-                            AuthenticationStates.signedIn) {
-                          // Navigator.pushReplacement(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (ctx) => const NewsListPage(),
-                          //   ),
-                          // );
+                            AuthenticationStates.signedUp) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => const LoginPage(),
+                            ),
+                          );
                         }
-
                         if (state.authenticationStates ==
-                            AuthenticationStates.errorSigningIn) {
+                            AuthenticationStates.errorSigningUp) {
                           // [TODO] : ScaffoldMessenger
                         }
                       },
@@ -196,72 +177,57 @@ class _LoginPageState extends State<LoginPage> {
                             SizedBox(
                               width: double.infinity,
                               child: CustomElevatedButton(
-                                text: 'Login',
-                                onPressed: () {
-                                  _submitForm(authcubit);
-                                },
+                                text: 'Signup',
+                                onPressed: () => _submitForm(authcubit),
                                 icon: state.authenticationStates ==
-                                        AuthenticationStates.signingIn
-                                    ? const SizedBox(
+                                        AuthenticationStates.signingUp
+                                    ?  const SizedBox(
                                         height: 24,
                                         width: 24,
                                         child: CircularProgressIndicator(
                                           backgroundColor: Colors.white,
+                                          color: ColourPallette.bitterlemon,
                                         ),
                                       )
                                     : null,
                               ),
                             ),
                             const SizedBox(height: gap),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ContainerButton(
-                                text: 'Sign Up',
-                                onPressed: () {
-                                  _submitForm(authcubit);
-                                },
-                                backgroundColor:
-                                    ColourPallette.salemgreen.withOpacity(0.10),
-                                textColor: ColourPallette.salemgreen,
+                            RichText(
+                              text: TextSpan(
+                                text: 'Already have an account? ',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                ),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: ' Login',
+                                    style: const TextStyle(
+                                      color: ColourPallette.salemgreen,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        if (state.authenticationStates ==
+                                            AuthenticationStates.signingUp) {
+                                          return;
+                                        }
+
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (ctx) => const LoginPage(),
+                                          ),
+                                        );
+                                      },
+                                  ),
+                                ],
                               ),
                             ),
-                            // const SizedBox(height: gap - 6),
-
-                            // RichText(
-                            //   text: TextSpan(
-                            //     text: ' New here? ',
-                            //     style: const TextStyle(
-                            //       color: Colors.black,
-                            //       fontWeight: FontWeight.w400,
-                            //       fontSize: 16,
-                            //     ),
-                            //     children: <TextSpan>[
-                            //       TextSpan(
-                            //         text: 'Sign Up',
-                            //         style: const TextStyle(
-                            //           color: ColourPallette.salemgreen,
-                            //           fontSize: 16,
-                            //           fontWeight: FontWeight.bold,
-                            //         ),
-                            //         recognizer: TapGestureRecognizer()
-                            //           ..onTap = () {
-                            //             if (state.authenticationStates ==
-                            //                 AuthenticationStates.signingIn) {
-                            //               return;
-                            //             }
-                            //             // debugPrint('[log] : tapping SignUp');
-                            //             Navigator.pushReplacement(
-                            //               context,
-                            //               // ignore: inference_failure_on_instance_creation
-                            //               MaterialPageRoute(
-                            //                 builder: (ctx) => const SignUpPage(),
-                            //               ),
-                            //             );
-                            //           },
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
+                            // const SizedBox(height: gap),
                           ],
                         );
                       },

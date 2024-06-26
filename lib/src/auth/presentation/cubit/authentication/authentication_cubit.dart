@@ -1,6 +1,7 @@
-import 'package:bloc/bloc.dart';
+// ignore_for_file: public_member_api_docs
+
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
@@ -8,7 +9,6 @@ import 'package:link_vault/src/onboarding/presentation/models/loading_states.dar
 part 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
-  final AuthRepositoryImpl _authRepositoryImpl;
 
   AuthenticationCubit({
     required AuthRepositoryImpl authRepositoryImpl,
@@ -18,6 +18,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             authenticationStates: AuthenticationStates.initial,
           ),
         );
+  final AuthRepositoryImpl _authRepositoryImpl;
+
+   AuthRepositoryImpl get authRepositoryImpl => _authRepositoryImpl;
 
   Future<void> signUpWithEmailAndPassword({
     required String name,
@@ -25,7 +28,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String password,
   }) async {
     emit(state.copyWith(authenticationStates: AuthenticationStates.signingUp));
-    var result = await _authRepositoryImpl.signUpWithEmailAndPassword(
+    final result = await _authRepositoryImpl.signUpWithEmailAndPassword(
       name: name,
       email: email,
       password: password,
@@ -35,12 +38,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       (failed) {
         emit(
           state.copyWith(
-              authenticationStates: AuthenticationStates.errorSigningUp),
+            authenticationStates: AuthenticationStates.errorSigningUp,
+          ),
         );
       },
       (result) {
-        emit(state.copyWith(
-            authenticationStates: AuthenticationStates.signedUp));
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.signedUp,
+          ),
+        );
       },
     );
   }
@@ -50,7 +57,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String password,
   }) async {
     emit(state.copyWith(authenticationStates: AuthenticationStates.signingIn));
-    var result = await _authRepositoryImpl.signInWithEmailAndPassword(
+    final result = await _authRepositoryImpl.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -59,12 +66,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       (failed) {
         emit(
           state.copyWith(
-              authenticationStates: AuthenticationStates.errorSigningIn),
+            authenticationStates: AuthenticationStates.errorSigningIn,
+          ),
         );
       },
       (result) {
-        emit(state.copyWith(
-            authenticationStates: AuthenticationStates.signedIn));
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.signedIn,
+          ),
+        );
       },
     );
   }

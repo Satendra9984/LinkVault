@@ -6,9 +6,9 @@ import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.d
 class AuthRepositoryImpl {
   final AuthRemoteDataSourcesImpl _authRemoteDataSourcesImpl;
 
-  AuthRepositoryImpl(
-      {required AuthRemoteDataSourcesImpl authRemoteDataSourcesImpl})
-      : _authRemoteDataSourcesImpl = authRemoteDataSourcesImpl;
+  AuthRepositoryImpl({
+    required AuthRemoteDataSourcesImpl authRemoteDataSourcesImpl,
+  }) : _authRemoteDataSourcesImpl = authRemoteDataSourcesImpl;
 
   Either<Failure, bool> isLoggedIn() {
     try {
@@ -83,5 +83,15 @@ class AuthRepositoryImpl {
         ),
       );
     }
+  }
+
+  Future<Either<Failure, void>> signOut() async {
+    throw UnimplementedError();
+  }
+
+  Future<Either<Failure, void>> sendPasswordResetLink({
+    required String emailAddress,
+  }) async {
+    throw UnimplementedError();
   }
 }

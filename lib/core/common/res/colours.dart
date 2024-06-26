@@ -10,19 +10,22 @@ class ColourPallette {
   static const Color primaryTeal = Color(0xff04bfbf);
   static const Color secondaryDarkTeal = Color(0xff037f8c);
   static const Color darkTeal = Color(0xff005163);
-  
+
   //
   static const Color salemgreen = Color(0xff0D974E);
   static const Color bitterlemon = Color(0xffDEEF0D);
   static const Color mountainMeadow = Color(0xff129F65);
   static const Color mystic = Color(0xffE2EAE8);
 
-  
   static const Color white = Color(0xffffffff);
   static const Color black = Color(0xff000000);
   static const Color grey = Colors.grey;
+  static Color  textDarkColor = Colors.grey.shade900;
+  static const Color freepikLoginImage = Color(0xff92E3A9);
   // static const Color = Color(0xff);
-
+  // static const Color = Color(0xff);
+  // static const Color = Color(0xff);
+  // static const Color = Color(0xff);
 }
 
 
