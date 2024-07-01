@@ -6,7 +6,7 @@
 import 'package:flutter/cupertino.dart';
 
 class PageUnderConstructionPage extends StatelessWidget {
-  const PageUnderConstructionPage({Key? key}) : super(key: key);
+  const PageUnderConstructionPage({super.key});
 
   @override
   Widget build(BuildContext context) {

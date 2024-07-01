@@ -111,5 +111,7 @@
     		<key>NSExtensionPointIdentifier</key>
     		<string>com.apple.share-services</string>
     	</dict>
+		<key>LSApplicationQueriesSchemes</key>
+
 </dict>
 </plist>

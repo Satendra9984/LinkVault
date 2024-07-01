@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
@@ -166,7 +167,13 @@ class _SignUpPageState extends State<SignUpPage> {
                         }
                         if (state.authenticationStates ==
                             AuthenticationStates.errorSigningUp) {
-                          // [TODO] : ScaffoldMessenger
+                          // ScaffoldMessenger
+                          showSnackbar(
+                            context: context,
+                            title: 'Something Went Wrong',
+                            subtitle:
+                                state.authenticationFailure?.errorMessage ?? '',
+                          );
                         }
                       },
                       builder: (context, state) {
@@ -181,7 +188,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 onPressed: () => _submitForm(authcubit),
                                 icon: state.authenticationStates ==
                                         AuthenticationStates.signingUp
-                                    ?  const SizedBox(
+                                    ? const SizedBox(
                                         height: 24,
                                         width: 24,
                                         child: CircularProgressIndicator(

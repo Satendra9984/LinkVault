@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
+import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 
 class OnBoardingHomePage extends StatefulWidget {
+  const OnBoardingHomePage({super.key});
   static const routeName = '/';
-  const OnBoardingHomePage({Key? key}) : super(key: key);
 
   @override
   State<OnBoardingHomePage> createState() => _OnBoardingHomePageState();
@@ -35,7 +35,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
         if (state.onBoardingStates == OnBoardingStates.notLoggedIn) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (ctx) => const LoginPage()),
+            MaterialPageRoute(builder: (ctx) => const AuthenticationHomePage()),
           );
         }
       },

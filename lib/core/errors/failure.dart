@@ -23,9 +23,9 @@ abstract class Failure extends Equatable {
 
 class ServerFailure extends Failure {
   ServerFailure({
-    required String message,
-    required statusCode,
-  }) : super(message: message, statusCode: statusCode);
+    required super.message,
+    required super.statusCode,
+  });
 
   ServerFailure.fromException(
     ServerException exception,
@@ -37,30 +37,21 @@ class ServerFailure extends Failure {
 
 class CacheFailure extends Failure {
   CacheFailure({
-    required String message,
-    required statusCode,
-  }) : super(
-          message: message,
-          statusCode: statusCode,
-        );
+    required super.message,
+    required super.statusCode,
+  });
 }
 
 class AuthFailure extends Failure {
   AuthFailure({
-    required String message,
-    required statusCode,
-  }) : super(
-          message: message,
-          statusCode: statusCode,
-        );
+    required super.message,
+    required super.statusCode,
+  });
 }
 
 class LocalAuthFailure extends Failure {
   LocalAuthFailure({
-    required String message,
-    required statusCode,
-  }) : super(
-          message: message,
-          statusCode: statusCode,
-        );
+    required super.message,
+    required super.statusCode,
+  });
 }

@@ -10,8 +10,6 @@ class AppTheme {
   colorScheme: const ColorScheme.light(
     primary: Colors.white, // primary color for light theme
     onPrimary: Colors.black, // color for text and icons on primary color
-    surface: Colors.white, // background color for components like AppBar
-    onSurface: Colors.black, // color for text and icons on surface color
   ),
   primaryColor: Colors.white,
   brightness: Brightness.light,

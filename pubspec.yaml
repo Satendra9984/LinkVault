@@ -25,7 +25,7 @@ dependencies:
   flutter_layout_grid: ^2.0.1
   html: ^0.15.0
   http: ^0.13.4
-  url_launcher: ^6.1.4
+  url_launcher: ^6.3.0
   webview_flutter: ^3.0.4
   receive_sharing_intent: ^1.4.5
   share_plus: ^4.0.10

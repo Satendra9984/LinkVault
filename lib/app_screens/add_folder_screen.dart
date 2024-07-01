@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:link_vault/app_services/databases/hive_database.dart';
 import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_widgets/text_input.dart';
 import 'package:link_vault/constants.dart';
 
-import '../app_widgets/text_input.dart';
-
 class AddFolderScreen extends StatefulWidget {
-  final String parentFolderId;
   const AddFolderScreen({
-    Key? key,
-    required this.parentFolderId,
-  }) : super(key: key);
+    required this.parentFolderId, super.key,
+  });
+  final String parentFolderId;
 
   @override
   State<AddFolderScreen> createState() => _AddFolderScreenState();
@@ -21,7 +19,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
   String title = '';
   String? _desc;
   bool _favourite = false;
-  String _selectedCategory = "";
+  String _selectedCategory = '';
   final List<String> _predefinedCategories = [
     'Work',
     'Personal',
@@ -42,7 +40,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     'Projects',
     'Blogs',
     'Tutorials',
-    'Utilities'
+    'Utilities',
   ];
 
   Future<void> saveFolder() async {
@@ -50,18 +48,18 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
     if (isValid) {
       _formKey.currentState!.save();
 
-      final HiveService hiveService = HiveService();
-      String newFolderId = DateTime.now().millisecondsSinceEpoch.toString();
+      final hiveService = HiveService();
+      final newFolderId = DateTime.now().millisecondsSinceEpoch.toString();
 
       // Adding new folder in folders table in Hive DB
-      LinkTreeFolder newFolder = LinkTreeFolder(
+      final newFolder = LinkTreeFolder(
         id: newFolderId,
         parentFolderId: widget.parentFolderId,
         folderName: title,
         subFolders: [],
         urls: [],
         isFavourite: _favourite,
-        category: _selectedCategory.isEmpty ? "Default" : _selectedCategory,
+        category: _selectedCategory.isEmpty ? 'Default' : _selectedCategory,
         description: _desc,
       );
       hiveService.add(newFolder);
@@ -71,12 +69,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
       }
 
       // Now will update its parent Folders List
-      LinkTreeFolder? parentFolder =
+      final parentFolder =
           hiveService.getTreeData(widget.parentFolderId);
       if (parentFolder == null) return;
 
       // Changing the sublist of parent folder
-      List<String> parentFoldersNewSubfolders = parentFolder.subFolders;
+      final parentFoldersNewSubfolders = parentFolder.subFolders;
       parentFoldersNewSubfolders.add(newFolderId);
 
       // Update parent folder in the DB
@@ -169,7 +167,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(
@@ -193,7 +191,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 // IS fAVOURITE
                 Row(
@@ -217,7 +215,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(
@@ -227,28 +225,28 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 12),
 
                 Wrap(
-                  spacing: 12.0,
-                  runSpacing: 8.0,
+                  spacing: 12,
+                  runSpacing: 8,
                   children:
                       List.generate(_predefinedCategories.length, (index) {
-                    var category = _predefinedCategories[index];
-                    bool isSelected = category == _selectedCategory;
+                    final category = _predefinedCategories[index];
+                    final isSelected = category == _selectedCategory;
                     return GestureDetector(
                       onTap: () => setState(() {
                         _selectedCategory = category;
                       }),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 4.0),
+                            horizontal: 8, vertical: 4,),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.green : Colors.white,
                           border: Border.all(
                             color: isSelected ? Colors.green : Colors.black,
                           ),
-                          borderRadius: BorderRadius.circular(6.0),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           category,

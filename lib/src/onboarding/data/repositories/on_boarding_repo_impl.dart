@@ -3,11 +3,11 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
 
 class OnBoardingRepoImpl {
-  final LocalDataSourceImpl _localDataSourceImpl;
 
   OnBoardingRepoImpl({
     required LocalDataSourceImpl localDataSourceImpl,
   }) : _localDataSourceImpl = localDataSourceImpl;
+  final LocalDataSourceImpl _localDataSourceImpl;
 
   // Future<Either<Failure, bool>> checkIfFirstTimer() {}
 
@@ -15,7 +15,7 @@ class OnBoardingRepoImpl {
 
   Either<Failure, bool> isLoggedIn() {
     try {
-      var result = _localDataSourceImpl.isLoggedIn() != null;
+      final result = _localDataSourceImpl.isLoggedIn() != null;
 
       return Right(result);
     } catch (e) {

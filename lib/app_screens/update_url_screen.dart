@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
 import 'package:link_vault/app_services/url_parsing/fetch_preview_details.dart';
-import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_folder_model.dart';
-import '../app_widgets/text_input.dart';
-import '../constants.dart';
+import 'package:link_vault/app_widgets/text_input.dart';
+import 'package:link_vault/constants.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UpdateUrlScreen extends StatefulWidget {
+  const UpdateUrlScreen({
+    required this.urlIndex, required this.rootFolder, super.key,
+  });
   final LinkTreeFolder rootFolder;
   final int urlIndex;
-  const UpdateUrlScreen({
-    Key? key,
-    required this.urlIndex,
-    required this.rootFolder,
-  }) : super(key: key);
 
   @override
   State<UpdateUrlScreen> createState() => _UpdateUrlScreenState();
@@ -22,17 +20,19 @@ class UpdateUrlScreen extends StatefulWidget {
 class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
   final _formKey = GlobalKey<FormState>();
   HiveService hs = HiveService();
-  String url = '', urlTitle = '';
+  String url = '';
+  String urlTitle = '';
   String? desc;
-  bool _favourite = false, _isSaving = false;
+  bool _favourite = false;
+  bool _isSaving = false;
 
   Future<void> saveUrl() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
       // todo : update url
-      final FetchPreviewDetails fetchPreviewDetails = FetchPreviewDetails();
-      Map<String, dynamic> idata = await fetchPreviewDetails.fetch(url);
+      final fetchPreviewDetails = FetchPreviewDetails();
+      final idata = await fetchPreviewDetails.fetch(url);
 
       // Map<String, dynamic> url = widget.rootFolder.urls[widget.urlIndex];
       idata['url'] = url;
@@ -40,11 +40,11 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
       idata['description'] = desc ?? '';
       idata['is_favourite'] = _favourite;
 
-      List<Map<String, dynamic>> listUrl = widget.rootFolder.urls;
+      final listUrl = widget.rootFolder.urls;
 
       listUrl[widget.urlIndex] = idata;
 
-      LinkTreeFolder newLinkTree = LinkTreeFolder(
+      final newLinkTree = LinkTreeFolder(
         id: widget.rootFolder.id,
         subFolders: widget.rootFolder.subFolders,
         urls: listUrl,
@@ -66,7 +66,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
 
   void deleteFolder(String id) {
     /// get folder
-    LinkTreeFolder linkTree = hs.getTreeData(id)!;
+    final linkTree = hs.getTreeData(id)!;
 
     linkTree.urls.removeAt(widget.urlIndex);
     hs.update(linkTree);
@@ -109,13 +109,11 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
               color: Colors.red.shade800,
             ),
           ),
-          _isSaving
-              ? Center(
+          if (_isSaving) Center(
                   child: CircularProgressIndicator.adaptive(
                     backgroundColor: Colors.green.shade800,
                   ),
-                )
-              : IconButton(
+                ) else IconButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
@@ -207,7 +205,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
                 TextInput(
                   label: 'URL Title',
                   formField: TextFormField(
@@ -237,7 +235,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -258,7 +256,7 @@ class _UpdateUrlScreenState extends State<UpdateUrlScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(

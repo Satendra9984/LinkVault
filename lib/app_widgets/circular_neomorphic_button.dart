@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
 class RoundedNeomorphicButton extends StatelessWidget {
+  const RoundedNeomorphicButton({
+    required this.child, required this.onPressed, super.key,
+  });
   final Function() onPressed;
   final Widget child;
-  const RoundedNeomorphicButton({
-    Key? key,
-    required this.child,
-    required this.onPressed,
-  }) : super(key: key);
   final Offset distance = const Offset(1.5, 1.5);
-  final double blur = 2.0;
+  final double blur = 2;
 
   @override
   Widget build(BuildContext context) {

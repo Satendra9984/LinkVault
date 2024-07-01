@@ -20,8 +20,13 @@ class ColourPallette {
   static const Color white = Color(0xffffffff);
   static const Color black = Color(0xff000000);
   static const Color grey = Colors.grey;
-  static Color  textDarkColor = Colors.grey.shade900;
+  static Color textDarkColor = Colors.grey.shade900;
   static const Color freepikLoginImage = Color(0xff92E3A9);
+
+  static Color error = Colors.red;
+  static Color success = const Color(0xff129F65);
+  static Color information = Colors.blue;
+  static Color warning = Colors.orange;
   // static const Color = Color(0xff);
   // static const Color = Color(0xff);
   // static const Color = Color(0xff);

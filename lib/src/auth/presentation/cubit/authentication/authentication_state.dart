@@ -2,25 +2,28 @@ part of 'authentication_cubit.dart';
 
 class AuthenticationState extends Equatable {
   final AuthenticationStates authenticationStates;
-  // final OnBoardingStates onBoardingStates;
+  final Failure? authenticationFailure;
+
   const AuthenticationState({
     required this.authenticationStates,
-    // required this.onBoardingStates,
+    this.authenticationFailure,
   });
 
   AuthenticationState copyWith({
     AuthenticationStates? authenticationStates,
     OnBoardingStates? onBoardingStates,
+    Failure? authenticationFailure,
   }) {
     return AuthenticationState(
       authenticationStates: authenticationStates ?? this.authenticationStates,
-      // onBoardingStates: onBoardingStates ?? this.onBoardingStates,
+      authenticationFailure:
+          authenticationFailure ?? this.authenticationFailure,
     );
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         authenticationStates,
-        // onBoardingStates,
+        authenticationFailure,
       ];
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 
 class AuthRemoteDataSourcesImpl {
@@ -26,7 +27,7 @@ class AuthRemoteDataSourcesImpl {
     required String password,
   }) async {
     try {
-      var response = await _auth.signInWithEmailAndPassword(
+      final response = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -101,7 +102,9 @@ class AuthRemoteDataSourcesImpl {
     try {
      await  _auth.sendPasswordResetEmail(email: emailAddress);
     } catch (e) {
-      throw AuthException(message: 'Something Went Wrong', statusCode: 402);
+      debugPrint('[log] : $e');
+
+      throw AuthException(message: e.toString(), statusCode: 402);
     }
   }
 }

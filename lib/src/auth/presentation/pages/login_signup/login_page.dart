@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/core/utils/open_other_apps.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
-import 'package:link_vault/src/auth/presentation/pages/forget_password/forget_password_home.dart';
+import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/password_reset.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
-import 'package:link_vault/src/auth/presentation/widgets/container_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard.dart';
@@ -84,17 +84,23 @@ class _LoginPageState extends State<LoginPage> {
               );
 
               if (state.authenticationStates == AuthenticationStates.signedIn) {
-                Navigator.pushReplacement(
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                     builder: (ctx) => const DashboardPage(),
                   ),
+                  (route) => route == AuthenticationHomePage,
                 );
               }
 
               if (state.authenticationStates ==
                   AuthenticationStates.errorSigningIn) {
-                // [TODO] : ScaffoldMessenger
+                // ScaffoldMessenger
+                showSnackbar(
+                  context: context,
+                  title: 'Something Went Wrong',
+                  subtitle: state.authenticationFailure?.errorMessage ?? '',
+                );
               }
             },
             builder: (context, state) {
@@ -168,12 +174,13 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 8),
                         TextButton(
                           onPressed: () {
-                            // [TODO]:COMPLETE FORGET PASSWORD
+                            // COMPLETE FORGET PASSWORD
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (ctx) => const ForgetPasswordResetPage(),
+                                builder: (ctx) =>
+                                    const ForgetPasswordResetPage(),
                               ),
                             );
                           },
@@ -196,7 +203,9 @@ class _LoginPageState extends State<LoginPage> {
                               child: CustomElevatedButton(
                                 text: 'Login',
                                 onPressed: () {
-                                  _submitForm(authcubit);
+                                  OpenOtherApps.openGmailApp();
+
+                                  // _submitForm(authcubit);
                                 },
                                 icon: state.authenticationStates ==
                                         AuthenticationStates.signingIn
@@ -212,24 +221,6 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: gap),
-                            // SizedBox(
-                            //   width: double.infinity,
-                            //   child: ContainerButton(
-                            //     text: 'Create Account',
-                            //     onPressed: () {
-                            //       Navigator.of(context).pushReplacement(
-                            //         MaterialPageRoute(
-                            //           builder: (ctx) => const SignUpPage(),
-                            //         ),
-                            //       );
-                            //     },
-                            //     backgroundColor:
-                            //         ColourPallette.salemgreen.withOpacity(0.10),
-                            //     textColor: ColourPallette.salemgreen,
-                            //   ),
-                            // ),
-                            // const SizedBox(height: gap - 6),
-
                             RichText(
                               text: TextSpan(
                                 text: ' New here? ',

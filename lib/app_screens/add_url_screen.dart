@@ -1,19 +1,17 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
 import 'package:link_vault/app_services/url_parsing/fetch_preview_details.dart';
-import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_folder_model.dart';
-import '../app_widgets/text_input.dart';
-import '../constants.dart';
+import 'package:link_vault/app_widgets/text_input.dart';
+import 'package:link_vault/constants.dart';
 
 class AddUrlScreen extends StatefulWidget {
+  const AddUrlScreen({
+    required this.rootFolderKey, super.key,
+    this.sharedUrl,
+  });
   final String rootFolderKey;
   final String? sharedUrl;
-  const AddUrlScreen({
-    Key? key,
-    required this.rootFolderKey,
-    this.sharedUrl,
-  }) : super(key: key);
 
   @override
   State<AddUrlScreen> createState() => _AddUrlScreenState();
@@ -21,19 +19,21 @@ class AddUrlScreen extends StatefulWidget {
 
 class _AddUrlScreenState extends State<AddUrlScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isSaving = false, _favourite = false;
-  String url = '', urlTitle = '';
+  bool _isSaving = false;
+  bool _favourite = false;
+  String url = '';
+  String urlTitle = '';
   String? desc = '';
 
   Future<void> saveUrl() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
-      LinkTreeFolder linkTree =
+      final linkTree =
           HiveService().getTreeData(widget.rootFolderKey)!;
-      final HiveService hiveService = HiveService();
-      final FetchPreviewDetails fetchPreviewDetails = FetchPreviewDetails();
-      Map<String, dynamic> idata = await fetchPreviewDetails.fetch(url);
+      final hiveService = HiveService();
+      final fetchPreviewDetails = FetchPreviewDetails();
+      final idata = await fetchPreviewDetails.fetch(url);
       idata['url_title'] = urlTitle;
       idata['user_note'] = desc ?? '';
       idata['url'] = url;
@@ -52,12 +52,12 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
     };
     */
       /// get list of url
-      List<Map<String, dynamic>> listUrl = linkTree.urls;
+      final listUrl = linkTree.urls;
 
       /// add idata to the list
       listUrl.insert(listUrl.length, idata);
 
-      LinkTreeFolder? parentFolder =
+      final parentFolder =
           hiveService.getTreeData(widget.rootFolderKey);
 
       if (parentFolder == null) return;
@@ -102,13 +102,11 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
           ),
         ),
         actions: [
-          _isSaving
-              ? Center(
+          if (_isSaving) Center(
                   child: CircularProgressIndicator.adaptive(
                     backgroundColor: Colors.green.shade800,
                   ),
-                )
-              : IconButton(
+                ) else IconButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
@@ -183,7 +181,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 TextInput(
                   label: 'TITLE',
@@ -212,7 +210,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 // IS fAVOURITE
                 Row(
@@ -236,7 +234,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 TextInput(
                   label: 'Add Note',
@@ -265,7 +263,7 @@ class _AddUrlScreenState extends State<AddUrlScreen> {
                 /// todo : add preview
                 const SizedBox(height: 20),
                 // const Text(
-                //     'TODO: Add url name\nTODO: Add insert at variable field\n todo : add preview show\n'),
+                //     '`TODO`: Add url name\n`TODO`: Add insert at variable field\n `todo` : add preview show\n'),
               ],
             ),
           ),

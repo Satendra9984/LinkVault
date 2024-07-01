@@ -50,6 +50,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         TextFormField(
           controller: widget.controller,
           cursorColor: ColourPallette.salemgreen,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             isDense: true,
             suffixIcon: widget.obscureText
@@ -66,6 +67,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               color: ColourPallette.salemgreen,
               fontWeight: FontWeight.w500,
             ),
+            
             fillColor: ColourPallette.mystic.withOpacity(0.5),
             filled: true,
             border: OutlineInputBorder(

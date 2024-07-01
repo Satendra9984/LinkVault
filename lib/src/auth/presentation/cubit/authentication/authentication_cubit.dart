@@ -2,6 +2,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
@@ -66,6 +67,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.errorSigningIn,
+            authenticationFailure: failed,
           ),
         );
       },

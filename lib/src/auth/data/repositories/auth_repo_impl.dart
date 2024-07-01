@@ -1,20 +1,19 @@
-import 'dart:ffi';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 
 class AuthRepositoryImpl {
-  final AuthRemoteDataSourcesImpl _authRemoteDataSourcesImpl;
-
   AuthRepositoryImpl({
     required AuthRemoteDataSourcesImpl authRemoteDataSourcesImpl,
   }) : _authRemoteDataSourcesImpl = authRemoteDataSourcesImpl;
+  final AuthRemoteDataSourcesImpl _authRemoteDataSourcesImpl;
 
   Either<Failure, bool> isLoggedIn() {
     try {
-      var result = _authRemoteDataSourcesImpl.isLoggedIn() != null;
+      final result = _authRemoteDataSourcesImpl.isLoggedIn() != null;
 
       return Right(result);
     } catch (e) {
@@ -32,15 +31,19 @@ class AuthRepositoryImpl {
     required String password,
   }) async {
     try {
-      var result = await _authRemoteDataSourcesImpl.signInWithEmailAndPassword(
+      final result =
+          await _authRemoteDataSourcesImpl.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       if (result == null) {
-        return Left(AuthFailure(
+        return Left(
+          AuthFailure(
             message: 'Could Not Authenticate. Something Went Wrong',
-            statusCode: 402));
+            statusCode: 402,
+          ),
+        );
       }
 
       return Right(result);
@@ -60,7 +63,8 @@ class AuthRepositoryImpl {
     required String password,
   }) async {
     try {
-      var result = await _authRemoteDataSourcesImpl.signUpWithEmailAndPassword(
+      final result =
+          await _authRemoteDataSourcesImpl.signUpWithEmailAndPassword(
         name: name,
         email: email,
         password: password,
@@ -90,7 +94,7 @@ class AuthRepositoryImpl {
   Future<Either<Failure, void>> signOut() async {
     try {
       await _authRemoteDataSourcesImpl.signOut();
-      return Right(unit);
+      return const Right(unit);
     } catch (e) {
       return Left(AuthFailure(message: 'Could signout ', statusCode: 402));
     }
@@ -100,14 +104,20 @@ class AuthRepositoryImpl {
     required String emailAddress,
   }) async {
     try {
-      return Right(unit);
+      // return Left(AuthFailure(message: 'Could Not Process ', statusCode: 402));
+      // return Right(unit);
 
       await _authRemoteDataSourcesImpl.sendPasswordResetLink(
         emailAddress: emailAddress,
       );
-      return Right(unit);
+      return const Right(unit);
+    } on AuthException catch (authException) {
+      return Left(AuthFailure(message: authException.message, statusCode: 402));
     } catch (e) {
-      return Left(AuthFailure(message: 'Could Not Process ', statusCode: 402));
+      // debugPrint('[log] : $e');
+      return Left(
+        AuthFailure(message: 'Something Went Wrong', statusCode: 402),
+      );
     }
   }
 }

@@ -1,14 +1,5 @@
 # link_vault
 
-
-## Design Inspiration
-https://dribbble.com/shots/22508697-Food-Mobile-App-Design
-https://dribbble.com/shots/17057529-File-Manager-Dashboard
-https://dribbble.com/shots/21981515-Bookmark-App-Concept
-
-// https://dribbble.com/shots/24079461-Mobile-Login-UI-Design
-// https://dribbble.com/shots/18504561-Mobile-App-Login-Screen
-
 ## Feature - Offline Viewing and Text Highlighting
 To enable offline viewing and highlighting of websites in your app, you'll need to follow a series of steps to save web content, allow users to view and interact with it offline, and provide functionality for highlighting and annotating. Below is a high-level overview and a more detailed approach to achieve this:
 

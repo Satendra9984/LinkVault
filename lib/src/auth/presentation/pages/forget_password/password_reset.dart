@@ -1,10 +1,9 @@
-// [UI] https://dribbble.com/shots/16519810-Xigman-Reset-Password
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/forget_password_states.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/check_email_page.dart';
@@ -45,7 +44,9 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: ColourPallette.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Form(
@@ -88,8 +89,7 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
               BlocConsumer<ForgetPasswordCubit, ForgetPasswordState>(
                 listener: (context, state) {
                   if (state.forgetPasswordStates ==
-                      ForgetPasswordStates
-                          .resetPasswordLinkSentSuccessfully) {
+                      ForgetPasswordStates.resetPasswordLinkSentSuccessfully) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -97,10 +97,15 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                       ),
                     );
                   }
-    
+
                   if (state.forgetPasswordStates ==
                       ForgetPasswordStates.errorSendingResetPasswordLink) {
-                    // [TODO] : SHOW ERROR SCAFFOLD MESSAGE
+                    // SHOW ERROR SCAFFOLD MESSAGE
+                    showSnackbar(
+                      context: context,
+                      title: 'Error',
+                      subtitle: state.forgetPasswordFailure?.errorMessage ?? '',
+                    );
                   }
                 },
                 builder: (context, state) {

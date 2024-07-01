@@ -6,9 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/core/utils/open_other_apps.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
-import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 
 class CheckYourEmailPage extends StatefulWidget {
   const CheckYourEmailPage({super.key});
@@ -41,7 +41,9 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: ColourPallette.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
@@ -96,24 +98,11 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+               const SizedBox(
                   width: double.infinity,
                   child: CustomElevatedButton(
                     text: 'Open Email App',
-                    onPressed: () {},
-                    // icon:null,
-                    // state.authenticationStates ==
-                    //         AuthenticationStates.signingIn
-                    //     ?
-                    //     const SizedBox(
-                    //   height: 24,
-                    //   width: 24,
-                    //   child: CircularProgressIndicator(
-                    //     backgroundColor: Colors.white,
-                    //     color: ColourPallette.bitterlemon,
-                    //   ),
-                    // )
-                    // : null,
+                    onPressed: OpenOtherApps.openGmailApp,
                   ),
                 ),
                 const SizedBox(height: 20),

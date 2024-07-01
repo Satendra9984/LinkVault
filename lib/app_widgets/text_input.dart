@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart' ;
 
 class TextInput extends StatelessWidget {
-  final String label;
-  final Widget formField;
   // final String hintText;
   const TextInput({
-    Key? key,
     // required this.hintText,
-    required this.formField,
-    required this.label,
-  }) : super(key: key);
+    required this.formField, required this.label, super.key,
+  });
+  final String label;
+  final Widget formField;
 
   /// for container decoration
-  final double blur = 2.0;
-  final Offset distance = const Offset(1.0, 1.0);
+  final double blur = 2;
+  final Offset distance = const Offset(1, 1);
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +53,7 @@ class TextInput extends StatelessWidget {
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.grey.shade900
                 : Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(12),
             // border: Border.all(color: Colors.grey),
           ),
           child: formField,

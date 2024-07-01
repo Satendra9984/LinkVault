@@ -1,13 +1,12 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 
 part 'onboarding_state.dart';
 
 class OnBoardCubit extends Cubit<OnBoardState> {
-  final OnBoardingRepoImpl _boardingRepoImpl;
 
   OnBoardCubit({
     required OnBoardingRepoImpl onBoardingRepoImpl,
@@ -17,6 +16,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
             onBoardingStates: OnBoardingStates.initial,
           ),
         );
+  final OnBoardingRepoImpl _boardingRepoImpl;
 
   void checkIfLoggedIn() {
     final result = _boardingRepoImpl.isLoggedIn();
