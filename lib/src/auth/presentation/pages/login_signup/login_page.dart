@@ -203,9 +203,9 @@ class _LoginPageState extends State<LoginPage> {
                               child: CustomElevatedButton(
                                 text: 'Login',
                                 onPressed: () {
-                                  OpenOtherApps.openGmailApp();
+                                  // OpenOtherApps.openGmailApp();
 
-                                  // _submitForm(authcubit);
+                                  _submitForm(authcubit);
                                 },
                                 icon: state.authenticationStates ==
                                         AuthenticationStates.signingIn

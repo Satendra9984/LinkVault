@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
+import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
+import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 
@@ -27,7 +30,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
     return BlocConsumer<OnBoardCubit, OnBoardState>(
       listener: (context, state) {
         debugPrint('[log] : listening onboarding');
-
+    
         if (state.onBoardingStates == OnBoardingStates.isLoggedIn) {
           // Navigator.pushReplacement(context,
           //     MaterialPageRoute(builder: (ctx) => const NewsListPage()));
@@ -35,7 +38,9 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
         if (state.onBoardingStates == OnBoardingStates.notLoggedIn) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (ctx) => const AuthenticationHomePage()),
+            MaterialPageRoute(
+              builder: (ctx) => const AuthenticationHomePage(),
+            ),
           );
         }
       },
