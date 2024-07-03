@@ -90,7 +90,7 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: SvgPicture.asset(
-                  MediaRes.mailboxBro,
+                  MediaRes.mailboxBroSVG,
                   semanticsLabel: 'Login Logo',
                 ),
               ),
@@ -98,7 +98,7 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-               const SizedBox(
+                const SizedBox(
                   width: double.infinity,
                   child: CustomElevatedButton(
                     text: 'Open Email App',

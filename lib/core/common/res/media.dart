@@ -3,14 +3,11 @@
 class MediaRes {
   MediaRes._();
 
-  static const String loginPassword = 'assets/images/login_password.svg';
-  static const String login = 'assets/images/login.svg';
-  static const String mailboxBro = 'assets/images/mailbox_bro.svg';
+  static const String loginPasswordSVG = 'assets/images/login_password.svg';
+  static const String loginSVG = 'assets/images/login.svg';
+  static const String mailboxBroSVG = 'assets/images/mailbox_bro.svg';
 
-
-
+  static const String savingMoenyPNG = 'assets/images/saving-money.png';
+  static const String solidarityPNG = 'assets/images/solidarity-concept.png';
   // static const String = '';
-  // static const String = '';
-  // static const String = '';
-
 }

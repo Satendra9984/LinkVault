@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
@@ -26,7 +27,7 @@ class AuthRepositoryImpl {
     }
   }
 
-  Future<Either<Failure, User>> signInWithEmailAndPassword({
+  Future<Either<Failure, GlobalUser>> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
@@ -45,7 +46,9 @@ class AuthRepositoryImpl {
           ),
         );
       }
-
+      
+      // [TODO] : Return a Global User
+      
       return Right(result);
     } catch (e) {
       return Left(
@@ -57,20 +60,20 @@ class AuthRepositoryImpl {
     }
   }
 
-  Future<Either<Failure, User>> signUpWithEmailAndPassword({
+  Future<Either<Failure, GlobalUser>> signUpWithEmailAndPassword({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
-      final result =
+      final globalUser =
           await _authRemoteDataSourcesImpl.signUpWithEmailAndPassword(
         name: name,
         email: email,
         password: password,
       );
 
-      if (result == null) {
+      if (globalUser == null) {
         return Left(
           AuthFailure(
             message: 'Could Not Sign Up. Something Went Wrong',
@@ -79,7 +82,7 @@ class AuthRepositoryImpl {
         );
       }
 
-      return Right(result);
+      return Right(globalUser);
     } catch (e) {
       // debugPrint()
       return Left(

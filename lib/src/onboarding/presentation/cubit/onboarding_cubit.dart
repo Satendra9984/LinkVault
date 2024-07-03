@@ -1,13 +1,15 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 
 part 'onboarding_state.dart';
 
 class OnBoardCubit extends Cubit<OnBoardState> {
-
   OnBoardCubit({
     required OnBoardingRepoImpl onBoardingRepoImpl,
   })  : _boardingRepoImpl = onBoardingRepoImpl,
@@ -18,8 +20,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
         );
   final OnBoardingRepoImpl _boardingRepoImpl;
 
-  void checkIfLoggedIn() {
-    final result = _boardingRepoImpl.isLoggedIn();
+  Future<void> checkIfLoggedIn() async {
+    final result = await _boardingRepoImpl.isLoggedIn();
     debugPrint('Current state before emit: $state');
 
     result.fold(
@@ -27,10 +29,15 @@ class OnBoardCubit extends Cubit<OnBoardState> {
         // debugPrint('Emitting notLoggedIn');
         emit(state.copyWith(onBoardingStates: OnBoardingStates.notLoggedIn));
       },
-      (loginRes) {
-        if (loginRes == true) {
+      (globalUser) {
+        if (globalUser != null) {
           // debugPrint('Emitting isLoggedIn');
-          emit(state.copyWith(onBoardingStates: OnBoardingStates.isLoggedIn));
+          emit(
+            state.copyWith(
+              onBoardingStates: OnBoardingStates.isLoggedIn,
+              globalUser: globalUser,
+            ),
+          );
         } else {
           // debugPrint('Emitting notLoggedIn false');
           emit(state.copyWith(onBoardingStates: OnBoardingStates.notLoggedIn));
@@ -38,5 +45,20 @@ class OnBoardCubit extends Cubit<OnBoardState> {
       },
     );
     debugPrint('Current state after emit: $state');
+  }
+
+  bool isCreditExpired() {
+    if (state.globalUser == null) {
+      return true;
+    }
+
+    final todayDate = DateTime.now();
+    final userCreditExpiryDate = state.globalUser!.creditExpiryDate;
+    // [todo] : testing check the dates
+    if (userCreditExpiryDate.compareTo(todayDate) > 0) {
+      return true;
+    }
+
+    return false;
   }
 }

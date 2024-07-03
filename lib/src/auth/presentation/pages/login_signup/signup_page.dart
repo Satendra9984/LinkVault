@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
@@ -10,6 +11,7 @@ import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/dashboard/presentation/dashboard.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -124,7 +126,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: SvgPicture.asset(
-                      MediaRes.login,
+                      MediaRes.loginSVG,
                       semanticsLabel: 'Login Logo',
                     ),
                   ),
@@ -158,11 +160,16 @@ class _SignUpPageState extends State<SignUpPage> {
                         debugPrint('[log] : authstate $state');
                         if (state.authenticationStates ==
                             AuthenticationStates.signedUp) {
-                          Navigator.pushReplacement(
+                          context
+                              .read<GlobalUserCubit>()
+                              .initializeGlobalUser(state.globalUser!);
+
+                          Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (ctx) => const LoginPage(),
+                              builder: (ctx) => const DashboardPage(),
                             ),
+                            (route) => false,
                           );
                         }
                         if (state.authenticationStates ==

@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/utils/open_other_apps.dart';
@@ -84,12 +85,16 @@ class _LoginPageState extends State<LoginPage> {
               );
 
               if (state.authenticationStates == AuthenticationStates.signedIn) {
+                context
+                    .read<GlobalUserCubit>()
+                    .initializeGlobalUser(state.globalUser!);
+
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                     builder: (ctx) => const DashboardPage(),
                   ),
-                  (route) => route == AuthenticationHomePage,
+                  (route) => false,
                 );
               }
 
@@ -148,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: SvgPicture.asset(
-                          MediaRes.loginPassword,
+                          MediaRes.loginPasswordSVG,
                           semanticsLabel: 'Login Logo',
                         ),
                       ),

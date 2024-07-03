@@ -3,6 +3,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
 
 part 'collections_state.dart';
 
@@ -11,6 +12,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       : super(
           const CollectionsState(
             collections: {},
+            currentCollection: '',
+            collectionLoadingStates: CollectionLoadingStates.initial,
           ),
         );
 

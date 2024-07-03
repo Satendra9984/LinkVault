@@ -1,13 +1,26 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:link_vault/core/common/constants/user_constants.dart';
+import 'package:link_vault/core/common/models/global_user_model.dart';
+import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 
 class AuthRemoteDataSourcesImpl {
-  AuthRemoteDataSourcesImpl({required FirebaseAuth auth}) : _auth = auth;
+  AuthRemoteDataSourcesImpl({
+    required FirebaseAuth auth,
+    // required FirebaseFirestore firestore,
+    required GlobalAuthDataSourceImpl globalAuthDataSourceImpl,
+  })  : _auth = auth,
+        // _firestore = firestore,
+        _globalAuthDataSourceImpl = globalAuthDataSourceImpl;
 
   final FirebaseAuth _auth;
+  // final FirebaseFirestore _firestore;
+
+  final GlobalAuthDataSourceImpl _globalAuthDataSourceImpl;
 
   User? isLoggedIn() {
     try {
@@ -22,7 +35,7 @@ class AuthRemoteDataSourcesImpl {
     }
   }
 
-  Future<User?> signInWithEmailAndPassword({
+  Future<GlobalUser?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
@@ -32,8 +45,15 @@ class AuthRemoteDataSourcesImpl {
         password: password,
       );
 
-      return response.user;
+      final userId = response.user!.uid;
+      // await _globalAuthDataSourceImpl.getUserFromFirestore(userId);
+
+      final globalUser =
+          await _globalAuthDataSourceImpl.getUserFromFirestore(userId);
+
+      return globalUser;
     } on FirebaseAuthException catch (e) {
+      debugPrint('[log] auth: ${e.message}');
       if (e.code == 'user-not-found') {
         throw LocalAuthException(
           message: 'No user found for that email.',
@@ -46,6 +66,8 @@ class AuthRemoteDataSourcesImpl {
         );
       }
     } catch (e) {
+      debugPrint('[log] auth: ${e}');
+
       throw LocalAuthException(
         message: 'Could Not Authenticate',
         statusCode: 400,
@@ -54,7 +76,7 @@ class AuthRemoteDataSourcesImpl {
     return null;
   }
 
-  Future<User?> signUpWithEmailAndPassword({
+  Future<GlobalUser?> signUpWithEmailAndPassword({
     required String name,
     required String email,
     required String password,
@@ -66,7 +88,24 @@ class AuthRemoteDataSourcesImpl {
         password: password,
       );
 
-      return credential.user;
+      final todayDate = DateTime.now();
+      final creditExpiryDate = todayDate.add(
+        const Duration(
+          days: accountSingUpCreditLimit,  // [TODO] : WILL CHANGE TO DAYS
+        ),
+      );
+
+      final globalUser = GlobalUser(
+        id: credential.user!.uid,
+        name: name,
+        email: email,
+        createdAt: todayDate,
+        creditExpiryDate: creditExpiryDate,
+      );
+
+      await _globalAuthDataSourceImpl.addUserToFirestore(globalUser);
+
+      return globalUser;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         throw LocalAuthException(
@@ -100,7 +139,7 @@ class AuthRemoteDataSourcesImpl {
     required String emailAddress,
   }) async {
     try {
-     await  _auth.sendPasswordResetEmail(email: emailAddress);
+      await _auth.sendPasswordResetEmail(email: emailAddress);
     } catch (e) {
       debugPrint('[log] : $e');
 

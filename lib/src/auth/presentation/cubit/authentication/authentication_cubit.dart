@@ -2,6 +2,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
@@ -46,6 +47,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.signedUp,
+            globalUser: result,
           ),
         );
       },
@@ -71,10 +73,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           ),
         );
       },
-      (result) {
+      (globalUser) {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.signedIn,
+            globalUser: globalUser,
           ),
         );
       },
