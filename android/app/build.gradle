@@ -63,12 +63,23 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
 }
 
 flutter {
     source '../..'
 }
 
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // implementation(name: 'appcompat-1.2.0', ext: 'aar')
+    // implementation 'com.google.android.gms:play-services-ads:21.3.0'
 }
+
