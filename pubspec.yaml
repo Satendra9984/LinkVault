@@ -41,6 +41,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_svg: ^2.0.9
   cloud_firestore: ^5.0.2
+  google_mobile_ads: ^2.4.0
 
 dev_dependencies:
   flutter_test:

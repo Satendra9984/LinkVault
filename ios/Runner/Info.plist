@@ -62,8 +62,8 @@
 		</dict>
 	 <dict/>
 	</array>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>To upload photos, please allow permission to access your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To upload photos, please allow permission to access your photo library.</string>
 
     <key>LSApplicationQueriesSchemes</key>
     <array>
@@ -112,6 +112,7 @@
     		<string>com.apple.share-services</string>
     	</dict>
 		<key>LSApplicationQueriesSchemes</key>
-
+    <key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-9004947579124903~6181417192</string>
 </dict>
 </plist>
