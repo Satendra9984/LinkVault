@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
@@ -24,13 +27,26 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         );
   final RewardedAdRepoImpl _adRepoImpl;
 
+  bool _isSdkInitialized = false;
+
   Future<void> initialize() async {
     await MobileAds.instance.initialize();
   }
 
   Future<void> loadRewardedAd() async {
-    final loadResult = await _adRepoImpl.loadAd();
+    debugPrint('[log] : loading a new ad');
+    emit(
+      state.copyWith(
+        loadingStates: LoadingStates.loading,
+      ),
+    );
 
+    if (_isSdkInitialized == false) {
+      await initialize();
+      _isSdkInitialized = !_isSdkInitialized;
+    }
+
+    final loadResult = await _adRepoImpl.loadAd();
     loadResult.fold(
       (failed) {
         emit(
@@ -49,16 +65,24 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     );
   }
 
-  Future<void> showRewardedAd({
+  Future<bool> showRewardedAd({
     required GlobalUser globalUser,
   }) async {
+    emit(
+      state.copyWith(
+        videoWatchingStates: LoadingStates.loading,
+      ),
+    );
     final loadResult = await _adRepoImpl.showRewardedAd(globalUser: globalUser);
+
+    var isLoaded = false;
 
     loadResult.fold(
       (failed) {
         emit(
           state.copyWith(
             videoWatchingStates: LoadingStates.errorLoading,
+            loadingStates: LoadingStates.loading,
           ),
         );
       },
@@ -66,10 +90,16 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             videoWatchingStates: LoadingStates.loaded,
+            loadingStates: LoadingStates.loading,
             globalUser: newGlobalUser,
           ),
         );
+        isLoaded = true;
       },
     );
+
+    unawaited(loadRewardedAd());
+
+    return isLoaded;
   }
 }

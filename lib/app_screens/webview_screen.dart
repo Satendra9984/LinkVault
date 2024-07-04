@@ -20,7 +20,26 @@ class _WebViewScreenState extends State<WebViewScreen> {
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onHttpError: (HttpResponseError error) {},
+          onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('https://www.youtube.com/')) {
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
   }
 
   @override
@@ -30,29 +49,21 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      onPopInvoked: (willPop) async {
         if (await _controller.canGoBack()) {
           _controller.goBack();
-          return false;
+          // return false;
         } else if (await _controller.canGoBack() == false) {
           Navigator.of(context).pop();
         }
-        return true;
+        // return true;
       },
       child: Scaffold(
         body: SafeArea(
-          child: WebView(
-            initialUrl: widget.url,
-            userAgent: 'random',
-            javascriptMode: JavascriptMode.unrestricted,
-            onWebViewCreated: (WebViewController webViewController) {
-              _controller = webViewController;
-            },
-            navigationDelegate: (NavigationRequest request) {
-              _launchURL(request.url);
-              return NavigationDecision.navigate;
-            },
+          child: WebViewWidget (
+            controller: _controller,
+
           ),
         ),
       ),

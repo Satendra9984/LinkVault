@@ -23,8 +23,12 @@ class RewardedAdRepoImpl {
   RewardedAd? get rewardedAd => _rewardedAd;
 
   final _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-9004947579124903/9607023869'
-      : 'ca-app-pub-9004947579124903/9180149465';
+      ? 'ca-app-pub-3940256099942544/5224354917'
+      : 'ca-app-pub-3940256099942544/1712485313';
+
+  // [TODO] : USE THESE KEYS FOR PRODUCTION
+  // ? 'ca-app-pub-9004947579124903/9607023869'
+  // : 'ca-app-pub-9004947579124903/9180149465';
 
   Future<Either<Failure, Unit>> loadAd() async {
     try {
@@ -72,10 +76,9 @@ class RewardedAdRepoImpl {
       );
 
       final currentExpiryDate = globalUser.creditExpiryDate;
-      final nextExpiryDate = currentExpiryDate
-          .add(
-            const Duration(days: accountSingUpCreditLimit),
-          );
+      final nextExpiryDate = currentExpiryDate.add(
+        const Duration(days: rewardedAdCreditLimit),
+      );
 
       await _subsciptionRemoteDataSources.rewardUserForWatchingVideo(
         userId: globalUser.id,
@@ -87,6 +90,7 @@ class RewardedAdRepoImpl {
 
       return Right(newGlobalUser);
     } catch (e) {
+      debugPrint('[log] : showad $e');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',

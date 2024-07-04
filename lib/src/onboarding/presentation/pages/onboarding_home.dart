@@ -40,11 +40,9 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
               .initializeGlobalUser(state.globalUser!);
 
           if (onBoardCubit.isCreditExpired()) {
-            Navigator.pushReplacement(
+            Navigator.pushReplacementNamed(
               context,
-              MaterialPageRoute(
-                builder: (ctx) => const SubscriptionPage(),
-              ),
+              SubscriptionPage.routeName ,
             );
           } else {
             Navigator.pushReplacement(
