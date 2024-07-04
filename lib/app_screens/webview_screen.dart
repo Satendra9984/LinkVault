@@ -5,11 +5,10 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewScreen extends StatefulWidget {
-  final String url;
   const WebViewScreen({
-    Key? key,
-    required this.url,
-  }) : super(key: key);
+    required this.url, super.key,
+  });
+  final String url;
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
@@ -45,7 +44,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         body: SafeArea(
           child: WebView(
             initialUrl: widget.url,
-            userAgent: "random",
+            userAgent: 'random',
             javascriptMode: JavascriptMode.unrestricted,
             onWebViewCreated: (WebViewController webViewController) {
               _controller = webViewController;

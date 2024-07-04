@@ -1,21 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class PreviewAspectRatio extends StatelessWidget {
+
+  const PreviewAspectRatio({
+    required this.imageData, required this.onPress, super.key,
+  });
   final Map<String, dynamic> imageData;
   final void Function() onPress;
 
-  const PreviewAspectRatio({
-    Key? key,
-    required this.imageData,
-    required this.onPress,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    Offset distance = const Offset(0.0, 0.0);
-    double blur = 0.0;
+    const distance = Offset(0, 0);
+    const blur = 0.0;
 
-    EdgeInsets _padding = const EdgeInsets.all(1);
+    const padding = EdgeInsets.all(1);
     return GestureDetector(
       onTap: onPress,
       child: Column(
@@ -31,7 +31,6 @@ class PreviewAspectRatio extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   blurRadius: blur,
-                  offset: distance,
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.black
                       : Colors.grey.shade600,
@@ -47,15 +46,15 @@ class PreviewAspectRatio extends StatelessWidget {
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.grey.shade900
                   : Colors.white,
-              borderRadius: BorderRadius.circular(13.0),
+              borderRadius: BorderRadius.circular(13),
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               child: Image.memory(
-                imageData['image'],
+                imageData['image']as Uint8List,
                 errorBuilder: (context, object, stackTrace) {
                   try {
-                    return Image.memory(imageData['favicon']);
+                    return Image.memory(imageData['favicon'] as Uint8List);
                   } catch (e) {
                     return Image.asset(
                       'assets/images/icon3.png',
@@ -67,11 +66,11 @@ class PreviewAspectRatio extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               children: [
                 Text(
-                  imageData['image_title'],
+                  imageData['image_title'].toString(),
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: TextStyle(
@@ -84,7 +83,7 @@ class PreviewAspectRatio extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  imageData['description'],
+                  imageData['description'].toString(),
                   softWrap: true,
                   textAlign: TextAlign.start,
                   style: TextStyle(

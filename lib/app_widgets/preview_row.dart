@@ -1,23 +1,23 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class PreviewRowWidget extends StatelessWidget {
-  final Map<String, dynamic> imageData;
-  final void Function() onPress;
 
   const PreviewRowWidget({
-    Key? key,
-    required this.imageData,
-    required this.onPress,
-  }) : super(key: key);
+    required this.imageData, required this.onPress, super.key,
+  });
+  final Map<String, dynamic> imageData;
+  final void Function() onPress;
 
   // bool isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    Offset distance = const Offset(0.0, 0.0);
-    double blur = 0.0;
+    const distance = Offset(0, 0);
+    const blur = 0.0;
 
-    EdgeInsets _padding = const EdgeInsets.all(5);
+    const padding = EdgeInsets.all(5);
     return GestureDetector(
       onTap: onPress,
       child: Row(
@@ -28,7 +28,7 @@ class PreviewRowWidget extends StatelessWidget {
             child: Container(
               height: 64,
               width: 64,
-              padding: _padding,
+              padding: padding,
               alignment: Alignment.center,
               margin: const EdgeInsets.only(left: 2.5, right: 2.5, top: 5),
               decoration: BoxDecoration(
@@ -36,7 +36,6 @@ class PreviewRowWidget extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: blur,
-                    offset: distance,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.black
                         : Colors.grey.shade600,
@@ -54,15 +53,15 @@ class PreviewRowWidget extends StatelessWidget {
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.grey.shade900
                     : Colors.white,
-                borderRadius: BorderRadius.circular(13.0),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image.memory(
-                  imageData['favicon'],
+                  imageData['favicon'] as Uint8List,
                   errorBuilder: (context, object, stackTrace) {
                     try {
-                      return Image.memory(imageData['favicon']);
+                      return Image.memory(imageData['favicon'] as Uint8List);
                     } catch (e) {
                       return Image.asset(
                         'assets/images/icon3.png',
@@ -81,10 +80,9 @@ class PreviewRowWidget extends StatelessWidget {
                   const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
               alignment: Alignment.center,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    imageData['image_title'],
+                    imageData['image_title'].toString(),
                     softWrap: true,
                     textAlign: TextAlign.start,
                     style: TextStyle(
@@ -96,7 +94,7 @@ class PreviewRowWidget extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    imageData['description'],
+                    imageData['description'].toString(),
                     softWrap: true,
                     textAlign: TextAlign.start,
                     style: TextStyle(

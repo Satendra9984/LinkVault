@@ -1,6 +1,6 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.web_link_store">
+    package="com.example.link_vault">
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
@@ -21,8 +21,17 @@
             <data android:scheme="http" />
         </intent>
         <intent>
-            <action android:name="android.intent.action.DIAL" />
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <!-- If your app checks for call support -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
             <data android:scheme="tel" />
+        </intent>
+        <!-- If your application checks for inAppBrowserView launch mode support -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
         <intent>
             <action android:name="android.intent.action.SEND" />
@@ -31,11 +40,11 @@
     </queries>
 
     <application
-        android:label="LinkVault"
+        android:label="link_vault"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">
-        <!--            android:launchMode="singleTop"-->
+        <!--android:launchMode="singleTop"-->
 
         <activity
             android:name=".MainActivity"
@@ -111,6 +120,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9004947579124903~7491162260"/>
     </application>
 </manifest>
 
@@ -123,14 +135,14 @@
 
 
 <!--<manifest xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    package="com.example.web_link_store">-->
+<!--    package="com.example.link_vault">-->
 <!--    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>-->
 <!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>-->
 
 <!--    &lt;!&ndash; Permissions options for the `manage external storage` group &ndash;&gt;-->
 <!--    <uses-permission android:name="android.permission.INTERNET"/> &lt;!&ndash; Add this &ndash;&gt;-->
 <!--    <application-->
-<!--        android:label="com.example.web_link_store"-->
+<!--        android:label="com.example.link_vault"-->
 <!--        android:name="${applicationName}"-->
 <!--        android:usesCleartextTraffic="true"-->
 <!--        android:icon="@mipmap/launcher_icon"-->

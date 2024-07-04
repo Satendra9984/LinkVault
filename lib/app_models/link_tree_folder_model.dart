@@ -3,6 +3,17 @@ part 'link_tree_folder_model.g.dart';
 
 @HiveType(typeId: 1)
 class LinkTreeFolder {
+
+  LinkTreeFolder({
+    required this.id,
+    required this.parentFolderId,
+    required this.subFolders,
+    required this.urls,
+    required this.folderName,
+    this.isFavourite = false,
+    this.category = 'Default',
+    this.description,
+  });
   /// id of this LinkTree
   @HiveField(0)
   final String id;
@@ -45,15 +56,4 @@ class LinkTreeFolder {
 
   @HiveField(7)
   String? description;
-
-  LinkTreeFolder({
-    required this.id,
-    required this.parentFolderId,
-    required this.subFolders,
-    required this.urls,
-    required this.folderName,
-    this.isFavourite = false,
-    this.category = 'Default',
-    this.description,
-  });
 }

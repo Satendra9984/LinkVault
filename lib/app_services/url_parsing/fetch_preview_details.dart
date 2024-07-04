@@ -10,10 +10,12 @@ class FetchPreviewDetails {
     final response = await client.get(Uri.parse(_validateUrl(url)));
     final document = parse(response.body);
 
-    String? title, description, image;
+    String? title;
+    String? description;
+    String? image;
     Map<String, dynamic>? desc;
-    var element = document.getElementsByTagName('meta');
-    for (var tmg in element) {
+    final element = document.getElementsByTagName('meta');
+    for (final tmg in element) {
       if (tmg.attributes['property'] == 'og:title') {
         title = tmg.attributes['content'];
       }
@@ -35,8 +37,8 @@ class FetchPreviewDetails {
         image = tmg.attributes['content'];
       }
 
-      var linkElements = document.getElementsByTagName('link');
-      for (var element in linkElements) {
+      final linkElements = document.getElementsByTagName('link');
+      for (final element in linkElements) {
         if (image == null &&
             element.attributes['rel']?.contains('icon') == true) {
           image = element.attributes['href'];
@@ -53,8 +55,8 @@ class FetchPreviewDetails {
       image = '$url$image';
     }
     // print('image sent for unit8 --> $image');
-    Uint8List imageUint = await getUint8List(image);
-    Uint8List faviconUint = await getUint8List(
+    final imageUint = await getUint8List(image);
+    final faviconUint = await getUint8List(
       'https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=$url&size=64',
     );
     desc = await getImageInfo(image);
@@ -88,8 +90,8 @@ class FetchPreviewDetails {
 
   Future<Map<String, dynamic>> getImageInfo(String webUrl) async {
     try {
-      Completer<Size> completer = Completer();
-      Image image = Image.network(webUrl);
+      final  completer = Completer<Size>();
+      final image = Image.network(webUrl);
       image.image
           .resolve(
             const ImageConfiguration(),
@@ -97,19 +99,19 @@ class FetchPreviewDetails {
           .addListener(
             ImageStreamListener(
               (ImageInfo image, bool synchronousCall) {
-                var myImage = image.image;
-                Size size =
+                final myImage = image.image;
+                final size =
                     Size(myImage.width.toDouble(), myImage.height.toDouble());
                 completer.complete(size);
               },
               onError: (object, stackTrace) {
-                Size size = const Size(0, 0);
+                const size = Size(0, 0);
                 completer.complete(size);
               },
             ),
           );
 
-      Future<Size> info = completer.future;
+      final info = completer.future;
 
       return info.then(
         (value) {
@@ -128,7 +130,7 @@ class FetchPreviewDetails {
   }
 
   String getTitle(String url) {
-    String title = url;
+    var title = url;
 
     if (title.startsWith('https://')) {
       title = title.substring(8, title.length);
@@ -138,7 +140,7 @@ class FetchPreviewDetails {
       title = title.substring(4, title.length);
       // debugPrint('gettitle2 --> $title');
     }
-    int firstSlashIndex = title.indexOf('/');
+    final  firstSlashIndex = title.indexOf('/');
     if (firstSlashIndex != -1) {
       debugPrint(firstSlashIndex.toString());
       title = title.substring(0, firstSlashIndex);
@@ -155,14 +157,14 @@ class FetchPreviewDetails {
   Future<Uint8List> getUint8List(String url) async {
     // print('url for uint8 --> $url');
     try {
-      Uint8List bytes = (await NetworkAssetBundle(Uri.parse(url)).load(url))
+      final bytes = (await NetworkAssetBundle(Uri.parse(url)).load(url))
           .buffer
           .asUint8List();
 
       return bytes;
     } catch (e) {
       try {
-        Uint8List bytes = (await NetworkAssetBundle(Uri.parse(url)).load(
+        final bytes = (await NetworkAssetBundle(Uri.parse(url)).load(
           'https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=$url&size=64',
         ))
             .buffer
@@ -171,9 +173,9 @@ class FetchPreviewDetails {
         return bytes;
       } catch (e) {
         // Uint8 bytes = await rootBundle.load('assets/images/click.png');
-        final ByteData _bytes =
+        final bytes0 =
             await rootBundle.load('assets/images/click3d.png');
-        final Uint8List list = _bytes.buffer.asUint8List();
+        final list = bytes0.buffer.asUint8List();
 
         return list;
       }

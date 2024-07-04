@@ -2,24 +2,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_providers/receive_text.dart';
+import 'package:link_vault/app_screens/add_folder_screen.dart';
+import 'package:link_vault/app_screens/add_url_screen.dart';
+import 'package:link_vault/app_screens/update_folder_screen.dart';
+import 'package:link_vault/app_screens/update_url_screen.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_widgets/favicons.dart';
+import 'package:link_vault/app_widgets/folder_icon_button.dart';
+import 'package:link_vault/app_widgets/preview_grid.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web_link_store/app_providers/receive_text.dart';
-import 'package:web_link_store/app_screens/add_folder_screen.dart';
-import 'package:web_link_store/app_widgets/favicons.dart';
-import 'package:web_link_store/app_screens/update_folder_screen.dart';
-import 'package:web_link_store/app_screens/update_url_screen.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
-import 'package:web_link_store/app_widgets/folder_icon_button.dart';
-import '../app_models/link_tree_folder_model.dart';
-import '../app_widgets/preview_grid.dart';
-import 'add_url_screen.dart';
 
 class StorePage extends StatefulWidget {
-  final String parentFolderId;
   const StorePage({
-    Key? key,
-    required this.parentFolderId,
-  }) : super(key: key);
+    required this.parentFolderId, super.key,
+  });
+  final String parentFolderId;
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -28,7 +27,7 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   final backgroundColor = const Color(0xFFE7ECEF);
   String _view = 'Icons';
-  String _folderName = "";
+  String _folderName = '';
   List<LinkTreeFolder> folderList = [];
   List<Map<String, dynamic>> urlList = [];
 
@@ -54,27 +53,27 @@ class _StorePageState extends State<StorePage> {
   }
 
   int _getCount() {
-    double screenWidth = MediaQuery.of(context).size.width;
-    int screenWidthInt = screenWidth.toInt();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final  screenWidthInt = screenWidth.toInt();
     // print('width --> $screenWidthInt\n');
-    int count = screenWidthInt ~/ 88;
+    final  count = screenWidthInt ~/ 88;
     return count;
   }
 
   void _initializeLinkTreeList() {
-    HiveService hiveService = HiveService();
+    final hiveService = HiveService();
 
-    LinkTreeFolder? parentFolderId =
+    final parentFolderId =
         hiveService.getTreeData(widget.parentFolderId);
 
     if (parentFolderId != null) {
-      List<String> keys = parentFolderId.subFolders;
+      final keys = parentFolderId.subFolders;
       setState(
         () {
           _folderName = parentFolderId.folderName;
           folderList = [];
-          for (String id in keys) {
-            LinkTreeFolder? subLinkTree = hiveService.getTreeData(id);
+          for (final id in keys) {
+            final subLinkTree = hiveService.getTreeData(id);
 
             if (subLinkTree != null) {
               folderList.add(subLinkTree);
@@ -115,26 +114,26 @@ class _StorePageState extends State<StorePage> {
         ),
       ),
       body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Folders",
+                'Folders',
                 style: TextStyle(
-                  fontSize: 18.0,
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: Colors.grey.shade100,
                   ),
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(16),
                   color: Colors.grey.shade50,
                 ),
                 child: AlignedGridView.count(
@@ -142,8 +141,8 @@ class _StorePageState extends State<StorePage> {
                   shrinkWrap: true,
                   itemCount: folderList.length + 1,
                   crossAxisCount: _getCount(),
-                  mainAxisSpacing: 8.0,
-                  crossAxisSpacing: 2.0,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 2,
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       return GestureDetector(
@@ -166,11 +165,10 @@ class _StorePageState extends State<StorePage> {
                           // width: 60,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.create_new_folder_outlined,
-                                size: 28.0,
+                                size: 28,
                                 color: Colors.grey.shade800,
                               ),
                               Container(
@@ -249,9 +247,9 @@ class _StorePageState extends State<StorePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Links",
+                    'Links',
                     style: TextStyle(
-                      fontSize: 18.0,
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -270,12 +268,12 @@ class _StorePageState extends State<StorePage> {
                     itemBuilder: (context) {
                       return [
                         const PopupMenuItem(
-                          child: Text('Icons only'),
                           value: 'Icons',
+                          child: Text('Icons only'),
                         ),
                         const PopupMenuItem(
-                          child: Text('Preview only'),
                           value: 'Preview',
+                          child: Text('Preview only'),
                         ),
                         // const PopupMenuItem(
                         //   child: Text('Icons && Preview'),
@@ -289,15 +287,15 @@ class _StorePageState extends State<StorePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               if (_view == 'Icons' || _view == 'Icons && Preview')
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: Colors.grey.shade100,
                     ),
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(16),
                     color: Colors.grey.shade50,
                   ),
                   child: AlignedGridView.count(
@@ -329,11 +327,10 @@ class _StorePageState extends State<StorePage> {
                             width: 60,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.add_link_rounded,
-                                  size: 28.0,
+                                  size: 28,
                                   color: Colors.grey.shade800,
                                 ),
                                 Container(
@@ -384,8 +381,9 @@ class _StorePageState extends State<StorePage> {
                         },
                         onPress: () async {
                           if (await canLaunchUrl(
-                              Uri.parse(urlList[index]['url']))) {
-                            await launchUrl(Uri.parse(urlList[index]['url']));
+                              Uri.parse(urlList[index]['url'].toString()),)) {
+                            await launchUrl(
+                                Uri.parse(urlList[index]['url'].toString()),);
                           } else {
                             throw 'Could not launch ${urlList[index]['url']}';
                           }
@@ -407,12 +405,12 @@ class _StorePageState extends State<StorePage> {
                     return Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: Colors.grey.shade100,
                             ),
-                            borderRadius: BorderRadius.circular(16.0),
+                            borderRadius: BorderRadius.circular(16),
                             color: Colors.grey.shade50,
                           ),
                           child: Preview(
@@ -434,8 +432,9 @@ class _StorePageState extends State<StorePage> {
                             },
                             onPress: () async {
                               if (await canLaunchUrl(
-                                  Uri.parse(urlList[ind]['url']))) {
-                                await launchUrl(Uri.parse(urlList[ind]['url']));
+                                  Uri.parse(urlList[ind]['url'].toString()),)) {
+                                await launchUrl(
+                                    Uri.parse(urlList[ind]['url'].toString()),);
                               } else {
                                 throw 'Could not launch ${urlList[ind]['url']}';
                               }
@@ -462,8 +461,8 @@ class _StorePageState extends State<StorePage> {
           final receiveNotifier = ref.watch(receiveTextProvider);
           final changeNotifier = ref.read(receiveTextProvider.notifier);
 
-          final TextStyle labelStyle = TextStyle(
-            fontSize: 16.0,
+          final labelStyle = TextStyle(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.grey.shade800,
           );
@@ -484,7 +483,7 @@ class _StorePageState extends State<StorePage> {
                               Icons.cancel_outlined,
                               color: Colors.redAccent,
                             ),
-                            const SizedBox(height: 4.0),
+                            const SizedBox(height: 4),
                             Text(
                               'Cancel',
                               style: labelStyle,
@@ -500,7 +499,7 @@ class _StorePageState extends State<StorePage> {
                                 rootFolderKey: widget.parentFolderId,
                                 sharedUrl: receiveNotifier.receivedText,
                               );
-                            }),
+                            },),
 
                             /// changed to false again
                           ).then((value) {
@@ -514,7 +513,7 @@ class _StorePageState extends State<StorePage> {
                               Icons.file_copy,
                               color: Colors.blueAccent,
                             ),
-                            const SizedBox(height: 4.0),
+                            const SizedBox(height: 4),
                             Text(
                               'Paste',
                               style: labelStyle,

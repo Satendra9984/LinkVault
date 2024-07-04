@@ -1,16 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 
 class FaviconsGrid extends StatefulWidget {
+
+  const FaviconsGrid({
+    required this.onDoubleTap, required this.onPress, required this.imageUrl, super.key,
+  });
   final Map imageUrl;
   final void Function() onDoubleTap;
   final void Function() onPress;
-
-  const FaviconsGrid({
-    Key? key,
-    required this.onDoubleTap,
-    required this.onPress,
-    required this.imageUrl,
-  }) : super(key: key);
 
   @override
   State<FaviconsGrid> createState() => _FaviconsGridState();
@@ -30,7 +29,7 @@ class _FaviconsGridState extends State<FaviconsGrid> {
     //     isPressed ? const Offset(0.5, 0.5) : const Offset(1.0, 1.0);
     // double blur = isPressed ? 2.0 : 1.0;
 
-    EdgeInsets _padding =
+    final padding =
         isPressed ? const EdgeInsets.all(8) : const EdgeInsets.all(5);
 
     return Listener(
@@ -53,19 +52,18 @@ class _FaviconsGridState extends State<FaviconsGrid> {
           });
         },
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             AnimatedContainer(
               height: 56,
               width: 56,
               duration: const Duration(milliseconds: 30),
-              padding: _padding,
+              padding: padding,
               alignment: Alignment.center,
               margin: const EdgeInsets.only(left: 10, right: 10, top: 5),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image.memory(
-                  widget.imageUrl['favicon'],
+                  widget.imageUrl['favicon']as Uint8List,
                   errorBuilder: (context, object, stackTrace) {
                     return Image.asset('assets/images/click.png');
                   },
@@ -77,7 +75,7 @@ class _FaviconsGridState extends State<FaviconsGrid> {
               padding: const EdgeInsets.only(left: 4, right: 4),
               alignment: Alignment.center,
               child: Text(
-                widget.imageUrl['url_title'],
+                widget.imageUrl['url_title'].toString(),
                 softWrap: true,
                 textAlign: TextAlign.center,
                 maxLines: 2,

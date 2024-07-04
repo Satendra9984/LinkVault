@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>LinkVault</string>
+	<string>link_vault</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>LinkVault</string>
+	<string>link_vault</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -62,8 +62,8 @@
 		</dict>
 	 <dict/>
 	</array>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>To upload photos, please allow permission to access your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To upload photos, please allow permission to access your photo library.</string>
 
     <key>LSApplicationQueriesSchemes</key>
     <array>
@@ -111,5 +111,8 @@
     		<key>NSExtensionPointIdentifier</key>
     		<string>com.apple.share-services</string>
     	</dict>
+		<key>LSApplicationQueriesSchemes</key>
+    <key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-9004947579124903~6181417192</string>
 </dict>
 </plist>

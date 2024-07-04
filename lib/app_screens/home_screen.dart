@@ -1,16 +1,17 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_providers/receive_text.dart';
+import 'package:link_vault/app_screens/dashboard.dart';
+import 'package:link_vault/app_screens/store_screen.dart';
+import 'package:link_vault/app_services/databases/database_constants.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:web_link_store/app_providers/receive_text.dart';
-import 'package:web_link_store/app_screens/dashboard.dart';
-import 'package:web_link_store/app_screens/store_screen.dart';
-import 'package:web_link_store/app_services/databases/database_constants.dart';
-import 'package:web_link_store/app_services/databases/hive_database.dart';
-import '../app_models/link_tree_folder_model.dart';
 
 class HomePage extends ConsumerStatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -21,8 +22,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   late final PageController _pageController;
   int _currentIndex = 0;
   LinkTreeFolder _getBaseTree() {
-    final HiveService hiveService = HiveService();
-    LinkTreeFolder? baseFolder = hiveService.getTreeData(kRootDirectory);
+    final hiveService = HiveService();
+    var baseFolder = hiveService.getTreeData(kRootDirectory);
 
     if (baseFolder != null) {
       return baseFolder;
@@ -30,10 +31,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     hiveService.add(
       LinkTreeFolder(
         id: kRootDirectory,
-        parentFolderId: kRootDirectory + "Parent",
+        parentFolderId: '${kRootDirectory}Parent',
         subFolders: [],
         urls: [],
-        folderName: 'LinkVault',
+        folderName: 'link_vault',
       ),
     );
 
@@ -51,7 +52,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ReceiveSharingIntent.instance.getMediaStream().listen((value) {
       final rec = ref.read(receiveTextProvider.notifier);
 
-      for (var file in value) {
+      for (final file in value) {
         if (file.type == SharedMediaType.text) {
           if (value.isNotEmpty) {
             rec.changeState(true, file.path);
@@ -66,7 +67,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ReceiveSharingIntent.instance.getInitialMedia().then((value) {
       final rec = ref.read(receiveTextProvider.notifier);
 
-      for (var file in value) {
+      for (final file in value) {
         if (file.type == SharedMediaType.text) {
           if (value.isNotEmpty) {
             rec.changeState(true, file.path);
@@ -89,11 +90,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: Material(
-        elevation: 8.0,
+        elevation: 8,
         shadowColor: Colors.grey.shade800,
         child: BottomNavigationBar(
-          elevation: 4.0,
-         
+          elevation: 4,
           currentIndex: _currentIndex,
           onTap: (currentPage) {
             _pageController.jumpToPage(currentPage);
@@ -124,9 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           _currentIndex = index;
         }),
         children: [
-          StorePage(
-            parentFolderId: _getBaseTree().id
-          ),
+          StorePage(parentFolderId: _getBaseTree().id),
           const DashboardScreen(),
         ],
       ),

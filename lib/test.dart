@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TestScreen extends StatelessWidget {
-  const TestScreen({Key? key}) : super(key: key);
+  const TestScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +11,9 @@ class TestScreen extends StatelessWidget {
           decoration: const BoxDecoration(
               image: DecorationImage(
             image: NetworkImage(
-                'https://dev.to/social_previews/article/430257.png'),
+                'https://dev.to/social_previews/article/430257.png',),
             fit: BoxFit.contain,
-          )),
+          ),),
         ),
       ),
     );

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-
-import '../app_services/databases/hive_database.dart';
-import '../app_models/link_tree_folder_model.dart';
-import '../app_widgets/text_input.dart';
-import '../constants.dart';
+import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/app_services/databases/hive_database.dart';
+import 'package:link_vault/app_widgets/text_input.dart';
+import 'package:link_vault/constants.dart';
 
 class UpdateFolder extends StatefulWidget {
-  final LinkTreeFolder currentFolder;
   const UpdateFolder({
-    Key? key,
-    required this.currentFolder,
-  }) : super(key: key);
+    required this.currentFolder, super.key,
+  });
+  final LinkTreeFolder currentFolder;
 
   @override
   State<UpdateFolder> createState() => _UpdateFolderState();
@@ -21,7 +19,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
   String _title = '';
   String? _desc = '';
   bool _favourite = false;
-  String _selectedCategory = "";
+  String _selectedCategory = '';
   final List<String> _predefinedCategories = [
     'Work',
     'Personal',
@@ -42,17 +40,17 @@ class _UpdateFolderState extends State<UpdateFolder> {
     'Projects',
     'Blogs',
     'Tutorials',
-    'Utilities'
+    'Utilities',
   ];
 
   Future<void> saveFolder() async {
     final isValid = _formKey.currentState!.validate();
-    final HiveService hiveService = HiveService();
+    final hiveService = HiveService();
 
     if (isValid) {
       _formKey.currentState!.save();
 
-      LinkTreeFolder updatedFolder = LinkTreeFolder(
+      final updatedFolder = LinkTreeFolder(
         id: widget.currentFolder.id,
         folderName: _title,
         parentFolderId: widget.currentFolder.parentFolderId,
@@ -74,16 +72,16 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
   Future<void> deleteSubFolders(String id) async {
     /// get folder
-    HiveService hs = HiveService();
-    LinkTreeFolder? linkTree = hs.getTreeData(id);
+    final hs = HiveService();
+    final linkTree = hs.getTreeData(id);
 
     if (linkTree != null) {
-      List<String> keys = linkTree.subFolders;
+      final keys = linkTree.subFolders;
 
       if (keys.isEmpty) {
         return;
       }
-      for (String key in keys) {
+      for (final key in keys) {
         deleteSubFolders(key);
         // hs.delete(key);
       }
@@ -95,21 +93,21 @@ class _UpdateFolderState extends State<UpdateFolder> {
 
   Future<void> deleteFromFavouriteAndRecent(String id) async {
     /// DELETE FROM FAVOURITE AND RECENT FOLDERS LIST
-    HiveService hs = HiveService();
+    final hs = HiveService();
     await hs.removeFavouriteFolder(id);
     await hs.removeRecentFolder(id);
   }
 
   /// update root folder list
   void updateParentFolderList() {
-    HiveService hs = HiveService();
+    final hs = HiveService();
 
-    LinkTreeFolder parentFolder =
+    final parentFolder =
         hs.getTreeData(widget.currentFolder.parentFolderId)!;
-    List<String> fold = parentFolder.subFolders;
+    final fold = parentFolder.subFolders;
     fold.removeWhere((element) => element == widget.currentFolder.id);
 
-    LinkTreeFolder rTree = LinkTreeFolder(
+    final rTree = LinkTreeFolder(
       id: parentFolder.id,
       parentFolderId: parentFolder.parentFolderId,
       subFolders: fold,
@@ -124,15 +122,15 @@ class _UpdateFolderState extends State<UpdateFolder> {
   }
 
   void _initializeData() {
-    HiveService hs = HiveService();
-    LinkTreeFolder currentFolder = hs.getTreeData(widget.currentFolder.id)!;
+    final  hs = HiveService();
+    final currentFolder = hs.getTreeData(widget.currentFolder.id)!;
 
     // debugPrint(
     //     '[log] : ${currentFolder.folderName} ${currentFolder.description} ${currentFolder.category} ${currentFolder.isFavourite}');
     _title = currentFolder.folderName;
     _desc = currentFolder.description;
     _favourite = currentFolder.isFavourite;
-    _selectedCategory = currentFolder.category ?? "Default";
+    _selectedCategory = currentFolder.category ?? 'Default';
 
     // setState(() {});
   }
@@ -223,7 +221,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
                 TextInput(
                   label: 'Description',
                   formField: TextFormField(
@@ -248,7 +246,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 // IS fAVOURITE
                 Row(
@@ -272,7 +270,7 @@ class _UpdateFolderState extends State<UpdateFolder> {
                   ],
                 ),
 
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(
@@ -282,28 +280,28 @@ class _UpdateFolderState extends State<UpdateFolder> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 12),
 
                 Wrap(
-                  spacing: 12.0,
-                  runSpacing: 8.0,
+                  spacing: 12,
+                  runSpacing: 8,
                   children:
                       List.generate(_predefinedCategories.length, (index) {
-                    var category = _predefinedCategories[index];
-                    bool isSelected = category == _selectedCategory;
+                    final category = _predefinedCategories[index];
+                    final isSelected = category == _selectedCategory;
                     return GestureDetector(
                       onTap: () => setState(() {
                         _selectedCategory = category;
                       }),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 4.0),
+                            horizontal: 8, vertical: 4,),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.green : Colors.white,
                           border: Border.all(
                             color: isSelected ? Colors.green : Colors.black,
                           ),
-                          borderRadius: BorderRadius.circular(6.0),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           category,
