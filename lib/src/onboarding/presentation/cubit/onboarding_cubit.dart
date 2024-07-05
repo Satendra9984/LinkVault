@@ -54,8 +54,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
     final todayDate = DateTime.now();
     final userCreditExpiryDate = state.globalUser!.creditExpiryDate;
-    // [todo] : testing check the dates
-    if (userCreditExpiryDate.compareTo(todayDate) > 0) {
+    // Testing check the dates
+    if (userCreditExpiryDate.compareTo(todayDate) < 0) {
       return true;
     }
 

@@ -26,9 +26,7 @@ class CollectionModel {
       name: json['name'] as String,
       description: json['description'] as String?,
       category: json['category'] as String,
-      subcollections: (json['subcollections'] as List<Map<String, dynamic>>)
-          .map(SubCollection.fromJson)
-          .toList(),
+      subcollections: json['subcollections'] as List<String>? ?? [],
       urls: List<String>.from(json['urls'] as List<String>? ?? []),
       icon: json['icon'] as Map<String, dynamic>?,
       background: json['background'] as Map<String, dynamic>?,
@@ -36,10 +34,37 @@ class CollectionModel {
       sharedWith: (json['shared_with'] as List<Map<String, dynamic>>)
           .map(SharedWith.fromJson)
           .toList(),
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+
+  factory CollectionModel.isEmpty({
+    required String userId,
+    required String name,
+    required String parentCollection,
+    required Map<String, dynamic> status,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) {
+    return CollectionModel(
+      id: '',
+      userId: userId,
+      parentCollection: parentCollection,
+      name: name,
+      // description: null,
+      category: '',
+      subcollections: [],
+      urls: [],
+      // icon: null,
+      // background: null,
+      status: status,
+      sharedWith: [],
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   final String id;
   final String userId; // Owner's user id
   final String parentCollection; // id
@@ -47,7 +72,7 @@ class CollectionModel {
   final String name;
   final String? description;
   final String category; // tag
-  final List<SubCollection> subcollections; // ids of subcollections
+  final List<String> subcollections; // ids of subcollections
   final List<String> urls; // ids of URLs
 
   final Map<String, dynamic>? icon; // id
@@ -55,8 +80,8 @@ class CollectionModel {
   final Map<String, dynamic>? status; // active, deleted
   final List<SharedWith> sharedWith; // Embedded list of JSON objects
 
-  final String createdAt; // timestamp
-  final String updatedAt;
+  final DateTime createdAt; // timestamp
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() {
     return {
@@ -66,14 +91,14 @@ class CollectionModel {
       'name': name,
       'description': description,
       'category': category,
-      'subcollections': subcollections.map((item) => item.toJson()).toList(),
+      'subcollections': subcollections,
       'urls': urls,
       'icon': icon,
       'background': background,
       'status': status,
       'shared_with': sharedWith.map((item) => item.toJson()).toList(),
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -84,14 +109,14 @@ class CollectionModel {
     String? name,
     String? description,
     String? category,
-    List<SubCollection>? subcollections,
+    List<String>? subcollections,
     List<String>? urls,
     Map<String, dynamic>? icon,
     Map<String, dynamic>? background,
     Map<String, dynamic>? status,
     List<SharedWith>? sharedWith,
-    String? createdAt,
-    String? updatedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return CollectionModel(
       id: id ?? this.id,

@@ -10,7 +10,7 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/auth/presentation/widgets/container_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard.dart';
+import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:lottie/lottie.dart';
 
@@ -167,7 +167,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           onPressed: () =>
                               Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder: (context) => const DashboardPage(),
+                              builder: (context) => const DashboardHomePage(),
                             ),
                             (route) => false,
                           ),
@@ -250,7 +250,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 text: 'Dashboard',
                 onPressed: () => Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (context) => const DashboardPage(),
+                      builder: (context) => const DashboardHomePage(),
                     ),
                     (route) => false),
               ),

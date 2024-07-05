@@ -77,7 +77,8 @@ class RewardedAdRepoImpl {
 
       final currentExpiryDate = globalUser.creditExpiryDate;
       final nextExpiryDate = currentExpiryDate.add(
-        const Duration(days: rewardedAdCreditLimit),
+        // [TODO] : CONVERT TO DAYS
+        const Duration(minutes: rewardedAdCreditLimit),
       );
 
       await _subsciptionRemoteDataSources.rewardUserForWatchingVideo(

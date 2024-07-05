@@ -10,6 +10,8 @@ class CollectionsState extends Equatable {
   });
 
   final Map<String, CollectionModel> collections;
+  /// Current Collection Will be use to only change the ui for this current collection
+  /// No need to update all nested collection screens
   final String currentCollection;
   final CollectionLoadingStates collectionLoadingStates;
 
@@ -19,4 +21,16 @@ class CollectionsState extends Equatable {
         currentCollection,
         collectionLoadingStates,
       ];
+
+  CollectionsState copyWith({
+    Map<String, CollectionModel>? collections,
+    String? currentCollection,
+    CollectionLoadingStates? collectionLoadingStates,
+  }) {
+    return CollectionsState(
+      collections: collections ?? this.collections,
+      currentCollection: currentCollection ?? this.currentCollection,
+      collectionLoadingStates: collectionLoadingStates ?? this.collectionLoadingStates,
+    );
+  }
 }
