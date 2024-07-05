@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
@@ -35,18 +36,14 @@ class RemoteDataSourcesImpl {
 
       return collectionModel;
     } catch (e) {
+      debugPrint('[log] : fetchCollection $e');
+
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
       );
     }
   }
-
-  // Future<void> fetchSubCollection({
-  //   required String subCollectionId,
-  // }) async {
-  //   // [TODO] : Fetch Subcollection
-  // }
 
   Future<CollectionModel> addCollection({
     required CollectionModel collection,
@@ -58,6 +55,27 @@ class RemoteDataSourcesImpl {
           .add(collection.toJson());
 
       final collectionModel = collection.copyWith(id: response.id);
+
+      return collectionModel;
+    } catch (e) {
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
+  }
+
+  Future<CollectionModel> updateCollection({
+    required CollectionModel collection,
+  }) async {
+    // [TODO] : Add subcollection in db
+    try {
+      await _firestore
+          .collection(folderCollections)
+          .doc(collection.id)
+          .set(collection.toJson());
+
+      final collectionModel = collection;
 
       return collectionModel;
     } catch (e) {

@@ -32,6 +32,8 @@ class RewardedAdRepoImpl {
 
   Future<Either<Failure, Unit>> loadAd() async {
     try {
+      bool isFailed = false;
+
       await RewardedAd.load(
         adUnitId: _adUnitId,
         request: const AdRequest(),
@@ -44,16 +46,31 @@ class RewardedAdRepoImpl {
           },
           // Called when an ad request failed.
           onAdFailedToLoad: (onAdFailedToLoad) {
+            isFailed = true;
+            debugPrint(
+              '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
+            );
             throw ServerException(
               message: 'Video Not loaded',
               statusCode: 400,
             );
           },
         ),
-      );
+      ).catchError((e) {
+        debugPrint('[log] : $e');
+      });
+
+      if (isFailed) {
+        throw ServerException(
+          message: 'Video Not loaded',
+          statusCode: 400,
+        );
+      }
 
       return const Right(unit);
     } catch (e) {
+      debugPrint('[log] : ad video not loaded');
+
       return Left(
         ServerFailure(
           message: 'Video Not Loaded. Check Internet Connection and try again.',
@@ -68,6 +85,15 @@ class RewardedAdRepoImpl {
   }) async {
     try {
       num rewardAmount = 0;
+
+      if (_rewardedAd == null) {
+        debugPrint('[log] : ad is null');
+        // throw ServerException(
+        //   message: 'Something Went Wrong. Ad not Loaded null',
+        //   statusCode: 400,
+        // );
+      }
+
       await _rewardedAd?.show(
         onUserEarnedReward: (adWithoutView, reward) {
           rewardAmount = reward.amount;
@@ -75,8 +101,8 @@ class RewardedAdRepoImpl {
         },
       );
 
-      final currentExpiryDate = globalUser.creditExpiryDate;
-      final nextExpiryDate = currentExpiryDate.add(
+      final currentTime = DateTime.now().toUtc();
+      final nextExpiryDate = currentTime.add(
         // [TODO] : CONVERT TO DAYS
         const Duration(minutes: rewardedAdCreditLimit),
       );
@@ -90,6 +116,14 @@ class RewardedAdRepoImpl {
           globalUser.copyWith(creditExpiryDate: nextExpiryDate);
 
       return Right(newGlobalUser);
+    } on ServerException catch (e) {
+      debugPrint('[log] : showad ${e.message}');
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
     } catch (e) {
       debugPrint('[log] : showad $e');
       return Left(

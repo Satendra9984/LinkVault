@@ -1,8 +1,11 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/app_services/databases/database_constants.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
 
@@ -15,6 +18,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         super(
           const CollectionsState(
             collections: {},
+            collectionUrls: {},
             currentCollection: '',
             collectionLoadingStates: CollectionLoadingStates.initial,
           ),
@@ -22,37 +26,28 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   final CollectionsRepoImpl _collectionsRepoImpl;
 
-  Future<void> fetchRootCollection({
+  Future<void> fetchCollection({
     required String collectionId,
-    required String userId, // it will be user id
-    required String collectionName, // it will be user id
-    // it will be user id
+    required String userId,
+    required bool isRootCollection,
   }) async {
     // [TODO] : Fetch Subcollection
-
-    if (state.collections.containsKey(collectionId)) {
-      emit(
-        state.copyWith(
-          currentCollection: collectionId,
-          collectionLoadingStates: CollectionLoadingStates.successLoading,
-        ),
-      );
-      return;
-    }
-
-    // Else need to fetch data from the database
-
     emit(
       state.copyWith(
         currentCollection: collectionId,
         collectionLoadingStates: CollectionLoadingStates.fetching,
       ),
     );
-    final fetchedCollection = await _collectionsRepoImpl.fetchRootCollection(
-      collectionId: collectionId,
-      userId: userId,
-    );
+    final fetchedCollection = isRootCollection
+        ? await _collectionsRepoImpl.fetchRootCollection(
+            collectionId: collectionId,
+            userId: userId,
+          )
+        : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
+            collectionId: collectionId,
+          );
 
+    // ignore: cascade_invocations
     fetchedCollection.fold(
       (failed) {
         emit(
@@ -62,59 +57,23 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           ),
         );
       },
-      (collection) {
+      (tuple) {
+        final (collection, subCollectionsMap, urlList) = tuple;
+
+        // Adding Collection
         final newCollMap = {...state.collections};
         newCollMap[collectionId] = collection;
-
+        // Adding all its subcollections
+        newCollMap.addAll(subCollectionsMap);
+        // Adding all the urls
+        final newUrlsMap = {...state.collectionUrls};
+        newUrlsMap[collection.id] = urlList;
+        // updating the state
         emit(
           state.copyWith(
             currentCollection: collectionId,
             collections: newCollMap,
-            collectionLoadingStates: CollectionLoadingStates.successLoading,
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> fetchCollection({
-    required String collectionId,
-  }) async {
-    // [TODO] : Fetch Subcollection
-    emit(
-      state.copyWith(
-        currentCollection: collectionId,
-        collectionLoadingStates: CollectionLoadingStates.fetching,
-      ),
-    );
-    final fetchedCollection = await _collectionsRepoImpl.fetchSubCollection(
-      collectionId: collectionId,
-    );
-
-    await fetchedCollection.fold(
-      (failed) {
-        emit(
-          state.copyWith(
-            currentCollection: collectionId,
-            collectionLoadingStates: CollectionLoadingStates.errorLoading,
-          ),
-        );
-      },
-      (collection) async {
-        final newCollMap = {...state.collections};
-        newCollMap[collectionId] = collection;
-
-        for (var subColl in collection.subcollections) {
-          final fetchedCollection =
-              await _collectionsRepoImpl.fetchSubCollection(
-            collectionId: collectionId,
-          );
-        }
-
-        emit(
-          state.copyWith(
-            currentCollection: collectionId,
-            collections: newCollMap,
+            collectionUrls: newUrlsMap,
             collectionLoadingStates: CollectionLoadingStates.successLoading,
           ),
         );
@@ -149,6 +108,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         final newCollMap = {...state.collections};
         newCollMap[collection.id] = collection;
 
+        final newUrlsMap = {...state.collectionUrls};
+        newUrlsMap[collection.id] = [];
+
         // update parent folder
         if (collection.parentCollection.isNotEmpty &&
             newCollMap.containsKey(collection.parentCollection)) {
@@ -166,6 +128,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           state.copyWith(
             currentCollection: collection.id,
             collections: newCollMap,
+            collectionUrls: newUrlsMap,
             collectionLoadingStates: CollectionLoadingStates.successLoading,
           ),
         );

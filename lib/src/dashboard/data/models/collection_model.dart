@@ -26,12 +26,14 @@ class CollectionModel {
       name: json['name'] as String,
       description: json['description'] as String?,
       category: json['category'] as String,
-      subcollections: json['subcollections'] as List<String>? ?? [],
-      urls: List<String>.from(json['urls'] as List<String>? ?? []),
+      subcollections:
+          (json['subcollections'] as List<dynamic>? ?? []).cast<String>(),
+      urls: (json['urls'] as List<dynamic>? ?? []).cast<String>(),
       icon: json['icon'] as Map<String, dynamic>?,
       background: json['background'] as Map<String, dynamic>?,
       status: Map<String, dynamic>.from(json['status'] as Map<String, dynamic>),
-      sharedWith: (json['shared_with'] as List<Map<String, dynamic>>)
+      sharedWith: (json['shared_with'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
           .map(SharedWith.fromJson)
           .toList(),
       createdAt: DateTime.parse(json['created_at'] as String),
