@@ -82,7 +82,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             videoWatchingStates: LoadingStates.errorLoading,
-            loadingStates: LoadingStates.loading,
+            loadingStates: LoadingStates.initial ,
           ),
         );
       },
@@ -90,15 +90,13 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             videoWatchingStates: LoadingStates.loaded,
-            loadingStates: LoadingStates.loading,
+            loadingStates: LoadingStates.initial,
             globalUser: newGlobalUser,
           ),
         );
         isLoaded = true;
       },
     );
-
-    unawaited(loadRewardedAd());
 
     return isLoaded;
   }

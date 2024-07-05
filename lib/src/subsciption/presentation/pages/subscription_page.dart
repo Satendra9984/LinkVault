@@ -49,6 +49,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 listener: (context, state) async {
                   if (state.videoWatchingStates == LoadingStates.loaded) {
                     // SHOW SUCCESS DIALOG
+                    /// BELOW ONE HAS BUG AS NEED TO TAP 3 TIMES TO DISMISS DIALOG
                     //  await showAdaptiveDialog(
                     //     context: context,
                     //     builder: _showCustomDialog,
@@ -79,13 +80,34 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       ),
                       const SizedBox(height: 8.0),
                       const Text(
-                        'Just watch a video and use the app for ${rewardedAdCreditLimit} days without any interruption.',
+                        'Just watch a video and use the app for $rewardedAdCreditLimit days without any interruption.',
                         style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       const SizedBox(height: 16.0),
+                      if (state.loadingStates == LoadingStates.initial)
+                        ListTile(
+                          onTap: subCubit.loadRewardedAd,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: const BorderSide(color: ColourPallette.grey),
+                          ),
+
+                          // tileColor: Colors.green.shade300.withOpacity(0.5),
+                          leading: const Icon(
+                            Icons.repeat,
+                            size: 32.0,
+                          ),
+                          title: const Text(
+                            'Tap to Watch Again',
+                            style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       if (state.loadingStates == LoadingStates.loading)
                         const ListTile(
                           leading: Icon(
@@ -94,7 +116,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             // color: ColourPallette.mountainMeadow,
                           ),
                           title: Text(
-                            'Just Watch a Video',
+                            'Loading Video...',
                             style: TextStyle(
                               fontSize: 20.0,
                               fontWeight: FontWeight.w500,
@@ -102,7 +124,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           ),
                           trailing: CircularProgressIndicator(
                             color: ColourPallette.white,
-                            backgroundColor: ColourPallette.mountainMeadow,
+                            backgroundColor: ColourPallette.black,
                           ),
                         ),
                       if (state.loadingStates == LoadingStates.loaded)
