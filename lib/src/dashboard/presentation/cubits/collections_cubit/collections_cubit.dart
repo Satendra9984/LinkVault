@@ -1,9 +1,8 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/app_services/databases/database_constants.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -32,6 +31,22 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required bool isRootCollection,
   }) async {
     // [TODO] : Fetch Subcollection
+    if (state.collections.containsKey(collectionId)) {
+      // Logger.printLog('collectionId $collectionId already exists');
+      var containsAllSubColl = true;
+      final coll = state.collections[collectionId]!;
+      for (final subcId in coll.subcollections) {
+        if (state.collections.containsKey(subcId) == false) {
+          containsAllSubColl = false;
+          break;
+        }
+      }
+
+      if (containsAllSubColl) {
+        return;
+      }
+    }
+
     emit(
       state.copyWith(
         currentCollection: collectionId,
@@ -87,49 +102,46 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     // [TODO] : Add subcollection in db
     emit(
       state.copyWith(
-        currentCollection: collection.id,
+        currentCollection: collection.parentCollection,
         collectionLoadingStates: CollectionLoadingStates.adding,
       ),
     );
+
+    final parentCollection = state.collections[collection.parentCollection];
+
+    // WE are updating the parent collection and sending to db request to save
+    // query time and less points of server errors
     final addedCollection = await _collectionsRepoImpl.addSubCollection(
       subCollection: collection,
+      parentCollection: parentCollection,
     );
 
     addedCollection.fold(
       (failed) {
         emit(
           state.copyWith(
-            currentCollection: collection.id,
-            collectionLoadingStates: CollectionLoadingStates.errorLoading,
+            currentCollection: collection.parentCollection,
+            collectionLoadingStates: CollectionLoadingStates.errorAdding,
           ),
         );
       },
-      (collection) {
+      (result) {
+        final (collection, updatedParentCollection) = result;
         final newCollMap = {...state.collections};
         newCollMap[collection.id] = collection;
+        if (updatedParentCollection != null) {
+          newCollMap[updatedParentCollection.id] = updatedParentCollection;
+        }
 
         final newUrlsMap = {...state.collectionUrls};
         newUrlsMap[collection.id] = [];
 
-        // update parent folder
-        if (collection.parentCollection.isNotEmpty &&
-            newCollMap.containsKey(collection.parentCollection)) {
-          final parentColl = state.collections[collection.parentCollection];
-
-          final subCollectoins = [...parentColl!.subcollections, collection.id];
-
-          final updatedParentColl =
-              parentColl.copyWith(subcollections: subCollectoins);
-
-          newCollMap[parentColl.id] = updatedParentColl;
-        }
-
         emit(
           state.copyWith(
-            currentCollection: collection.id,
+            currentCollection: collection.parentCollection,
             collections: newCollMap,
             collectionUrls: newUrlsMap,
-            collectionLoadingStates: CollectionLoadingStates.successLoading,
+            collectionLoadingStates: CollectionLoadingStates.successAdding,
           ),
         );
       },

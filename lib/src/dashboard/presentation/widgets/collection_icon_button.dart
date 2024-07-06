@@ -1,52 +1,43 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:link_vault/core/common/res/colours.dart';
 // import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
-import 'package:link_vault/app_models/link_tree_folder_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 
-class FolderIconButton extends StatefulWidget {
-
-  const FolderIconButton(
-      {required this.folder, required this.onPress, required this.onDoubleTap, super.key,});
-  final LinkTreeFolder folder;
+class FolderIconButton extends StatelessWidget {
+  const FolderIconButton({
+    required this.collection,
+    required this.onPress,
+    required this.onDoubleTap,
+    super.key,
+  });
+  final CollectionModel collection;
   final void Function() onPress;
   final void Function() onDoubleTap;
 
   @override
-  State<FolderIconButton> createState() => _FolderIconButtonState();
-}
-
-class _FolderIconButtonState extends State<FolderIconButton> {
-  bool isPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onPress,
-      onDoubleTap: widget.onDoubleTap,
+      onTap: onPress,
+      onDoubleTap: onDoubleTap,
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.folder_rounded,
-            size: 48,
-            color: const Color(0xff3cac7c).withOpacity(0.99),
+            size: 56,
+            color: ColourPallette.mountainMeadow,
           ),
-          Container(
-            padding: const EdgeInsets.only(left: 4, right: 4),
-            alignment: Alignment.center,
-            child: Text(
-              widget.folder.folderName,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                height: 1.1,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
-              ),
+          // const SizedBox(height: 0.4),
+          Text(
+            collection.name,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              // fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade900,
+              height: 1.05,
             ),
           ),
         ],
@@ -54,6 +45,7 @@ class _FolderIconButtonState extends State<FolderIconButton> {
     );
   }
 }
+
 // todo : solve error
 /*E/flutter (23234): [ERROR:flutter/lib/ui/ui_dart_state.cc(198)] Unhandled Exception: RangeError (index): Invalid value: Valid value range is empty: 0
 E/flutter (23234): #0      List.[] (dart:core-patch/growable_array.dart:264:36)

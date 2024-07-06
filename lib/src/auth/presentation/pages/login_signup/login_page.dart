@@ -12,7 +12,7 @@ import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/password_reset.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
-import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
+import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 

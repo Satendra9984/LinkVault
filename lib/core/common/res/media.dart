@@ -16,5 +16,7 @@ class MediaRes {
   /// ANIMATIONS
   static const String loadingANIMATION = 'assets/animations/loading.json';
   static const String hurrayANIMATION = 'assets/animations/hurray.json';
+  static const String errorANIMATION = 'assets/animations/error.json';
+
 
 }

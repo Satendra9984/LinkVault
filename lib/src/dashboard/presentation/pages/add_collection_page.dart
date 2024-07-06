@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/folder_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 
 class AddCollectionPage extends StatefulWidget {
@@ -46,9 +52,30 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
     'Utilities',
   ];
 
-  Future<void> saveFolder() async {
+  Future<void> addCollection(
+    CollectionsCubit collectionCubit, {
+    required String userId,
+  }) async {
     final isValid = _formKey.currentState!.validate();
-    if (isValid) {}
+    if (isValid) {
+      final createdAt = DateTime.now().toUtc();
+      final status = <String, dynamic>{
+        'is_favourite': _favourite,
+      };
+
+      var subCollection = CollectionModel.isEmpty(
+        userId: userId,
+        name: _collectionNameController.text,
+        parentCollection: widget.parentCollection.id,
+        status: status,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      );
+
+      subCollection = subCollection.copyWith(category: _selectedCategory);
+
+      await collectionCubit.addSubcollection(collection: subCollection);
+    }
   }
 
   @override
@@ -62,7 +89,10 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ColourPallette.white,
       appBar: AppBar(
+        backgroundColor: ColourPallette.white,
+        surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
           'Add Collection',
           style: TextStyle(
@@ -71,15 +101,46 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                await saveFolder();
-              }
-            },
-            icon: const Icon(Icons.check),
-          ),
+          // IconButton(
+          //   onPressed: () async {},
+          //   icon: const Icon(Icons.check),
+          // ),
         ],
+      ),
+      bottomNavigationBar: BlocConsumer<CollectionsCubit, CollectionsState>(
+        listener: (context, state) {
+          if (state.collectionLoadingStates ==
+              CollectionLoadingStates.successAdding) {
+            // [TODO] : PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
+            Navigator.of(context).pop();
+          }
+        },
+        builder: (context, state) {
+          final globalUserCubit = context.read<GlobalUserCubit>();
+          final collectionCubit = context.read<CollectionsCubit>();
+
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: CustomElevatedButton(
+              onPressed: () => addCollection(
+                collectionCubit,
+                userId: globalUserCubit.state.globalUser!.id,
+              ),
+              text: 'Add Collection',
+              icon: state.collectionLoadingStates ==
+                      CollectionLoadingStates.adding
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.white,
+                        color: ColourPallette.bitterlemon,
+                      ),
+                    )
+                  : null,
+            ),
+          );
+        },
       ),
       body: Form(
         key: _formKey,
@@ -93,7 +154,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                 CustomCollTextField(
                   controller: _collectionNameController,
                   labelText: 'Collection Name',
-                  hintText: ' Exam Resources ',
+                  hintText: ' eg. Exam Resources ',
                   keyboardType: TextInputType.name,
                   maxLength: 30,
                   validator: (value) {
@@ -161,41 +222,44 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                 Wrap(
                   spacing: 12,
                   runSpacing: 8,
-                  children:
-                      List.generate(_predefinedCategories.length, (index) {
-                    final category = _predefinedCategories[index];
-                    final isSelected = category == _selectedCategory;
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        _selectedCategory = category;
-                      }),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? ColourPallette.mountainMeadow
-                              : Colors.white,
-                          border: Border.all(
+                  children: List.generate(
+                    _predefinedCategories.length,
+                    (index) {
+                      final category = _predefinedCategories[index];
+                      final isSelected = category == _selectedCategory;
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          _selectedCategory = category;
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
                             color: isSelected
                                 ? ColourPallette.mountainMeadow
-                                : Colors.black,
+                                : Colors.white,
+                            border: Border.all(
+                              color: isSelected
+                                  ? ColourPallette.mountainMeadow
+                                  : Colors.black,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          category,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -205,6 +269,3 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
     );
   }
 }
-// font-family: 'Montserrat', sans-serif;
-// letter-spacing: -0.2px;
-// font-size: $ruler;

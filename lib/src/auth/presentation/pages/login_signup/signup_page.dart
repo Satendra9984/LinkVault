@@ -9,7 +9,7 @@ import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
-import 'package:link_vault/src/auth/presentation/widgets/custom_button.dart';
+import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 

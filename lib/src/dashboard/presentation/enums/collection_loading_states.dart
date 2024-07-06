@@ -2,10 +2,24 @@
 
 enum CollectionLoadingStates {
   initial,
+
+  //
   fetching,
-  updating,
-  deleting,
-  adding,
   errorLoading,
   successLoading,
+  
+  //
+  updating,
+  errorUpdating,
+  successUpdating,
+
+  //
+  deleting,
+  errorDeleting,
+  successDeleting,
+
+  //
+  adding,
+  errorAdding,
+  successAdding,
 }

@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/core/common/widgets/custom_button.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
+import 'package:lottie/lottie.dart';
 
 class FolderCollectionPage extends StatefulWidget {
   const FolderCollectionPage(
@@ -25,7 +30,6 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
   void initState() {
     super.initState();
     // [TODO] : Call initiliaize for this foldercollection id
-
     context.read<CollectionsCubit>().fetchCollection(
           collectionId: widget.collectionId,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
@@ -42,39 +46,102 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
           // [TODO]: implement listener
         },
         builder: (context, state) {
+          // final size = MediaQuery.of(context).size;
+          final collectionCubit = context.read<CollectionsCubit>();
+          final globalUserCubit = context.read<GlobalUserCubit>();
+
           final isCurrentStateCollection =
               widget.collectionId == state.currentCollection;
 
           if (isCurrentStateCollection &&
-              state.collectionLoadingStates ==
-                  CollectionLoadingStates.fetching) {
-            return Text(state.collectionLoadingStates.toString());
+              (state.collectionLoadingStates ==
+                  CollectionLoadingStates.fetching)) {
+            return Center(
+              child: Column(
+                children: [
+                  LottieBuilder.asset(
+                    MediaRes.loadingANIMATION,
+                  ),
+                  const Text(
+                    'Loading Collection...',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (isCurrentStateCollection &&
               state.collectionLoadingStates ==
                   CollectionLoadingStates.errorLoading) {
-            return Text(state.collectionLoadingStates.toString());
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LottieBuilder.asset(
+                    MediaRes.errorANIMATION,
+                    height: 120,
+                    width: 120,
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Oops !!!',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Something went wrong while fetching the collection from the database.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomElevatedButton(
+                    text: 'Try Again',
+                    onPressed: () => collectionCubit.fetchCollection(
+                      collectionId: widget.collectionId,
+                      userId: globalUserCubit.state.globalUser!.id,
+                      isRootCollection: widget.isRootCollection,
+                    ),
+
+                    // backgroundColor: ColourPallette.darkTeal,
+                  ),
+                ],
+              ),
+            );
           }
 
           final collection = state.collections[widget.collectionId]!;
+          // Logger.printLog(
+          //     StringUtils.getJsonFormat(collection.toJson().toString()));
 
-          final inJson = collection.toJson();
-          final stringForm = const JsonEncoder.withIndent('  ').convert(inJson);
-          final stringFormUrls =
-              const JsonEncoder.withIndent('  ').convert(state.collectionUrls);
+          // final conv = JsonEncoder.withIndent(" ").convert(collection.toJson());
+
+          // debugPrint('[log]: ${collection.toJson()}');
 
           final subCollections = <CollectionModel>[];
 
           for (final subcId in collection.subcollections) {
             final subCollection = state.collections[subcId];
 
-            if (subCollection != null) {
+            if (subCollection == null) {
+            // Logger.printLog('${subcId} not in state');
               continue;
             }
 
-            subCollections.add(subCollection!);
+            subCollections.add(subCollection);
           }
+
+          Logger.printLog(subCollections.length.toString());
 
           return Scaffold(
             backgroundColor: ColourPallette.white,
@@ -116,14 +183,19 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                         ),
                       );
                     },
-                    onFolderTap: () {},
-                    onFolderDoubleTap: () {},
+                    onFolderTap: (subCollection) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => FolderCollectionPage(
+                            collectionId: subCollection.id,
+                            isRootCollection: false,
+                          ),
+                        ),
+                      );
+                    },
+                    onFolderDoubleTap: (subCollection) {},
                   ),
-                  // Text(state.collectionLoadingStates.toString()),
-                  // Text(stringForm),
-                  // Text(
-                  //   stringFormUrls
-                  // ),
                 ],
               ),
             ),

@@ -184,8 +184,13 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<Either<Failure, CollectionModel>> addSubCollection({
+  Future<
+          Either<Failure,
+              (CollectionModel added, CollectionModel? updatedParent)>>
+      addSubCollection({
     required CollectionModel subCollection,
+    // Optional as root collection does not have parent
+    CollectionModel? parentCollection,
   }) async {
     // [TODO] : Add subcollection in db
 
@@ -194,7 +199,20 @@ class CollectionsRepoImpl {
         collection: subCollection,
       );
 
-      return Right(collection);
+      if (parentCollection != null) {
+        final updatedParentCollection = parentCollection.copyWith(
+          subcollections: [
+            ...parentCollection.subcollections,
+            collection.id,
+          ],
+        );
+        await _remoteDataSourcesImpl.updateCollection(
+          collection: updatedParentCollection,
+        );
+        return Right((collection, updatedParentCollection));
+      }
+
+      return Right((collection, null));
     } catch (e) {
       return Left(
         ServerFailure(
@@ -211,9 +229,24 @@ class CollectionsRepoImpl {
     // [TODO] : delete subcollection in db
   }
 
-  Future<void> updateSubCollection({
+  Future<Either<Failure, CollectionModel>> updateSubCollection({
     required CollectionModel subCollection,
   }) async {
     // [TODO] : update subcollection in db
+
+    try {
+      final collection = await _remoteDataSourcesImpl.updateCollection(
+        collection: subCollection,
+      );
+
+      return Right(collection);
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
   }
 }
