@@ -7,6 +7,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 
 class FolderCollectionPage extends StatefulWidget {
@@ -105,7 +106,16 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                   const SizedBox(height: 16),
                   CollectionsListWidget(
                     subCollections: subCollections,
-                    onAddFolderTap: () {},
+                    onAddFolderTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => AddCollectionPage(
+                            parentCollection: collection,
+                          ),
+                        ),
+                      );
+                    },
                     onFolderTap: () {},
                     onFolderDoubleTap: () {},
                   ),

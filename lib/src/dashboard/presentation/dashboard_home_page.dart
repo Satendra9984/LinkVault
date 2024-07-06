@@ -31,6 +31,13 @@ class DashboardHomePage extends StatelessWidget {
         // [TODO] : We can further add more cubits like Offlineview editor, webpage reader, openai summariser etc.
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+          ),
+        ),
         home: FolderCollectionPage(
           collectionId: globalUser,
           isRootCollection: true,

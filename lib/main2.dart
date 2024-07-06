@@ -65,7 +65,6 @@ class _MyAppState extends State<MyApp> {
             authRepositoryImpl: AuthRepositoryImpl(
               authRemoteDataSourcesImpl: AuthRemoteDataSourcesImpl(
                 auth: FirebaseAuth.instance,
-                // firestore: FirebaseFirestore.instance,
                 globalAuthDataSourceImpl: GlobalAuthDataSourceImpl(),
               ),
             ),
