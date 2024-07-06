@@ -6,7 +6,8 @@ import 'package:link_vault/constants.dart';
 
 class AddFolderScreen extends StatefulWidget {
   const AddFolderScreen({
-    required this.parentFolderId, super.key,
+    required this.parentFolderId,
+    super.key,
   });
   final String parentFolderId;
 
@@ -69,12 +70,12 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
       }
 
       // Now will update its parent Folders List
-      final parentFolder =
-          hiveService.getTreeData(widget.parentFolderId);
+      final parentFolder = hiveService.getTreeData(widget.parentFolderId);
       if (parentFolder == null) return;
 
       // Changing the sublist of parent folder
       final parentFoldersNewSubfolders = parentFolder.subFolders;
+
       parentFoldersNewSubfolders.add(newFolderId);
 
       // Update parent folder in the DB
@@ -240,7 +241,9 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                       }),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4,),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.green : Colors.white,
                           border: Border.all(

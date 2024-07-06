@@ -32,7 +32,7 @@ class RewardedAdRepoImpl {
 
   Future<Either<Failure, Unit>> loadAd() async {
     try {
-      bool isFailed = false;
+      var isFailed = false;
 
       await RewardedAd.load(
         adUnitId: _adUnitId,

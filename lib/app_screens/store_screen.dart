@@ -242,6 +242,9 @@ class _StorePageState extends State<StorePage> {
                   },
                 ),
               ),
+             
+             
+             
               const SizedBox(height: 50),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
