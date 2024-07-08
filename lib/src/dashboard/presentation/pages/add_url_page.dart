@@ -1,13 +1,19 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
 class AddUrlPage extends StatefulWidget {
   const AddUrlPage({
@@ -23,12 +29,15 @@ class AddUrlPage extends StatefulWidget {
 class _AddUrlPageState extends State<AddUrlPage> {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _urlAddressController;
-
   late final TextEditingController _urlNameController;
   late final TextEditingController _descEditingController;
   late final List<String> _predefinedCategories;
   bool _favourite = false;
   String _selectedCategory = '';
+
+  UrlMetaData? _previewMetaData;
+
+  late LoadingStates _previewLoadingStates;
 
   Future<void> _addUrl(
     CollectionsCubit collectionCubit, {
@@ -46,6 +55,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
     _urlNameController = TextEditingController();
     _descEditingController = TextEditingController();
     _selectedCategory = _predefinedCategories.first;
+    _previewLoadingStates = LoadingStates.initial;
   }
 
   @override
@@ -92,10 +102,21 @@ class _AddUrlPageState extends State<AddUrlPage> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
-              onPressed: () => _addUrl(
-                collectionCubit,
-                userId: globalUserCubit.state.globalUser!.id,
-              ),
+              onPressed: () async {
+                // _addUrl(
+                //   collectionCubit,
+                //   userId: globalUserCubit.state.globalUser!.id,
+                // );
+                
+                await UrlParsingService()
+                    .getWebsiteMetaData(_urlAddressController.text)
+                    .then((data) {
+                  final (html, metadata) = data;
+                  setState(() {
+                    _previewMetaData = metadata;
+                  });
+                });
+              },
               text: 'Add Url',
               icon: state.collectionLoadingStates ==
                       CollectionLoadingStates.adding
@@ -125,7 +146,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   labelText: 'Url Address',
                   hintText: ' eg. https://www.youtube.com ',
                   keyboardType: TextInputType.name,
-                  maxLength: 30,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter title';
@@ -134,6 +154,49 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   },
                 ),
                 const SizedBox(height: 16),
+
+                if (_previewMetaData != null)
+                  Column(
+                    children: [
+                      if (_previewMetaData!.bannerImage != null)
+                        SizedBox(
+                          child: Image.memory(
+                            _previewMetaData!.bannerImage!,
+                          ),
+                        ),
+                      if (_previewMetaData!.title != null)
+                        Text(
+                          _previewMetaData!.title!,
+                          style: TextStyle(
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      if (_previewMetaData!.websiteName != null)
+                        Text(
+                          _previewMetaData!.websiteName!,
+                          style: TextStyle(
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      if (_previewMetaData!.description != null)
+                        Text(
+                          _previewMetaData!.description!,
+                          style: TextStyle(
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      if (_previewMetaData!.favicon != null)
+                        SizedBox(
+                          child: Image.memory(
+                            _previewMetaData!.favicon!,
+                          ),
+                        ),
+                    ],
+                  ),
+
                 CustomCollTextField(
                   controller: _urlNameController,
                   labelText: 'Title',

@@ -24,7 +24,7 @@ class UrlModel {
       title: json['title'] as String,
       description: json['description'] as String?,
       tag: json['tag'] as String,
-      metaData: MetaData.fromJson(
+      metaData: UrlMetaData.fromJson(
         json['meta_data'] as Map<String, dynamic>? ?? {},
       ),
       isOffline: json['is_offline'] as bool,
@@ -33,7 +33,7 @@ class UrlModel {
       updatedAt: json['updated_at'] as String,
     );
   }
-  
+
   // these data are for the user
   final String id;
   final String collectionId;
@@ -43,8 +43,8 @@ class UrlModel {
   final String? description;
   final String tag;
 
-  // URL meta_data this will be parsed 
-  final MetaData? metaData;
+  // URL meta_data this will be parsed
+  final UrlMetaData? metaData;
 
   // Offline functionality
   final bool isOffline;
@@ -71,33 +71,30 @@ class UrlModel {
   }
 }
 
-class MetaData {
-  MetaData({
+class UrlMetaData {
+  UrlMetaData({
     required this.favicon,
     required this.bannerImage,
     required this.title,
     required this.description,
-    required this.bannerImageSize,
+    required this.websiteName,
   });
 
-  factory MetaData.fromJson(Map<String, dynamic> json) {
-    return MetaData(
-      favicon: Uint8List.fromList(List<int>.from(json['favicon'] as Uint8List)),
-      bannerImage:
-          Uint8List.fromList(List<int>.from(json['banner_image'] as Uint8List)),
-      title: json['title'] as String,
+  factory UrlMetaData.fromJson(Map<String, dynamic> json) {
+    return UrlMetaData(
+      favicon: json['favicon'] as Uint8List?,
+      bannerImage: json['banner_image'] as Uint8List?,
+      title: json['title'] as String?,
       description: json['description'] as String?,
-      bannerImageSize: Map<String, double>.from(
-        json['banner_image_size'] as Map<String, dynamic>,
-      ),
+      websiteName: json['websiteName'] as String?,
     );
   }
 
-  final Uint8List favicon;
-  final Uint8List bannerImage;
-  final String title;
+  final Uint8List? favicon;
+  final Uint8List? bannerImage;
+  final String? title;
+  final String? websiteName;
   final String? description;
-  final Map<String, double> bannerImageSize;
 
   Map<String, dynamic> toJson() {
     return {
@@ -105,7 +102,7 @@ class MetaData {
       'banner_image': bannerImage,
       'title': title,
       'description': description,
-      'banner_image_size': bannerImageSize,
+      'websiteName': websiteName,
     };
   }
 }
