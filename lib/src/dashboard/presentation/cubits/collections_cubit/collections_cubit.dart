@@ -155,8 +155,41 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }
 
   Future<void> updateSubcollection({
-    required CollectionModel subcollection,
+    required CollectionModel collection,
   }) async {
     // [TODO] : update subcollection in db
+    emit(
+      state.copyWith(
+        currentCollection: collection.parentCollection,
+        collectionLoadingStates: CollectionLoadingStates.updating,
+      ),
+    );
+
+    final addedCollection = await _collectionsRepoImpl.updateSubCollection(
+      subCollection: collection,
+    );
+
+    addedCollection.fold(
+      (failed) {
+        emit(
+          state.copyWith(
+            currentCollection: collection.parentCollection,
+            collectionLoadingStates: CollectionLoadingStates.errorUpdating,
+          ),
+        );
+      },
+      (updatedCollection) {
+        final newCollMap = {...state.collections};
+        newCollMap[collection.id] = updatedCollection;
+
+        emit(
+          state.copyWith(
+            currentCollection: collection.parentCollection,
+            collections: newCollMap,
+            collectionLoadingStates: CollectionLoadingStates.successUpdating,
+          ),
+        );
+      },
+    );
   }
 }

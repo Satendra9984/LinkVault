@@ -5,7 +5,7 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/folder_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 
 class DashboardHomePage extends StatelessWidget {
   const DashboardHomePage({super.key});

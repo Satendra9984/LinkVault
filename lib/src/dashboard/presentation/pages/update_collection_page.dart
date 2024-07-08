@@ -7,21 +7,20 @@ import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 
-class AddCollectionPage extends StatefulWidget {
-  const AddCollectionPage({
-    required this.parentCollection,
+class UpdateCollectionPage extends StatefulWidget {
+  const UpdateCollectionPage({
+    required this.collection,
     super.key,
   });
-  final CollectionModel parentCollection;
+  final CollectionModel collection;
 
   @override
-  State<AddCollectionPage> createState() => _AddCollectionPageState();
+  State<UpdateCollectionPage> createState() => _UpdateCollectionPageState();
 }
 
-class _AddCollectionPageState extends State<AddCollectionPage> {
+class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _collectionNameController;
   late final TextEditingController _descEditingController;
@@ -29,27 +28,28 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
   bool _favourite = false;
   String _selectedCategory = '';
 
-  Future<void> addCollection(
+  Future<void> _updateCollection(
     CollectionsCubit collectionCubit, {
     required String userId,
   }) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
-      final createdAt = DateTime.now().toUtc();
-      final status = <String, dynamic>{
-        'is_favourite': _favourite,
-      };
+      final updatedAt = DateTime.now().toUtc();
+      final status = widget.collection.status ?? {};
 
-      final subCollection = CollectionModel.isEmpty(
-        userId: userId,
+      status['is_favourite'] = _favourite;
+
+      final updatedCollection = widget.collection.copyWith(
         name: _collectionNameController.text,
-        parentCollection: widget.parentCollection.id,
+        description: _descEditingController.text,
         status: status,
-        createdAt: createdAt,
-        updatedAt: createdAt,
-      ).copyWith(category: _selectedCategory);
+        updatedAt: updatedAt,
+        category: _selectedCategory,
+      );
 
-      await collectionCubit.addSubcollection(collection: subCollection);
+      await collectionCubit.updateSubcollection(
+        collection: updatedCollection,
+      );
     }
   }
 
@@ -60,6 +60,12 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
     _collectionNameController = TextEditingController();
     _descEditingController = TextEditingController();
     _selectedCategory = _predefinedCategories.first;
+
+    // INITITALIZING VALUES
+    _collectionNameController.text = widget.collection.name;
+    _descEditingController.text = widget.collection.description ?? '';
+    _selectedCategory = widget.collection.category;
+    _favourite = (widget.collection.status?['is_favourite'] as bool?) ?? false;
   }
 
   @override
@@ -83,24 +89,17 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
-          'Add Collection',
+          'Update Collection',
           style: TextStyle(
             color: Colors.grey.shade800,
             fontWeight: FontWeight.w500,
           ),
         ),
-        actions: [
-          // IconButton(
-          //   onPressed: () async {},
-          //   icon: const Icon(Icons.check),
-          // ),
-        ],
       ),
       bottomNavigationBar: BlocConsumer<CollectionsCubit, CollectionsState>(
         listener: (context, state) {
           if (state.collectionLoadingStates ==
-              CollectionLoadingStates.successAdding) {
-            // [TODO] : PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
+              CollectionLoadingStates.successUpdating) {
             Navigator.of(context).pop();
           }
         },
@@ -111,13 +110,13 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
-              onPressed: () => addCollection(
+              onPressed: () => _updateCollection(
                 collectionCubit,
                 userId: globalUserCubit.state.globalUser!.id,
               ),
-              text: 'Add Collection',
+              text: 'Update Collection',
               icon: state.collectionLoadingStates ==
-                      CollectionLoadingStates.adding
+                      CollectionLoadingStates.updating
                   ? const SizedBox(
                       height: 24,
                       width: 24,

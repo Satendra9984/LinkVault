@@ -1,9 +1,11 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
+import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 
@@ -21,6 +23,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
   final OnBoardingRepoImpl _boardingRepoImpl;
 
   Future<void> checkIfLoggedIn() async {
+
     final result = await _boardingRepoImpl.isLoggedIn();
     debugPrint('Current state before emit: $state');
 
@@ -61,11 +64,11 @@ class OnBoardCubit extends Cubit<OnBoardState> {
     final userCreditExpiryDate = state.globalUser!.creditExpiryDate.toUtc();
     // Testing check the dates
 
-    debugPrint('[log] : currentTime ${todayDate}');
-    debugPrint('[log] : expiryTime ${userCreditExpiryDate}');
-    debugPrint(
-      '[log] : expiryTimeBefore ${userCreditExpiryDate.isBefore(todayDate)}',
-    );
+    // debugPrint('[log] : currentTime ${todayDate}');
+    // debugPrint('[log] : expiryTime ${userCreditExpiryDate}');
+    // debugPrint(
+    //   '[log] : expiryTimeBefore ${userCreditExpiryDate.isBefore(todayDate)}',
+    // );
 
     // debugPrint(
     //   '[log] : ${todayDate.day}/${todayDate.month}/${todayDate.year}:${todayDate.hour}:${todayDate.minute}::${todayDate.second}',

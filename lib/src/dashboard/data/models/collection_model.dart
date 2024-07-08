@@ -42,6 +42,7 @@ class CollectionModel {
   }
 
   factory CollectionModel.isEmpty({
+    /// userId is necessary as will be use in sharing feature etc
     required String userId,
     required String name,
     required String parentCollection,

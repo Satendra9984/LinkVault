@@ -7,57 +7,43 @@ import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 
-class AddCollectionPage extends StatefulWidget {
-  const AddCollectionPage({
+class AddUrlPage extends StatefulWidget {
+  const AddUrlPage({
     required this.parentCollection,
     super.key,
   });
   final CollectionModel parentCollection;
 
   @override
-  State<AddCollectionPage> createState() => _AddCollectionPageState();
+  State<AddUrlPage> createState() => _AddUrlPageState();
 }
 
-class _AddCollectionPageState extends State<AddCollectionPage> {
+class _AddUrlPageState extends State<AddUrlPage> {
   late final GlobalKey<FormState> _formKey;
-  late final TextEditingController _collectionNameController;
+  late final TextEditingController _urlAddressController;
+
+  late final TextEditingController _urlNameController;
   late final TextEditingController _descEditingController;
   late final List<String> _predefinedCategories;
   bool _favourite = false;
   String _selectedCategory = '';
 
-  Future<void> addCollection(
+  Future<void> _addUrl(
     CollectionsCubit collectionCubit, {
     required String userId,
   }) async {
     final isValid = _formKey.currentState!.validate();
-    if (isValid) {
-      final createdAt = DateTime.now().toUtc();
-      final status = <String, dynamic>{
-        'is_favourite': _favourite,
-      };
-
-      final subCollection = CollectionModel.isEmpty(
-        userId: userId,
-        name: _collectionNameController.text,
-        parentCollection: widget.parentCollection.id,
-        status: status,
-        createdAt: createdAt,
-        updatedAt: createdAt,
-      ).copyWith(category: _selectedCategory);
-
-      await collectionCubit.addSubcollection(collection: subCollection);
-    }
+    if (isValid) {}
   }
 
   void _initialize() {
     // INITITALIZING VARIABLES
     _formKey = GlobalKey<FormState>();
     _predefinedCategories = [...categories];
-    _collectionNameController = TextEditingController();
+    _urlAddressController = TextEditingController();
+    _urlNameController = TextEditingController();
     _descEditingController = TextEditingController();
     _selectedCategory = _predefinedCategories.first;
   }
@@ -70,7 +56,8 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
 
   @override
   void dispose() {
-    _collectionNameController.dispose();
+    _urlAddressController.dispose();
+    _urlNameController.dispose();
     _descEditingController.dispose();
     super.dispose();
   }
@@ -83,24 +70,18 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
-          'Add Collection',
+          'Add Url',
           style: TextStyle(
             color: Colors.grey.shade800,
             fontWeight: FontWeight.w500,
           ),
         ),
-        actions: [
-          // IconButton(
-          //   onPressed: () async {},
-          //   icon: const Icon(Icons.check),
-          // ),
-        ],
       ),
       bottomNavigationBar: BlocConsumer<CollectionsCubit, CollectionsState>(
         listener: (context, state) {
           if (state.collectionLoadingStates ==
               CollectionLoadingStates.successAdding) {
-            // [TODO] : PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
+            // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
             Navigator.of(context).pop();
           }
         },
@@ -111,11 +92,11 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
-              onPressed: () => addCollection(
+              onPressed: () => _addUrl(
                 collectionCubit,
                 userId: globalUserCubit.state.globalUser!.id,
               ),
-              text: 'Add Collection',
+              text: 'Add Url',
               icon: state.collectionLoadingStates ==
                       CollectionLoadingStates.adding
                   ? const SizedBox(
@@ -135,15 +116,14 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
         key: _formKey,
         child: SingleChildScrollView(
           child: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomCollTextField(
-                  controller: _collectionNameController,
-                  labelText: 'Collection Name',
-                  hintText: ' eg. Exam Resources ',
+                  controller: _urlAddressController,
+                  labelText: 'Url Address',
+                  hintText: ' eg. https://www.youtube.com ',
                   keyboardType: TextInputType.name,
                   maxLength: 30,
                   validator: (value) {
@@ -153,7 +133,21 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+                CustomCollTextField(
+                  controller: _urlNameController,
+                  labelText: 'Title',
+                  hintText: ' eg. google ',
+                  keyboardType: TextInputType.name,
+                  maxLength: 30,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter title';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
                 CustomCollTextField(
                   controller: _descEditingController,
                   labelText: 'Description',
@@ -200,7 +194,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
 
                 // Selected Category
                 const Text(
-                  'Categories',
+                  'Category',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

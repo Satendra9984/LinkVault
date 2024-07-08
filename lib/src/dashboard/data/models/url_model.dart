@@ -33,7 +33,8 @@ class UrlModel {
       updatedAt: json['updated_at'] as String,
     );
   }
-
+  
+  // these data are for the user
   final String id;
   final String collectionId;
   // User filled data
@@ -42,7 +43,7 @@ class UrlModel {
   final String? description;
   final String tag;
 
-  // URL meta_data
+  // URL meta_data this will be parsed 
   final MetaData? metaData;
 
   // Offline functionality

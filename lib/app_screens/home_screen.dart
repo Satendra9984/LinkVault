@@ -49,19 +49,21 @@ class _HomePageState extends ConsumerState<HomePage> {
     _intentDataStreamSubscription =
 
         /// This is used when app is running
-        ReceiveSharingIntent.instance.getMediaStream().listen((value) {
-      final rec = ref.read(receiveTextProvider.notifier);
+        ReceiveSharingIntent.instance.getMediaStream().listen(
+      (value) {
+        final rec = ref.read(receiveTextProvider.notifier);
 
-      for (final file in value) {
-        if (file.type == SharedMediaType.text) {
-          if (value.isNotEmpty) {
-            rec.changeState(true, file.path);
-          } else {
-            rec.changeState(false, '');
+        for (final file in value) {
+          if (file.type == SharedMediaType.text) {
+            if (value.isNotEmpty) {
+              rec.changeState(true, file.path);
+            } else {
+              rec.changeState(false, '');
+            }
           }
         }
-      }
-    });
+      },
+    );
 
     /// This stream is used when app is closed
     ReceiveSharingIntent.instance.getInitialMedia().then((value) {

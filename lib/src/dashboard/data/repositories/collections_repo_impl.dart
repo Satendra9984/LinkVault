@@ -233,7 +233,6 @@ class CollectionsRepoImpl {
     required CollectionModel subCollection,
   }) async {
     // [TODO] : update subcollection in db
-
     try {
       final collection = await _remoteDataSourcesImpl.updateCollection(
         collection: subCollection,

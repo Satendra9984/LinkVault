@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
                 globalAuthDataSourceImpl: GlobalAuthDataSourceImpl(),
               ),
             ),
-          ),
+          )..checkIfLoggedIn(),
         ),
         BlocProvider(
           create: (context) => GlobalUserCubit(),
