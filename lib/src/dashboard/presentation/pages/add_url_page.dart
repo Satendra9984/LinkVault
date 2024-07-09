@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -28,17 +25,20 @@ class AddUrlPage extends StatefulWidget {
 }
 
 class _AddUrlPageState extends State<AddUrlPage> {
-  late final GlobalKey<FormState> _formKey;
-  late final TextEditingController _urlAddressController;
-  late final TextEditingController _urlNameController;
-  late final TextEditingController _descEditingController;
-  late final List<String> _predefinedCategories;
-  bool _favourite = false;
-  String _selectedCategory = '';
+  final _formKey = GlobalKey<FormState>();
+  final _urlAddressController = TextEditingController();
+  final _urlNameController = TextEditingController();
+  final _descEditingController = TextEditingController();
+  final _isFavorite = ValueNotifier<bool>(false);
 
-  UrlMetaData? _previewMetaData;
+  // Categories related data
+  final _predefinedCategories = [...categories];
+  final _selectedCategory = ValueNotifier<String>('');
 
-  late LoadingStates _previewLoadingStates;
+  /// PREVIEW RELATED DATA
+  final _previewMetaData = ValueNotifier<UrlMetaData?>(null);
+  final _previewLoadingStates =
+      ValueNotifier<LoadingStates>(LoadingStates.initial);
 
   Future<void> _addUrl(
     CollectionsCubit collectionCubit, {
@@ -48,28 +48,17 @@ class _AddUrlPageState extends State<AddUrlPage> {
     if (isValid) {}
   }
 
-  void _initialize() {
-    // INITITALIZING VARIABLES
-    _formKey = GlobalKey<FormState>();
-    _predefinedCategories = [...categories];
-    _urlAddressController = TextEditingController();
-    _urlNameController = TextEditingController();
-    _descEditingController = TextEditingController();
-    _selectedCategory = _predefinedCategories.first;
-    _previewLoadingStates = LoadingStates.initial;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initialize();
-  }
+  Future<void> _loadPreview() async {}
 
   @override
   void dispose() {
     _urlAddressController.dispose();
     _urlNameController.dispose();
     _descEditingController.dispose();
+    _isFavorite.dispose();
+    _selectedCategory.dispose();
+    _previewMetaData.dispose();
+    _previewLoadingStates.dispose();
     super.dispose();
   }
 
@@ -108,15 +97,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 //   collectionCubit,
                 //   userId: globalUserCubit.state.globalUser!.id,
                 // );
-
-                await UrlParsingService()
-                    .getWebsiteMetaData(_urlAddressController.text)
-                    .then((data) {
-                  final (html, metadata) = data;
-                  setState(() {
-                    _previewMetaData = metadata;
-                  });
-                });
               },
               text: 'Add Url',
               icon: state.collectionLoadingStates ==
@@ -155,33 +135,55 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Preview and Autofill',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Switch.adaptive(
-                      value: _favourite,
-                      onChanged: (value) => setState(() {
-                        _favourite = !_favourite;
-                      }),
-                      trackOutlineColor:
-                          WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      activeTrackColor: ColourPallette.mountainMeadow,
-                      inactiveTrackColor: ColourPallette.error,
-                    ),
-                  ],
+
+                ValueListenableBuilder<LoadingStates?>(
+                  valueListenable: _previewLoadingStates,
+                  builder: (context, previewMetaDataLoadingState, _) {
+                    final trailingWidgetList = <Widget>[];
+
+                    if (previewMetaDataLoadingState == LoadingStates.loading) {
+                      trailingWidgetList.add(
+                        const CircularProgressIndicator(
+                          backgroundColor: ColourPallette.black,
+                        ),
+                      );
+                    } else if (previewMetaDataLoadingState ==
+                        LoadingStates.errorLoading) {
+                      return IconButton(
+                        onPressed: _loadPreview,
+                        icon: const Icon(Icons.preview_rounded),
+                      );
+                    } else {}
+
+                    return Column(
+                      children: [
+                        const ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          enabled: false,
+                          leading: Text(
+                            'Preview and Autofill',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          trailing: Icon(Icons.preview_rounded),
+                        ),
+                        if (previewMetaDataLoadingState ==
+                            LoadingStates.errorLoading)
+                          Text(
+                            'Something Went Wrong while fetching Preview. Try Again',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: ColourPallette.error,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
+
                 const SizedBox(height: 16),
 
                 CustomCollTextField(
@@ -222,21 +224,23 @@ class _AddUrlPageState extends State<AddUrlPage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Switch.adaptive(
-                      value: _favourite,
-                      onChanged: (value) => setState(() {
-                        _favourite = !_favourite;
-                      }),
-                      trackOutlineColor:
-                          WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      activeTrackColor: ColourPallette.mountainMeadow,
-                      inactiveTrackColor: ColourPallette.error,
-                    ),
+                    ValueListenableBuilder<bool>(
+                        valueListenable: _isFavorite,
+                        builder: (context, isFavorite, child) {
+                          return Switch.adaptive(
+                            value: isFavorite,
+                            onChanged: (value) => _isFavorite.value = value,
+                            trackOutlineColor:
+                                WidgetStateProperty.resolveWith<Color?>(
+                              (Set<WidgetState> states) => Colors.transparent,
+                            ),
+                            thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                              (Set<WidgetState> states) => Colors.transparent,
+                            ),
+                            activeTrackColor: ColourPallette.mountainMeadow,
+                            inactiveTrackColor: ColourPallette.error,
+                          );
+                        }),
                   ],
                 ),
 
@@ -252,56 +256,68 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 ),
                 const SizedBox(height: 12),
 
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: List.generate(
-                    _predefinedCategories.length,
-                    (index) {
-                      final category = _predefinedCategories[index];
-                      final isSelected = category == _selectedCategory;
-                      return GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedCategory = category;
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? ColourPallette.mountainMeadow
-                                : Colors.white,
-                            border: Border.all(
-                              color: isSelected
-                                  ? ColourPallette.mountainMeadow
-                                  : Colors.black,
+                ValueListenableBuilder<String>(
+                  valueListenable: _selectedCategory,
+                  builder: (context, selectedCategory, child) {
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: List.generate(
+                        _predefinedCategories.length,
+                        (index) {
+                          final category = _predefinedCategories[index];
+                          final isSelected = category == _selectedCategory;
+                          return GestureDetector(
+                            onTap: () => _selectedCategory.value = category,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? ColourPallette.mountainMeadow
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? ColourPallette.mountainMeadow
+                                      : Colors.black,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
 
-                if (_previewMetaData != null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    child: UrlPreviewWidget(
-                      urlMetaData: _previewMetaData!,
-                    ),
-                  ),
+                ValueListenableBuilder<UrlMetaData?>(
+                  valueListenable: _previewMetaData,
+                  builder: (context, previewMetaData, child) {
+                    if (previewMetaData == null) {
+                      return Container();
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 20),
+                      child: UrlPreviewWidget(
+                        urlMetaData: previewMetaData,
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
