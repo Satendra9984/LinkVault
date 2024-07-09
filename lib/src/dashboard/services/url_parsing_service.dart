@@ -1,10 +1,14 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
+import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class UrlParsingService {
@@ -26,7 +30,12 @@ class UrlParsingService {
 
 // Function to extract title
   String? extractTitle(Document document) {
-    return document.head?.querySelector('title')?.text;
+    final title = document.head?.querySelector('title')?.text;
+
+    if (title == null) return null;
+
+    Logger.printLog('title: $title');
+    return StringUtils.getUnicodeString(title);
   }
 
 // Function to extract description
@@ -38,29 +47,14 @@ class UrlParsingService {
           document.head
               ?.querySelector('meta[property="og:description"]')
               ?.attributes['content'];
-      return description;
+
+      if (description == null) return null;
+      return StringUtils.getUnicodeString(description);
     } catch (e) {
       Logger.printLog('error in "extractDescription" $e');
       return null;
     }
   }
-
-// Function to extract image URL
-  // String? extractImageUrl(Document document) {
-  //   try {
-  //     final imageUrl = document.head
-  //             ?.querySelector('meta[property="og:image"]')
-  //             ?.attributes['content'] ??
-  //         document.head
-  //             ?.querySelector('meta[name="twitter:image"]')
-  //             ?.attributes['content'];
-  //     return imageUrl;
-  //   } catch (e) {
-  //     Logger.printLog('error in "extractImageUrl" $e');
-
-  //     return null;
-  //   }
-  // }
 
   String? extractImageUrl(Document document) {
     try {
@@ -74,13 +68,14 @@ class UrlParsingService {
 
         Element? largestImageElement;
         for (final img in imageElements) {
-          final width = int.tryParse(img.attributes['width'] ?? '') ?? 0;
-          final height = int.tryParse(img.attributes['height'] ?? '') ?? 0;
+          final width = int.tryParse(img.attributes['width'] ?? '') ?? 1;
+          final height = int.tryParse(img.attributes['height'] ?? '') ?? 1;
           final area = width * height;
+          final aspectRatio = width ~/ height;
 
           if (area >= minBannerArea &&
-              width >= minBannerWidth &&
-              height >= minBannerHeight) {
+              (width >= minBannerWidth || height >= minBannerHeight) &&
+              (aspectRatio >= 1.5 && aspectRatio <= 6)) {
             largestImageElement = img;
             break;
           }
@@ -178,8 +173,11 @@ class UrlParsingService {
     final htmlContent = await fetchWebpageContent(url);
 
     if (htmlContent == null) {
-      return (null,null);
+      return (null, null);
     }
+
+    // File('/htmlContent').writeAsStringSync(htmlContent);
+
     final document = html_parser.parse(htmlContent);
     final metaData = <String, dynamic>{};
 
@@ -189,17 +187,19 @@ class UrlParsingService {
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
 
-    // Handle relative URLs
     if (websiteLogoUrl != null) {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
-      metaData['banner_image'] = await fetchImageAsUint8List(websiteLogoUrl);
+      metaData['favicon_url'] = websiteLogoUrl;
+      // Logger.printLog('logoUrl : $websiteLogoUrl');
+      metaData['favicon'] = await fetchImageAsUint8List(websiteLogoUrl);
     }
 
     var imageUrl = extractImageUrl(document);
     Logger.printLog('imageUrl : $imageUrl');
     if (imageUrl != null) {
       imageUrl = handleRelativeUrl(imageUrl, url);
-      metaData['favicon'] = await fetchImageAsUint8List(imageUrl);
+      metaData['banner_image_url'] = imageUrl;
+      metaData['banner_image'] = await fetchImageAsUint8List(imageUrl);
     }
 
     // Fetch image as Uint8List

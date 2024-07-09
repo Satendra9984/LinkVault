@@ -74,7 +74,9 @@ class UrlModel {
 class UrlMetaData {
   UrlMetaData({
     required this.favicon,
+    required this.faviconUrl,
     required this.bannerImage,
+    required this.bannerImageUrl,
     required this.title,
     required this.description,
     required this.websiteName,
@@ -83,15 +85,20 @@ class UrlMetaData {
   factory UrlMetaData.fromJson(Map<String, dynamic> json) {
     return UrlMetaData(
       favicon: json['favicon'] as Uint8List?,
+      faviconUrl: json['favicon_url'] as String?,
       bannerImage: json['banner_image'] as Uint8List?,
+      bannerImageUrl: json['banner_image_url'] as String? ,
       title: json['title'] as String?,
       description: json['description'] as String?,
       websiteName: json['websiteName'] as String?,
+
     );
   }
 
   final Uint8List? favicon;
+  final String? faviconUrl;
   final Uint8List? bannerImage;
+  final String? bannerImageUrl;
   final String? title;
   final String? websiteName;
   final String? description;
@@ -99,7 +106,9 @@ class UrlMetaData {
   Map<String, dynamic> toJson() {
     return {
       'favicon': favicon,
+      'favicon_url': faviconUrl,
       'banner_image': bannerImage,
+      'banner_image_url': bannerImageUrl,
       'title': title,
       'description': description,
       'websiteName': websiteName,

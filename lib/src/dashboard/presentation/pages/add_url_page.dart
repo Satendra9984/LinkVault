@@ -13,6 +13,7 @@ import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/c
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
 class AddUrlPage extends StatefulWidget {
@@ -107,7 +108,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 //   collectionCubit,
                 //   userId: globalUserCubit.state.globalUser!.id,
                 // );
-                
+
                 await UrlParsingService()
                     .getWebsiteMetaData(_urlAddressController.text)
                     .then((data) {
@@ -154,48 +155,34 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-
-                if (_previewMetaData != null)
-                  Column(
-                    children: [
-                      if (_previewMetaData!.bannerImage != null)
-                        SizedBox(
-                          child: Image.memory(
-                            _previewMetaData!.bannerImage!,
-                          ),
-                        ),
-                      if (_previewMetaData!.title != null)
-                        Text(
-                          _previewMetaData!.title!,
-                          style: TextStyle(
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      if (_previewMetaData!.websiteName != null)
-                        Text(
-                          _previewMetaData!.websiteName!,
-                          style: TextStyle(
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      if (_previewMetaData!.description != null)
-                        Text(
-                          _previewMetaData!.description!,
-                          style: TextStyle(
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      if (_previewMetaData!.favicon != null)
-                        SizedBox(
-                          child: Image.memory(
-                            _previewMetaData!.favicon!,
-                          ),
-                        ),
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Preview and Autofill',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      trackOutlineColor:
+                          WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) => Colors.transparent,
+                      ),
+                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) => Colors.transparent,
+                      ),
+                      activeTrackColor: ColourPallette.mountainMeadow,
+                      inactiveTrackColor: ColourPallette.error,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
                 CustomCollTextField(
                   controller: _urlNameController,
@@ -307,6 +294,14 @@ class _AddUrlPageState extends State<AddUrlPage> {
                     },
                   ),
                 ),
+
+                if (_previewMetaData != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    child: UrlPreviewWidget(
+                      urlMetaData: _previewMetaData!,
+                    ),
+                  ),
               ],
             ),
           ),
