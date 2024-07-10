@@ -120,6 +120,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
           await parsingservice.getWebsiteMetaData(_urlAddressController.text);
 
       if (metaData != null) {
+        Logger.printLog(
+            'metadata size: ${metaData.toJson().toString().length}');
         _previewMetaData.value = metaData;
         _previewLoadingStates.value = LoadingStates.loaded;
         _previewError.value = null;
@@ -138,9 +140,11 @@ class _AddUrlPageState extends State<AddUrlPage> {
           message: 'Something went wrong. Check your internet and try again.',
           statusCode: '400',
         );
+
+        return;
       }
     }
-
+    Logger.printLog('metadata size: ${_previewMetaData.value!.toJson().toString().length}');
     _previewLoadingStates.value = LoadingStates.loaded;
     await _showPreviewBottomSheet();
   }

@@ -28,27 +28,18 @@ class UrlRepoImpl {
     // [TODO] : Add urlData in db
 
     try {
-      final addedUrlData = await _remoteDataSourcesImpl.addUrl(urlData);
+    final addedUrlData = await _remoteDataSourcesImpl.addUrl(urlData);
 
-      if (addedUrlData == null) {
-        return Left(
-          ServerFailure(
-            message: 'Something Went Wrong',
-            statusCode: 400,
-          ),
-        );
-      }
+    final urlList = collection.urls..add(addedUrlData.id);
+    final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
-      final urlList = collection.urls..add(addedUrlData.id);
-      final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
+    // updating collection
+    final serverUpdatedCollection =
+        await _remoteDataSourcesImpl.updateCollection(
+      collection: updatedCollectionWithUrls,
+    );
 
-      // updating collection
-      final serverUpdatedCollection =
-          await _remoteDataSourcesImpl.updateCollection(
-        collection: updatedCollectionWithUrls,
-      );
-
-      return Right((addedUrlData, serverUpdatedCollection));
+    return Right((addedUrlData, serverUpdatedCollection));
     } on ServerException catch (e) {
       Logger.printLog('addUrlrepo : $e');
       return Left(

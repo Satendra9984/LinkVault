@@ -21,7 +21,7 @@ class UrlsListWidget extends StatelessWidget {
   final void Function(UrlModel url) onUrlTap;
   final void Function(UrlModel url) onUrlDoubleTap;
 
-  final _urlPreviewType = ValueNotifier(UrlPreviewType.previewMeta);
+  final _urlPreviewType = ValueNotifier(UrlPreviewType.icons);
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +107,15 @@ class UrlsListWidget extends StatelessWidget {
           final urlMetaData =
               url.metaData ?? UrlMetaData.isEmpty(title: url.title);
 
-          return UrlPreviewWidget(urlMetaData: urlMetaData);
+          return Column(
+            children: [
+              UrlPreviewWidget(urlMetaData: urlMetaData),
+              const SizedBox(height: 8),
+              const Divider(),
+              const SizedBox(height: 8),
+
+            ],
+          );
         },
       ),
     );

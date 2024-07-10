@@ -7,6 +7,7 @@ import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -149,8 +150,13 @@ class UrlParsingService {
       if (imageUrl.isEmpty) return null;
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
-        Logger.printLog('websiteImage ${response.bodyBytes.length}');
-        return response.bodyBytes;
+        final originalImageBytes = response.bodyBytes;
+        final compressedImage =
+            await ImageUtils.compressImage(originalImageBytes);
+
+        Logger.printLog('Original Image:  ${originalImageBytes.length}');
+        Logger.printLog('compressedImage: ${compressedImage.length}');
+        return compressedImage.length > 150000 ? null : compressedImage;
       }
       return null;
     } catch (e) {
