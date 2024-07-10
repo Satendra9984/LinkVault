@@ -4,11 +4,15 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
@@ -30,7 +34,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
   final _urlNameController = TextEditingController();
   final _descEditingController = TextEditingController();
   final _isFavorite = ValueNotifier<bool>(false);
-
   // Categories related data
   final _predefinedCategories = [...categories];
   final _selectedCategory = ValueNotifier<String>('');
@@ -39,16 +42,114 @@ class _AddUrlPageState extends State<AddUrlPage> {
   final _previewMetaData = ValueNotifier<UrlMetaData?>(null);
   final _previewLoadingStates =
       ValueNotifier<LoadingStates>(LoadingStates.initial);
+  final _previewError = ValueNotifier<Failure?>(null);
 
-  Future<void> _addUrl(
-    CollectionsCubit collectionCubit, {
-    required String userId,
-  }) async {
+  Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
-    if (isValid) {}
+    if (isValid) {
+      final urlMetaData = _previewMetaData.value != null
+          ? _previewMetaData.value!
+          : UrlMetaData.isEmpty(
+              title: _urlNameController.text,
+            );
+
+      final createdAt = DateTime.now().toUtc();
+
+      final urlModelData = UrlModel(
+        id: '',
+        collectionId: widget.parentCollection.id,
+        url: _urlAddressController.text,
+        title: _urlNameController.text,
+        tag: _selectedCategory.value,
+        isOffline: false,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        metaData: urlMetaData,
+      );
+
+      urlCrudCubit.addUrl(
+        urlData: urlModelData,
+        collection: widget.parentCollection,
+      );
+    }
   }
 
-  Future<void> _loadPreview() async {}
+  Future<void> _loadPreview() async {
+    if (_urlAddressController.text.isEmpty) {
+      Logger.printLog('url address is empty');
+      _previewLoadingStates.value = LoadingStates.errorLoading;
+      _previewError.value =
+          GeneralFailure(message: 'Url Address is empty', statusCode: '400');
+      return;
+    }
+
+    final parsingservice = UrlParsingService();
+
+    // Checking if only bannerimage is not parsed (quite often) to optimise fetching
+    // No need to fetch all details again
+    if (_previewMetaData.value != null &&
+        _previewMetaData.value!.bannerImageUrl != null &&
+        _previewMetaData.value!.bannerImage == null) {
+      _previewLoadingStates.value = LoadingStates.loading;
+      await parsingservice
+          .fetchImageAsUint8List(_previewMetaData.value!.bannerImageUrl!)
+          .then((imageUint) {
+        if (imageUint == null) {
+          _previewLoadingStates.value = LoadingStates.errorLoading;
+
+          _previewError.value = GeneralFailure(
+            message: 'Something went wrong. Check your internet and try again.',
+            statusCode: '400',
+          );
+          return;
+        }
+        _previewMetaData.value =
+            _previewMetaData.value!.copyWith(bannerImage: imageUint);
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _previewError.value = null;
+      });
+
+      return;
+    }
+
+    if (_previewMetaData.value == null) {
+      // Fetching all details
+      _previewLoadingStates.value = LoadingStates.loading;
+
+      final (websiteHtmlContent, metaData) =
+          await parsingservice.getWebsiteMetaData(_urlAddressController.text);
+
+      if (metaData != null) {
+        _previewMetaData.value = metaData;
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _previewError.value = null;
+
+        // Initilializing default values
+        if (_urlNameController.text.isEmpty && metaData.websiteName != null) {
+          _urlNameController.text = metaData.websiteName!;
+        }
+        if (_descEditingController.text.isEmpty &&
+            metaData.description != null) {
+          _descEditingController.text = metaData.description!;
+        }
+      } else {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = GeneralFailure(
+          message: 'Something went wrong. Check your internet and try again.',
+          statusCode: '400',
+        );
+      }
+    }
+
+    _previewLoadingStates.value = LoadingStates.loaded;
+    await _showPreviewBottomSheet();
+  }
+
+  @override
+  void initState() {
+    _selectedCategory.value = _predefinedCategories.first;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -77,30 +178,28 @@ class _AddUrlPageState extends State<AddUrlPage> {
           ),
         ),
       ),
-      bottomNavigationBar: BlocConsumer<CollectionsCubit, CollectionsState>(
+      bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
         listener: (context, state) {
-          if (state.collectionLoadingStates ==
-              CollectionLoadingStates.successAdding) {
+          if (state.urlCrudLoadingStates ==
+              UrlCrudLoadingStates.addedSuccessfully) {
             // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
             Navigator.of(context).pop();
           }
         },
         builder: (context, state) {
-          final globalUserCubit = context.read<GlobalUserCubit>();
-          final collectionCubit = context.read<CollectionsCubit>();
+          // final globalUserCubit = context.read<GlobalUserCubit>();
+          final urlCrudCubit = context.read<UrlCrudCubit>();
 
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
               onPressed: () async {
-                // _addUrl(
-                //   collectionCubit,
-                //   userId: globalUserCubit.state.globalUser!.id,
-                // );
+                await _addUrl(
+                  urlCrudCubit: urlCrudCubit,
+                );
               },
               text: 'Add Url',
-              icon: state.collectionLoadingStates ==
-                      CollectionLoadingStates.adding
+              icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.adding
                   ? const SizedBox(
                       height: 24,
                       width: 24,
@@ -145,34 +244,46 @@ class _AddUrlPageState extends State<AddUrlPage> {
                       trailingWidgetList.add(
                         const CircularProgressIndicator(
                           backgroundColor: ColourPallette.black,
+                          color: ColourPallette.white,
                         ),
                       );
-                    } else if (previewMetaDataLoadingState ==
-                        LoadingStates.errorLoading) {
-                      return IconButton(
-                        onPressed: _loadPreview,
-                        icon: const Icon(Icons.preview_rounded),
+                    } else {
+                      trailingWidgetList.add(
+                        IconButton(
+                          onPressed: _loadPreview,
+                          icon: const Icon(
+                            Icons.preview_rounded,
+                            color: ColourPallette.black,
+                          ),
+                        ),
                       );
-                    } else {}
+                    }
 
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          enabled: false,
-                          leading: Text(
-                            'Preview and Autofill',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Preview and Autofill',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: ColourPallette.black,
+                              ),
                             ),
-                          ),
-                          trailing: Icon(Icons.preview_rounded),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: trailingWidgetList,
+                            ),
+                          ],
                         ),
                         if (previewMetaDataLoadingState ==
                             LoadingStates.errorLoading)
                           Text(
-                            'Something Went Wrong while fetching Preview. Try Again',
+                            '${_previewError.value?.message}',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -266,7 +377,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
                         _predefinedCategories.length,
                         (index) {
                           final category = _predefinedCategories[index];
-                          final isSelected = category == _selectedCategory;
+                          final isSelected =
+                              category == _selectedCategory.value;
                           return GestureDetector(
                             onTap: () => _selectedCategory.value = category,
                             child: Container(
@@ -302,27 +414,35 @@ class _AddUrlPageState extends State<AddUrlPage> {
                     );
                   },
                 ),
-
-                ValueListenableBuilder<UrlMetaData?>(
-                  valueListenable: _previewMetaData,
-                  builder: (context, previewMetaData, child) {
-                    if (previewMetaData == null) {
-                      return Container();
-                    }
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      child: UrlPreviewWidget(
-                        urlMetaData: previewMetaData,
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showPreviewBottomSheet() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: ColourPallette.mystic,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: DraggableScrollableSheet(
+            expand: false,
+            builder: (context, scrollController) {
+              return UrlPreviewWidget(
+                urlMetaData: _previewMetaData.value!,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

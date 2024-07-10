@@ -16,6 +16,7 @@ class UrlModel {
     this.description,
     this.htmlContent,
   });
+
   factory UrlModel.fromJson(Map<String, dynamic> json) {
     return UrlModel(
       id: json['id'] as String,
@@ -29,8 +30,8 @@ class UrlModel {
       ),
       isOffline: json['is_offline'] as bool,
       htmlContent: json['html_content'] as String?,
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 
@@ -51,8 +52,8 @@ class UrlModel {
   final String? htmlContent;
 
   // Metadata
-  final String createdAt;
-  final String updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() {
     return {
@@ -65,11 +66,53 @@ class UrlModel {
       'meta_data': metaData?.toJson(),
       'is_offline': isOffline,
       'html_content': htmlContent,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
+
+  UrlModel copyWith({
+    String? id,
+    String? collectionId,
+    String? url,
+    String? title,
+    String? description,
+    String? tag,
+    UrlMetaData? metaData,
+    bool? isOffline,
+    String? htmlContent,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UrlModel(
+      id: id ?? this.id,
+      collectionId: collectionId ?? this.collectionId,
+      url: url ?? this.url,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      tag: tag ?? this.tag,
+      metaData: metaData ?? this.metaData,
+      isOffline: isOffline ?? this.isOffline,
+      htmlContent: htmlContent ?? this.htmlContent,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  // bool get isEmpty {
+  //   return id.isEmpty &&
+  //          collectionId.isEmpty &&
+  //          url.isEmpty &&
+  //          title.isEmpty &&
+  //          (description == null || description!.isEmpty) &&
+  //          tag.isEmpty &&
+  //          (metaData == null || metaData!.isEmpty) &&
+  //          (htmlContent == null || htmlContent!.isEmpty) &&
+  //          createdAt.isEmpty &&
+  //          updatedAt.isEmpty;
+  // }
 }
+
 
 class UrlMetaData {
   UrlMetaData({
@@ -82,16 +125,35 @@ class UrlMetaData {
     required this.websiteName,
   });
 
+  factory UrlMetaData.isEmpty({
+    required String title,
+    String? description,
+    String? websiteName,
+    Uint8List? favicon,
+    String? faviconUrl,
+    Uint8List? bannerImage,
+    String? bannerImageUrl,
+  }) {
+    return UrlMetaData(
+      favicon: favicon,
+      faviconUrl: faviconUrl,
+      bannerImage: bannerImage,
+      bannerImageUrl: bannerImageUrl,
+      title: title,
+      description: description,
+      websiteName: websiteName,
+    );
+  }
+
   factory UrlMetaData.fromJson(Map<String, dynamic> json) {
     return UrlMetaData(
-      favicon: json['favicon'] as Uint8List?,
+      favicon: convertToUint8List(json['favicon']),
       faviconUrl: json['favicon_url'] as String?,
-      bannerImage: json['banner_image'] as Uint8List?,
-      bannerImageUrl: json['banner_image_url'] as String? ,
+      bannerImage: convertToUint8List(json['banner_image']),
+      bannerImageUrl: json['banner_image_url'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
       websiteName: json['websiteName'] as String?,
-
     );
   }
 
@@ -100,8 +162,8 @@ class UrlMetaData {
   final Uint8List? bannerImage;
   final String? bannerImageUrl;
   final String? title;
-  final String? websiteName;
   final String? description;
+  final String? websiteName;
 
   Map<String, dynamic> toJson() {
     return {
@@ -113,5 +175,32 @@ class UrlMetaData {
       'description': description,
       'websiteName': websiteName,
     };
+  }
+
+  UrlMetaData copyWith({
+    Uint8List? favicon,
+    String? faviconUrl,
+    Uint8List? bannerImage,
+    String? bannerImageUrl,
+    String? title,
+    String? description,
+    String? websiteName,
+  }) {
+    return UrlMetaData(
+      favicon: favicon ?? this.favicon,
+      faviconUrl: faviconUrl ?? this.faviconUrl,
+      bannerImage: bannerImage ?? this.bannerImage,
+      bannerImageUrl: bannerImageUrl ?? this.bannerImageUrl,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      websiteName: websiteName ?? this.websiteName,
+    );
+  }
+
+  static Uint8List? convertToUint8List(dynamic data) {
+    if (data is List<dynamic>) {
+      return Uint8List.fromList(data.map((item) => item as int).toList());
+    }
+    return null;
   }
 }

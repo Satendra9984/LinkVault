@@ -6,7 +6,7 @@ import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
-import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 
 part 'collections_state.dart';
 
@@ -190,6 +190,38 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           ),
         );
       },
+    );
+  }
+
+  void updateCollectionSimple({
+    required CollectionModel updatedCollection,
+  }) {
+    final newCollMap = {...state.collections};
+    newCollMap[updatedCollection.id] = updatedCollection;
+
+    emit(
+      state.copyWith(
+        currentCollection: updatedCollection.parentCollection,
+        collections: newCollMap,
+      ),
+    );
+  }
+
+  void addUrl({
+    required UrlModel url,
+    required CollectionModel collection,
+  }) {
+    final urlMap = {...state.collectionUrls};
+    final collectionUrls = (urlMap[collection.id] ?? [])..add(url);
+
+    urlMap[collection.id] = collectionUrls;
+
+    updateCollectionSimple(updatedCollection: collection);
+
+    emit(
+      state.copyWith(
+        collectionUrls: urlMap,
+      ),
     );
   }
 }

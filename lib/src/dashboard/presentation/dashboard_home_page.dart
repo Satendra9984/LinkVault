@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
+import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 
 class DashboardHomePage extends StatelessWidget {
@@ -17,7 +19,6 @@ class DashboardHomePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         // [TODO] : Create the collections cubit for managing global list of all collections
-
         BlocProvider(
           create: (BuildContext context) => CollectionsCubit(
             collectionsRepoImpl: CollectionsRepoImpl(
@@ -28,7 +29,19 @@ class DashboardHomePage extends StatelessWidget {
         ),
         // [TODO] : Create a CRUD cubit for managing crud operation a single collection
 
-        // [TODO] : We can further add more cubits like Offlineview editor, webpage reader, openai summariser etc.
+        BlocProvider(
+          create: (BuildContext context) => UrlCrudCubit(
+            urlRepoImpl: UrlRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+            ),
+            collectionsCubit: context.read<CollectionsCubit>(),
+          ),
+        ),
+
+        // [TODO] : We can further add more cubits like Offlineview editor, 
+        // webpage reader, openai summariser etc.
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

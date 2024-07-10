@@ -10,7 +10,7 @@ import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
@@ -212,15 +212,9 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                     },
                   ),
                   const SizedBox(height: 32),
-                  const Text(
-                    'Urls',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  
                   UrlsListWidget(
+                    title: 'Urls',
                     urlList: urlList,
                     onAddUrlTap: (){
                       Navigator.push(

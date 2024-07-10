@@ -4,13 +4,18 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
     required RemoteDataSourcesImpl remoteDataSourceImpl,
+    UrlRepoImpl? urlRepoImpl,
   }) : _remoteDataSourcesImpl = remoteDataSourceImpl;
+  // _urlRepoImpl = urlRepoImpl ??
+  //     UrlRepoImpl(remoteDataSourceImpl: remoteDataSourceImpl);
 
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
+  // final UrlRepoImpl _urlRepoImpl;
 
   Future<
       Either<
@@ -69,8 +74,11 @@ class CollectionsRepoImpl {
       }
 
       // NOW WILL FETCH URLS FOR THIS COLLECTION
+      for (final urlId in collection.urls) {
+        final urlData = await _remoteDataSourcesImpl.fetchUrl(urlId);
 
-      for (final urlId in collection.urls) {}
+        urlList.add(urlData);
+      }
 
       return Right(
         (
@@ -132,9 +140,13 @@ class CollectionsRepoImpl {
       }
 
       // NOW WILL FETCH URLS FOR THIS COLLECTION
-      final List<UrlModel> urlList = [];
+      final urlList = <UrlModel>[];
 
-      for (final urlId in collection.urls) {}
+      for (final urlId in collection.urls) {
+        final urlData = await _remoteDataSourcesImpl.fetchUrl(urlId);
+
+        urlList.add(urlData);
+      }
 
       return Right(
         (

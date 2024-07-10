@@ -6,7 +6,7 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/presentation/enums/collection_loading_states.dart';
+import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 
 class UpdateCollectionPage extends StatefulWidget {

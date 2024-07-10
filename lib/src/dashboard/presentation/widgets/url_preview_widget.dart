@@ -100,12 +100,31 @@ class _UrlPreviewWidgetState extends State<UrlPreviewWidget> {
             Expanded(
               child: Container(
                 alignment: Alignment.topLeft,
-                child: Text(
-                  '${widget.urlMetaData.title}',
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${widget.urlMetaData.title}',
+                        style: TextStyle(
+                          color: Colors.grey.shade800,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 18,
+                        ),
+                      ),
+                      TextSpan(
+                        text: !_showFullDescription ? '  more' : '  less',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            setState(() {
+                              _showFullDescription = !_showFullDescription;
+                            });
+                          },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -129,32 +148,24 @@ class _UrlPreviewWidgetState extends State<UrlPreviewWidget> {
               ),
           ],
         ),
-        if (widget.urlMetaData.description != null)
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text:
-                      '${!_showFullDescription ? widget.urlMetaData.description!.substring(0, min(150, widget.urlMetaData.description!.length)) : widget.urlMetaData.description}',
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
-                    // overflow: TextOverflow.ellipsis,
+        if (widget.urlMetaData.description != null && _showFullDescription)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text:
+                        '${!_showFullDescription ? widget.urlMetaData.description!.substring(0, min(150, widget.urlMetaData.description!.length)) : widget.urlMetaData.description}',
+                    style: TextStyle(
+                      color: Colors.grey.shade800,
+                      // overflow: TextOverflow.ellipsis,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                TextSpan(
-                  text: !_showFullDescription ? '  more' : '  less',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      setState(() {
-                        _showFullDescription = !_showFullDescription;
-                      });
-                    },
-                ),
-              ],
+                  
+                ],
+              ),
             ),
           ),
 

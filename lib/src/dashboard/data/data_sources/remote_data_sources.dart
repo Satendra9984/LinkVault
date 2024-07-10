@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class RemoteDataSourcesImpl {
   RemoteDataSourcesImpl({
@@ -92,9 +94,43 @@ class RemoteDataSourcesImpl {
     // [TODO] : delete subcollection in db
   }
 
-  Future<void> updateSubCollection({
-    required CollectionModel subcollection,
-  }) async {
-    // [TODO] : update subcollection in db
+  Future<UrlModel> fetchUrl(String urlId) async {
+    try {
+      final response =
+          await _firestore.collection(urlDataCollection).doc(urlId).get();
+      final data = response.data();
+      if (data == null) {
+        throw ServerException(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        );
+      }
+
+      final fetchedUrlData = UrlModel.fromJson(data);
+
+      return fetchedUrlData;
+    } catch (e) {
+      Logger.printLog('fetchUrl : $e');
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
+  }
+
+  Future<UrlModel> addUrl(UrlModel urlModel) async {
+    try {
+      final response =
+          await _firestore.collection(urlDataCollection).add(urlModel.toJson());
+
+      final addedUrlData = urlModel.copyWith(id: response.id);
+
+      return addedUrlData;
+    } catch (e) {
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
   }
 }
