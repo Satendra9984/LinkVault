@@ -6,6 +6,7 @@ import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.d
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 
@@ -40,7 +41,11 @@ class DashboardHomePage extends StatelessWidget {
           ),
         ),
 
-        // [TODO] : We can further add more cubits like Offlineview editor, 
+        BlocProvider(
+          create: (BuildContext context) => NetworkImageCacheCubit(),
+        ),
+
+        // [TODO] : We can further add more cubits like Offlineview editor,
         // webpage reader, openai summariser etc.
       ],
       child: MaterialApp(

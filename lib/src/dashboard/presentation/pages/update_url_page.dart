@@ -17,24 +17,24 @@ import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.d
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
-class AddUrlPage extends StatefulWidget {
-  const AddUrlPage({
-    required this.parentCollection,
+class UpdateUrlPage extends StatefulWidget {
+  const UpdateUrlPage({
+    required this.urlModel,
     super.key,
   });
-  final CollectionModel parentCollection;
+  final UrlModel urlModel;
 
   @override
-  State<AddUrlPage> createState() => _AddUrlPageState();
+  State<UpdateUrlPage> createState() => _UpdateUrlPageState();
 }
 
-class _AddUrlPageState extends State<AddUrlPage> {
+class _UpdateUrlPageState extends State<UpdateUrlPage> {
   final _formKey = GlobalKey<FormState>();
   final _urlAddressController = TextEditingController();
-  final _urlNameController = TextEditingController();
-  final _descEditingController = TextEditingController();
+  final _urlTitleController = TextEditingController();
+  final _urlDescriptionController = TextEditingController();
   final _isFavorite = ValueNotifier<bool>(false);
-  // Categories related data
+  // CATEGORIES RELATED DATA
   final _predefinedCategories = [...categories];
   final _selectedCategory = ValueNotifier<String>('');
 
@@ -44,13 +44,13 @@ class _AddUrlPageState extends State<AddUrlPage> {
       ValueNotifier<LoadingStates>(LoadingStates.initial);
   final _previewError = ValueNotifier<Failure?>(null);
 
-  Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
+  Future<void> _updateUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       var urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
-              title: _urlNameController.text,
+              title: _urlTitleController.text,
             );
 
       final urlMetaDataJson = urlMetaData.toJson();
@@ -62,21 +62,21 @@ class _AddUrlPageState extends State<AddUrlPage> {
 
       final urlModelData = UrlModel(
         id: '',
-        collectionId: widget.parentCollection.id,
+        collectionId: widget.urlModel.id,
         url: _urlAddressController.text,
-        title: _urlNameController.text,
-        isFavourite: _isFavorite.value,
+        title: _urlTitleController.text,
         tag: _selectedCategory.value,
+        isFavourite: _isFavorite.value,
         isOffline: false,
         createdAt: createdAt,
         updatedAt: createdAt,
         metaData: urlMetaData,
       );
 
-      urlCrudCubit.addUrl(
-        urlData: urlModelData,
-        collection: widget.parentCollection,
-      );
+      // urlCrudCubit.addUrl(
+      //   urlData: urlModelData,
+      //   collection: widget.urlModel,
+      // );
     }
   }
 
@@ -134,11 +134,12 @@ class _AddUrlPageState extends State<AddUrlPage> {
       _previewError.value = null;
 
       // Initilializing default values
-      if (_urlNameController.text.isEmpty && metaData.websiteName != null) {
-        _urlNameController.text = metaData.websiteName!;
+      if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
+        _urlTitleController.text = metaData.websiteName!;
       }
-      if (_descEditingController.text.isEmpty && metaData.description != null) {
-        _descEditingController.text = metaData.description!.length < 1000
+      if (_urlDescriptionController.text.isEmpty &&
+          metaData.description != null) {
+        _urlDescriptionController.text = metaData.description!.length < 1000
             ? metaData.description!
             : metaData.description!.substring(0, 1000);
       }
@@ -153,22 +154,29 @@ class _AddUrlPageState extends State<AddUrlPage> {
     }
     // }
     Logger.printLog(
-        'metadata size: ${_previewMetaData.value!.toJson().toString().length}');
+      'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
+    );
     _previewLoadingStates.value = LoadingStates.loaded;
     await _showPreviewBottomSheet();
   }
 
   @override
   void initState() {
-    _selectedCategory.value = _predefinedCategories.first;
+    _urlAddressController.text = widget.urlModel.url;
+    _urlTitleController.text = widget.urlModel.title;
+    _urlDescriptionController.text = widget.urlModel.description ?? '';
+    _isFavorite.value = widget.urlModel.isFavourite;
+    _selectedCategory.value = widget.urlModel.tag;
+    _previewMetaData.value = widget.urlModel.metaData;
+    _previewLoadingStates.value = LoadingStates.loaded;
     super.initState();
   }
 
   @override
   void dispose() {
     _urlAddressController.dispose();
-    _urlNameController.dispose();
-    _descEditingController.dispose();
+    _urlTitleController.dispose();
+    _urlDescriptionController.dispose();
     _isFavorite.dispose();
     _selectedCategory.dispose();
     _previewMetaData.dispose();
@@ -207,7 +215,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
               onPressed: () async {
-                await _addUrl(
+                await _updateUrl(
                   urlCrudCubit: urlCrudCubit,
                 );
               },
@@ -334,7 +342,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 const SizedBox(height: 16),
 
                 CustomCollTextField(
-                  controller: _urlNameController,
+                  controller: _urlTitleController,
                   labelText: 'Title',
                   hintText: ' eg. google ',
                   keyboardType: TextInputType.name,
@@ -348,7 +356,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 ),
                 const SizedBox(height: 16),
                 CustomCollTextField(
-                  controller: _descEditingController,
+                  controller: _urlDescriptionController,
                   labelText: 'Description',
                   hintText: ' Add your important detail here. ',
                   maxLength: 1000,

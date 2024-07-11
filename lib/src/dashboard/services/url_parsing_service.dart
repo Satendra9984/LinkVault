@@ -11,10 +11,11 @@ import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:path_provider/path_provider.dart';
 
 class UrlParsingService {
 // Function to fetch webpage content
-  Future<String?> fetchWebpageContent(String url) async {
+  static Future<String?> fetchWebpageContent(String url) async {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -30,7 +31,7 @@ class UrlParsingService {
   }
 
 // Function to extract title
-  String? extractTitle(Document document) {
+  static String? extractTitle(Document document) {
     final title = document.head?.querySelector('title')?.text;
 
     if (title == null) return null;
@@ -40,7 +41,7 @@ class UrlParsingService {
   }
 
 // Function to extract description
-  String? extractDescription(Document document) {
+  static String? extractDescription(Document document) {
     try {
       final description = document.head
               ?.querySelector('meta[name="description"]')
@@ -57,7 +58,7 @@ class UrlParsingService {
     }
   }
 
-  String? extractImageUrl(Document document) {
+  static String? extractImageUrl(Document document) {
     try {
       // Try to find the first image element on the page in body
       final imageElements = document.body?.querySelectorAll('img');
@@ -113,7 +114,7 @@ class UrlParsingService {
   }
 
 // Function to extract website name
-  String? extractWebsiteName(Document document) {
+  static String? extractWebsiteName(Document document) {
     try {
       final websiteName = document.head
           ?.querySelector('meta[property="og:site_name"]')
@@ -128,15 +129,31 @@ class UrlParsingService {
   }
 
 // Function to extract website logo
-  String? extractWebsiteLogoUrl(Document document) {
+  static String? extractWebsiteLogoUrl(Document document) {
     try {
-      final logoUrl = document.head
-              ?.querySelector('link[rel="icon"]')
-              ?.attributes['href'] ??
-          document.head
-              ?.querySelector('link[rel="shortcut icon"]')
-              ?.attributes['href'];
-      return logoUrl;
+      // List of possible favicon selectors
+      final selectors = [
+        'link[rel="icon"]',
+        'link[rel="shortcut icon"]',
+        'link[rel="apple-touch-icon"]',
+        'link[rel="apple-touch-icon-precomposed"]',
+        'link[rel="mask-icon"]',
+        'link[rel="manifest"]',
+        'meta[itemprop="image"]', // Some sites use schema.org for favicons
+      ];
+
+      for (final selector in selectors) {
+        final element = document.head?.querySelector(selector);
+        if (element != null) {
+          final href = element.attributes['href'];
+          if (href != null) {
+            return href;
+          }
+        }
+      }
+
+      // Fallback: try to find favicon in the root directory
+      return '/favicon.ico';
     } catch (e) {
       Logger.printLog('error in "extractWebsiteLogoUrl" $e');
       return null;
@@ -144,19 +161,17 @@ class UrlParsingService {
   }
 
 // Function to fetch image as Uint8List
-  Future<Uint8List?> fetchImageAsUint8List(String imageUrl) async {
+  static Future<Uint8List?> fetchImageAsUint8List(
+    String imageUrl, {
+    required int maxSize,
+  }) async {
     try {
       Logger.printLog('websiteImageUrl: $imageUrl');
       if (imageUrl.isEmpty) return null;
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
         final originalImageBytes = response.bodyBytes;
-        final compressedImage =
-            await ImageUtils.compressImage(originalImageBytes);
-
-        Logger.printLog('Original Image:  ${originalImageBytes.length}');
-        Logger.printLog('compressedImage: ${compressedImage.length}');
-        return compressedImage.length > 150000 ? null : compressedImage;
+        return getCompressedImage(originalImageBytes, maxSize: maxSize);
       }
       return null;
     } catch (e) {
@@ -166,23 +181,52 @@ class UrlParsingService {
     }
   }
 
+  static Future<Uint8List?> getCompressedImage(
+    Uint8List originalImageBytes, {
+    required int maxSize,
+  }) async {
+    final compressedImage = await ImageUtils.compressImage(originalImageBytes);
+
+    Logger.printLog('Original Image:  ${originalImageBytes.length}');
+    Logger.printLog('compressedImage: ${compressedImage?.length}');
+
+    // final stringBase64 = StringUtils.convertUint8ListToBase64(compressedImage);
+    // if (stringBase64 == null) return null;
+    // final compressedBase64String = StringUtils.compressString(stringBase64);
+
+    // if (compressedBase64String == null) return null;
+
+    // Logger.printLog('compressedImage: ${compressedBase64String.length}');
+
+    return compressedImage == null || compressedImage.length > maxSize
+        ? null
+        : compressedImage;
+  }
+
 // Function to handle relative URLs
-  String handleRelativeUrl(String url, String baseUrl) {
-    if (url.startsWith('http')) {
-      return url;
+  static String handleRelativeUrl(String url, String baseUrl) {
+    try {
+      if (url.startsWith('http')) {
+        return url;
+      }
+      // Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url');
+      return Uri.parse(baseUrl).resolve(url).toString();
+    } catch (e) {
+      Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url $e');
+      return baseUrl + url;
     }
-    return Uri.parse(baseUrl).resolve(url).toString();
   }
 
 // Main parsing function
-  Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
+  static Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
     final htmlContent = await fetchWebpageContent(url);
 
     if (htmlContent == null) {
       return (null, null);
     }
 
-    // File('/htmlContent').writeAsStringSync(htmlContent);
+    // final directory = await getApplicationDocumentsDirectory()..path;
+    // await File('htmlContent.html').writeAsString(htmlContent);
 
     final document = html_parser.parse(htmlContent);
     final metaData = <String, dynamic>{};
@@ -197,7 +241,13 @@ class UrlParsingService {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;
       // Logger.printLog('logoUrl : $websiteLogoUrl');
-      metaData['favicon'] = await fetchImageAsUint8List(websiteLogoUrl);
+      final faviconUint = await fetchImageAsUint8List(
+        websiteLogoUrl,
+        maxSize: 100000,
+      );
+      if (faviconUint != null) {
+        metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
+      }
     }
 
     var imageUrl = extractImageUrl(document);
@@ -205,7 +255,15 @@ class UrlParsingService {
     if (imageUrl != null) {
       imageUrl = handleRelativeUrl(imageUrl, url);
       metaData['banner_image_url'] = imageUrl;
-      metaData['banner_image'] = await fetchImageAsUint8List(imageUrl);
+      final bannerImage = await fetchImageAsUint8List(
+        imageUrl,
+        maxSize: 150000,
+      );
+
+      if (bannerImage != null) {
+        metaData['banner_image'] =
+            StringUtils.convertUint8ListToBase64(bannerImage);
+      }
     }
 
     // Fetch image as Uint8List

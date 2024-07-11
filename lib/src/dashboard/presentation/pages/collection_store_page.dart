@@ -157,6 +157,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
             backgroundColor: ColourPallette.white,
             appBar: AppBar(
               backgroundColor: ColourPallette.white,
+              surfaceTintColor: ColourPallette.mystic,
               title: Text(
                 collection.name,
                 style: const TextStyle(
@@ -212,11 +213,10 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                     },
                   ),
                   const SizedBox(height: 32),
-                  
                   UrlsListWidget(
                     title: 'Urls',
                     urlList: urlList,
-                    onAddUrlTap: (){
+                    onAddUrlTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -226,8 +226,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                         ),
                       );
                     },
-                    onUrlTap: (url){},
-                    onUrlDoubleTap: (url){},
+                    onUrlTap: (url) {},
+                    onUrlDoubleTap: (url) {},
                   ),
                 ],
               ),

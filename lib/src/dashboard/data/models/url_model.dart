@@ -2,6 +2,8 @@
 
 import 'dart:typed_data';
 
+import 'package:link_vault/core/utils/string_utils.dart';
+
 class UrlModel {
   UrlModel({
     required this.id,
@@ -12,6 +14,7 @@ class UrlModel {
     required this.isOffline,
     required this.createdAt,
     required this.updatedAt,
+    required this.isFavourite,
     this.metaData,
     this.description,
     this.htmlContent,
@@ -29,6 +32,7 @@ class UrlModel {
         json['meta_data'] as Map<String, dynamic>? ?? {},
       ),
       isOffline: json['is_offline'] as bool,
+      isFavourite: (json['is_favourite'] as bool?) ?? false,
       htmlContent: json['html_content'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -43,7 +47,7 @@ class UrlModel {
   final String title;
   final String? description;
   final String tag;
-
+  final bool isFavourite;
   // URL meta_data this will be parsed
   final UrlMetaData? metaData;
 
@@ -68,6 +72,7 @@ class UrlModel {
       'html_content': htmlContent,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'is_favourite' : isFavourite,
     };
   }
 
@@ -77,6 +82,7 @@ class UrlModel {
     String? url,
     String? title,
     String? description,
+    bool? isFavourite,
     String? tag,
     UrlMetaData? metaData,
     bool? isOffline,
@@ -90,6 +96,7 @@ class UrlModel {
       url: url ?? this.url,
       title: title ?? this.title,
       description: description ?? this.description,
+      isFavourite: isFavourite ?? this.isFavourite,
       tag: tag ?? this.tag,
       metaData: metaData ?? this.metaData,
       isOffline: isOffline ?? this.isOffline,
@@ -112,7 +119,6 @@ class UrlModel {
   //          updatedAt.isEmpty;
   // }
 }
-
 
 class UrlMetaData {
   UrlMetaData({
@@ -147,9 +153,10 @@ class UrlMetaData {
 
   factory UrlMetaData.fromJson(Map<String, dynamic> json) {
     return UrlMetaData(
-      favicon: convertToUint8List(json['favicon']),
+      favicon: StringUtils.convertBase64ToUint8List(json['favicon'] as String?),
       faviconUrl: json['favicon_url'] as String?,
-      bannerImage: convertToUint8List(json['banner_image']),
+      bannerImage:
+          StringUtils.convertBase64ToUint8List(json['banner_image'] as String?),
       bannerImageUrl: json['banner_image_url'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
@@ -167,9 +174,9 @@ class UrlMetaData {
 
   Map<String, dynamic> toJson() {
     return {
-      'favicon': favicon,
+      'favicon': StringUtils.convertUint8ListToBase64(favicon),
       'favicon_url': faviconUrl,
-      'banner_image': bannerImage,
+      'banner_image': StringUtils.convertUint8ListToBase64(bannerImage),
       'banner_image_url': bannerImageUrl,
       'title': title,
       'description': description,
@@ -197,10 +204,10 @@ class UrlMetaData {
     );
   }
 
-  static Uint8List? convertToUint8List(dynamic data) {
-    if (data is List<dynamic>) {
-      return Uint8List.fromList(data.map((item) => item as int).toList());
-    }
-    return null;
-  }
+  // static Uint8List? convertToUint8List(dynamic data) {
+  //   if (data is List<dynamic>) {
+  //     return Uint8List.fromList(data.map((item) => item as int).toList());
+  //   }
+  //   return null;
+  // }
 }

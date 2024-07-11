@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/url_preview_type.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/url_favicon_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 
 class UrlsListWidget extends StatelessWidget {
@@ -39,10 +40,11 @@ class UrlsListWidget extends StatelessWidget {
               ),
             ),
             PopupMenuButton<UrlPreviewType>(
+              color: ColourPallette.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(
+                  color: ColourPallette.grey,
                   width: 1.4,
                 ),
               ),
@@ -60,10 +62,6 @@ class UrlsListWidget extends StatelessWidget {
                     value: UrlPreviewType.previewMeta,
                     child: Text('Preview only'),
                   ),
-                  // const PopupMenuItem(
-                  //   child: Text('Icons && Preview'),
-                  //   value: 'Icons && Preview',
-                  // ),
                 ];
               },
               onSelected: (value) {
@@ -91,11 +89,11 @@ class UrlsListWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade100,
-        ),
+        // border: Border.all(
+        //   color: Colors.grey.shade100,
+        // ),
         borderRadius: BorderRadius.circular(12),
-        color: ColourPallette.mystic.withOpacity(0.5),
+        // color: ColourPallette.mystic.withOpacity(0.5),
       ),
       alignment: Alignment.centerLeft,
       child: ListView.builder(
@@ -113,7 +111,6 @@ class UrlsListWidget extends StatelessWidget {
               const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
-
             ],
           );
         },
@@ -127,11 +124,11 @@ class UrlsListWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade100,
-        ),
+        // border: Border.all(
+        //   color: Colors.grey.shade100,
+        // ),
         borderRadius: BorderRadius.circular(12),
-        color: ColourPallette.mystic.withOpacity(0.5),
+        // color: ColourPallette.mystic.withOpacity(0.5),
       ),
       alignment: Alignment.centerLeft,
       child: AlignedGridView.extent(
@@ -180,7 +177,11 @@ class UrlsListWidget extends StatelessWidget {
           final urlMetaData =
               url.metaData ?? UrlMetaData.isEmpty(title: url.title);
 
-          return Text(url.title);
+          return UrlFaviconLogoWidget(
+            onDoubleTap: () {},
+            onPress: () {},
+            urlMetaData: urlMetaData,
+          );
         },
       ),
     );

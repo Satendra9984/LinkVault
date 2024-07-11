@@ -25,30 +25,16 @@ class ImageUtils {
     }
   }
 
-  static Future<Uint8List> compressImage(Uint8List imageBytes) async {
-    final imageSize =
-        getImageDimFromUintData(imageBytes) ?? const Size(1080, 1920);
-    Logger.printLog('ImageDim: $imageSize at 60 quality');
+  static Future<Uint8List?> compressImage(Uint8List imageBytes) async {
+    final imageSize = getImageDimFromUintData(imageBytes);
 
-    const minSize = 400; // Default size for preview
-    final aspectRatio = imageSize.width / imageSize.height;
-
-    var minHeight = 400;
-    var minWidth = 600;
-
-    if (imageSize.width <= imageSize.height) {
-      minWidth = minSize;
-      minHeight = (minSize / aspectRatio).round();
-    } else {
-      minHeight = minSize;
-      minWidth = (minSize * aspectRatio).round();
-    }
+    if (imageSize == null) return null;
 
     final compressedBytes = await FlutterImageCompress.compressWithList(
       imageBytes,
-      minHeight: minHeight,
-      minWidth: minWidth,
-      quality: 60, // Adjust the quality to your needs (0-100)
+      minHeight: imageSize.height.toInt(),
+      minWidth: imageSize.width.toInt(),
+      quality: 75, // Adjust the quality to your needs (0-100)
     );
 
     return compressedBytes;

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
 
 class UrlPreviewWidget extends StatefulWidget {
   const UrlPreviewWidget({
@@ -42,54 +43,13 @@ class _UrlPreviewWidgetState extends State<UrlPreviewWidget> {
     // );
 
     return Column(
-      // mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        if (widget.urlMetaData.bannerImage != null && !isSideWaysBanner)
+        if (widget.urlMetaData.bannerImageUrl != null && !isSideWaysBanner)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.memory(
-                widget.urlMetaData.bannerImage!,
-                height: min(
-                  bannerImageDim.height,
-                  (size.width - widget.outerScreenHorizontalDistance) /
-                      bannerImageAspectRatio, // 50 is outer screen padding
-                ),
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, _, __) {
-                  return SvgPicture.memory(
-                    widget.urlMetaData.bannerImage!,
-                    height: size.width / bannerImageAspectRatio,
-                    // fit: BoxFit.contain,
-                    // color: Colors.amber,
-                  );
-                },
-              ),
-            ),
-          )
-        else if (widget.urlMetaData.bannerImageUrl != null && !isSideWaysBanner)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                widget.urlMetaData.bannerImageUrl!,
-                height: min(
-                  bannerImageDim.height,
-                  (size.width - widget.outerScreenHorizontalDistance) /
-                      bannerImageAspectRatio, // 50 is outer screen padding
-                ),
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, _, __) {
-                  return SvgPicture.network(
-                    widget.urlMetaData.bannerImageUrl!,
-                    height: size.width / bannerImageAspectRatio,
-                    // fit: BoxFit.contain,
-                    // color: Colors.amber,
-                  );
-                },
-              ),
+            child: NetworkImageBuilderWidget(
+              imageUrl: widget.urlMetaData.bannerImageUrl!,
+              imageBytes: widget.urlMetaData.bannerImage,
             ),
           ),
 
@@ -132,18 +92,12 @@ class _UrlPreviewWidgetState extends State<UrlPreviewWidget> {
             // const SizedBox(width: 8),
             if (widget.urlMetaData.bannerImage != null && isSideWaysBanner)
               Container(
+                width: 100,
+                height: 100 / bannerImageAspectRatio,
                 margin: const EdgeInsets.only(left: 8),
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    widget.urlMetaData.bannerImage!,
-                    width: 100,
-                    height: 100 / bannerImageAspectRatio,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.topCenter,
-                    // color: Colors.amber,
-                  ),
+                child: NetworkImageBuilderWidget(
+                  imageUrl: widget.urlMetaData.bannerImageUrl!,
                 ),
               ),
           ],
@@ -163,7 +117,6 @@ class _UrlPreviewWidgetState extends State<UrlPreviewWidget> {
                       fontSize: 14,
                     ),
                   ),
-                  
                 ],
               ),
             ),

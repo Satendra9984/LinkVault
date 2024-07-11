@@ -97,6 +97,8 @@ class RemoteDataSourcesImpl {
 
   Future<UrlModel> fetchUrl(String urlId) async {
     try {
+      Logger.printLog('fetchUrl : urlId $urlId');
+
       final response =
           await _firestore.collection(urlDataCollection).doc(urlId).get();
       final data = response.data();
@@ -121,8 +123,8 @@ class RemoteDataSourcesImpl {
 
   Future<UrlModel> addUrl(UrlModel urlModel) async {
     try {
-      // Logger.printLog('UrlModel length');
-      // Logger.printLog(urlModel.toJson().toString().length.toString());
+      Logger.printLog('UrlModel length');
+      Logger.printLog(urlModel.toJson().toString().length.toString());
 
       final response =
           await _firestore.collection(urlDataCollection).add(urlModel.toJson());
@@ -130,7 +132,7 @@ class RemoteDataSourcesImpl {
       final addedUrlData = urlModel.copyWith(id: response.id);
 
       return addedUrlData;
-      // return urlModel;
+      return urlModel;
     } catch (e) {
       Logger.printLog('addUrlRemote : $e');
       throw ServerException(
