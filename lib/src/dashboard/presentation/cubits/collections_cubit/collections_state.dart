@@ -11,7 +11,7 @@ class CollectionsState extends Equatable {
   });
 
   final Map<String, CollectionModel> collections;
-  final Map<String, List<UrlModel>> collectionUrls;
+  final Map<String, UrlModel> collectionUrls;
 
   /// Current Collection Will be use to only change the ui for this current collection
   /// No need to update all nested collection screens
@@ -30,7 +30,7 @@ class CollectionsState extends Equatable {
     Map<String, CollectionModel>? collections,
     String? currentCollection,
     CollectionLoadingStates? collectionLoadingStates,
-    Map<String, List<UrlModel>>? collectionUrls,
+    Map<String, UrlModel>? collectionUrls,
   }) {
     return CollectionsState(
       collections: collections ?? this.collections,

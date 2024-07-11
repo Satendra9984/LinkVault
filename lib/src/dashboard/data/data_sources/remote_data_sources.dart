@@ -108,7 +108,7 @@ class RemoteDataSourcesImpl {
           statusCode: 400,
         );
       }
-
+      data['id'] = response.id;
       final fetchedUrlData = UrlModel.fromJson(data);
 
       return fetchedUrlData;
@@ -132,9 +132,31 @@ class RemoteDataSourcesImpl {
       final addedUrlData = urlModel.copyWith(id: response.id);
 
       return addedUrlData;
-      return urlModel;
     } catch (e) {
       Logger.printLog('addUrlRemote : $e');
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
+  }
+
+  Future<UrlModel> updateUrl({
+    required UrlModel urlModel,
+  }) async {
+    // [TODO] : Add subcollection in db
+    try {
+      await _firestore
+          .collection(urlDataCollection)
+          .doc(urlModel.id)
+          .set(urlModel.toJson());
+
+      final urlModelUp = urlModel;
+
+      return urlModelUp;
+    } catch (e) {
+      Logger.printLog('updateUrl : $e urlId: ${urlModel.id}');
+
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,

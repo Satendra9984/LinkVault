@@ -82,7 +82,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         newCollMap.addAll(subCollectionsMap);
         // Adding all the urls
         final newUrlsMap = {...state.collectionUrls};
-        newUrlsMap[collection.id] = urlList;
+        for (final url in urlList) {
+          newUrlsMap[url.id] = url;
+        }
         // updating the state
         emit(
           state.copyWith(
@@ -133,14 +135,14 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           newCollMap[updatedParentCollection.id] = updatedParentCollection;
         }
 
-        final newUrlsMap = {...state.collectionUrls};
-        newUrlsMap[collection.id] = [];
+        // final newUrlsMap = {...state.collectionUrls};
+        // newUrlsMap[collection.id] = [];
 
         emit(
           state.copyWith(
             currentCollection: collection.parentCollection,
             collections: newCollMap,
-            collectionUrls: newUrlsMap,
+            // collectionUrls: newUrlsMap,
             collectionLoadingStates: CollectionLoadingStates.successAdding,
           ),
         );
@@ -212,11 +214,33 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required CollectionModel collection,
   }) {
     final urlMap = {...state.collectionUrls};
-    final collectionUrls = (urlMap[collection.id] ?? [])..add(url);
-
-    urlMap[collection.id] = collectionUrls;
-
+    urlMap[url.id] = url;
     updateCollectionSimple(updatedCollection: collection);
+
+    emit(
+      state.copyWith(
+        collectionUrls: urlMap,
+      ),
+    );
+  }
+
+  void updateUrl({
+    required UrlModel url,
+  }) {
+    final urlMap = {...state.collectionUrls};
+    urlMap[url.id] = url;
+
+    emit(
+      state.copyWith(
+        collectionUrls: urlMap,
+      ),
+    );
+  }
+
+  void deleteUrl({
+    required UrlModel url,
+  }) {
+    final urlMap = {...state.collectionUrls}..remove(url.id);
 
     emit(
       state.copyWith(

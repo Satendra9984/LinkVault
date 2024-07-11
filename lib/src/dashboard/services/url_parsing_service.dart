@@ -187,8 +187,8 @@ class UrlParsingService {
   }) async {
     final compressedImage = await ImageUtils.compressImage(originalImageBytes);
 
-    Logger.printLog('Original Image:  ${originalImageBytes.length}');
-    Logger.printLog('compressedImage: ${compressedImage?.length}');
+    // Logger.printLog('Original Image:  ${originalImageBytes.length}');
+    // Logger.printLog('compressedImage: ${compressedImage?.length}');
 
     // final stringBase64 = StringUtils.convertUint8ListToBase64(compressedImage);
     // if (stringBase64 == null) return null;
@@ -212,7 +212,7 @@ class UrlParsingService {
       // Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url');
       return Uri.parse(baseUrl).resolve(url).toString();
     } catch (e) {
-      Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url $e');
+      Logger.printLog('handleRelativeUrl: $e');
       return baseUrl + url;
     }
   }

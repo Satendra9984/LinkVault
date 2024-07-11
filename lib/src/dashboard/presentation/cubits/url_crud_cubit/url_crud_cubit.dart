@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -52,6 +54,41 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           emit(
             state.copyWith(
               urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  void updateUrl({
+    required UrlModel urlData,
+  }) async {
+    emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.updating));
+
+    // Logger.printLog(
+    //   StringUtils.getJsonFormat(
+    //     urlData.toJson().toString(),
+    //   ),
+    // );
+
+    await _urlRepoImpl.updateUrl(urlData: urlData).then((result) {
+      result.fold(
+        (failed) {
+          emit(
+            state.copyWith(
+              urlCrudLoadingStates: UrlCrudLoadingStates.errorupdating,
+            ),
+          );
+        },
+        (response) {
+          final urlData = response;
+
+          _collectionsCubit.updateUrl(url: urlData);
+
+          emit(
+            state.copyWith(
+              urlCrudLoadingStates: UrlCrudLoadingStates.updatedSuccessfully,
             ),
           );
         },

@@ -107,7 +107,13 @@ class UrlsListWidget extends StatelessWidget {
 
           return Column(
             children: [
-              UrlPreviewWidget(urlMetaData: urlMetaData),
+              UrlPreviewWidget(
+                urlMetaData: urlMetaData,
+                onTap: () => onUrlTap(url),
+                onDoubleTap: () => onUrlDoubleTap(url),
+                onShareButtonTap: () {},
+                onMoreVertButtontap: () {},
+              ),
               const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
@@ -174,13 +180,11 @@ class UrlsListWidget extends StatelessWidget {
 
           index = index - 1;
           final url = urlList[index];
-          final urlMetaData =
-              url.metaData ?? UrlMetaData.isEmpty(title: url.title);
 
           return UrlFaviconLogoWidget(
-            onDoubleTap: () {},
-            onPress: () {},
-            urlMetaData: urlMetaData,
+            onPress: () => onUrlTap(url),
+            onDoubleTap: () => onUrlDoubleTap(url),
+            urlModelData: url,
           );
         },
       ),

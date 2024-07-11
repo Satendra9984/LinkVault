@@ -9,11 +9,13 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:lottie/lottie.dart';
@@ -151,7 +153,15 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
 
           // Logger.printLog(subCollections.length.toString());
 
-          final urlList = state.collectionUrls[collection.id] ?? [];
+          final urlList = <UrlModel>[];
+
+          for (final urlId in collection.urls) {
+            final url = state.collectionUrls[urlId];
+
+            if (url == null) continue;
+
+            urlList.add(url);
+          }
 
           return Scaffold(
             backgroundColor: ColourPallette.white,
@@ -227,7 +237,16 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                       );
                     },
                     onUrlTap: (url) {},
-                    onUrlDoubleTap: (url) {},
+                    onUrlDoubleTap: (url) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => UpdateUrlPage(
+                            urlModel: url,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

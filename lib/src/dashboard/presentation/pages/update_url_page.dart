@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -61,11 +63,12 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       final createdAt = DateTime.now().toUtc();
 
       final urlModelData = UrlModel(
-        id: '',
+        id: widget.urlModel.id,
         collectionId: widget.urlModel.id,
         url: _urlAddressController.text,
         title: _urlTitleController.text,
         tag: _selectedCategory.value,
+        description: _urlDescriptionController.text,
         isFavourite: _isFavorite.value,
         isOffline: false,
         createdAt: createdAt,
@@ -73,10 +76,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
         metaData: urlMetaData,
       );
 
-      // urlCrudCubit.addUrl(
-      //   urlData: urlModelData,
-      //   collection: widget.urlModel,
-      // );
+      urlCrudCubit.updateUrl(
+        urlData: urlModelData,
+      );
     }
   }
 
@@ -162,6 +164,18 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
   @override
   void initState() {
+    debugPrint(
+      const JsonEncoder.withIndent('  ').convert(
+        widget.urlModel.toJson(),
+      ),
+    );
+
+    debugPrint(
+      const JsonEncoder.withIndent('  ').convert(
+        widget.urlModel.toJson(),
+      ),
+    );
+    
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
@@ -192,7 +206,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
-          'Add Url',
+          'Update Url',
           style: TextStyle(
             color: Colors.grey.shade800,
             fontWeight: FontWeight.w500,
@@ -202,7 +216,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
         listener: (context, state) {
           if (state.urlCrudLoadingStates ==
-              UrlCrudLoadingStates.addedSuccessfully) {
+              UrlCrudLoadingStates.updatedSuccessfully) {
             // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
             Navigator.of(context).pop();
           }
@@ -219,8 +233,8 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                   urlCrudCubit: urlCrudCubit,
                 );
               },
-              text: 'Add Url',
-              icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.adding
+              text: 'Update Url',
+              icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.updating
                   ? const SizedBox(
                       height: 24,
                       width: 24,
@@ -380,22 +394,23 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                       ),
                     ),
                     ValueListenableBuilder<bool>(
-                        valueListenable: _isFavorite,
-                        builder: (context, isFavorite, child) {
-                          return Switch.adaptive(
-                            value: isFavorite,
-                            onChanged: (value) => _isFavorite.value = value,
-                            trackOutlineColor:
-                                WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.transparent,
-                            ),
-                            thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.transparent,
-                            ),
-                            activeTrackColor: ColourPallette.mountainMeadow,
-                            inactiveTrackColor: ColourPallette.error,
-                          );
-                        }),
+                      valueListenable: _isFavorite,
+                      builder: (context, isFavorite, child) {
+                        return Switch.adaptive(
+                          value: isFavorite,
+                          onChanged: (value) => _isFavorite.value = value,
+                          trackOutlineColor:
+                              WidgetStateProperty.resolveWith<Color?>(
+                            (Set<WidgetState> states) => Colors.transparent,
+                          ),
+                          thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                            (Set<WidgetState> states) => Colors.transparent,
+                          ),
+                          activeTrackColor: ColourPallette.mountainMeadow,
+                          inactiveTrackColor: ColourPallette.error,
+                        );
+                      },
+                    ),
                   ],
                 ),
 
@@ -485,6 +500,10 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                   physics: const BouncingScrollPhysics(),
                   child: UrlPreviewWidget(
                     urlMetaData: _previewMetaData.value!,
+                    onTap: () => {},
+                    onDoubleTap: () => {},
+                    onShareButtonTap: () {},
+                    onMoreVertButtontap: () {},
                   ),
                 );
               },

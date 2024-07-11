@@ -65,6 +65,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
         collectionId: widget.parentCollection.id,
         url: _urlAddressController.text,
         title: _urlNameController.text,
+        description: _descEditingController.text,
         isFavourite: _isFavorite.value,
         tag: _selectedCategory.value,
         isOffline: false,
@@ -477,6 +478,10 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   physics: const BouncingScrollPhysics(),
                   child: UrlPreviewWidget(
                     urlMetaData: _previewMetaData.value!,
+                    onTap: () {},
+                    onDoubleTap: (){},
+                    onShareButtonTap: () {},
+                    onMoreVertButtontap: () {},
                   ),
                 );
               },
