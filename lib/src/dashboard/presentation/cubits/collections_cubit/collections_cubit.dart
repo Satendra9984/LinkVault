@@ -98,104 +98,34 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  Future<void> addSubcollection({
+  CollectionModel? getCollection({
+    required String collectionId,
+  }) {
+    return state.collections[collectionId];
+  }
+
+  void addCollection({
     required CollectionModel collection,
-  }) async {
+  })  {
     // [TODO] : Add subcollection in db
+
+    final newCollMap = {...state.collections};
+    newCollMap[collection.id] = collection;
+
     emit(
       state.copyWith(
-        currentCollection: collection.parentCollection,
-        collectionLoadingStates: CollectionLoadingStates.adding,
+        collections: newCollMap,
       ),
-    );
-
-    final parentCollection = state.collections[collection.parentCollection];
-
-    // WE are updating the parent collection and sending to db request to save
-    // query time and less points of server errors
-    final addedCollection = await _collectionsRepoImpl.addSubCollection(
-      subCollection: collection,
-      parentCollection: parentCollection,
-    );
-
-    addedCollection.fold(
-      (failed) {
-        emit(
-          state.copyWith(
-            currentCollection: collection.parentCollection,
-            collectionLoadingStates: CollectionLoadingStates.errorAdding,
-          ),
-        );
-      },
-      (result) {
-        final (collection, updatedParentCollection) = result;
-        final newCollMap = {...state.collections};
-        newCollMap[collection.id] = collection;
-        if (updatedParentCollection != null) {
-          newCollMap[updatedParentCollection.id] = updatedParentCollection;
-        }
-
-        // final newUrlsMap = {...state.collectionUrls};
-        // newUrlsMap[collection.id] = [];
-
-        emit(
-          state.copyWith(
-            currentCollection: collection.parentCollection,
-            collections: newCollMap,
-            // collectionUrls: newUrlsMap,
-            collectionLoadingStates: CollectionLoadingStates.successAdding,
-          ),
-        );
-      },
     );
   }
 
-  Future<void> deleteSubcollection({
+  void deleteCollection({
     required CollectionModel subcollection,
-  }) async {
+  })  {
     // [TODO] : delete subcollection in db it will be cascade delete
   }
 
-  Future<void> updateSubcollection({
-    required CollectionModel collection,
-  }) async {
-    // [TODO] : update subcollection in db
-    emit(
-      state.copyWith(
-        currentCollection: collection.parentCollection,
-        collectionLoadingStates: CollectionLoadingStates.updating,
-      ),
-    );
-
-    final addedCollection = await _collectionsRepoImpl.updateSubCollection(
-      subCollection: collection,
-    );
-
-    addedCollection.fold(
-      (failed) {
-        emit(
-          state.copyWith(
-            currentCollection: collection.parentCollection,
-            collectionLoadingStates: CollectionLoadingStates.errorUpdating,
-          ),
-        );
-      },
-      (updatedCollection) {
-        final newCollMap = {...state.collections};
-        newCollMap[collection.id] = updatedCollection;
-
-        emit(
-          state.copyWith(
-            currentCollection: collection.parentCollection,
-            collections: newCollMap,
-            collectionLoadingStates: CollectionLoadingStates.successUpdating,
-          ),
-        );
-      },
-    );
-  }
-
-  void updateCollectionSimple({
+  void updateCollection({
     required CollectionModel updatedCollection,
   }) {
     final newCollMap = {...state.collections};
@@ -215,7 +145,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }) {
     final urlMap = {...state.collectionUrls};
     urlMap[url.id] = url;
-    updateCollectionSimple(updatedCollection: collection);
+    updateCollection(updatedCollection: collection);
 
     emit(
       state.copyWith(
@@ -239,8 +169,13 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   void deleteUrl({
     required UrlModel url,
+    required CollectionModel? collection,
   }) {
     final urlMap = {...state.collectionUrls}..remove(url.id);
+
+    if (collection != null) {
+      updateCollection(updatedCollection: collection);
+    }
 
     emit(
       state.copyWith(

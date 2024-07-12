@@ -22,7 +22,7 @@ import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dar
 /// Before you can use the hive, you need to initialize it.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await MobileAds.instance.initialize();
+  await MobileAds.instance.initialize();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

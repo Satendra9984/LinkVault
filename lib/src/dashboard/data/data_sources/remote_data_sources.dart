@@ -123,8 +123,8 @@ class RemoteDataSourcesImpl {
 
   Future<UrlModel> addUrl(UrlModel urlModel) async {
     try {
-      Logger.printLog('UrlModel length');
-      Logger.printLog(urlModel.toJson().toString().length.toString());
+      // Logger.printLog('UrlModel length');
+      // Logger.printLog(urlModel.toJson().toString().length.toString());
 
       final response =
           await _firestore.collection(urlDataCollection).add(urlModel.toJson());
@@ -157,6 +157,23 @@ class RemoteDataSourcesImpl {
     } catch (e) {
       Logger.printLog('updateUrl : $e urlId: ${urlModel.id}');
 
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
+  }
+
+  Future<UrlModel> deleteUrl(UrlModel urlModel) async {
+    try {
+      // Logger.printLog('UrlModel length');
+      Logger.printLog(urlModel.toString());
+
+      await _firestore.collection(urlDataCollection).doc(urlModel.id).delete();
+
+      return urlModel;
+    } catch (e) {
+      Logger.printLog('deleteUrl : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,

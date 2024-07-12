@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
+import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
@@ -30,7 +32,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
   String _selectedCategory = '';
 
   Future<void> addCollection(
-    CollectionsCubit collectionCubit, {
+    CollectionCrudCubit collectionCubit, {
     required String userId,
   }) async {
     final isValid = _formKey.currentState!.validate();
@@ -49,7 +51,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
         updatedAt: createdAt,
       ).copyWith(category: _selectedCategory);
 
-      await collectionCubit.addSubcollection(collection: subCollection);
+      await collectionCubit.addCollection(collection: subCollection);
     }
   }
 
@@ -89,24 +91,19 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        actions: [
-          // IconButton(
-          //   onPressed: () async {},
-          //   icon: const Icon(Icons.check),
-          // ),
-        ],
       ),
-      bottomNavigationBar: BlocConsumer<CollectionsCubit, CollectionsState>(
+      bottomNavigationBar:
+          BlocConsumer<CollectionCrudCubit, CollectionCrudCubitState>(
         listener: (context, state) {
-          if (state.collectionLoadingStates ==
-              CollectionLoadingStates.successAdding) {
+          if (state.collectionCrudLoadingStates ==
+              CollectionCrudLoadingStates.addedSuccessfully) {
             // [TODO] : PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
             Navigator.of(context).pop();
           }
         },
         builder: (context, state) {
           final globalUserCubit = context.read<GlobalUserCubit>();
-          final collectionCubit = context.read<CollectionsCubit>();
+          final collectionCubit = context.read<CollectionCrudCubit>();
 
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -116,8 +113,8 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                 userId: globalUserCubit.state.globalUser!.id,
               ),
               text: 'Add Collection',
-              icon: state.collectionLoadingStates ==
-                      CollectionLoadingStates.adding
+              icon: state.collectionCrudLoadingStates ==
+                      CollectionCrudLoadingStates.adding
                   ? const SizedBox(
                       height: 24,
                       width: 24,

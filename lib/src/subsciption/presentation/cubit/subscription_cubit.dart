@@ -100,4 +100,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     return isLoaded;
   }
+
+
+   @override
+  Future<void> close() {
+    return super.close();
+  }
+  
 }

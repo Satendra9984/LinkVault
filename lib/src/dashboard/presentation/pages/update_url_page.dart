@@ -18,6 +18,7 @@ import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.da
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
+import 'package:path/path.dart';
 
 class UpdateUrlPage extends StatefulWidget {
   const UpdateUrlPage({
@@ -64,7 +65,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
       final urlModelData = UrlModel(
         id: widget.urlModel.id,
-        collectionId: widget.urlModel.id,
+        collectionId: widget.urlModel.collectionId,
         url: _urlAddressController.text,
         title: _urlTitleController.text,
         tag: _selectedCategory.value,
@@ -159,23 +160,23 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
     );
     _previewLoadingStates.value = LoadingStates.loaded;
-    await _showPreviewBottomSheet();
+    await _showPreviewBottomSheet(this.context);
   }
 
   @override
   void initState() {
-    debugPrint(
-      const JsonEncoder.withIndent('  ').convert(
-        widget.urlModel.toJson(),
-      ),
-    );
+    // debugPrint(
+    //   const JsonEncoder.withIndent('  ').convert(
+    //     widget.urlModel.toJson(),
+    //   ),
+    // );
 
-    debugPrint(
-      const JsonEncoder.withIndent('  ').convert(
-        widget.urlModel.toJson(),
-      ),
-    );
-    
+    // debugPrint(
+    //   const JsonEncoder.withIndent('  ').convert(
+    //     widget.urlModel.toJson(),
+    //   ),
+    // );
+
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
@@ -212,11 +213,23 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => context.read<UrlCrudCubit>().deleteUrl(
+                  urlData: widget.urlModel,
+                ),
+            icon: const Icon(
+              Icons.delete_rounded,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
         listener: (context, state) {
           if (state.urlCrudLoadingStates ==
-              UrlCrudLoadingStates.updatedSuccessfully) {
+                  UrlCrudLoadingStates.updatedSuccessfully ||
+              state.urlCrudLoadingStates ==
+                  UrlCrudLoadingStates.deletedSuccessfully) {
             // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
             Navigator.of(context).pop();
           }
@@ -225,16 +238,29 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
           // final globalUserCubit = context.read<GlobalUserCubit>();
           final urlCrudCubit = context.read<UrlCrudCubit>();
 
+          final isSomeOperationHappenning =
+              state.urlCrudLoadingStates == UrlCrudLoadingStates.updating ||
+                  state.urlCrudLoadingStates == UrlCrudLoadingStates.deleting;
+
+          final buttonText = switch (state.urlCrudLoadingStates) {
+            UrlCrudLoadingStates.updating => 'Updating Url',
+            UrlCrudLoadingStates.deleting => 'Deleting Url',
+            _ => 'Update Url'
+          };
+
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
               onPressed: () async {
+                if (isSomeOperationHappenning) {
+                  return;
+                }
                 await _updateUrl(
                   urlCrudCubit: urlCrudCubit,
                 );
               },
-              text: 'Update Url',
-              icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.updating
+              text: buttonText,
+              icon: isSomeOperationHappenning
                   ? const SizedBox(
                       height: 24,
                       width: 24,
@@ -278,7 +304,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                     final previewButton = IconButton(
                       onPressed: () async {
                         if (_previewMetaData.value != null) {
-                          await _showPreviewBottomSheet();
+                          await _showPreviewBottomSheet(context);
                         } else {
                           await _loadPreview();
                         }
@@ -481,7 +507,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
     );
   }
 
-  Future<void> _showPreviewBottomSheet() async {
+  Future<void> _showPreviewBottomSheet(BuildContext context) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: ColourPallette.mystic,

@@ -5,6 +5,7 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
@@ -38,6 +39,17 @@ class DashboardHomePage extends StatelessWidget {
               ),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
+          ),
+        ),
+
+        BlocProvider(
+          create: (BuildContext context) => CollectionCrudCubit(
+            collectionRepoImpl: CollectionsRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+            ),
+            collectionsCubit: context.read<CollectionsCubit>(), 
           ),
         ),
 

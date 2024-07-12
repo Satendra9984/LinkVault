@@ -27,7 +27,6 @@ class UrlRepoImpl {
     required UrlModel urlData,
   }) async {
     // [TODO] : Add urlData in db
-
     try {
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(urlData);
 
@@ -89,16 +88,40 @@ class UrlRepoImpl {
     }
   }
 
-  Future<void> deleteUrlData({
+  Future<Either<Failure, (UrlModel, CollectionModel?)>> deleteUrlData({
+    required CollectionModel? collection,
     required UrlModel urlData,
   }) async {
     // [TODO] : delete urlData in db
     // then we need to update the collections also
-  }
+    try {
+      final deletedUrlData = await _remoteDataSourcesImpl.deleteUrl(urlData);
 
-  Future<void> updateUrlData({
-    required UrlModel urlData,
-  }) async {
-    // [TODO] : update urlData in db
+      if (collection == null) {
+        return Right((deletedUrlData, null));
+      }
+      final urlList = collection.urls
+        ..removeWhere(
+          (url) => url == urlData.id,
+        );
+
+      final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
+
+      // updating collection
+      final serverUpdatedCollection =
+          await _remoteDataSourcesImpl.updateCollection(
+        collection: updatedCollectionWithUrls,
+      );
+
+      return Right((deletedUrlData, serverUpdatedCollection));
+    } on ServerException catch (e) {
+      Logger.printLog('deleteUrlData : $e');
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
   }
 }

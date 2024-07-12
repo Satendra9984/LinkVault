@@ -28,13 +28,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
   void addUrl({
     required UrlModel urlData,
-    required CollectionModel collection,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.adding));
+    final collection = _collectionsCubit.getCollection(
+      collectionId: urlData.collectionId,
+    );
 
     await _urlRepoImpl
         .addUrlData(
-      collection: collection,
+      collection: collection!,
       urlData: urlData,
     )
         .then((result) {
@@ -66,12 +68,6 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.updating));
 
-    // Logger.printLog(
-    //   StringUtils.getJsonFormat(
-    //     urlData.toJson().toString(),
-    //   ),
-    // );
-
     await _urlRepoImpl.updateUrl(urlData: urlData).then((result) {
       result.fold(
         (failed) {
@@ -94,5 +90,41 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         },
       );
     });
+  }
+
+  void deleteUrl({
+    required UrlModel urlData,
+  }) async {
+    emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.deleting));
+
+    final collection =
+        _collectionsCubit.getCollection(collectionId: urlData.collectionId);
+
+    await _urlRepoImpl
+        .deleteUrlData(collection: collection, urlData: urlData)
+        .then(
+      (result) {
+        result.fold(
+          (failed) {
+            emit(
+              state.copyWith(
+                urlCrudLoadingStates: UrlCrudLoadingStates.errordeleting,
+              ),
+            );
+          },
+          (response) {
+            final (urlData, collection) = response;
+
+            _collectionsCubit.deleteUrl(url: urlData, collection: collection);
+
+            emit(
+              state.copyWith(
+                urlCrudLoadingStates: UrlCrudLoadingStates.deletedSuccessfully,
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

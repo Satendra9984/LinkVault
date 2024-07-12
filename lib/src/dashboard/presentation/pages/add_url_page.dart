@@ -74,10 +74,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
         metaData: urlMetaData,
       );
 
-      urlCrudCubit.addUrl(
-        urlData: urlModelData,
-        collection: widget.parentCollection,
-      );
+      urlCrudCubit.addUrl(urlData: urlModelData);
     }
   }
 
@@ -479,7 +476,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   child: UrlPreviewWidget(
                     urlMetaData: _previewMetaData.value!,
                     onTap: () {},
-                    onDoubleTap: (){},
+                    onDoubleTap: () {},
                     onShareButtonTap: () {},
                     onMoreVertButtontap: () {},
                   ),
