@@ -2,7 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
 
 class UrlFaviconLogoWidget extends StatelessWidget {
   const UrlFaviconLogoWidget({
@@ -73,22 +75,31 @@ class UrlFaviconLogoWidget extends StatelessWidget {
     } else if (urlMetaData.faviconUrl != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Image.network(
-          urlMetaData.faviconUrl!,
-          fit: BoxFit.contain,
-          errorBuilder: (ctx, _, __) {
-            try {
-              final svgImage = SvgPicture.network(
-                urlMetaData.faviconUrl!,
-              );
-
-              return svgImage;
-            } catch (e) {
-              return const Icon(Icons.web);
-            }
-          },
+        child: SizedBox(
+          height: 56,
+          width: 56,
+          child: NetworkImageBuilderWidget(
+            imageUrl: urlMetaData.faviconUrl!,
+            compressImage: false,
+          ),
         ),
       );
+      // child: Image.network(
+      //   urlMetaData.faviconUrl!,
+      //   fit: BoxFit.contain,
+      //   errorBuilder: (ctx, _, __) {
+      //     try {
+      //       final svgImage = SvgPicture.network(
+      //         urlMetaData.faviconUrl!,
+      //       );
+
+      //       return svgImage;
+      //     } catch (e) {
+      //       return const Icon(Icons.web);
+      //     }
+      //   },
+      // ),
+      // );
     } else {
       return const Icon(Icons.web);
     }

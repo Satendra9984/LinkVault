@@ -29,24 +29,14 @@ class UrlPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    final bannerImageDim = urlMetaData.bannerImage != null
-        ? ImageUtils.getImageDimFromUintData(urlMetaData.bannerImage!) ??
-            Size(size.width, 150)
-        : Size(size.width, 150);
-
-    final bannerImageAspectRatio = bannerImageDim.width / bannerImageDim.height;
-
-    final isSideWaysBanner = bannerImageAspectRatio <= 1.75;
-
     // Logger.printLog(
-    //   'banner image dim : ${bannerImageDim}, ratio: $bannerImageAspectRatio',
+    //   'website ${urlMetaData.websiteName}, url: ${urlMetaData.bannerImageUrl}',
     // );
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (urlMetaData.bannerImageUrl != null && !isSideWaysBanner)
+        if (urlMetaData.bannerImageUrl != null)
           GestureDetector(
             onTap: onTap,
             onDoubleTap: onDoubleTap,
@@ -55,6 +45,7 @@ class UrlPreviewWidget extends StatelessWidget {
               child: NetworkImageBuilderWidget(
                 imageUrl: urlMetaData.bannerImageUrl!,
                 imageBytes: urlMetaData.bannerImage,
+                compressImage: true,
               ),
             ),
           ),
@@ -104,18 +95,14 @@ class UrlPreviewWidget extends StatelessWidget {
               ),
             ),
             // const SizedBox(width: 8),
-            if (urlMetaData.bannerImageUrl != null && isSideWaysBanner)
+            if (urlMetaData.bannerImageUrl != null)
               GestureDetector(
                 onTap: onTap,
                 onDoubleTap: onDoubleTap,
-                child: Container(
-                  width: 100,
-                  height: 100 / bannerImageAspectRatio,
-                  margin: const EdgeInsets.only(left: 8),
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: NetworkImageBuilderWidget(
-                    imageUrl: urlMetaData.bannerImageUrl!,
-                  ),
+                child: NetworkImageBuilderWidget(
+                  imageUrl: urlMetaData.bannerImageUrl!,
+                  isSideWayWidget: true,
+                  compressImage: true,
                 ),
               ),
           ],
@@ -177,8 +164,8 @@ class UrlPreviewWidget extends StatelessWidget {
                               return svgImage;
                             } catch (e) {
                               return const SizedBox(
-                                height: 56,
-                                width: 56,
+                                height: 16,
+                                width: 16,
                                 child: Icon(Icons.web),
                               );
                             }
@@ -188,28 +175,37 @@ class UrlPreviewWidget extends StatelessWidget {
                     else if (urlMetaData.faviconUrl != null)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: Image.network(
-                          urlMetaData.faviconUrl!,
+                        child: SizedBox(
                           height: 16,
                           width: 16,
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, _, __) {
-                            try {
-                              final svgImage = SvgPicture.network(
-                                urlMetaData.faviconUrl!,
-                              );
-
-                              return svgImage;
-                            } catch (e) {
-                              return const SizedBox(
-                                height: 56,
-                                width: 56,
-                                child: Icon(Icons.web),
-                              );
-                            }
-                          },
+                          child: NetworkImageBuilderWidget(
+                            imageUrl: urlMetaData.faviconUrl!,
+                            compressImage: false,
+                          ),
                         ),
                       )
+                    // child: Image.network(
+                    // urlMetaData.faviconUrl!,
+                    // height: 16,
+                    // width: 16,
+                    // fit: BoxFit.contain,
+                    // errorBuilder: (ctx, _, __) {
+                    //   try {
+                    //     final svgImage = SvgPicture.network(
+                    //       urlMetaData.faviconUrl!,
+                    //     );
+
+                    //     return svgImage;
+                    //   } catch (e) {
+                    //     return const SizedBox(
+                    //       height: 16,
+                    //       width: 16,
+                    //       child: Icon(Icons.web),
+                    //     );
+                    //   }
+                    // },
+                    // ),
+
                     else
                       const SizedBox(
                         height: 56,

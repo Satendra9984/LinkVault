@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:html_unescape/html_unescape.dart';
+// import 'package:html_unescape/html_unescape.dart';
 
 class StringUtils {
   StringUtils._();
@@ -11,16 +11,16 @@ class StringUtils {
     return const JsonEncoder.withIndent('  ').convert(data);
   }
 
-  static String? convertHtmlStringIntoString(String? htmlString) {
-    if (htmlString == null) return null;
+  // static String? convertHtmlStringIntoString(String? htmlString) {
+  //   if (htmlString == null) return null;
 
-    final plainText = HtmlUnescape()
-        .convert(htmlString)
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+  //   final plainText = HtmlUnescape()
+  //       .convert(htmlString)
+  //       .replaceAll(RegExp(r'\s+'), ' ')
+  //       .trim();
 
-    return plainText;
-  }
+  //   return plainText;
+  // }
 
   static String getUnicodeString(String uncodedString) {
     try {

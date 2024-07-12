@@ -14,7 +14,10 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
           ),
         );
 
-  void addImage(String imageUrl) async {
+  void addImage(
+    String imageUrl, {
+    required bool compressImage,
+  }) async {
     final imagesData = {...state.imagesData};
 
     var networkImageCacheModel = NetworkImageCacheModel(
@@ -31,7 +34,8 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     // [TODO] : USE LOCAL STORAGE IF AVAILABLE
     final imageBytes = await UrlParsingService.fetchImageAsUint8List(
       imageUrl,
-      maxSize: 2 * 1024 * 1024,   // 2MB
+      maxSize: 2 * 1024 * 1024, // 2MB
+      compressImage: compressImage,
     );
 
     final imagesData2 = {...state.imagesData};

@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 
@@ -15,10 +16,14 @@ class NetworkImageBuilderWidget extends StatelessWidget {
   const NetworkImageBuilderWidget({
     required this.imageUrl,
     this.imageBytes,
+    this.isSideWayWidget = false,
+    required this.compressImage,
     super.key,
   });
   final String imageUrl;
   final Uint8List? imageBytes;
+  final bool isSideWayWidget;
+  final bool compressImage;
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +42,17 @@ class NetworkImageBuilderWidget extends StatelessWidget {
         }
 
         if (imageData == null) {
-          cacheCubit.addImage(imageUrl);
+          cacheCubit.addImage(
+            imageUrl,
+            compressImage: compressImage,
+          );
           imageData = cacheCubit.getImageData(
             imageUrl,
           )!; // guaranteed non null after [cacheCubit.addImage(imageUrl);]
+        }
+
+        if (imageData.loadingState != LoadingStates.loaded && isSideWayWidget) {
+          return Container();
         }
 
         if (imageData.loadingState == LoadingStates.loading) {
@@ -60,7 +72,10 @@ class NetworkImageBuilderWidget extends StatelessWidget {
             width: 600,
             child: Center(
               child: IconButton(
-                onPressed: () => cacheCubit.addImage(imageUrl),
+                onPressed: () => cacheCubit.addImage(
+                  imageUrl,
+                  compressImage: compressImage,
+                ),
                 icon: const Icon(Icons.restore_rounded),
               ),
             ),
@@ -76,32 +91,72 @@ class NetworkImageBuilderWidget extends StatelessWidget {
             : Size(size.width, 150);
 
         final bannerImageAspectRatio =
-            bannerImageDim.width / bannerImageDim.height;
+            bannerImageDim.height / bannerImageDim.width;
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.memory(
-            imageData.imageBytesData!,
-            // height: min(
-            // bannerImageDim.height,
-            // (size.width - widget.outerScreenHorizontalDistance) /
-            //     bannerImageAspectRatio, // 50 is outer screen padding
-            // ),
-            // fit: BoxFit.cover,
-            errorBuilder: (ctx, _, __) {
-              return SvgPicture.memory(
-                imageData!.imageBytesData!,
-                // height: size.width / bannerImageAspectRatio,
-                placeholderBuilder: (context) {
-                  return const SizedBox(
-                    height: 150,
-                    width: 600,
+        final isSideWaysBanner = bannerImageAspectRatio >= 1.5;
+
+        final width = isSideWaysBanner ? 100.0 / bannerImageAspectRatio : null;
+        final height = isSideWaysBanner ? 100 : null;
+
+        // Logger.printLog(
+        //   '[dim] imageUrl ${imageUrl}, dim: ${bannerImageDim} aspectratio $bannerImageAspectRatio',
+        // );
+
+        if (isSideWaysBanner && isSideWayWidget) {
+          return SizedBox(
+            height: 120,
+            width: 150 / bannerImageAspectRatio,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                imageData.imageBytesData!,
+                fit: BoxFit.cover,
+                errorBuilder: (ctx, _, __) {
+                  return SvgPicture.memory(
+                    imageData!.imageBytesData!,
+                    placeholderBuilder: (context) {
+                      return const SizedBox(
+                        height: 150,
+                        width: 600,
+                      );
+                    },
                   );
                 },
-              );
-            },
-          ),
-        );
+              ),
+            ),
+          );
+        } else if (!isSideWaysBanner && !isSideWayWidget) {
+          return SizedBox(
+            // height: 100,
+            // width: 100,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                imageData.imageBytesData!,
+                // height: min(
+                // bannerImageDim.height,
+                // (size.width - widget.outerScreenHorizontalDistance) /
+                //     bannerImageAspectRatio, // 50 is outer screen padding
+                // ),
+                // fit: BoxFit.cover,
+                errorBuilder: (ctx, _, __) {
+                  return SvgPicture.memory(
+                    imageData!.imageBytesData!,
+                    // height: size.width / bannerImageAspectRatio,
+                    placeholderBuilder: (context) {
+                      return const SizedBox(
+                        height: 150,
+                        width: 600,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        return Container();
       },
     );
   }

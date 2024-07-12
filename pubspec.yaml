@@ -11,19 +11,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_riverpod: ^2.5.1
   hive: ^2.2.3
+  html: ^0.15.4
+  http: ^1.2.1
   path: ^1.8.0
   path_provider: ^2.0.10
   permission_handler: ^11.3.1
 
-  flutter_staggered_grid_view: ^0.7.0
   flutter_layout_grid: ^2.0.1
-  html: ^0.15.4
-  http: ^1.2.1
-  url_launcher: ^6.3.0
+  flutter_riverpod: ^2.5.1
+  flutter_staggered_grid_view: ^0.7.0
   receive_sharing_intent: ^1.4.5
   share_plus: ^9.0.0
+  url_launcher: ^6.3.0
 
   cupertino_icons: ^1.0.2
   equatable: ^2.0.5
@@ -38,20 +38,21 @@ dependencies:
   google_mobile_ads: ^5.1.0
   lottie: ^3.1.2
   image: ^4.2.0
-  html_unescape: ^2.0.0
+  # html_unescape: ^2.0.0
   flutter_image_compress: ^2.3.0
-  archive: ^3.6.1
+  # archive: ^3.6.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   build_runner: ^2.1.11
-  hive_generator: ^2.0.1
   flutter_launcher_icons: ^0.13.1
   flutter_lints: ^4.0.0
+  hive_generator: ^2.0.1
   rename: ^3.0.2
-  very_good_analysis: ^6.0.0
+  very_good_analysis: ^5.1.0
+  
 
 flutter:
 

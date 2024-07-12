@@ -164,6 +164,7 @@ class UrlParsingService {
   static Future<Uint8List?> fetchImageAsUint8List(
     String imageUrl, {
     required int maxSize,
+    required bool compressImage,
   }) async {
     try {
       Logger.printLog('websiteImageUrl: $imageUrl');
@@ -171,6 +172,7 @@ class UrlParsingService {
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
         final originalImageBytes = response.bodyBytes;
+        if (!compressImage) return originalImageBytes;
         return getCompressedImage(originalImageBytes, maxSize: maxSize);
       }
       return null;
@@ -186,17 +188,6 @@ class UrlParsingService {
     required int maxSize,
   }) async {
     final compressedImage = await ImageUtils.compressImage(originalImageBytes);
-
-    // Logger.printLog('Original Image:  ${originalImageBytes.length}');
-    // Logger.printLog('compressedImage: ${compressedImage?.length}');
-
-    // final stringBase64 = StringUtils.convertUint8ListToBase64(compressedImage);
-    // if (stringBase64 == null) return null;
-    // final compressedBase64String = StringUtils.compressString(stringBase64);
-
-    // if (compressedBase64String == null) return null;
-
-    // Logger.printLog('compressedImage: ${compressedBase64String.length}');
 
     return compressedImage == null || compressedImage.length > maxSize
         ? null
@@ -243,7 +234,8 @@ class UrlParsingService {
       // Logger.printLog('logoUrl : $websiteLogoUrl');
       final faviconUint = await fetchImageAsUint8List(
         websiteLogoUrl,
-        maxSize: 100000,
+        maxSize: 50000,
+        compressImage: false,
       );
       if (faviconUint != null) {
         metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
@@ -258,6 +250,7 @@ class UrlParsingService {
       final bannerImage = await fetchImageAsUint8List(
         imageUrl,
         maxSize: 150000,
+        compressImage: true,
       );
 
       if (bannerImage != null) {

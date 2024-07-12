@@ -140,12 +140,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
         _urlTitleController.text = metaData.websiteName!;
       }
-      if (_urlDescriptionController.text.isEmpty &&
-          metaData.description != null) {
-        _urlDescriptionController.text = metaData.description!.length < 1000
-            ? metaData.description!
-            : metaData.description!.substring(0, 1000);
-      }
+      
     } else {
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value = GeneralFailure(
@@ -165,17 +160,6 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
   @override
   void initState() {
-    // debugPrint(
-    //   const JsonEncoder.withIndent('  ').convert(
-    //     widget.urlModel.toJson(),
-    //   ),
-    // );
-
-    // debugPrint(
-    //   const JsonEncoder.withIndent('  ').convert(
-    //     widget.urlModel.toJson(),
-    //   ),
-    // );
 
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
@@ -251,13 +235,11 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 if (isSomeOperationHappenning) {
                   return;
                 }
-                await _updateUrl(
-                  urlCrudCubit: urlCrudCubit,
-                );
+                _updateUrl(urlCrudCubit: urlCrudCubit);
               },
               text: buttonText,
               icon: isSomeOperationHappenning
@@ -397,7 +379,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 const SizedBox(height: 16),
                 CustomCollTextField(
                   controller: _urlDescriptionController,
-                  labelText: 'Description',
+                  labelText: 'Notes',
                   hintText: ' Add your important detail here. ',
                   maxLength: 1000,
                   maxLines: 5,
@@ -426,11 +408,11 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                           value: isFavorite,
                           onChanged: (value) => _isFavorite.value = value,
                           trackOutlineColor:
-                              WidgetStateProperty.resolveWith<Color?>(
-                            (Set<WidgetState> states) => Colors.transparent,
+                              MaterialStateProperty.resolveWith<Color?>(
+                            (Set<MaterialState> states) => Colors.transparent,
                           ),
-                          thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                            (Set<WidgetState> states) => Colors.transparent,
+                          thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                            (Set<MaterialState> states) => Colors.transparent,
                           ),
                           activeTrackColor: ColourPallette.mountainMeadow,
                           inactiveTrackColor: ColourPallette.error,
@@ -513,27 +495,25 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       backgroundColor: ColourPallette.mystic,
       isScrollControlled: true,
       builder: (ctx) {
-        return Expanded(
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: DraggableScrollableSheet(
-              expand: false,
-              builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: UrlPreviewWidget(
-                    urlMetaData: _previewMetaData.value!,
-                    onTap: () => {},
-                    onDoubleTap: () => {},
-                    onShareButtonTap: () {},
-                    onMoreVertButtontap: () {},
-                  ),
-                );
-              },
-            ),
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: DraggableScrollableSheet(
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: UrlPreviewWidget(
+                  urlMetaData: _previewMetaData.value!,
+                  onTap: () => {},
+                  onDoubleTap: () => {},
+                  onShareButtonTap: () {},
+                  onMoreVertButtontap: () {},
+                ),
+              );
+            },
           ),
         );
       },

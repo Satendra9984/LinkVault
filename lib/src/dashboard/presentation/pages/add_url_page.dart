@@ -87,36 +87,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
       return;
     }
 
-    // final parsingservice = UrlParsingService();
-
-    // Checking if only bannerimage is not parsed (quite often) to optimise fetching
-    // No need to fetch all details again
-    // if (_previewMetaData.value != null &&
-    //     _previewMetaData.value!.bannerImageUrl != null &&
-    //     _previewMetaData.value!.bannerImage == null) {
-    // _previewLoadingStates.value = LoadingStates.loading;
-    // await parsingservice
-    //     .fetchImageAsUint8List(_previewMetaData.value!.bannerImageUrl!)
-    //     .then((imageUint) {
-    //   if (imageUint == null) {
-    //     _previewLoadingStates.value = LoadingStates.errorLoading;
-
-    //     _previewError.value = GeneralFailure(
-    //       message: 'Something went wrong. Check your internet and try again.',
-    //       statusCode: '400',
-    //     );
-    //     return;
-    //   }
-    //   _previewMetaData.value =
-    //       _previewMetaData.value!.copyWith(bannerImage: imageUint);
-    //   _previewLoadingStates.value = LoadingStates.loaded;
-    //   _previewError.value = null;
-    // });
-
-    // return;
-    // }
-
-    // if (_previewMetaData.value == null) {
     // Fetching all details
     _previewLoadingStates.value = LoadingStates.loading;
 
@@ -133,13 +103,13 @@ class _AddUrlPageState extends State<AddUrlPage> {
 
       // Initilializing default values
       if (_urlNameController.text.isEmpty && metaData.websiteName != null) {
-        _urlNameController.text = metaData.websiteName!;
+        if (metaData.websiteName!.length < 30) {
+          _urlNameController.text = metaData.websiteName!;
+        } else {
+          _urlNameController.text = metaData.websiteName!.substring(0, 30);
+        }
       }
-      if (_descEditingController.text.isEmpty && metaData.description != null) {
-        _descEditingController.text = metaData.description!.length < 1000
-            ? metaData.description!
-            : metaData.description!.substring(0, 1000);
-      }
+      
     } else {
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value = GeneralFailure(
@@ -347,7 +317,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 const SizedBox(height: 16),
                 CustomCollTextField(
                   controller: _descEditingController,
-                  labelText: 'Description',
+                  labelText: 'Notes',
                   hintText: ' Add your important detail here. ',
                   maxLength: 1000,
                   maxLines: 5,
@@ -376,11 +346,12 @@ class _AddUrlPageState extends State<AddUrlPage> {
                             value: isFavorite,
                             onChanged: (value) => _isFavorite.value = value,
                             trackOutlineColor:
-                                WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.transparent,
+                                MaterialStateProperty.resolveWith<Color?>(
+                              (Set<MaterialState> states) => Colors.transparent,
                             ),
-                            thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.transparent,
+                            thumbColor:
+                                MaterialStateProperty.resolveWith<Color?>(
+                              (Set<MaterialState> states) => Colors.transparent,
                             ),
                             activeTrackColor: ColourPallette.mountainMeadow,
                             inactiveTrackColor: ColourPallette.error,
@@ -462,27 +433,25 @@ class _AddUrlPageState extends State<AddUrlPage> {
       backgroundColor: ColourPallette.mystic,
       isScrollControlled: true,
       builder: (ctx) {
-        return Expanded(
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: DraggableScrollableSheet(
-              expand: false,
-              builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: UrlPreviewWidget(
-                    urlMetaData: _previewMetaData.value!,
-                    onTap: () {},
-                    onDoubleTap: () {},
-                    onShareButtonTap: () {},
-                    onMoreVertButtontap: () {},
-                  ),
-                );
-              },
-            ),
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: DraggableScrollableSheet(
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: UrlPreviewWidget(
+                  urlMetaData: _previewMetaData.value!,
+                  onTap: () {},
+                  onDoubleTap: () {},
+                  onShareButtonTap: () {},
+                  onMoreVertButtontap: () {},
+                ),
+              );
+            },
           ),
         );
       },

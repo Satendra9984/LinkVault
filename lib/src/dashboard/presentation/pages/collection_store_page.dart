@@ -19,6 +19,7 @@ import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FolderCollectionPage extends StatefulWidget {
   const FolderCollectionPage(
@@ -236,7 +237,12 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                         ),
                       );
                     },
-                    onUrlTap: (url) {},
+                    onUrlTap: (url) async {
+                      final uri = Uri.parse(url.url);
+                      if (await canLaunchUrl(uri)) {
+                       await launchUrl(uri);
+                      }
+                    },
                     onUrlDoubleTap: (url) {
                       Navigator.push(
                         context,

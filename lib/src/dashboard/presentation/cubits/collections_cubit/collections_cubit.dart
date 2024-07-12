@@ -3,6 +3,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -106,7 +107,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   void addCollection({
     required CollectionModel collection,
-  })  {
+  }) {
     // [TODO] : Add subcollection in db
 
     final newCollMap = {...state.collections};
@@ -120,9 +121,24 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }
 
   void deleteCollection({
-    required CollectionModel subcollection,
-  })  {
+    required CollectionModel collection,
+  }) {
     // [TODO] : delete subcollection in db it will be cascade delete
+    Logger.printLog(
+      'collection before deletion ${state.collections.keys.length}',
+    );
+    final newCollMap = {...state.collections}..removeWhere(
+        (key, value) => key == collection.id,
+      );
+
+    emit(
+      state.copyWith(
+        collections: newCollMap,
+      ),
+    );
+    Logger.printLog(
+      'collection after  deletion ${state.collections.keys.length}',
+    );
   }
 
   void updateCollection({
@@ -136,6 +152,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         currentCollection: updatedCollection.parentCollection,
         collections: newCollMap,
       ),
+    );
+
+    Logger.printLog(
+      'collection ${state.collections.keys}',
     );
   }
 

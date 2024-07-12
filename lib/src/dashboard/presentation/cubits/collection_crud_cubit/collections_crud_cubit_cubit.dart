@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -38,7 +39,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
-    final addedCollection = await _collectionRepoImpl.addSubCollection(
+    final addedCollection = await _collectionRepoImpl.addCollection(
       subCollection: collection,
       parentCollection: parentCollection,
     );
@@ -73,10 +74,55 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     );
   }
 
-  Future<void> deleteSubcollection({
-    required CollectionModel subcollection,
+  Future<void> deleteCollection({
+    required CollectionModel collection,
   }) async {
     // [TODO] : delete subcollection in db it will be cascade delete
+
+    Logger.printLog(
+      'deleting collection ${collection.id}',
+    );
+    emit(
+      state.copyWith(
+        collectionCrudLoadingStates: CollectionCrudLoadingStates.deleting,
+      ),
+    );
+
+    final parentCollection = _collectionsCubit.getCollection(
+      collectionId: collection.parentCollection,
+    );
+
+    // WE are updating the parent collection and sending to db request to save
+    // query time and less points of server errors
+    final deletedCollection = await _collectionRepoImpl.deleteCollection(
+      collection: collection,
+      parentCollection: parentCollection!,
+    );
+
+    deletedCollection.fold(
+      (failed) {
+        emit(
+          state.copyWith(
+            collectionCrudLoadingStates:
+                CollectionCrudLoadingStates.errordeleting,
+          ),
+        );
+      },
+      (result) {
+        final (collection, updatedParentCollection) = result;
+
+        _collectionsCubit
+          ..deleteCollection(collection: collection)
+          ..updateCollection(updatedCollection: updatedParentCollection);
+
+        emit(
+          state.copyWith(
+            collectionCrudLoadingStates:
+                CollectionCrudLoadingStates.deletedSuccessfully,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> updateCollection({

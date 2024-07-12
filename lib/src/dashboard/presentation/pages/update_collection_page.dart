@@ -30,10 +30,7 @@ class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
   bool _favourite = false;
   String _selectedCategory = '';
 
-  Future<void> _updateCollection(
-    CollectionCrudCubit collectionCubit, {
-    required String userId,
-  }) async {
+  Future<void> _updateCollection(CollectionCrudCubit collectionCubit) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       final updatedAt = DateTime.now().toUtc();
@@ -97,11 +94,25 @@ class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                context.read<CollectionCrudCubit>().deleteCollection(
+                      collection: widget.collection,
+                    ),
+            icon: const Icon(
+              Icons.delete_rounded,
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: BlocConsumer<CollectionCrudCubit, CollectionCrudCubitState>(
+      bottomNavigationBar:
+          BlocConsumer<CollectionCrudCubit, CollectionCrudCubitState>(
         listener: (context, state) {
           if (state.collectionCrudLoadingStates ==
-              CollectionCrudLoadingStates.updatedSuccessfully ) {
+                  CollectionCrudLoadingStates.updatedSuccessfully ||
+              state.collectionCrudLoadingStates ==
+                  CollectionCrudLoadingStates.deletedSuccessfully) {
             Navigator.of(context).pop();
           }
         },
@@ -109,16 +120,28 @@ class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
           final globalUserCubit = context.read<GlobalUserCubit>();
           final collectionCubit = context.read<CollectionCrudCubit>();
 
+          final isSomeOperationHappenning = state.collectionCrudLoadingStates ==
+                  CollectionCrudLoadingStates.updating ||
+              state.collectionCrudLoadingStates ==
+                  CollectionCrudLoadingStates.deleting;
+
+          final buttonText = switch (state.collectionCrudLoadingStates) {
+            CollectionCrudLoadingStates.updating => 'Updating Collection',
+            CollectionCrudLoadingStates.deleting => 'Deleting Collection',
+            _ => 'Update Collection'
+          };
+
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: CustomElevatedButton(
-              onPressed: () => _updateCollection(
-                collectionCubit,
-                userId: globalUserCubit.state.globalUser!.id,
-              ),
-              text: 'Update Collection',
-              icon: state.collectionCrudLoadingStates ==
-                      CollectionCrudLoadingStates.updating
+              onPressed: () {
+                if (isSomeOperationHappenning) {
+                  return;
+                }
+                _updateCollection(collectionCubit);
+              },
+              text: buttonText,
+              icon: isSomeOperationHappenning
                   ? const SizedBox(
                       height: 24,
                       width: 24,
@@ -185,11 +208,11 @@ class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
                         _favourite = !_favourite;
                       }),
                       trackOutlineColor:
-                          WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
+                          MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
                       ),
-                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
+                      thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
                       ),
                       activeTrackColor: ColourPallette.mountainMeadow,
                       inactiveTrackColor: ColourPallette.error,

@@ -196,10 +196,7 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<
-          Either<Failure,
-              (CollectionModel added, CollectionModel? updatedParent)>>
-      addSubCollection({
+  Future<Either<Failure, (CollectionModel, CollectionModel?)>> addCollection({
     required CollectionModel subCollection,
     // Optional as root collection does not have parent
     CollectionModel? parentCollection,
@@ -235,10 +232,35 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<void> deleteSubCollection({
-    required CollectionModel subCollection,
+  Future<Either<Failure, (CollectionModel, CollectionModel)>> deleteCollection({
+    required CollectionModel collection,
+    required CollectionModel parentCollection,
   }) async {
     // [TODO] : delete subcollection in db
+
+    try {
+      await _remoteDataSourcesImpl.deleteCollection(
+        collectionId: collection.id,
+      );
+
+      final subCollList = parentCollection.subcollections
+        ..removeWhere(
+          (subCollId) => subCollId == collection.id,
+        );
+
+      final updatedParentColl = parentCollection.copyWith(
+        subcollections: subCollList,
+      );
+
+      return Right((collection, updatedParentColl));
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Could Not Deleted. Check internet and try again.',
+          statusCode: 400,
+        ),
+      );
+    }
   }
 
   Future<Either<Failure, CollectionModel>> updateSubCollection({

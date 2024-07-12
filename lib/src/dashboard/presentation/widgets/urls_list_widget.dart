@@ -41,11 +41,13 @@ class UrlsListWidget extends StatelessWidget {
             ),
             PopupMenuButton<UrlPreviewType>(
               color: ColourPallette.white,
+              surfaceTintColor: ColourPallette.white,
+              elevation: 8,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: const BorderSide(
-                  color: ColourPallette.grey,
-                  width: 1.4,
+                  color: ColourPallette.mountainMeadow,
+                  width: 1.1,
                 ),
               ),
               child: Icon(
@@ -56,11 +58,23 @@ class UrlsListWidget extends StatelessWidget {
                 return [
                   const PopupMenuItem(
                     value: UrlPreviewType.icons,
-                    child: Text('Icons only'),
+                    child: Text(
+                      'Icons only',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                   const PopupMenuItem(
                     value: UrlPreviewType.previewMeta,
-                    child: Text('Preview only'),
+                    child: Text(
+                      'Preview only',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ];
               },

@@ -34,7 +34,7 @@ class ImageUtils {
       imageBytes,
       minHeight: imageSize.height.toInt(),
       minWidth: imageSize.width.toInt(),
-      quality: 75, // Adjust the quality to your needs (0-100)
+      quality: 80, // Adjust the quality to your needs (0-100)
     );
 
     return compressedBytes;

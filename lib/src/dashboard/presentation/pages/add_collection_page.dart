@@ -181,11 +181,11 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                         _favourite = !_favourite;
                       }),
                       trackOutlineColor:
-                          WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
+                          MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
                       ),
-                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
+                      thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
                       ),
                       activeTrackColor: ColourPallette.mountainMeadow,
                       inactiveTrackColor: ColourPallette.error,
