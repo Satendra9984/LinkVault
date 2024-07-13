@@ -22,7 +22,7 @@ class UrlsListWidget extends StatelessWidget {
   final void Function(UrlModel url) onUrlTap;
   final void Function(UrlModel url) onUrlDoubleTap;
 
-  final _urlPreviewType = ValueNotifier(UrlPreviewType.icons);
+  final _urlPreviewType = ValueNotifier(UrlPreviewType.previewMeta);
 
   @override
   Widget build(BuildContext context) {

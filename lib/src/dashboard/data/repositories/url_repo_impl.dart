@@ -30,7 +30,7 @@ class UrlRepoImpl {
     try {
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(urlData);
 
-      final urlList = collection.urls..add(addedUrlData.id);
+      final urlList = collection.urls..insert(0, addedUrlData.id);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
       // updating collection

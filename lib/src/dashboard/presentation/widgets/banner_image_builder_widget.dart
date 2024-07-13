@@ -15,15 +15,22 @@ import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache
 class NetworkImageBuilderWidget extends StatelessWidget {
   const NetworkImageBuilderWidget({
     required this.imageUrl,
+    required this.compressImage,
     this.imageBytes,
     this.isSideWayWidget = false,
-    required this.compressImage,
+    this.errorWidgetBuilder,
+    this.loadingWidgetBuilder,
+    this.successWidgetBuilder,
     super.key,
   });
   final String imageUrl;
   final Uint8List? imageBytes;
   final bool isSideWayWidget;
   final bool compressImage;
+
+  final Widget Function()? errorWidgetBuilder;
+  final Widget Function(Uint8List)? successWidgetBuilder;
+  final Widget Function()? loadingWidgetBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -56,30 +63,26 @@ class NetworkImageBuilderWidget extends StatelessWidget {
         }
 
         if (imageData.loadingState == LoadingStates.loading) {
-          return const SizedBox(
-            height: 150,
-            width: 600,
-            child: Center(
-              child: CircularProgressIndicator(
-                backgroundColor: ColourPallette.grey,
-                color: ColourPallette.white,
-              ),
-            ),
-          );
+          return loadingWidgetBuilder != null
+              ? loadingWidgetBuilder!()
+              : const Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: ColourPallette.grey,
+                    color: ColourPallette.white,
+                  ),
+                );
         } else if (imageData.loadingState == LoadingStates.errorLoading) {
-          return SizedBox(
-            height: 150,
-            width: 600,
-            child: Center(
-              child: IconButton(
-                onPressed: () => cacheCubit.addImage(
-                  imageUrl,
-                  compressImage: compressImage,
-                ),
-                icon: const Icon(Icons.restore_rounded),
-              ),
-            ),
-          );
+          return errorWidgetBuilder != null
+              ? errorWidgetBuilder!()
+              : Center(
+                  child: IconButton(
+                    onPressed: () => cacheCubit.addImage(
+                      imageUrl,
+                      compressImage: compressImage,
+                    ),
+                    icon: const Icon(Icons.restore_rounded),
+                  ),
+                );
         }
         final size = MediaQuery.of(context).size;
 
@@ -102,61 +105,9 @@ class NetworkImageBuilderWidget extends StatelessWidget {
         //   '[dim] imageUrl ${imageUrl}, dim: ${bannerImageDim} aspectratio $bannerImageAspectRatio',
         // );
 
-        if (isSideWaysBanner && isSideWayWidget) {
-          return SizedBox(
-            height: 120,
-            width: 150 / bannerImageAspectRatio,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.memory(
-                imageData.imageBytesData!,
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, _, __) {
-                  return SvgPicture.memory(
-                    imageData!.imageBytesData!,
-                    placeholderBuilder: (context) {
-                      return const SizedBox(
-                        height: 150,
-                        width: 600,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        } else if (!isSideWaysBanner && !isSideWayWidget) {
-          return SizedBox(
-            // height: 100,
-            // width: 100,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.memory(
-                imageData.imageBytesData!,
-                // height: min(
-                // bannerImageDim.height,
-                // (size.width - widget.outerScreenHorizontalDistance) /
-                //     bannerImageAspectRatio, // 50 is outer screen padding
-                // ),
-                // fit: BoxFit.cover,
-                errorBuilder: (ctx, _, __) {
-                  return SvgPicture.memory(
-                    imageData!.imageBytesData!,
-                    // height: size.width / bannerImageAspectRatio,
-                    placeholderBuilder: (context) {
-                      return const SizedBox(
-                        height: 150,
-                        width: 600,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        }
-
-        return Container();
+        return successWidgetBuilder != null
+            ? successWidgetBuilder!(imageData.imageBytesData!)
+            : Container();
       },
     );
   }
