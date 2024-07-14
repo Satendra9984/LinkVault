@@ -10,4 +10,13 @@ class MediaRes {
   static const String savingMoenyPNG = 'assets/images/saving-money.png';
   static const String solidarityPNG = 'assets/images/solidarity-concept.png';
   // static const String = '';
+
+
+
+  /// ANIMATIONS
+  static const String loadingANIMATION = 'assets/animations/loading.json';
+  static const String hurrayANIMATION = 'assets/animations/hurray.json';
+  static const String errorANIMATION = 'assets/animations/error.json';
+
+
 }
