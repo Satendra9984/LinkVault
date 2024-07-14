@@ -34,9 +34,12 @@ class FolderCollectionPage extends StatefulWidget {
 }
 
 class _FolderCollectionPageState extends State<FolderCollectionPage> {
+  late final ScrollController scrollController;
+
   @override
   void initState() {
     super.initState();
+    scrollController = ScrollController();
     context.read<CollectionsCubit>().fetchCollection(
           collectionId: widget.collectionId,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
@@ -150,37 +153,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
               if (collection == null) {
                 return Container();
               }
-              // Logger.printLog(
-              //   'Ui updated after fetching subcollection: ${fetchCollection.subCollectionFetchedIndex}, ${state.collections.keys}',
-              // );
-              final subCollections = <CollectionFetchModel>[];
-              if (fetchCollection.subCollectionFetchedIndex >= 0 &&
-                  fetchCollection.subCollectionFetchedIndex <
-                      collection.subcollections.length) {
-                for (int i = 0;
-                    i <= fetchCollection.subCollectionFetchedIndex;
-                    i++) {
-                  final subCollId = collection.subcollections[i];
-                  final subCollectionFetch = state.collections[subCollId];
-
-                  if (subCollectionFetch == null) {
-                    continue;
-                  }
-
-                  subCollections.add(subCollectionFetch.value);
-                }
-              }
-              // Logger.printLog(subCollections.length.toString());
-
-              final urlList = <UrlModel>[];
-
-              for (final urlId in collection.urls) {
-                // final url = state.collectionUrls[urlId];
-
-                // if (url == null) continue;
-
-                // urlList.add(url);
-              }
+              
 
               return Scaffold(
                 backgroundColor: ColourPallette.white,
@@ -198,111 +171,95 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                 body: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: ListView(
-                    children: [
-                      const Text(
-                        'Collections',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Collections',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      CollectionsListWidget(
-                        subCollections: subCollections,
-                        onAddFolderTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => AddCollectionPage(
-                                parentCollection: collection,
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          // height: MediaQuery.of(context).size.height * 0.5,
+                          child: CollectionsListWidget(
+                            collectionFetchModelNotifier:
+                                state.collections[widget.collectionId]!,
+                            onAddFolderTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => AddCollectionPage(
+                                    parentCollection: collection,
+                                  ),
+                                ),
+                              );
+                            },
+                            onFolderTap: (subCollection) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => FolderCollectionPage(
+                                    collectionId: subCollection.id,
+                                    isRootCollection: false,
+                                  ),
+                                ),
+                              );
+                            },
+                            onFolderDoubleTap: (subCollection) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => UpdateCollectionPage(
+                                    collection: subCollection,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        UrlsListWidget(
+                          scrollController: scrollController,
+                          title: 'Urls',
+                          collectionFetchModelNotifier:
+                              state.collections[widget.collectionId]!,
+                          onAddUrlTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => AddUrlPage(
+                                  parentCollection: collection,
+                                ),
                               ),
-                            ),
-                          );
-
-                          // int start =
-                          //     fetchCollection.subCollectionFetchedIndex + 1;
-
-                          // int end = min(
-                          //   fetchCollection.subCollectionFetchedIndex + 5,
-                          //   collection.subcollections.length - 1,
-                          // );
-
-                          // Logger.printLog(
-                          //   '${fetchCollection.subCollectionFetchedIndex}, start: $start, end: $end',
-                          // );
-
-                          // final subCollectionIds = <String>[];
-                          // if (start > -1 &&
-                          //     end < collection.subcollections.length &&
-                          //     end >= start) {
-                          //   subCollectionIds.addAll(
-                          //     collection.subcollections.sublist(start, end),
-                          //   );
-                          // }
-
-                          // collectionCubit.fetchMoreSubCollections(
-                          //   collectionId: collection.id,
-                          //   userId: globalUserCubit.state.globalUser!.id,
-                          //   isRootCollection: widget.isRootCollection,
-                          //   end: end,
-                          //   subCollectionIds: subCollectionIds,
-                          // );
-                        },
-                        onFolderTap: (subCollection) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => FolderCollectionPage(
-                                collectionId: subCollection.id,
-                                isRootCollection: false,
+                            );
+                          },
+                          onUrlTap: (url) async {
+                            final uri = Uri.parse(url.url);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            }
+                          },
+                          onUrlDoubleTap: (url) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => UpdateUrlPage(
+                                  urlModel: url,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        onFolderDoubleTap: (subCollection) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => UpdateCollectionPage(
-                                collection: subCollection,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 32),
-                      UrlsListWidget(
-                        title: 'Urls',
-                        urlList: urlList,
-                        onAddUrlTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => AddUrlPage(
-                                parentCollection: collection,
-                              ),
-                            ),
-                          );
-                        },
-                        onUrlTap: (url) async {
-                          final uri = Uri.parse(url.url);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri);
-                          }
-                        },
-                        onUrlDoubleTap: (url) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => UpdateUrlPage(
-                                urlModel: url,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                            );
+                          },
+                        ),
+                     
+                        const SizedBox(height: 80),
+                     
+                      ],
+                    ),
                   ),
                 ),
               );

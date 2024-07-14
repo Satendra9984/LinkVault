@@ -146,17 +146,49 @@ class UrlParsingService {
         final element = document.head?.querySelector(selector);
         if (element != null) {
           final href = element.attributes['href'];
-          if (href != null) {
+          if (href != null && _isSupportedImageType(href)) {
             return href;
           }
         }
       }
 
       // Fallback: try to find favicon in the root directory
-      return '/favicon.ico';
+      // final fallbackUrl = '/assets/img/favicons.png';
+
+      return null;
     } catch (e) {
       Logger.printLog('error in "extractWebsiteLogoUrl" $e');
       return null;
+    }
+  }
+
+  static bool _isSupportedImageType(String url) {
+    final supportedExtensions = ['png', 'jpeg', 'jpg', 'gif'];
+    final extension = url.split('.').last.toLowerCase();
+    return supportedExtensions.contains(extension);
+  }
+
+  static String extractWebsiteNameFromUrlString(String url) {
+    try {
+      final uri = Uri.parse(url);
+      String host = uri.host;
+
+      // Remove 'www.' if present
+      if (host.startsWith('www.')) {
+        host = host.substring(4);
+      }
+
+      // Get the domain name
+      final domainParts = host.split('.');
+      if (domainParts.length > 2) {
+        return domainParts[domainParts.length - 2];
+      } else if (domainParts.length > 1) {
+        return domainParts[0];
+      } else {
+        return host; // In case it's a local or unconventional domain
+      }
+    } catch (e) {
+      return ''; // Return empty string if URL parsing fails
     }
   }
 
@@ -167,7 +199,7 @@ class UrlParsingService {
     required bool compressImage,
   }) async {
     try {
-      Logger.printLog('websiteImageUrl: $imageUrl');
+      // Logger.printLog('websiteImageUrl: $imageUrl');
       if (imageUrl.isEmpty) return null;
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
@@ -224,7 +256,7 @@ class UrlParsingService {
 
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
-    metaData['websiteName'] = extractWebsiteName(document);
+    metaData['websiteName'] = extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
 

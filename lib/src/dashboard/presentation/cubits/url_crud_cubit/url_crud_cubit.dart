@@ -36,7 +36,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     await _urlRepoImpl
         .addUrlData(
-      collection: collection!,
+      collection: collection!.collection!,
       urlData: urlData,
     )
         .then((result) {
@@ -101,7 +101,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
 
     await _urlRepoImpl
-        .deleteUrlData(collection: collection, urlData: urlData)
+        .deleteUrlData(collection: collection!.collection, urlData: urlData)
         .then(
       (result) {
         result.fold(

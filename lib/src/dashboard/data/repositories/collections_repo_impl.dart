@@ -207,4 +207,37 @@ class CollectionsRepoImpl {
       );
     }
   }
+
+
+  Future<Either<Failure, UrlModel>> fetchUrl({
+    required String urlId,
+  }) async {
+    // [TODO] : Fetch Subcollection
+    try {
+      final collection = await _remoteDataSourcesImpl.fetchUrl(
+        urlId
+      );
+
+      // if (collection == null) {
+      //   return Left(
+      //     ServerFailure(
+      //       message: 'Something Went Wrong. Collection Not Found',
+      //       statusCode: 400,
+      //     ),
+      //   );
+      // }
+
+      // Now fetch subcollections
+
+      return Right(collection);
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
+
 }

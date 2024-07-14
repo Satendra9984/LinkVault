@@ -33,9 +33,9 @@ class UrlPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Logger.printLog(
-      'website ${urlMetaData.faviconUrl} ${urlMetaData.websiteName}, url: ${urlMetaData.bannerImageUrl}',
-    );
+    // Logger.printLog(
+    //   'website ${urlMetaData.faviconUrl} ${urlMetaData.websiteName}, url: ${urlMetaData.bannerImageUrl}',
+    // );
     final size = MediaQuery.of(context).size;
 
     return Column(
@@ -104,19 +104,25 @@ class UrlPreviewWidget extends StatelessWidget {
                           width: 16,
                           fit: BoxFit.contain,
                           errorBuilder: (ctx, _, __) {
-                            try {
-                              final svgImage = SvgPicture.memory(
-                                urlMetaData.favicon!,
-                              );
+                           
 
-                              return svgImage;
-                            } catch (e) {
+                            // bool isSvg = false;
+                            // try {
+                            //   final svgImage = SvgPicture.memory(
+                            //     urlMetaData.favicon!,
+                            //   );
+
+                            //   isSvg = true;
+                            // } catch (e) {
+                              // Logger.printLog('[SVG] $e');
                               return const SizedBox(
                                 height: 16,
                                 width: 16,
                                 child: Icon(Icons.web),
                               );
-                            }
+                            // }
+
+                           
                           },
                         ),
                       )

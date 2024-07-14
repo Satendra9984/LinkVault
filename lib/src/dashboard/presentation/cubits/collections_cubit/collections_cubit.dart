@@ -8,6 +8,7 @@ import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
@@ -43,6 +44,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final fetchCollectionModel = CollectionFetchModel(
       collectionFetchingState: LoadingStates.loading,
       subCollectionFetchedIndex: -1,
+      urlFetchMoreState: LoadingStates.initial,
       urlList: const [],
     );
 
@@ -80,9 +82,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           collection: collection,
         );
 
-        Logger.printLog(
-          'Fetched: ${StringUtils.getJsonFormat(collection.toJson())}',
-        );
+        // Logger.printLog(
+        //   'Fetched: ${StringUtils.getJsonFormat(collection.toJson())}',
+        // );
       },
     );
   }
@@ -106,6 +108,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       final fetchCollectionModel = CollectionFetchModel(
         collectionFetchingState: LoadingStates.loading,
         subCollectionFetchedIndex: -1,
+        urlFetchMoreState: LoadingStates.initial,
         urlList: const [],
       );
 
@@ -156,10 +159,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
-  CollectionModel? getCollection({
+  CollectionFetchModel? getCollection({
     required String collectionId,
   }) {
-    return state.collections[collectionId]?.value.collection;
+    return state.collections[collectionId]?.value;
   }
 
   void addCollection({
@@ -169,6 +172,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final fetchCollectionModel = CollectionFetchModel(
       collectionFetchingState: LoadingStates.loading,
       subCollectionFetchedIndex: -1,
+      urlFetchMoreState: LoadingStates.initial,
       urlList: const [],
     );
 
@@ -225,19 +229,91 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
+  Future<void> fetchMoreUrls({
+    required String collectionId,
+    required String userId,
+    // required int start,
+    required int end,
+    required List<String> urlIds,
+  }) async {
+    final moreUrls = <UrlFetchStateModel>[];
+
+    for (final _ in urlIds) {
+      final urlFetchModel = UrlFetchStateModel(
+        collectionId: collectionId,
+        loadingStates: LoadingStates.loading,
+      );
+
+      moreUrls.add(urlFetchModel);
+    }
+
+    final fetchCollection = state.collections[collectionId]!;
+
+    final newUrls = [...fetchCollection.value.urlList, ...moreUrls];
+
+    fetchCollection.value = fetchCollection.value.copyWith(
+      urlList: newUrls,
+      urlFetchMoreState: LoadingStates.loading,
+    );
+
+    final fetchedUrlsWithData = <UrlFetchStateModel>[];
+    for (final urlId in urlIds) {
+      final fetchedUrl = await _collectionsRepoImpl.fetchUrl(urlId: urlId);
+
+      // ignore: cascade_invocations
+      fetchedUrl.fold(
+        (failed) {
+          final urlFetchModel = UrlFetchStateModel(
+            collectionId: collectionId,
+            loadingStates: LoadingStates.errorLoading,
+          );
+
+          fetchedUrlsWithData.add(urlFetchModel);
+        },
+        (url) {
+          final urlFetchModel = UrlFetchStateModel(
+            collectionId: collectionId,
+            loadingStates: LoadingStates.loaded,
+            urlModel: url,
+          );
+
+          fetchedUrlsWithData.add(urlFetchModel);
+        },
+      );
+    }
+
+    final fetchedUrls = [...fetchCollection.value.urlList];
+
+    fetchedUrls.replaceRange(
+      fetchedUrls.length - urlIds.length,
+      end,
+      fetchedUrlsWithData,
+    );
+
+    fetchCollection.value = fetchCollection.value.copyWith(
+      urlList: fetchedUrls,
+      urlFetchMoreState: LoadingStates.loaded,
+    );
+  }
+
   void addUrl({
     required UrlModel url,
     required CollectionModel collection,
   }) {
-    // final urlMap = {...state.collectionUrls};
-    // urlMap[url.id] = url;
-    // updateCollection(updatedCollection: collection);
+    final fetchedCollection = state.collections[collection.id]!;
 
-    // emit(
-    //   state.copyWith(
-    //     collectionUrls: urlMap,
-    //   ),
-    // );
+    final fetchedUrl = UrlFetchStateModel(
+      collectionId: collection.id,
+      loadingStates: LoadingStates.loaded,
+      urlModel: url,
+    );
+
+    final fetchedUrlList = [fetchedUrl, ...fetchedCollection.value.urlList];
+
+    fetchedCollection.value = fetchedCollection.value.copyWith(
+      collection: collection,
+      urlList: fetchedUrlList,
+    );
   }
 
   void updateUrl({

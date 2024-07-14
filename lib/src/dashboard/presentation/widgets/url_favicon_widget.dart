@@ -40,7 +40,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${urlModelData.title}',
+            urlModelData.title,
             maxLines: 2,
             textAlign: TextAlign.center,
             softWrap: true,
@@ -68,15 +68,15 @@ class UrlFaviconLogoWidget extends StatelessWidget {
           urlMetaData.favicon!,
           fit: BoxFit.contain,
           errorBuilder: (ctx, _, __) {
-            try {
-              final svgImage = SvgPicture.memory(
-                urlMetaData.favicon!,
-              );
+            // try {
+            //   final svgImage = SvgPicture.memory(
+            //     urlMetaData.favicon!,
+            //   );
 
-              return svgImage;
-            } catch (e) {
+            //   return svgImage;
+            // } catch (e) {
               return const Icon(Icons.web);
-            }
+            // }
           },
         ),
       );

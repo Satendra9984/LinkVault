@@ -41,7 +41,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     // query time and less points of server errors
     final addedCollection = await _collectionRepoImpl.addCollection(
       subCollection: collection,
-      parentCollection: parentCollection,
+      parentCollection: parentCollection!.collection,
     );
 
     addedCollection.fold(
@@ -96,7 +96,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     // query time and less points of server errors
     final deletedCollection = await _collectionRepoImpl.deleteCollection(
       collection: collection,
-      parentCollection: parentCollection!,
+      parentCollection: parentCollection!.collection!,
     );
 
     deletedCollection.fold(
