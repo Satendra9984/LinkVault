@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collection_icon_button.dart';
 
@@ -14,7 +16,7 @@ class CollectionsListWidget extends StatelessWidget {
     super.key,
   });
 
-  final List<CollectionModel> subCollections;
+  final List<CollectionFetchModel> subCollections;
   final void Function() onAddFolderTap;
   final void Function(CollectionModel subCollection) onFolderTap;
   final void Function(CollectionModel subCollection) onFolderDoubleTap;
@@ -75,10 +77,23 @@ class CollectionsListWidget extends StatelessWidget {
 
           index = index - 1;
           final subCollection = subCollections[index];
+
+          if (subCollection.collectionFetchingState == LoadingStates.loading) {
+            return const CircularProgressIndicator(
+              backgroundColor: ColourPallette.grey,
+            );
+          } else if (subCollection.collectionFetchingState ==
+              LoadingStates.errorLoading) {
+            return const Icon(
+              Icons.error,
+              color: Colors.red,
+            );
+          }
+
           return FolderIconButton(
-            collection:  subCollection,
-            onDoubleTap: () => onFolderDoubleTap(subCollection),
-            onPress: () => onFolderTap(subCollection),
+            collection: subCollection.collection!,
+            onDoubleTap: () => onFolderDoubleTap(subCollection.collection!),
+            onPress: () => onFolderTap(subCollection.collection!),
           );
         },
       ),

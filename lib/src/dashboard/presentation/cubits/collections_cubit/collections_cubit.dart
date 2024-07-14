@@ -1,9 +1,12 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -18,9 +21,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         super(
           const CollectionsState(
             collections: {},
-            collectionUrls: {},
-            currentCollection: '',
-            collectionLoadingStates: CollectionLoadingStates.initial,
+            // collectionUrls: {},
+            // currentCollection: '',
+            // collectionLoadingStates: CollectionLoadingStates.initial,
           ),
         );
 
@@ -34,26 +37,25 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     // [TODO] : Fetch Subcollection
     if (state.collections.containsKey(collectionId)) {
       // Logger.printLog('collectionId $collectionId already exists');
-      var containsAllSubColl = true;
-      final coll = state.collections[collectionId]!;
-      for (final subcId in coll.subcollections) {
-        if (state.collections.containsKey(subcId) == false) {
-          containsAllSubColl = false;
-          break;
-        }
-      }
-
-      if (containsAllSubColl) {
-        return;
-      }
+      return;
     }
+
+    final fetchCollectionModel = CollectionFetchModel(
+      collectionFetchingState: LoadingStates.loading,
+      subCollectionFetchedIndex: -1,
+      urlList: const [],
+    );
+
+    final newCollection = {...state.collections};
+
+    newCollection[collectionId] = ValueNotifier(fetchCollectionModel);
 
     emit(
       state.copyWith(
-        currentCollection: collectionId,
-        collectionLoadingStates: CollectionLoadingStates.fetching,
+        collections: newCollection,
       ),
     );
+
     final fetchedCollection = isRootCollection
         ? await _collectionsRepoImpl.fetchRootCollection(
             collectionId: collectionId,
@@ -66,56 +68,117 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     // ignore: cascade_invocations
     fetchedCollection.fold(
       (failed) {
-        emit(
-          state.copyWith(
-            currentCollection: collectionId,
-            collectionLoadingStates: CollectionLoadingStates.errorLoading,
-          ),
+        state.collections[collectionId]!.value =
+            state.collections[collectionId]!.value.copyWith(
+          subCollectionsFetchingState: LoadingStates.errorLoading,
         );
       },
-      (tuple) {
-        final (collection, subCollectionsMap, urlList) = tuple;
+      (collection) {
+        state.collections[collectionId]!.value =
+            state.collections[collectionId]!.value.copyWith(
+          subCollectionsFetchingState: LoadingStates.loaded,
+          collection: collection,
+        );
 
-        // Adding Collection
-        final newCollMap = {...state.collections};
-        newCollMap[collectionId] = collection;
-        // Adding all its subcollections
-        newCollMap.addAll(subCollectionsMap);
-        // Adding all the urls
-        final newUrlsMap = {...state.collectionUrls};
-        for (final url in urlList) {
-          newUrlsMap[url.id] = url;
-        }
-        // updating the state
-        emit(
-          state.copyWith(
-            currentCollection: collectionId,
-            collections: newCollMap,
-            collectionUrls: newUrlsMap,
-            collectionLoadingStates: CollectionLoadingStates.successLoading,
-          ),
+        Logger.printLog(
+          'Fetched: ${StringUtils.getJsonFormat(collection.toJson())}',
         );
       },
     );
   }
 
+  Future<void> fetchMoreSubCollections({
+    required String collectionId,
+    required String userId,
+    required bool isRootCollection,
+    // required int start,
+    required int end,
+    required List<String> subCollectionIds,
+  }) async {
+    // assuming not collections in the state
+    Logger.printLog(
+      'FetchedMoreBefore: ${state.collections.keys.length}, ids: ${subCollectionIds}',
+    );
+
+    final moreCollections = <String, ValueNotifier<CollectionFetchModel>>{};
+
+    for (final subCollId in subCollectionIds) {
+      final fetchCollectionModel = CollectionFetchModel(
+        collectionFetchingState: LoadingStates.loading,
+        subCollectionFetchedIndex: -1,
+        urlList: const [],
+      );
+
+      moreCollections[subCollId] = ValueNotifier(fetchCollectionModel);
+    }
+
+    final newCollection = {...state.collections, ...moreCollections};
+
+    emit(
+      state.copyWith(
+        collections: newCollection,
+      ),
+    );
+
+    for (final subCollId in subCollectionIds) {
+      final fetchedCollection = isRootCollection
+          ? await _collectionsRepoImpl.fetchRootCollection(
+              collectionId: subCollId,
+              userId: userId,
+            )
+          : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
+              collectionId: subCollId,
+            );
+
+      // ignore: cascade_invocations
+      fetchedCollection.fold(
+        (failed) {
+          state.collections[subCollId]!.value =
+              state.collections[subCollId]!.value.copyWith(
+            subCollectionsFetchingState: LoadingStates.errorLoading,
+          );
+        },
+        (collection) {
+          state.collections[subCollId]!.value =
+              state.collections[subCollId]!.value.copyWith(
+            subCollectionsFetchingState: LoadingStates.loaded,
+            collection: collection,
+          );
+        },
+      );
+    }
+
+    state.collections[collectionId]!.value =
+        state.collections[collectionId]!.value.copyWith(
+      subCollectionFetchedIndex: end,
+    );
+
+    Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
+  }
+
   CollectionModel? getCollection({
     required String collectionId,
   }) {
-    return state.collections[collectionId];
+    return state.collections[collectionId]?.value.collection;
   }
 
   void addCollection({
     required CollectionModel collection,
   }) {
     // [TODO] : Add subcollection in db
+    final fetchCollectionModel = CollectionFetchModel(
+      collectionFetchingState: LoadingStates.loading,
+      subCollectionFetchedIndex: -1,
+      urlList: const [],
+    );
 
-    final newCollMap = {...state.collections};
-    newCollMap[collection.id] = collection;
+    final newCollection = {...state.collections};
+
+    newCollection[collection.id] = ValueNotifier(fetchCollectionModel);
 
     emit(
       state.copyWith(
-        collections: newCollMap,
+        collections: newCollection,
       ),
     );
   }
@@ -145,17 +208,20 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required CollectionModel updatedCollection,
   }) {
     final newCollMap = {...state.collections};
-    newCollMap[updatedCollection.id] = updatedCollection;
+
+    final fetchCollectionModel =
+        newCollMap[updatedCollection.id]!.value.copyWith(
+              collection: updatedCollection,
+            );
+
+    final newCollection = {...state.collections};
+
+    newCollection[updatedCollection.id] = ValueNotifier(fetchCollectionModel);
 
     emit(
       state.copyWith(
-        currentCollection: updatedCollection.parentCollection,
-        collections: newCollMap,
+        collections: newCollection,
       ),
-    );
-
-    Logger.printLog(
-      'collection ${state.collections.keys}',
     );
   }
 
@@ -163,44 +229,44 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required UrlModel url,
     required CollectionModel collection,
   }) {
-    final urlMap = {...state.collectionUrls};
-    urlMap[url.id] = url;
-    updateCollection(updatedCollection: collection);
+    // final urlMap = {...state.collectionUrls};
+    // urlMap[url.id] = url;
+    // updateCollection(updatedCollection: collection);
 
-    emit(
-      state.copyWith(
-        collectionUrls: urlMap,
-      ),
-    );
+    // emit(
+    //   state.copyWith(
+    //     collectionUrls: urlMap,
+    //   ),
+    // );
   }
 
   void updateUrl({
     required UrlModel url,
   }) {
-    final urlMap = {...state.collectionUrls};
-    urlMap[url.id] = url;
+    // final urlMap = {...state.collectionUrls};
+    // urlMap[url.id] = url;
 
-    emit(
-      state.copyWith(
-        collectionUrls: urlMap,
-      ),
-    );
+    // emit(
+    //   state.copyWith(
+    //     collectionUrls: urlMap,
+    //   ),
+    // );
   }
 
   void deleteUrl({
     required UrlModel url,
     required CollectionModel? collection,
   }) {
-    final urlMap = {...state.collectionUrls}..remove(url.id);
+    // final urlMap = {...state.collectionUrls}..remove(url.id);
 
-    if (collection != null) {
-      updateCollection(updatedCollection: collection);
-    }
+    // if (collection != null) {
+    //   updateCollection(updatedCollection: collection);
+    // }
 
-    emit(
-      state.copyWith(
-        collectionUrls: urlMap,
-      ),
-    );
+    // emit(
+    //   state.copyWith(
+    //     collectionUrls: urlMap,
+    //   ),
+    // );
   }
 }
