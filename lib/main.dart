@@ -14,6 +14,7 @@ import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
 import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -35,7 +34,6 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
   @override
   void initState() {
     super.initState();
-    // [TODO] : Call initiliaize for this foldercollection id
     context.read<CollectionsCubit>().fetchCollection(
           collectionId: widget.collectionId,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,

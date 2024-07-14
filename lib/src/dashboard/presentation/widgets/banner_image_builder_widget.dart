@@ -17,7 +17,6 @@ class NetworkImageBuilderWidget extends StatelessWidget {
     required this.imageUrl,
     required this.compressImage,
     this.imageBytes,
-    this.isSideWayWidget = false,
     this.errorWidgetBuilder,
     this.loadingWidgetBuilder,
     this.successWidgetBuilder,
@@ -25,7 +24,6 @@ class NetworkImageBuilderWidget extends StatelessWidget {
   });
   final String imageUrl;
   final Uint8List? imageBytes;
-  final bool isSideWayWidget;
   final bool compressImage;
 
   final Widget Function()? errorWidgetBuilder;
@@ -40,74 +38,45 @@ class NetworkImageBuilderWidget extends StatelessWidget {
 
         var imageData = cacheCubit.getImageData(imageUrl);
 
-        if (imageBytes != null) {
-          imageData = NetworkImageCacheModel(
-            loadingState: LoadingStates.loaded,
-            imageUrl: imageUrl,
-            imageBytesData: imageBytes,
-          );
-        }
-
         if (imageData == null) {
           cacheCubit.addImage(
             imageUrl,
             compressImage: compressImage,
           );
-          imageData = cacheCubit.getImageData(
-            imageUrl,
-          )!; // guaranteed non null after [cacheCubit.addImage(imageUrl);]
         }
 
-        if (imageData.loadingState != LoadingStates.loaded && isSideWayWidget) {
-          return Container();
-        }
+        imageData = cacheCubit.getImageData(imageUrl)!;
+        return ValueListenableBuilder<NetworkImageCacheModel>(
+          valueListenable: imageData,
+          builder: (ctx, imageData, _) {
+            if (imageData.loadingState == LoadingStates.loading) {
+              return loadingWidgetBuilder != null
+                  ? loadingWidgetBuilder!()
+                  : const Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: ColourPallette.grey,
+                        color: ColourPallette.white,
+                      ),
+                    );
+            } else if (imageData.loadingState == LoadingStates.errorLoading) {
+              return errorWidgetBuilder != null
+                  ? errorWidgetBuilder!()
+                  : Center(
+                      child: IconButton(
+                        onPressed: () => cacheCubit.addImage(
+                          imageUrl,
+                          compressImage: compressImage,
+                        ),
+                        icon: const Icon(Icons.restore_rounded),
+                      ),
+                    );
+            }
 
-        if (imageData.loadingState == LoadingStates.loading) {
-          return loadingWidgetBuilder != null
-              ? loadingWidgetBuilder!()
-              : const Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: ColourPallette.grey,
-                    color: ColourPallette.white,
-                  ),
-                );
-        } else if (imageData.loadingState == LoadingStates.errorLoading) {
-          return errorWidgetBuilder != null
-              ? errorWidgetBuilder!()
-              : Center(
-                  child: IconButton(
-                    onPressed: () => cacheCubit.addImage(
-                      imageUrl,
-                      compressImage: compressImage,
-                    ),
-                    icon: const Icon(Icons.restore_rounded),
-                  ),
-                );
-        }
-        final size = MediaQuery.of(context).size;
-
-        final bannerImageDim = imageData.imageBytesData != null
-            ? ImageUtils.getImageDimFromUintData(
-                  imageData.imageBytesData!,
-                ) ??
-                Size(size.width, 150)
-            : Size(size.width, 150);
-
-        final bannerImageAspectRatio =
-            bannerImageDim.height / bannerImageDim.width;
-
-        final isSideWaysBanner = bannerImageAspectRatio >= 1.5;
-
-        final width = isSideWaysBanner ? 100.0 / bannerImageAspectRatio : null;
-        final height = isSideWaysBanner ? 100 : null;
-
-        // Logger.printLog(
-        //   '[dim] imageUrl ${imageUrl}, dim: ${bannerImageDim} aspectratio $bannerImageAspectRatio',
-        // );
-
-        return successWidgetBuilder != null
-            ? successWidgetBuilder!(imageData.imageBytesData!)
-            : Container();
+            return successWidgetBuilder != null
+                ? successWidgetBuilder!(imageData.imageBytesData!)
+                : Container();
+          },
+        );
       },
     );
   }

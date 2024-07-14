@@ -59,7 +59,7 @@ class UrlsListWidget extends StatelessWidget {
                   const PopupMenuItem(
                     value: UrlPreviewType.icons,
                     child: Text(
-                      'Icons only',
+                      'Logos',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -69,7 +69,7 @@ class UrlsListWidget extends StatelessWidget {
                   const PopupMenuItem(
                     value: UrlPreviewType.previewMeta,
                     child: Text(
-                      'Preview only',
+                      'Previews',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -166,26 +166,27 @@ class UrlsListWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 // color: Colors.amber,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.add_link_rounded,
                       size: 38,
                       color: Colors.grey.shade800,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Add',
-                      softWrap: true,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade800,
-                        height: 1,
-                      ),
-                    ),
+                    // const SizedBox(height: 4),
+                    // Text(
+                    //   'Add',
+                    //   softWrap: true,
+                    //   textAlign: TextAlign.center,
+                    //   overflow: TextOverflow.ellipsis,
+                    //   maxLines: 2,
+                    //   style: TextStyle(
+                    //     fontSize: 14,
+                    //     fontWeight: FontWeight.w500,
+                    //     color: Colors.grey.shade800,
+                    //     height: 1,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
