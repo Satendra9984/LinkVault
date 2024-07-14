@@ -55,3 +55,10 @@ class LocalAuthFailure extends Failure {
     required super.statusCode,
   });
 }
+
+class GeneralFailure extends Failure {
+  GeneralFailure({
+    required super.message,
+    required super.statusCode,
+  });
+}
