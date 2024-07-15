@@ -128,6 +128,10 @@ class UrlParsingService {
     }
   }
 
+  static String getWebsiteLogoUrl(String url) {
+    return 'https://www.google.com/s2/favicons?sz=64&domain_url={url}';
+  }
+
 // Function to extract website logo
   static String? extractWebsiteLogoUrl(Document document) {
     try {
@@ -256,14 +260,15 @@ class UrlParsingService {
 
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
-    metaData['websiteName'] = extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
+    metaData['websiteName'] =
+        extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
 
     if (websiteLogoUrl != null) {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;
-      // Logger.printLog('logoUrl : $websiteLogoUrl');
+      Logger.printLog('logoUrl : $websiteLogoUrl');
       final faviconUint = await fetchImageAsUint8List(
         websiteLogoUrl,
         maxSize: 50000,

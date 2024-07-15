@@ -20,6 +20,7 @@ import 'package:link_vault/src/dashboard/presentation/pages/update_collection_pa
 import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/urls_preview_list.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,6 +36,8 @@ class FolderCollectionPage extends StatefulWidget {
 
 class _FolderCollectionPageState extends State<FolderCollectionPage> {
   late final ScrollController scrollController;
+
+  final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
   void initState() {
@@ -153,7 +156,6 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
               if (collection == null) {
                 return Container();
               }
-              
 
               return Scaffold(
                 backgroundColor: ColourPallette.white,
@@ -168,62 +170,145 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                     ),
                   ),
                 ),
+                bottomNavigationBar: Container(
+                  padding: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColourPallette.mystic.withOpacity(0.5),
+                        spreadRadius: 4,
+                        blurRadius: 16,
+                        offset: const Offset(0, 2), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                  child: ValueListenableBuilder(
+                    valueListenable: _currentPage,
+                    builder: (context, currentPage, _) {
+                      return BottomNavigationBar(
+                        currentIndex: _currentPage.value,
+                        onTap: (currentIndex) {
+                          _currentPage.value = currentIndex;
+                        },
+                        enableFeedback: false,
+                        backgroundColor: ColourPallette.white,
+                        elevation: 0,
+                        selectedItemColor: ColourPallette.black,
+                        selectedLabelStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                        unselectedItemColor: ColourPallette.black,
+                        unselectedLabelStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: ColourPallette.black,
+                        ),
+                        items: [
+                          _bottomNavBarWidget(
+                            label: 'Urls',
+                            unSelectedIcon: Icons.link_outlined,
+                            selectedIcon: Icons.link_rounded,
+                            index: 0,
+                          ),
+                          _bottomNavBarWidget(
+                            label: 'Collections',
+                            unSelectedIcon:
+                                Icons.collections_bookmark_outlined,
+                            selectedIcon: Icons.collections_bookmark_rounded,
+                            index: 1,
+                          ),
+                          _bottomNavBarWidget(
+                            unSelectedIcon: Icons.preview_outlined,
+                            selectedIcon: Icons.preview_rounded,
+                            index: 2,
+                            label: 'Previews',
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
                 body: Container(
+                  height: MediaQuery.of(context).size.height - 10,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Collections',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          // height: MediaQuery.of(context).size.height * 0.5,
-                          child: CollectionsListWidget(
-                            collectionFetchModelNotifier:
-                                state.collections[widget.collectionId]!,
-                            onAddFolderTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => AddCollectionPage(
-                                    parentCollection: collection,
-                                  ),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                  child: ValueListenableBuilder(
+                    valueListenable: _currentPage,
+                    builder: (ctx, currentPage, _) {
+                      if (currentPage == 0) {
+                        return UrlsListWidget(
+                          // scrollController: scrollController,
+                          title: 'Urls',
+                          collectionFetchModelNotifier:
+                              state.collections[widget.collectionId]!,
+                          onAddUrlTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => AddUrlPage(
+                                  parentCollection: collection,
                                 ),
-                              );
-                            },
-                            onFolderTap: (subCollection) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => FolderCollectionPage(
-                                    collectionId: subCollection.id,
-                                    isRootCollection: false,
-                                  ),
+                              ),
+                            );
+                          },
+                          onUrlTap: (url) async {
+                            final uri = Uri.parse(url.url);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            }
+                          },
+                          onUrlDoubleTap: (url) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => UpdateUrlPage(
+                                  urlModel: url,
                                 ),
-                              );
-                            },
-                            onFolderDoubleTap: (subCollection) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => UpdateCollectionPage(
-                                    collection: subCollection,
-                                  ),
+                              ),
+                            );
+                          },
+                        );
+                      } else if (currentPage == 1) {
+                        return CollectionsListWidget(
+                          collectionFetchModelNotifier:
+                              state.collections[widget.collectionId]!,
+                          onAddFolderTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => AddCollectionPage(
+                                  parentCollection: collection,
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        UrlsListWidget(
+                              ),
+                            );
+                          },
+                          onFolderTap: (subCollection) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => FolderCollectionPage(
+                                  collectionId: subCollection.id,
+                                  isRootCollection: false,
+                                ),
+                              ),
+                            );
+                          },
+                          onFolderDoubleTap: (subCollection) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => UpdateCollectionPage(
+                                  collection: subCollection,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      if (currentPage == 2) {
+                        return UrlsPreviewListWidget(
                           scrollController: scrollController,
                           title: 'Urls',
                           collectionFetchModelNotifier:
@@ -254,12 +339,11 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                               ),
                             );
                           },
-                        ),
-                     
-                        const SizedBox(height: 80),
-                     
-                      ],
-                    ),
+                        );
+                      }
+
+                      return Container();
+                    },
                   ),
                 ),
               );
@@ -267,6 +351,34 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
           );
         },
       ),
+    );
+  }
+
+  BottomNavigationBarItem _bottomNavBarWidget({
+    required int index,
+    required IconData unSelectedIcon,
+    required IconData selectedIcon,
+    required String label,
+  }) {
+    final selected = _currentPage.value == index;
+    return BottomNavigationBarItem(
+      icon: Icon(
+        unSelectedIcon,
+      ),
+      activeIcon: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        decoration: BoxDecoration(
+          // shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(16),
+          color: selected ? ColourPallette.salemgreen.withOpacity(0.4) : null,
+        ),
+        child: Icon(
+          selectedIcon,
+          size: 24,
+          color: ColourPallette.black,
+        ),
+      ),
+      label: label,
     );
   }
 }

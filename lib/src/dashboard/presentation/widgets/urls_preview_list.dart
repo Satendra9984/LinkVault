@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -15,36 +14,36 @@ import 'package:link_vault/src/dashboard/presentation/enums/url_preview_type.dar
 import 'package:link_vault/src/dashboard/presentation/widgets/url_favicon_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 
-class UrlsListWidget extends StatefulWidget {
-  UrlsListWidget({
+class UrlsPreviewListWidget extends StatefulWidget {
+  UrlsPreviewListWidget({
     required this.title,
     required this.collectionFetchModelNotifier,
     required this.onAddUrlTap,
     required this.onUrlTap,
     required this.onUrlDoubleTap,
-    // required this.scrollController,
+    required this.scrollController,
     super.key,
   });
 
   final String title;
-  // final ScrollController scrollController;
+  final ScrollController scrollController;
   final ValueNotifier<CollectionFetchModel> collectionFetchModelNotifier;
   final void Function() onAddUrlTap;
   final void Function(UrlModel url) onUrlTap;
   final void Function(UrlModel url) onUrlDoubleTap;
 
   @override
-  State<UrlsListWidget> createState() => _UrlsListWidgetState();
+  State<UrlsPreviewListWidget> createState() => _UrlsPreviewListWidgetState();
 }
 
-class _UrlsListWidgetState extends State<UrlsListWidget> {
-  // final _urlPreviewType = ValueNotifier(UrlPreviewType.icons);
+class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
+  // final _urlPreviewType = ValueNotifier(UrlPreviewType.previewMeta);
   late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController()..addListener(_onScroll);
+    _scrollController = widget.scrollController..addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMoreUrls();
@@ -54,7 +53,6 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
   }
@@ -67,7 +65,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
     }
 
     final start = fetchCollection.urlList.length;
-    const fetchMore = 20;
+    const fetchMore = 5;
     final end = min(
       fetchCollection.urlList.length - 1 + fetchMore,
       fetchCollection.collection!.urls.length - 1,
@@ -115,30 +113,15 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _previewIconsWidget(context),
+            child: _previewMetaWidget(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _previewIconsWidget(BuildContext context) {
-    const collectionIconWidth = 80.0;
+  Widget _previewMetaWidget(BuildContext context) {
     final availableUrls = widget.collectionFetchModelNotifier.value.urlList;
-
-    // if (widget.collectionFetchModelNotifier.value.urlFetchMoreState ==
-    //     LoadingStates.loading) {
-    //   return Center(
-    //     child: Container(
-    //       padding: EdgeInsets.all(8),
-    //       height: 56,
-    //       width: 56,
-    //       child: const CircularProgressIndicator(
-    //         backgroundColor: ColourPallette.grey,
-    //       ),
-    //     ),
-    //   );
-    // }
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -146,44 +129,50 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.topLeft,
-      child: AlignedGridView.extent(
-        // controller: _scrollController,
-        physics: const NeverScrollableScrollPhysics(),
+      child: ListView.builder(
         shrinkWrap: true,
+        // physics: const BScrollableScrollPhysics(),
         itemCount: availableUrls.length,
-        maxCrossAxisExtent: collectionIconWidth,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 16,
-        itemBuilder: (context, index) {
+        itemBuilder: (ctx, index) {
           final url = availableUrls[index];
 
           if (url.loadingStates == LoadingStates.loading) {
             return const SizedBox(
-              // padding: EdgeInsets.all(8),
               height: 56,
               width: 56,
-              child: CircularProgressIndicator(
-                backgroundColor: ColourPallette.grey,
-              ),
-            );
-          } else if (url.loadingStates == LoadingStates.errorLoading) {
-            return SizedBox(
-              height: 56,
-              width: 56,
-              child: IconButton(
-                onPressed: _fetchMoreUrls,
-                icon: const Icon(
-                  Icons.restore,
-                  color: ColourPallette.black,
+              child: Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: ColourPallette.black,
                 ),
               ),
             );
+          } else if (url.loadingStates == LoadingStates.errorLoading) {
+            return IconButton(
+              onPressed: _fetchMoreUrls,
+              icon: const Icon(
+                Icons.restore,
+                color: ColourPallette.black,
+              ),
+            );
           }
+          final urlMetaData = url.urlModel!.metaData ??
+              UrlMetaData.isEmpty(
+                title: url.urlModel!.title,
+              );
 
-          return UrlFaviconLogoWidget(
-            onPress: () => widget.onUrlTap(url.urlModel!),
-            onDoubleTap: () => widget.onUrlDoubleTap(url.urlModel!),
-            urlModelData: url.urlModel!,
+          return Column(
+            children: [
+              UrlPreviewWidget(
+                urlMetaData: urlMetaData,
+                onTap: () => widget.onUrlTap(url.urlModel!),
+                onDoubleTap: () => widget.onUrlDoubleTap(url.urlModel!),
+                onShareButtonTap: () {},
+                onMoreVertButtontap: () {},
+              ),
+              const SizedBox(height: 8),
+              const Divider(),
+              const SizedBox(height: 8),
+            ],
           );
         },
       ),

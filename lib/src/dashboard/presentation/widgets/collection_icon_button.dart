@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/material.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 // import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
@@ -21,12 +22,27 @@ class FolderIconButton extends StatelessWidget {
       onDoubleTap: onDoubleTap,
       child: Column(
         children: [
-          const Icon(
-            Icons.folder_rounded,
-            size: 56,
-            color: ColourPallette.mountainMeadow,
+          ShaderMask(
+            shaderCallback: (Rect bounds) {
+              return LinearGradient(
+                colors: [
+                  ColourPallette.salemgreen.withOpacity(0.25),
+                  ColourPallette.salemgreen.withOpacity(0.5),
+                  ColourPallette.salemgreen.withOpacity(0.75),
+                  ColourPallette.salemgreen.withOpacity(0.95),
+                  // Add more colors if needed
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: const [0.1, 0.3, 0.5, 1],
+              ).createShader(bounds);
+            },
+            child: const Icon(
+              Icons.folder_rounded,
+              size: 72,
+              color: Colors.white, // This color will be masked by the gradient
+            ),
           ),
-          // const SizedBox(height: 0.4),
           Text(
             collection.name,
             maxLines: 2,
@@ -34,7 +50,7 @@ class FolderIconButton extends StatelessWidget {
             softWrap: true,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              // fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade900,
               height: 1.05,

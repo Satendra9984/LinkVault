@@ -170,7 +170,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }) {
     // [TODO] : Add subcollection in db
     final fetchCollectionModel = CollectionFetchModel(
-      collectionFetchingState: LoadingStates.loading,
+      collection: collection,
+      collectionFetchingState: LoadingStates.loaded,
       subCollectionFetchedIndex: -1,
       urlFetchMoreState: LoadingStates.initial,
       urlList: const [],
@@ -210,23 +211,28 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   void updateCollection({
     required CollectionModel updatedCollection,
+    required int fetchSubCollIndexAdded,
   }) {
-    final newCollMap = {...state.collections};
+    // final newCollMap = {...state.collections};
 
-    final fetchCollectionModel =
-        newCollMap[updatedCollection.id]!.value.copyWith(
-              collection: updatedCollection,
-            );
+    final prevCollection = state.collections[updatedCollection.id]!;
 
-    final newCollection = {...state.collections};
-
-    newCollection[updatedCollection.id] = ValueNotifier(fetchCollectionModel);
-
-    emit(
-      state.copyWith(
-        collections: newCollection,
-      ),
+    prevCollection.value = prevCollection.value.copyWith(
+      collection: updatedCollection,
+      subCollectionFetchedIndex:
+          prevCollection.value.subCollectionFetchedIndex +
+              fetchSubCollIndexAdded,
     );
+
+    // final newCollection = {...state.collections};
+
+    // newCollection[updatedCollection.id] = ValueNotifier(fetchCollectionModel);
+
+    // emit(
+    //   state.copyWith(
+    //     collections: newCollection,
+    //   ),
+    // );
   }
 
   Future<void> fetchMoreUrls({

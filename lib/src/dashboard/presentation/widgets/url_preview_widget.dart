@@ -10,6 +10,7 @@ import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/custom_painter.dart';
 
 class UrlPreviewWidget extends StatelessWidget {
   UrlPreviewWidget({
@@ -104,8 +105,6 @@ class UrlPreviewWidget extends StatelessWidget {
                           width: 16,
                           fit: BoxFit.contain,
                           errorBuilder: (ctx, _, __) {
-                           
-
                             // bool isSvg = false;
                             // try {
                             //   final svgImage = SvgPicture.memory(
@@ -114,15 +113,13 @@ class UrlPreviewWidget extends StatelessWidget {
 
                             //   isSvg = true;
                             // } catch (e) {
-                              // Logger.printLog('[SVG] $e');
-                              return const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: Icon(Icons.web),
-                              );
+                            // Logger.printLog('[SVG] $e');
+                            return const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: Icon(Icons.web),
+                            );
                             // }
-
-                           
                           },
                         ),
                       )
@@ -147,7 +144,18 @@ class UrlPreviewWidget extends StatelessWidget {
                                 color: ColourPallette.black,
                               );
                             },
-                            successWidgetBuilder: (imageBytes) {
+                            successWidgetBuilder: (imageData) {
+                              final imageBytes = imageData.imageBytesData!;
+
+                              if (imageData.uiImage != null) {
+                                return CustomPaint(
+                                  size: const Size(16, 16),
+                                  painter: ImagePainter(
+                                    imageData.uiImage!,
+                                  ),
+                                );
+                              }
+
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: Image.memory(
@@ -258,7 +266,9 @@ class UrlPreviewWidget extends StatelessWidget {
           ),
         );
       },
-      successWidgetBuilder: (imageBytes) {
+      successWidgetBuilder: (imageData) {
+        final imageBytes = imageData.imageBytesData!;
+
         final bannerImageDim = ImageUtils.getImageDimFromUintData(
               imageBytes,
             ) ??
@@ -322,20 +332,28 @@ class UrlPreviewWidget extends StatelessWidget {
                 height: 120 * min(bannerImageAspectRatio, 1.5),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.memory(
-                    imageBytes,
-                    errorBuilder: (ctx, _, __) {
-                      return SvgPicture.memory(
-                        imageBytes,
-                        placeholderBuilder: (context) {
-                          return const SizedBox(
-                            height: 150,
-                            width: 600,
-                          );
-                        },
-                      );
-                    },
-                  ),
+                  child: (imageData.uiImage != null)
+                      ? CustomPaint(
+                          size:
+                              Size(120, 120 * min(bannerImageAspectRatio, 1.5)),
+                          painter: ImagePainter(
+                            imageData.uiImage!,
+                          ),
+                        )
+                      : Image.memory(
+                          imageBytes,
+                          errorBuilder: (ctx, _, __) {
+                            return SvgPicture.memory(
+                              imageBytes,
+                              placeholderBuilder: (context) {
+                                return const SizedBox(
+                                  height: 150,
+                                  width: 600,
+                                );
+                              },
+                            );
+                          },
+                        ),
                 ),
               ),
             ],
@@ -441,11 +459,20 @@ class UrlPreviewWidget extends StatelessWidget {
                                         );
                                       },
                                       successWidgetBuilder: (imageBytes) {
+                                        if (imageData.uiImage != null) {
+                                          return CustomPaint(
+                                            size: const Size(16, 16),
+                                            painter: ImagePainter(
+                                              imageData.uiImage!,
+                                            ),
+                                          );
+                                        }
+
                                         return ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(4),
                                           child: Image.memory(
-                                            imageBytes,
+                                            imageData.imageBytesData!,
                                             fit: BoxFit.contain,
                                             errorBuilder: (ctx, _, __) {
                                               try {

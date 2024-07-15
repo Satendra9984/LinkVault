@@ -61,6 +61,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         if (updatedParentCollection != null) {
           _collectionsCubit.updateCollection(
             updatedCollection: updatedParentCollection,
+            fetchSubCollIndexAdded: 1,
           );
         }
 
@@ -113,7 +114,10 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
         _collectionsCubit
           ..deleteCollection(collection: collection)
-          ..updateCollection(updatedCollection: updatedParentCollection);
+          ..updateCollection(
+            updatedCollection: updatedParentCollection,
+            fetchSubCollIndexAdded: -1,
+          );
 
         emit(
           state.copyWith(
@@ -151,6 +155,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       (updatedCollection) {
         _collectionsCubit.updateCollection(
           updatedCollection: updatedCollection,
+          fetchSubCollIndexAdded: 0,
         );
 
         emit(

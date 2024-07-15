@@ -56,7 +56,7 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
     if (fetchCollection.collectionFetchingState == LoadingStates.loading) {
       return;
     } else if (fetchCollection.subCollectionFetchedIndex >=
-        fetchCollection.collection!.subcollections.length) {
+        fetchCollection.collection!.subcollections.length - 1) {
       return;
     }
 
@@ -91,101 +91,115 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const collectionIconWidth = 80.0;
+    const collectionIconWidth = 120.0;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade100,
-        ),
+        // border: Border.all(
+        //   color: Colors.grey.shade100,
+        // ),
         borderRadius: BorderRadius.circular(12),
-        color: ColourPallette.mystic.withOpacity(0.5),
+        // color: ColourPallette.mystic.withOpacity(0.25),
       ),
-      alignment: Alignment.centerLeft,
-      child: ValueListenableBuilder(
-        valueListenable: widget.collectionFetchModelNotifier,
-        builder: (context, fetchCollectionModel, _) {
-          final availableSubCollections =
-              fetchCollectionModel.subCollectionFetchedIndex <= 0
-                  ? 0
-                  : fetchCollectionModel.subCollectionFetchedIndex;
+      alignment: Alignment.topLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Collections',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ValueListenableBuilder(
+            valueListenable: widget.collectionFetchModelNotifier,
+            builder: (context, fetchCollectionModel, _) {
+              final availableSubCollections =
+                  fetchCollectionModel.subCollectionFetchedIndex <= 0
+                      ? 0
+                      : fetchCollectionModel.subCollectionFetchedIndex;
 
-          return AlignedGridView.extent(
-            controller: _scrollController,
-            // physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: availableSubCollections + 1,
-            maxCrossAxisExtent: collectionIconWidth,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return GestureDetector(
-                  onTap: () {
-                    _onScroll();
-                    // widget.onAddFolderTap();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                    // color: Colors.amber,
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.create_new_folder_outlined,
-                          size: 38,
-                          color: Colors.grey.shade800,
+              return AlignedGridView.extent(
+                controller: _scrollController,
+                // physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: availableSubCollections + 1,
+                maxCrossAxisExtent: collectionIconWidth,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return GestureDetector(
+                      onTap: () {
+                        // _onScroll();
+                        widget.onAddFolderTap();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 4),
+                        // color: Colors.amber,
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.create_new_folder_outlined,
+                              size: 38,
+                              color: Colors.grey.shade800,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add',
+                              softWrap: true,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade800,
+                                height: 1,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Add',
-                          softWrap: true,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade800,
-                            height: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
+                      ),
+                    );
+                  }
 
-              index = index - 1;
+                  index = index - 1;
 
-              final fetchCollectionCubit = context.read<CollectionsCubit>();
-              final subCollection = fetchCollectionCubit.getCollection(
-                collectionId:
-                    fetchCollectionModel.collection!.subcollections[index],
-              )!;
+                  final fetchCollectionCubit = context.read<CollectionsCubit>();
+                  final subCollection = fetchCollectionCubit.getCollection(
+                    collectionId:
+                        fetchCollectionModel.collection!.subcollections[index],
+                  )!;
 
-              if (subCollection.collectionFetchingState ==
-                  LoadingStates.loading) {
-                return const CircularProgressIndicator(
-                  backgroundColor: ColourPallette.black,
-                );
-              } else if (subCollection.collectionFetchingState ==
-                  LoadingStates.errorLoading) {
-                return const Icon(
-                  Icons.error,
-                  color: Colors.red,
-                );
-              }
+                  if (subCollection.collectionFetchingState ==
+                      LoadingStates.loading) {
+                    return const CircularProgressIndicator(
+                      backgroundColor: ColourPallette.black,
+                    );
+                  } else if (subCollection.collectionFetchingState ==
+                      LoadingStates.errorLoading) {
+                    return const Icon(
+                      Icons.error,
+                      color: Colors.red,
+                    );
+                  }
 
-              return FolderIconButton(
-                collection: subCollection.collection!,
-                onDoubleTap: () =>
-                    widget.onFolderDoubleTap(subCollection.collection!),
-                onPress: () => widget.onFolderTap(subCollection.collection!),
+                  return FolderIconButton(
+                    collection: subCollection.collection!,
+                    onDoubleTap: () =>
+                        widget.onFolderDoubleTap(subCollection.collection!),
+                    onPress: () =>
+                        widget.onFolderTap(subCollection.collection!),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ],
       ),
     );
   }

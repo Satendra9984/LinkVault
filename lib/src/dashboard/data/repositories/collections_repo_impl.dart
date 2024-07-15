@@ -136,8 +136,8 @@ class CollectionsRepoImpl {
       if (parentCollection != null) {
         final updatedParentCollection = parentCollection.copyWith(
           subcollections: [
-            ...parentCollection.subcollections,
             collection.id,
+            ...parentCollection.subcollections,
           ],
         );
         await _remoteDataSourcesImpl.updateCollection(

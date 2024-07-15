@@ -67,6 +67,8 @@ class DashboardHomePage extends StatelessWidget {
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
           ),
+
+          splashFactory: NoSplash.splashFactory,
         ),
         home: FolderCollectionPage(
           collectionId: globalUser,
