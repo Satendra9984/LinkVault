@@ -17,6 +17,7 @@ class FolderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final folderColor = Colors.green.shade500;
     return GestureDetector(
       onTap: onPress,
       onDoubleTap: onDoubleTap,
@@ -26,10 +27,10 @@ class FolderIconButton extends StatelessWidget {
             shaderCallback: (Rect bounds) {
               return LinearGradient(
                 colors: [
-                  ColourPallette.salemgreen.withOpacity(0.25),
-                  ColourPallette.salemgreen.withOpacity(0.5),
-                  ColourPallette.salemgreen.withOpacity(0.75),
-                  ColourPallette.salemgreen.withOpacity(0.95),
+                  folderColor .withOpacity(0.25),
+                  folderColor.withOpacity(0.5),
+                  folderColor.withOpacity(0.75),
+                  folderColor.withOpacity(0.95),
                   // Add more colors if needed
                 ],
                 begin: Alignment.topLeft,
@@ -38,7 +39,7 @@ class FolderIconButton extends StatelessWidget {
               ).createShader(bounds);
             },
             child: const Icon(
-              Icons.folder_rounded,
+              Icons.folder ,
               size: 72,
               color: Colors.white, // This color will be masked by the gradient
             ),
@@ -50,7 +51,7 @@ class FolderIconButton extends StatelessWidget {
             softWrap: true,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade900,
               height: 1.05,

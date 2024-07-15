@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
@@ -109,19 +110,34 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
           color: ColourPallette.white,
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: _previewMetaWidget(context),
-          ),
-        ],
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        // margin: const EdgeInsets.only(bottom: 120),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _previewMetaWidget(context),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _previewMetaWidget(BuildContext context) {
     final availableUrls = widget.collectionFetchModelNotifier.value.urlList;
+
+    final collection = widget.collectionFetchModelNotifier.value.collection;
+
+    if (collection != null && collection.urls.isEmpty) {
+      return Center(
+        child: SvgPicture.asset(
+          'assets/images/web_surf_3.svg',
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),

@@ -36,7 +36,7 @@ class FolderCollectionPage extends StatefulWidget {
 
 class _FolderCollectionPageState extends State<FolderCollectionPage> {
   late final ScrollController scrollController;
-
+  final PageController _pageController = PageController();
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
@@ -75,6 +75,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
               if (fetchCollection == null) {
                 return Container();
               }
+
+              Logger.printLog('Updated collection store page');
 
               if (fetchCollection.collectionFetchingState ==
                   LoadingStates.loading) {
@@ -178,7 +180,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                         color: ColourPallette.mystic.withOpacity(0.5),
                         spreadRadius: 4,
                         blurRadius: 16,
-                        offset: const Offset(0, 2), // changes position of shadow
+                        offset:
+                            const Offset(0, 2), // changes position of shadow
                       ),
                     ],
                   ),
@@ -189,6 +192,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                         currentIndex: _currentPage.value,
                         onTap: (currentIndex) {
                           _currentPage.value = currentIndex;
+                          _pageController.jumpToPage(currentIndex);
                         },
                         enableFeedback: false,
                         backgroundColor: ColourPallette.white,
@@ -214,8 +218,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                           ),
                           _bottomNavBarWidget(
                             label: 'Collections',
-                            unSelectedIcon:
-                                Icons.collections_bookmark_outlined,
+                            unSelectedIcon: Icons.collections_bookmark_outlined,
                             selectedIcon: Icons.collections_bookmark_rounded,
                             index: 1,
                           ),
@@ -230,121 +233,112 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                     },
                   ),
                 ),
-                body: Container(
-                  height: MediaQuery.of(context).size.height - 10,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  child: ValueListenableBuilder(
-                    valueListenable: _currentPage,
-                    builder: (ctx, currentPage, _) {
-                      if (currentPage == 0) {
-                        return UrlsListWidget(
-                          // scrollController: scrollController,
-                          title: 'Urls',
-                          collectionFetchModelNotifier:
-                              state.collections[widget.collectionId]!,
-                          onAddUrlTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => AddUrlPage(
-                                  parentCollection: collection,
-                                ),
-                              ),
-                            );
-                          },
-                          onUrlTap: (url) async {
-                            final uri = Uri.parse(url.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri);
-                            }
-                          },
-                          onUrlDoubleTap: (url) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => UpdateUrlPage(
-                                  urlModel: url,
-                                ),
-                              ),
-                            );
-                          },
+                body: PageView(
+                  controller: _pageController,
+                  onPageChanged: (page) {
+                    _currentPage.value = page;
+                  },
+                  children: [
+                    UrlsListWidget(
+                      // scrollController: scrollController,
+                      title: 'Urls',
+                      collectionFetchModelNotifier:
+                          state.collections[widget.collectionId]!,
+                      onAddUrlTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => AddUrlPage(
+                              parentCollection: collection,
+                            ),
+                          ),
                         );
-                      } else if (currentPage == 1) {
-                        return CollectionsListWidget(
-                          collectionFetchModelNotifier:
-                              state.collections[widget.collectionId]!,
-                          onAddFolderTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => AddCollectionPage(
-                                  parentCollection: collection,
-                                ),
-                              ),
-                            );
-                          },
-                          onFolderTap: (subCollection) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => FolderCollectionPage(
-                                  collectionId: subCollection.id,
-                                  isRootCollection: false,
-                                ),
-                              ),
-                            );
-                          },
-                          onFolderDoubleTap: (subCollection) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => UpdateCollectionPage(
-                                  collection: subCollection,
-                                ),
-                              ),
-                            );
-                          },
+                      },
+                      onUrlTap: (url) async {
+                        final uri = Uri.parse(url.url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
+                      },
+                      onUrlDoubleTap: (url) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => UpdateUrlPage(
+                              urlModel: url,
+                            ),
+                          ),
                         );
-                      }
-                      if (currentPage == 2) {
-                        return UrlsPreviewListWidget(
-                          scrollController: scrollController,
-                          title: 'Urls',
-                          collectionFetchModelNotifier:
-                              state.collections[widget.collectionId]!,
-                          onAddUrlTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => AddUrlPage(
-                                  parentCollection: collection,
-                                ),
-                              ),
-                            );
-                          },
-                          onUrlTap: (url) async {
-                            final uri = Uri.parse(url.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri);
-                            }
-                          },
-                          onUrlDoubleTap: (url) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => UpdateUrlPage(
-                                  urlModel: url,
-                                ),
-                              ),
-                            );
-                          },
+                      },
+                    ),
+                    CollectionsListWidget(
+                      collectionFetchModelNotifier:
+                          state.collections[widget.collectionId]!,
+                      onAddFolderTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => AddCollectionPage(
+                              parentCollection: collection,
+                            ),
+                          ),
                         );
-                      }
-
-                      return Container();
-                    },
-                  ),
+                      },
+                      onFolderTap: (subCollection) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => FolderCollectionPage(
+                              collectionId: subCollection.id,
+                              isRootCollection: false,
+                            ),
+                          ),
+                        );
+                      },
+                      onFolderDoubleTap: (subCollection) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => UpdateCollectionPage(
+                              collection: subCollection,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    UrlsPreviewListWidget(
+                      scrollController: scrollController,
+                      title: 'Urls',
+                      collectionFetchModelNotifier:
+                          state.collections[widget.collectionId]!,
+                      onAddUrlTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => AddUrlPage(
+                              parentCollection: collection,
+                            ),
+                          ),
+                        );
+                      },
+                      onUrlTap: (url) async {
+                        final uri = Uri.parse(url.url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
+                      },
+                      onUrlDoubleTap: (url) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => UpdateUrlPage(
+                              urlModel: url,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },

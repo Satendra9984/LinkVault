@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
@@ -92,114 +93,81 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   @override
   Widget build(BuildContext context) {
     const collectionIconWidth = 120.0;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      decoration: BoxDecoration(
-        // border: Border.all(
-        //   color: Colors.grey.shade100,
-        // ),
-        borderRadius: BorderRadius.circular(12),
-        // color: ColourPallette.mystic.withOpacity(0.25),
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: ColourPallette.salemgreen,
+        onPressed: widget.onAddFolderTap,
+        label: const Text(
+          'Add Collection',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: ColourPallette.white,
+          ),
+        ),
+        icon: const Icon(
+          Icons.create_new_folder_rounded,
+          color: ColourPallette.white,
+        ),
       ),
-      alignment: Alignment.topLeft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Collections',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ValueListenableBuilder(
-            valueListenable: widget.collectionFetchModelNotifier,
-            builder: (context, fetchCollectionModel, _) {
-              final availableSubCollections =
-                  fetchCollectionModel.subCollectionFetchedIndex <= 0
-                      ? 0
-                      : fetchCollectionModel.subCollectionFetchedIndex;
-
-              return AlignedGridView.extent(
-                controller: _scrollController,
-                // physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: availableSubCollections + 1,
-                maxCrossAxisExtent: collectionIconWidth,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return GestureDetector(
-                      onTap: () {
-                        // _onScroll();
-                        widget.onAddFolderTap();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 4),
-                        // color: Colors.amber,
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.create_new_folder_outlined,
-                              size: 38,
-                              color: Colors.grey.shade800,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Add',
-                              softWrap: true,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade800,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  index = index - 1;
-
-                  final fetchCollectionCubit = context.read<CollectionsCubit>();
-                  final subCollection = fetchCollectionCubit.getCollection(
-                    collectionId:
-                        fetchCollectionModel.collection!.subcollections[index],
-                  )!;
-
-                  if (subCollection.collectionFetchingState ==
-                      LoadingStates.loading) {
-                    return const CircularProgressIndicator(
-                      backgroundColor: ColourPallette.black,
-                    );
-                  } else if (subCollection.collectionFetchingState ==
-                      LoadingStates.errorLoading) {
-                    return const Icon(
-                      Icons.error,
-                      color: Colors.red,
-                    );
-                  }
-
-                  return FolderIconButton(
-                    collection: subCollection.collection!,
-                    onDoubleTap: () =>
-                        widget.onFolderDoubleTap(subCollection.collection!),
-                    onPress: () =>
-                        widget.onFolderTap(subCollection.collection!),
-                  );
-                },
+      body: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.topLeft,
+        child: ValueListenableBuilder(
+          valueListenable: widget.collectionFetchModelNotifier,
+          builder: (context, fetchCollectionModel, _) {
+            if (fetchCollectionModel.collection != null &&
+                fetchCollectionModel.collection!.subcollections.isEmpty) {
+              return Center(
+                child: SvgPicture.asset(
+                  'assets/images/collections.svg',
+                ),
               );
-            },
-          ),
-        ],
+            }
+            final availableSubCollections =
+                fetchCollectionModel.subCollectionFetchedIndex <= 0
+                    ? 0
+                    : fetchCollectionModel.subCollectionFetchedIndex;
+            return AlignedGridView.extent(
+              controller: _scrollController,
+              shrinkWrap: true,
+              itemCount: availableSubCollections,
+              maxCrossAxisExtent: collectionIconWidth,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              itemBuilder: (context, index) {
+                final fetchCollectionCubit = context.read<CollectionsCubit>();
+                final subCollection = fetchCollectionCubit.getCollection(
+                  collectionId:
+                      fetchCollectionModel.collection!.subcollections[index],
+                )!;
+
+                if (subCollection.collectionFetchingState ==
+                    LoadingStates.loading) {
+                  return const CircularProgressIndicator(
+                    backgroundColor: ColourPallette.black,
+                  );
+                } else if (subCollection.collectionFetchingState ==
+                    LoadingStates.errorLoading) {
+                  return const Icon(
+                    Icons.error,
+                    color: Colors.red,
+                  );
+                }
+
+                return FolderIconButton(
+                  collection: subCollection.collection!,
+                  onDoubleTap: () =>
+                      widget.onFolderDoubleTap(subCollection.collection!),
+                  onPress: () => widget.onFolderTap(subCollection.collection!),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

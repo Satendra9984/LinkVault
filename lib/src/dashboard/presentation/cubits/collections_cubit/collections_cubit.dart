@@ -213,26 +213,31 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required CollectionModel updatedCollection,
     required int fetchSubCollIndexAdded,
   }) {
-    // final newCollMap = {...state.collections};
-
     final prevCollection = state.collections[updatedCollection.id]!;
 
-    prevCollection.value = prevCollection.value.copyWith(
+    Logger.printLog(
+      'updatecollection: ${StringUtils.getJsonFormat(updatedCollection.toJson())}',
+    );
+
+    final updatedCollectionfetch = prevCollection.value.copyWith(
       collection: updatedCollection,
       subCollectionFetchedIndex:
           prevCollection.value.subCollectionFetchedIndex +
               fetchSubCollIndexAdded,
     );
 
-    // final newCollection = {...state.collections};
+    final newState = {...state.collections};
+    newState[updatedCollection.id] = ValueNotifier(updatedCollectionfetch);
 
-    // newCollection[updatedCollection.id] = ValueNotifier(fetchCollectionModel);
+    emit(
+      state.copyWith(
+        collections: newState,
+      ),
+    );
 
-    // emit(
-    //   state.copyWith(
-    //     collections: newCollection,
-    //   ),
-    // );
+    Logger.printLog(
+      'updatecollectionafter: ${StringUtils.getJsonFormat(prevCollection.value.collection?.toJson())}',
+    );
   }
 
   Future<void> fetchMoreUrls({
@@ -322,33 +327,50 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  void updateUrl({
-    required UrlModel url,
-  }) {
-    // final urlMap = {...state.collectionUrls};
-    // urlMap[url.id] = url;
+  void updateUrl({required UrlModel url}) {
+    final fetchedCollection = state.collections[url.collectionId]!;
 
-    // emit(
-    //   state.copyWith(
-    //     collectionUrls: urlMap,
-    //   ),
-    // );
+    final fetchedUrlList = [...fetchedCollection.value.urlList];
+
+    final index = fetchedUrlList.indexWhere(
+      (element) {
+        if (element.urlModel != null && element.urlModel!.id == url.id) {
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (index != -1) {
+      fetchedUrlList[index] = fetchedUrlList[index].copyWith(
+        urlModel: url,
+      );
+    }
+
+    fetchedCollection.value = fetchedCollection.value.copyWith(
+      // collection: collection,
+      urlList: fetchedUrlList,
+    );
   }
 
   void deleteUrl({
     required UrlModel url,
-    required CollectionModel? collection,
+    required CollectionModel? collectionModel,
   }) {
-    // final urlMap = {...state.collectionUrls}..remove(url.id);
+    final fetchedCollection = state.collections[url.collectionId]!;
 
-    // if (collection != null) {
-    //   updateCollection(updatedCollection: collection);
-    // }
+    final fetchedUrlList = [...fetchedCollection.value.urlList]..removeWhere(
+        (element) {
+          if (element.urlModel != null && element.urlModel!.id == url.id) {
+            return true;
+          }
+          return false;
+        },
+      );
 
-    // emit(
-    //   state.copyWith(
-    //     collectionUrls: urlMap,
-    //   ),
-    // );
+    fetchedCollection.value = fetchedCollection.value.copyWith(
+      urlList: fetchedUrlList,
+      collection: collectionModel,
+    );
   }
 }

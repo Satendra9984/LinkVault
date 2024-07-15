@@ -208,15 +208,12 @@ class CollectionsRepoImpl {
     }
   }
 
-
   Future<Either<Failure, UrlModel>> fetchUrl({
     required String urlId,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection = await _remoteDataSourcesImpl.fetchUrl(
-        urlId
-      );
+      final collection = await _remoteDataSourcesImpl.fetchUrl(urlId);
 
       // if (collection == null) {
       //   return Left(
@@ -239,5 +236,4 @@ class CollectionsRepoImpl {
       );
     }
   }
-
 }

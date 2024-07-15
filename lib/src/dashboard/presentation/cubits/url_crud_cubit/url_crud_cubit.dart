@@ -115,7 +115,10 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           (response) {
             final (urlData, collection) = response;
 
-            _collectionsCubit.deleteUrl(url: urlData, collection: collection);
+            _collectionsCubit.deleteUrl(
+              url: urlData,
+              collectionModel: collection,
+            );
 
             emit(
               state.copyWith(

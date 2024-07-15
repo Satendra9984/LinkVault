@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
@@ -111,13 +112,10 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
           color: ColourPallette.white,
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: _previewIconsWidget(context),
-          ),
-        ],
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        // margin: const EdgeInsets.only(bottom: 120),
+        child: _previewIconsWidget(context),
       ),
     );
   }
@@ -140,6 +138,16 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
     //   );
     // }
 
+    final collection = widget.collectionFetchModelNotifier.value.collection;
+
+    if (collection != null && collection.urls.isEmpty) {
+      return Center(
+        child: SvgPicture.asset(
+          'assets/images/web_surf_1.svg',
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
@@ -158,12 +166,14 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
           final url = availableUrls[index];
 
           if (url.loadingStates == LoadingStates.loading) {
-            return const SizedBox(
-              // padding: EdgeInsets.all(8),
-              height: 56,
-              width: 56,
-              child: CircularProgressIndicator(
-                backgroundColor: ColourPallette.grey,
+            return const Center(
+              child: SizedBox(
+                height: 36,
+                width: 36,
+                child: CircularProgressIndicator(
+                  backgroundColor: ColourPallette.grey,
+                  color: ColourPallette.white,
+                ),
               ),
             );
           } else if (url.loadingStates == LoadingStates.errorLoading) {
