@@ -62,9 +62,9 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       (imageBytes) async {
         // final imagesData2 = {...state.imagesData};
 
-        Logger.printLog(
-          '[Image][isolate] : ${imageUrl} ${imageBytes != null}',
-        );
+        // Logger.printLog(
+        //   '[Image][isolate] : ${imageUrl} ${imageBytes != null}',
+        // );
 
         final addedImageModel = getImageData(imageUrl) ??
             ValueNotifier(

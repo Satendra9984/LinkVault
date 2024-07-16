@@ -89,7 +89,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           );
         },
       );
-    });
+    },
+    );
   }
 
   void deleteUrl({
