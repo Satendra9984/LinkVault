@@ -10,8 +10,8 @@ class CollectionFetchModel extends Equatable {
   final LoadingStates collectionFetchingState;
   final int subCollectionFetchedIndex;
 
-  final LoadingStates
-      urlFetchMoreState; // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
+  // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
+  final LoadingStates urlFetchMoreState;
   final List<UrlFetchStateModel> urlList;
 
   CollectionFetchModel({

@@ -240,6 +240,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
+
+
+  // <--------------------------- URLS --------------------------------->
+
+
   Future<void> fetchMoreUrls({
     required String collectionId,
     required String userId,
