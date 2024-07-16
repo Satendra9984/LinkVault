@@ -36,7 +36,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     await _urlRepoImpl
         .addUrlData(
-      collection: collection!,
+      collection: collection!.collection!,
       urlData: urlData,
     )
         .then((result) {
@@ -89,7 +89,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           );
         },
       );
-    });
+    },
+    );
   }
 
   void deleteUrl({
@@ -101,7 +102,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
 
     await _urlRepoImpl
-        .deleteUrlData(collection: collection, urlData: urlData)
+        .deleteUrlData(collection: collection!.collection, urlData: urlData)
         .then(
       (result) {
         result.fold(
@@ -115,7 +116,10 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           (response) {
             final (urlData, collection) = response;
 
-            _collectionsCubit.deleteUrl(url: urlData, collection: collection);
+            _collectionsCubit.deleteUrl(
+              url: urlData,
+              collectionModel: collection,
+            );
 
             emit(
               state.copyWith(

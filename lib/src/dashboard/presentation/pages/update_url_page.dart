@@ -50,16 +50,16 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
   Future<void> _updateUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
-      var urlMetaData = _previewMetaData.value != null
+      final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
               title: _urlTitleController.text,
             );
 
-      final urlMetaDataJson = urlMetaData.toJson();
+      // final urlMetaDataJson = urlMetaData.toJson();
 
-      urlMetaDataJson['banner_image'] = null;
-      urlMetaData = UrlMetaData.fromJson(urlMetaDataJson);
+      // urlMetaDataJson['banner_image'] = null;
+      // urlMetaData = UrlMetaData.fromJson(urlMetaDataJson);
 
       final createdAt = DateTime.now().toUtc();
 
@@ -92,46 +92,16 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       return;
     }
 
-    // final parsingservice = UrlParsingService();
-
-    // Checking if only bannerimage is not parsed (quite often) to optimise fetching
-    // No need to fetch all details again
-    // if (_previewMetaData.value != null &&
-    //     _previewMetaData.value!.bannerImageUrl != null &&
-    //     _previewMetaData.value!.bannerImage == null) {
-    // _previewLoadingStates.value = LoadingStates.loading;
-    // await parsingservice
-    //     .fetchImageAsUint8List(_previewMetaData.value!.bannerImageUrl!)
-    //     .then((imageUint) {
-    //   if (imageUint == null) {
-    //     _previewLoadingStates.value = LoadingStates.errorLoading;
-
-    //     _previewError.value = GeneralFailure(
-    //       message: 'Something went wrong. Check your internet and try again.',
-    //       statusCode: '400',
-    //     );
-    //     return;
-    //   }
-    //   _previewMetaData.value =
-    //       _previewMetaData.value!.copyWith(bannerImage: imageUint);
-    //   _previewLoadingStates.value = LoadingStates.loaded;
-    //   _previewError.value = null;
-    // });
-
-    // return;
-    // }
-
-    // if (_previewMetaData.value == null) {
     // Fetching all details
     _previewLoadingStates.value = LoadingStates.loading;
 
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
 
-    Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
-      Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+      // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
       _previewMetaData.value = metaData;
       _previewLoadingStates.value = LoadingStates.loaded;
       _previewError.value = null;
@@ -140,7 +110,6 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
         _urlTitleController.text = metaData.websiteName!;
       }
-      
     } else {
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value = GeneralFailure(
@@ -160,7 +129,6 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
   @override
   void initState() {
-
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
@@ -322,7 +290,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                         [loadAgain, previewButton],
                       );
                     } else {
-                      trailingWidgetList.add(previewButton);
+                      trailingWidgetList.addAll(
+                        [loadAgain, previewButton],
+                      );
                     }
 
                     return Column(

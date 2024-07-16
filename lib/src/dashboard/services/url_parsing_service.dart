@@ -128,6 +128,10 @@ class UrlParsingService {
     }
   }
 
+  static String getWebsiteLogoUrl(String url) {
+    return 'https://www.google.com/s2/favicons?sz=64&domain_url={url}';
+  }
+
 // Function to extract website logo
   static String? extractWebsiteLogoUrl(Document document) {
     try {
@@ -146,17 +150,49 @@ class UrlParsingService {
         final element = document.head?.querySelector(selector);
         if (element != null) {
           final href = element.attributes['href'];
-          if (href != null) {
+          if (href != null && _isSupportedImageType(href)) {
             return href;
           }
         }
       }
 
       // Fallback: try to find favicon in the root directory
-      return '/favicon.ico';
+      // final fallbackUrl = '/assets/img/favicons.png';
+
+      return null;
     } catch (e) {
       Logger.printLog('error in "extractWebsiteLogoUrl" $e');
       return null;
+    }
+  }
+
+  static bool _isSupportedImageType(String url) {
+    final supportedExtensions = ['png', 'jpeg', 'jpg', 'gif'];
+    final extension = url.split('.').last.toLowerCase();
+    return supportedExtensions.contains(extension);
+  }
+
+  static String extractWebsiteNameFromUrlString(String url) {
+    try {
+      final uri = Uri.parse(url);
+      String host = uri.host;
+
+      // Remove 'www.' if present
+      if (host.startsWith('www.')) {
+        host = host.substring(4);
+      }
+
+      // Get the domain name
+      final domainParts = host.split('.');
+      if (domainParts.length > 2) {
+        return domainParts[domainParts.length - 2];
+      } else if (domainParts.length > 1) {
+        return domainParts[0];
+      } else {
+        return host; // In case it's a local or unconventional domain
+      }
+    } catch (e) {
+      return ''; // Return empty string if URL parsing fails
     }
   }
 
@@ -165,33 +201,61 @@ class UrlParsingService {
     String imageUrl, {
     required int maxSize,
     required bool compressImage,
+    required int quality,
+    bool? autofillPng,
+    (int r, int g, int b)? autofillColor,
   }) async {
     try {
-      Logger.printLog('websiteImageUrl: $imageUrl');
+      // Logger.printLog('websiteImageUrl: $imageUrl');
       if (imageUrl.isEmpty) return null;
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
         final originalImageBytes = response.bodyBytes;
+        // return originalImageBytes;
+        // Logger.printLog(
+        //   '[parsing][original] : $imageUrl, ${originalImageBytes.length}',
+        // );
         if (!compressImage) return originalImageBytes;
-        return getCompressedImage(originalImageBytes, maxSize: maxSize);
+        final compressedImage = await compressImageAsUint8List(
+          originalImageBytes,
+          maxSize: maxSize,
+          quality: quality,
+          autofillPng: autofillPng,
+          autofillColor: autofillColor,
+        );
+        // Logger.printLog(
+        //   '[parsing][compressed] : $imageUrl, ${compressedImage?.length}',
+        // );
+        return compressedImage;
       }
       return null;
     } catch (e) {
       Logger.printLog('error in "fetchImageAsUint8List" $e');
-
       return null;
     }
   }
 
-  static Future<Uint8List?> getCompressedImage(
+  static Future<Uint8List?> compressImageAsUint8List(
     Uint8List originalImageBytes, {
     required int maxSize,
+    required int quality,
+    required bool? autofillPng,
+    (int r, int g, int b)? autofillColor,
   }) async {
-    final compressedImage = await ImageUtils.compressImage(originalImageBytes);
+    try {
+      // Logger.printLog('websiteImageUrl: $imageUrl');
+      final compressedImage = await ImageUtils.compressImage(
+        originalImageBytes,
+        quality: quality,
+        autofillPng: autofillPng ?? false,
+        autofillColor: autofillColor,
+      );
 
-    return compressedImage == null || compressedImage.length > maxSize
-        ? null
-        : compressedImage;
+      return compressedImage;
+    } catch (e) {
+      Logger.printLog('error in "fetchImageAsUint8List" $e');
+      return null;
+    }
   }
 
 // Function to handle relative URLs
@@ -224,19 +288,24 @@ class UrlParsingService {
 
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
-    metaData['websiteName'] = extractWebsiteName(document);
+    metaData['websiteName'] =
+        extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
 
     if (websiteLogoUrl != null) {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;
-      // Logger.printLog('logoUrl : $websiteLogoUrl');
       final faviconUint = await fetchImageAsUint8List(
         websiteLogoUrl,
-        maxSize: 50000,
-        compressImage: false,
+        maxSize: 100000,
+        compressImage: true,
+        quality: 80,
+        autofillPng: true,
       );
+      // Logger.printLog(
+      //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
+      // );
       if (faviconUint != null) {
         metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
       }
@@ -251,8 +320,12 @@ class UrlParsingService {
         imageUrl,
         maxSize: 150000,
         compressImage: true,
+        quality: 75,
+        autofillPng: false,
       );
-
+      // Logger.printLog(
+      //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
+      // );
       if (bannerImage != null) {
         metaData['banner_image'] =
             StringUtils.convertUint8ListToBase64(bannerImage);

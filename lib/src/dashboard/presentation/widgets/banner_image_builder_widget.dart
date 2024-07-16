@@ -22,12 +22,14 @@ class NetworkImageBuilderWidget extends StatelessWidget {
     this.successWidgetBuilder,
     super.key,
   });
+
   final String imageUrl;
   final Uint8List? imageBytes;
   final bool compressImage;
 
   final Widget Function()? errorWidgetBuilder;
-  final Widget Function(Uint8List)? successWidgetBuilder;
+  final Widget Function(NetworkImageCacheModel)?
+      successWidgetBuilder;
   final Widget Function()? loadingWidgetBuilder;
 
   @override
@@ -73,7 +75,7 @@ class NetworkImageBuilderWidget extends StatelessWidget {
             }
 
             return successWidgetBuilder != null
-                ? successWidgetBuilder!(imageData.imageBytesData!)
+                ? successWidgetBuilder!(imageData)
                 : Container();
           },
         );

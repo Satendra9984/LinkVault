@@ -17,14 +17,7 @@ class CollectionsRepoImpl {
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
   // final UrlRepoImpl _urlRepoImpl;
 
-  Future<
-      Either<
-          Failure,
-          (
-            CollectionModel,
-            Map<String, CollectionModel>,
-            List<UrlModel>,
-          )>> fetchRootCollection({
+  Future<Either<Failure, CollectionModel>> fetchRootCollection({
     required String collectionId,
     required String userId,
   }) async {
@@ -52,41 +45,10 @@ class CollectionsRepoImpl {
           collection: withId,
         );
 
-        return Right((res, {}, []));
-      }
-      // Now fetch subcollections
-      final subCollMap = <String, CollectionModel>{};
-      final urlList = <UrlModel>[];
-
-      for (final subcId in collection.subcollections) {
-        final subcollection = await _remoteDataSourcesImpl.fetchCollection(
-          collectionId: subcId,
-        );
-        if (subcollection == null) {
-          return Left(
-            ServerFailure(
-              message: 'Something Went Wrong. Collection Not Found',
-              statusCode: 400,
-            ),
-          );
-        }
-        subCollMap[subcollection.id] = subcollection;
+        return Right(res);
       }
 
-      // NOW WILL FETCH URLS FOR THIS COLLECTION
-      for (final urlId in collection.urls) {
-        final urlData = await _remoteDataSourcesImpl.fetchUrl(urlId);
-
-        urlList.add(urlData);
-      }
-
-      return Right(
-        (
-          collection,
-          subCollMap,
-          urlList,
-        ),
-      );
+      return Right(collection);
     } catch (e) {
       return Left(
         ServerFailure(
@@ -97,14 +59,7 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<
-      Either<
-          Failure,
-          (
-            CollectionModel,
-            Map<String, CollectionModel>,
-            List<UrlModel>,
-          )>> fetchSubCollectionAsWhole({
+  Future<Either<Failure, CollectionModel>> fetchSubCollectionAsWhole({
     required String collectionId,
   }) async {
     // [TODO] : Fetch Subcollection
@@ -123,38 +78,8 @@ class CollectionsRepoImpl {
       }
 
       // Now fetch subcollections
-      final subCollMap = <String, CollectionModel>{};
-      for (final subcId in collection.subcollections) {
-        final subcollection = await _remoteDataSourcesImpl.fetchCollection(
-          collectionId: subcId,
-        );
-        if (subcollection == null) {
-          return Left(
-            ServerFailure(
-              message: 'Something Went Wrong. Collection Not Found',
-              statusCode: 400,
-            ),
-          );
-        }
-        subCollMap[subcollection.id] = subcollection;
-      }
 
-      // NOW WILL FETCH URLS FOR THIS COLLECTION
-      final urlList = <UrlModel>[];
-
-      for (final urlId in collection.urls) {
-        final urlData = await _remoteDataSourcesImpl.fetchUrl(urlId);
-
-        urlList.add(urlData);
-      }
-
-      return Right(
-        (
-          collection,
-          subCollMap,
-          urlList,
-        ),
-      );
+      return Right(collection);
     } catch (e) {
       return Left(
         ServerFailure(
@@ -211,8 +136,8 @@ class CollectionsRepoImpl {
       if (parentCollection != null) {
         final updatedParentCollection = parentCollection.copyWith(
           subcollections: [
-            ...parentCollection.subcollections,
             collection.id,
+            ...parentCollection.subcollections,
           ],
         );
         await _remoteDataSourcesImpl.updateCollection(
@@ -271,6 +196,35 @@ class CollectionsRepoImpl {
       final collection = await _remoteDataSourcesImpl.updateCollection(
         collection: subCollection,
       );
+
+      return Right(collection);
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
+
+  Future<Either<Failure, UrlModel>> fetchUrl({
+    required String urlId,
+  }) async {
+    // [TODO] : Fetch Subcollection
+    try {
+      final collection = await _remoteDataSourcesImpl.fetchUrl(urlId);
+
+      // if (collection == null) {
+      //   return Left(
+      //     ServerFailure(
+      //       message: 'Something Went Wrong. Collection Not Found',
+      //       statusCode: 400,
+      //     ),
+      //   );
+      // }
+
+      // Now fetch subcollections
 
       return Right(collection);
     } catch (e) {

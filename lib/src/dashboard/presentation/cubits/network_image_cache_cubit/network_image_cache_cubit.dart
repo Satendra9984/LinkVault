@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
+import 'package:link_vault/src/dashboard/data/services/image_decoder.dart';
 // import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
@@ -20,27 +21,18 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
           ),
         );
 
-  // final IsolateManager _isolateManager = IsolateManager();
-  // bool _isIsolateManagerInitialized = false;
-  // final FetchQueue _fetchQueue = FetchQueue();
-
-  // Future<void> initialize() async {
-  //   if (_isIsolateManagerInitialized == false) {
-  //     await _isolateManager.initialize().then(
-  //           (value) => _isIsolateManagerInitialized = true,
-  //         );
-  //   }
-  // }
+  final ImageQueueManager _imageQueueManager = ImageQueueManager();
 
   Future<Uint8List?> fetchImageInIsolate(
     String imageUrl, {
     int maxSize = 2 * 102 * 1024,
     bool compressImage = true,
   }) async {
-    return await UrlParsingService.fetchImageAsUint8List(
+    return UrlParsingService.fetchImageAsUint8List(
       imageUrl,
       maxSize: maxSize,
       compressImage: compressImage,
+      quality: 75,
     );
   }
 
@@ -50,7 +42,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
   }) async {
     final imagesData = {...state.imagesData};
 
-    var networkImageCacheModel = NetworkImageCacheModel(
+    final networkImageCacheModel = NetworkImageCacheModel(
       loadingState: LoadingStates.loading,
       imageUrl: imageUrl,
     );
@@ -61,120 +53,85 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       ),
     );
 
-    // [TODO] : USE LOCAL STORAGE IF AVAILABLE
-    // await _isolateManager
-    //     .fetchImageInIsolate(
-    //   imageUrl,
-    //   compressImage: compressImage,
-    // )
+    await UrlParsingService.fetchImageAsUint8List(
+      imageUrl,
+      maxSize: 2 * 102 * 1024,
+      compressImage: compressImage,
+      quality: 75,
+    ).then(
+      (imageBytes) async {
+        // final imagesData2 = {...state.imagesData};
 
-    // _fetchQueue.add(
-    //   // need not to add await as then it will wait for result here itself
-    //   // and defeats the purpose of using a queue
-    //   () =>
-      
-      await UrlParsingService.fetchImageAsUint8List(
-        imageUrl,
-        maxSize: 2 * 102 * 1024,
-        compressImage: compressImage,
-      ).then(
-        (imageBytes) {
-          // final imagesData2 = {...state.imagesData};
+        // Logger.printLog(
+        //   '[Image][isolate] : ${imageUrl} ${imageBytes != null}',
+        // );
 
-          Logger.printLog(
-            '[Image][isolate] : ${imageUrl} ${imageBytes != null}',
+        final addedImageModel = getImageData(imageUrl) ??
+            ValueNotifier(
+              NetworkImageCacheModel(
+                loadingState: LoadingStates.errorLoading,
+                imageUrl: imageUrl,
+              ),
+            );
+
+        if (imageBytes == null) {
+          addedImageModel.value = addedImageModel.value.copyWith(
+            loadingState: LoadingStates.errorLoading,
+          );
+        } else {
+          // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
+
+          addedImageModel.value = addedImageModel.value.copyWith(
+            imageBytesData: imageBytes,
+            loadingState: LoadingStates.loaded,
+            // uiImage: uiImage,
           );
 
-          var addedImageModel = getImageData(imageUrl) ??
-              ValueNotifier(
-                NetworkImageCacheModel(
-                  loadingState: LoadingStates.errorLoading,
-                  imageUrl: imageUrl,
-                ),
-              );
-
-
-          if (imageBytes == null) {
-            addedImageModel.value = addedImageModel.value.copyWith(
-              loadingState: LoadingStates.errorLoading,
-            );
-          } else {
+          _imageQueueManager.addTask(() async {
+            final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
             addedImageModel.value = addedImageModel.value.copyWith(
               imageBytesData: imageBytes,
               loadingState: LoadingStates.loaded,
+              uiImage: uiImage,
             );
-          }
-
-          // imagesData2[imageUrl] = networkImageCacheModel;
-          // emit(
-          //   state.copyWith(
-          //     imagesData: imagesData2,
-          //   ),
-          // );
-        },
-      // ),
+          });
+        }
+      },
     );
-
-    // final imageBytes = await UrlParsingService.fetchImageAsUint8List(
-    //   imageUrl,
-    //   maxSize: 2 * 100 * 1024, // 2MB
-    //   compressImage: compressImage,
-    // );
-
-    // final imagesData2 = {...state.imagesData};
-
-    // if (imageBytes == null) {
-    //   networkImageCacheModel = networkImageCacheModel.copyWith(
-    //     loadingState: LoadingStates.errorLoading,
-    //   );
-    // } else {
-    //   networkImageCacheModel = networkImageCacheModel.copyWith(
-    //     imageBytesData: imageBytes,
-    //     loadingState: LoadingStates.loaded,
-    //   );
-    // }
-
-    // imagesData2[imageUrl] = networkImageCacheModel;
-    // emit(
-    //   state.copyWith(
-    //     imagesData: imagesData2,
-    //   ),
-    // );
   }
 
   ValueNotifier<NetworkImageCacheModel>? getImageData(String imageUrl) {
     final imageData = state.imagesData[imageUrl];
-   
-    if(imageData == null) {
 
-    }
+    if (imageData == null) {}
 
     return imageData;
   }
 }
 
-class FetchQueue {
-  final Queue<Function> _tasks = Queue<Function>();
-  bool _isRunning = false;
+class ImageQueueManager {
+  final Queue<Function> _taskQueue = Queue();
+  bool _isProcessing = false;
 
-  void add(Function task) {
-    _tasks.add(task);
+  void addTask(Function task) {
+    _taskQueue.add(task);
     _processNext();
   }
 
-  void _processNext() {
-    if (_isRunning || _tasks.isEmpty) {
-      return;
-    }
+  void _processNext() async {
+    if (_isProcessing || _taskQueue.isEmpty) return;
 
-    _isRunning = true;
-    final task = _tasks.removeFirst();
-    task().then((_) {
-      _isRunning = false;
-      _processNext();
-    });
+    _isProcessing = true;
+
+    final task = _taskQueue.removeFirst();
+    await task();
+
+    _isProcessing = false;
+    _processNext();
   }
 }
+
+final ImageQueueManager _imageQueueManager = ImageQueueManager();
 
 // class IsolateManager {
 //   final _queue = <_IsolateTask>[];
