@@ -11,15 +11,15 @@ class CollectionFetchModel extends Equatable {
   final int subCollectionFetchedIndex;
 
   // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
-  final LoadingStates urlFetchMoreState;
-  final List<UrlFetchStateModel> urlList;
+  // final LoadingStates urlFetchMoreState;
+  // final List<UrlFetchStateModel> urlList;
 
   CollectionFetchModel({
     this.collection,
     required this.collectionFetchingState,
     required this.subCollectionFetchedIndex,
-    required this.urlFetchMoreState,
-    required this.urlList,
+    // required this.urlFetchMoreState,
+    // required this.urlList,
   });
 
   @override
@@ -27,13 +27,13 @@ class CollectionFetchModel extends Equatable {
         collection,
         collectionFetchingState,
         subCollectionFetchedIndex,
-        urlFetchMoreState,
-        urlList,
+        // urlFetchMoreState,
+        // urlList,
       ];
 
   CollectionFetchModel copyWith({
     CollectionModel? collection,
-    LoadingStates? subCollectionsFetchingState,
+    LoadingStates? collectionFetchingState,
     int? subCollectionFetchedIndex,
     LoadingStates? urlFetchMoreState,
     List<UrlFetchStateModel>? urlList,
@@ -41,11 +41,11 @@ class CollectionFetchModel extends Equatable {
     return CollectionFetchModel(
       collection: collection ?? this.collection,
       collectionFetchingState:
-          subCollectionsFetchingState ?? collectionFetchingState,
+          collectionFetchingState ?? this.collectionFetchingState,
       subCollectionFetchedIndex:
           subCollectionFetchedIndex ?? this.subCollectionFetchedIndex,
-      urlFetchMoreState: urlFetchMoreState ?? this.urlFetchMoreState,
-      urlList: urlList ?? this.urlList,
+      // urlFetchMoreState: urlFetchMoreState ?? this.urlFetchMoreState,
+      // urlList: urlList ?? this.urlList,
     );
   }
 }

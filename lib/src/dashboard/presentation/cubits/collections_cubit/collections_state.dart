@@ -7,11 +7,11 @@ class CollectionsState extends Equatable {
     required this.collections,
     // required this.currentCollection,
     // required this.collectionLoadingStates,
-    // required this.collectionUrls,
+    required this.collectionUrls,
   });
 
-  final Map<String, ValueNotifier<CollectionFetchModel>> collections;
-  // final Map<String, UrlModel> collectionUrls;
+  final Map<String, CollectionFetchModel> collections;
+  final Map<String, List<UrlFetchStateModel>> collectionUrls;
 
   /// Current Collection Will be use to only change the ui for this current collection
   /// No need to update all nested collection screens
@@ -23,21 +23,21 @@ class CollectionsState extends Equatable {
         collections,
         // currentCollection,
         // collectionLoadingStates,
-        // collectionUrls,
+        collectionUrls,
       ];
 
   CollectionsState copyWith({
-    Map<String, ValueNotifier<CollectionFetchModel>>? collections,
+    Map<String, CollectionFetchModel>? collections,
     // String? currentCollection,
     // CollectionLoadingStates? collectionLoadingStates,
-    // Map<String, UrlModel>? collectionUrls,
+    Map<String, List<UrlFetchStateModel>>? collectionUrls,
   }) {
     return CollectionsState(
       collections: collections ?? this.collections,
       // currentCollection: currentCollection ?? this.currentCollection,
       // collectionLoadingStates:
       // collectionLoadingStates ?? this.collectionLoadingStates,
-      // collectionUrls: collectionUrls ?? this.collectionUrls,
+      collectionUrls: collectionUrls ?? this.collectionUrls,
     );
   }
 }

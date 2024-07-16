@@ -22,9 +22,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         super(
           const CollectionsState(
             collections: {},
-            // collectionUrls: {},
-            // currentCollection: '',
-            // collectionLoadingStates: CollectionLoadingStates.initial,
+            collectionUrls: {},
           ),
         );
 
@@ -44,13 +42,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final fetchCollectionModel = CollectionFetchModel(
       collectionFetchingState: LoadingStates.loading,
       subCollectionFetchedIndex: -1,
-      urlFetchMoreState: LoadingStates.initial,
-      urlList: const [],
     );
 
     final newCollection = {...state.collections};
 
-    newCollection[collectionId] = ValueNotifier(fetchCollectionModel);
+    newCollection[collectionId] = fetchCollectionModel;
 
     emit(
       state.copyWith(
@@ -70,21 +66,33 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     // ignore: cascade_invocations
     fetchedCollection.fold(
       (failed) {
-        state.collections[collectionId]!.value =
-            state.collections[collectionId]!.value.copyWith(
-          subCollectionsFetchingState: LoadingStates.errorLoading,
+        final failedState = {...state.collections};
+        final failedCollection = fetchCollectionModel.copyWith(
+          collectionFetchingState: LoadingStates.errorLoading,
+        );
+
+        failedState[collectionId] = failedCollection;
+
+        emit(
+          state.copyWith(
+            collections: failedState,
+          ),
         );
       },
       (collection) {
-        state.collections[collectionId]!.value =
-            state.collections[collectionId]!.value.copyWith(
-          subCollectionsFetchingState: LoadingStates.loaded,
+        final loadedState = {...state.collections};
+        final loadedCollection = fetchCollectionModel.copyWith(
+          collectionFetchingState: LoadingStates.loaded,
           collection: collection,
         );
 
-        // Logger.printLog(
-        //   'Fetched: ${StringUtils.getJsonFormat(collection.toJson())}',
-        // );
+        loadedState[collectionId] = loadedCollection;
+
+        emit(
+          state.copyWith(
+            collections: loadedState,
+          ),
+        );
       },
     );
   }
@@ -102,17 +110,15 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       'FetchedMoreBefore: ${state.collections.keys.length}, ids: ${subCollectionIds}',
     );
 
-    final moreCollections = <String, ValueNotifier<CollectionFetchModel>>{};
+    final moreCollections = <String, CollectionFetchModel>{};
 
     for (final subCollId in subCollectionIds) {
       final fetchCollectionModel = CollectionFetchModel(
         collectionFetchingState: LoadingStates.loading,
         subCollectionFetchedIndex: -1,
-        urlFetchMoreState: LoadingStates.initial,
-        urlList: const [],
       );
 
-      moreCollections[subCollId] = ValueNotifier(fetchCollectionModel);
+      moreCollections[subCollId] = fetchCollectionModel;
     }
 
     final newCollection = {...state.collections, ...moreCollections};
@@ -123,7 +129,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
+    /// NOW WILL FETCH AND UPDATE THE STATE AT ONCE FOR EACH SUBCOLLECTION
+    final newFetchResultsState = {...state.collections};
     for (final subCollId in subCollectionIds) {
+      final fetchCollectionModel = moreCollections[subCollId]!;
+
       final fetchedCollection = isRootCollection
           ? await _collectionsRepoImpl.fetchRootCollection(
               collectionId: subCollId,
@@ -136,24 +146,28 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       // ignore: cascade_invocations
       fetchedCollection.fold(
         (failed) {
-          state.collections[subCollId]!.value =
-              state.collections[subCollId]!.value.copyWith(
-            subCollectionsFetchingState: LoadingStates.errorLoading,
+          // final failedState = {...state.collections};
+          final failedCollection = fetchCollectionModel.copyWith(
+            collectionFetchingState: LoadingStates.errorLoading,
           );
+
+          newFetchResultsState[subCollId] = failedCollection;
         },
         (collection) {
-          state.collections[subCollId]!.value =
-              state.collections[subCollId]!.value.copyWith(
-            subCollectionsFetchingState: LoadingStates.loaded,
+          final loadedCollection = fetchCollectionModel.copyWith(
+            collectionFetchingState: LoadingStates.loaded,
             collection: collection,
           );
+
+          newFetchResultsState[subCollId] = loadedCollection;
         },
       );
     }
 
-    state.collections[collectionId]!.value =
-        state.collections[collectionId]!.value.copyWith(
-      subCollectionFetchedIndex: end,
+    emit(
+      state.copyWith(
+        collections: newFetchResultsState,
+      ),
     );
 
     Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
@@ -162,7 +176,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   CollectionFetchModel? getCollection({
     required String collectionId,
   }) {
-    return state.collections[collectionId]?.value;
+    return state.collections[collectionId];
   }
 
   void addCollection({
@@ -173,13 +187,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       collection: collection,
       collectionFetchingState: LoadingStates.loaded,
       subCollectionFetchedIndex: -1,
-      urlFetchMoreState: LoadingStates.initial,
-      urlList: const [],
     );
 
     final newCollection = {...state.collections};
 
-    newCollection[collection.id] = ValueNotifier(fetchCollectionModel);
+    newCollection[collection.id] = fetchCollectionModel;
 
     emit(
       state.copyWith(
@@ -219,15 +231,14 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       'updatecollection: ${StringUtils.getJsonFormat(updatedCollection.toJson())}',
     );
 
-    final updatedCollectionfetch = prevCollection.value.copyWith(
+    final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
       subCollectionFetchedIndex:
-          prevCollection.value.subCollectionFetchedIndex +
-              fetchSubCollIndexAdded,
+          prevCollection.subCollectionFetchedIndex + fetchSubCollIndexAdded,
     );
 
     final newState = {...state.collections};
-    newState[updatedCollection.id] = ValueNotifier(updatedCollectionfetch);
+    newState[updatedCollection.id] = updatedCollectionfetch;
 
     emit(
       state.copyWith(
@@ -236,14 +247,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
 
     Logger.printLog(
-      'updatecollectionafter: ${StringUtils.getJsonFormat(prevCollection.value.collection?.toJson())}',
+      'updatecollectionafter: ${StringUtils.getJsonFormat(prevCollection.collection?.toJson())}',
     );
   }
 
-
-
   // <--------------------------- URLS --------------------------------->
-
 
   Future<void> fetchMoreUrls({
     required String collectionId,
@@ -263,13 +271,14 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       moreUrls.add(urlFetchModel);
     }
 
-    final fetchCollection = state.collections[collectionId]!;
-
-    final newUrls = [...fetchCollection.value.urlList, ...moreUrls];
-
-    fetchCollection.value = fetchCollection.value.copyWith(
-      urlList: newUrls,
-      urlFetchMoreState: LoadingStates.loading,
+    final currentUrlsState = state.collectionUrls[collectionId]!;
+    final newUrls = [...currentUrlsState, ...moreUrls];
+    final updatedUrlsState = {...state.collectionUrls};
+    updatedUrlsState[collectionId] = newUrls;
+    emit(
+      state.copyWith(
+        collectionUrls: updatedUrlsState,
+      ),
     );
 
     final fetchedUrlsWithData = <UrlFetchStateModel>[];
@@ -298,7 +307,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       );
     }
 
-    final fetchedUrls = [...fetchCollection.value.urlList];
+    final fetchedUrls = [...newUrls];
 
     fetchedUrls.replaceRange(
       fetchedUrls.length - urlIds.length,
@@ -306,9 +315,12 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       fetchedUrlsWithData,
     );
 
-    fetchCollection.value = fetchCollection.value.copyWith(
-      urlList: fetchedUrls,
-      urlFetchMoreState: LoadingStates.loaded,
+    final updatedFetchedUrlsState = {...state.collectionUrls};
+    updatedFetchedUrlsState[collectionId] = fetchedUrls;
+    emit(
+      state.copyWith(
+        collectionUrls: updatedFetchedUrlsState,
+      ),
     );
   }
 
@@ -316,30 +328,34 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required UrlModel url,
     required CollectionModel collection,
   }) {
-    final fetchedCollection = state.collections[collection.id]!;
-
     final fetchedUrl = UrlFetchStateModel(
       collectionId: collection.id,
       loadingStates: LoadingStates.loaded,
       urlModel: url,
     );
 
-    final fetchedUrlList = [fetchedUrl, ...fetchedCollection.value.urlList];
+    final updatedUrlsState = {...state.collectionUrls};
 
-    fetchedCollection.value = fetchedCollection.value.copyWith(
-      collection: collection,
-      urlList: fetchedUrlList,
+    final updatedUrlsList = [
+      fetchedUrl,
+      ...updatedUrlsState[url.collectionId]!,
+    ];
+
+    updatedUrlsState[url.collectionId] = updatedUrlsList;
+
+    emit(
+      state.copyWith(
+        collectionUrls: updatedUrlsState,
+      ),
     );
   }
 
   void updateUrl({required UrlModel url}) {
-    final fetchedCollection = state.collections[url.collectionId];
+    final fetchedUrlList = state.collectionUrls[url.collectionId];
 
-    if (fetchedCollection == null) {
+    if (fetchedUrlList == null) {
       return;
     }
-
-    final fetchedUrlList = [...fetchedCollection.value.urlList];
 
     final index = fetchedUrlList.indexWhere(
       (element) {
@@ -350,15 +366,22 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       },
     );
 
+    final updatedList = [...fetchedUrlList];
+
     if (index != -1) {
-      fetchedUrlList[index] = fetchedUrlList[index].copyWith(
+      updatedList[index] = updatedList[index].copyWith(
         urlModel: url,
       );
     }
 
-    fetchedCollection.value = fetchedCollection.value.copyWith(
-      // collection: collection,
-      urlList: fetchedUrlList,
+    final updatedUrlsState = {...state.collectionUrls};
+
+    updatedUrlsState[url.collectionId] = updatedList;
+
+    emit(
+      state.copyWith(
+        collectionUrls: updatedUrlsState,
+      ),
     );
   }
 
@@ -366,9 +389,13 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required UrlModel url,
     required CollectionModel? collectionModel,
   }) {
-    final fetchedCollection = state.collections[url.collectionId]!;
+    final fetchedUrlList = state.collectionUrls[url.collectionId];
 
-    final fetchedUrlList = [...fetchedCollection.value.urlList]..removeWhere(
+    if (fetchedUrlList == null) {
+      return;
+    }
+
+    final updatedList = [...fetchedUrlList]..removeWhere(
         (element) {
           if (element.urlModel != null && element.urlModel!.id == url.id) {
             return true;
@@ -377,9 +404,14 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         },
       );
 
-    fetchedCollection.value = fetchedCollection.value.copyWith(
-      urlList: fetchedUrlList,
-      collection: collectionModel,
+    final updatedUrlsState = {...state.collectionUrls};
+
+    updatedUrlsState[url.collectionId] = updatedList;
+
+    emit(
+      state.copyWith(
+        collectionUrls: updatedUrlsState,
+      ),
     );
   }
 }

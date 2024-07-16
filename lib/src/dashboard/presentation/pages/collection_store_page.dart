@@ -63,18 +63,13 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
           final collectionCubit = context.read<CollectionsCubit>();
           final globalUserCubit = context.read<GlobalUserCubit>();
 
-          final fetchCollectionV = state.collections[widget.collectionId];
+          final fetchCollection = state.collections[widget.collectionId];
 
-          if (fetchCollectionV == null) {
+          if (fetchCollection == null) {
             return Container();
           }
 
-          return ValueListenableBuilder<CollectionFetchModel?>(
-            valueListenable: state.collections[widget.collectionId]!,
-            builder: (ctx, fetchCollection, _) {
-              if (fetchCollection == null) {
-                return Container();
-              }
+          
 
               Logger.printLog('Updated collection store page');
 
@@ -341,8 +336,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                   ],
                 ),
               );
-            },
-          );
+          
+          
         },
       ),
     );
