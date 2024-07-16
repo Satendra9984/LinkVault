@@ -32,6 +32,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       imageUrl,
       maxSize: maxSize,
       compressImage: compressImage,
+      quality: 75,
     );
   }
 
@@ -56,6 +57,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       imageUrl,
       maxSize: 2 * 102 * 1024,
       compressImage: compressImage,
+      quality: 75,
     ).then(
       (imageBytes) async {
         // final imagesData2 = {...state.imagesData};

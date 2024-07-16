@@ -45,9 +45,9 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController()..addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController = ScrollController()..addListener(_onScroll);
       _fetchMoreUrls();
     });
   }
@@ -69,17 +69,24 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
 
     final start = fetchCollection.urlList.length;
     const fetchMore = 20;
-    final end = min(
-      fetchCollection.urlList.length - 1 + fetchMore,
-      fetchCollection.collection!.urls.length - 1,
-    );
+    var end = start + fetchMore;
+
+    if (fetchCollection.collection != null &&
+        fetchCollection.collection!.urls.isNotEmpty) {
+      end = min(end, fetchCollection.collection!.urls.length);
+    } else if (fetchCollection.collection != null &&
+        fetchCollection.collection!.urls.isEmpty) {
+      end = 0;
+    } else {
+      end = 0;
+    }
 
     Logger.printLog(
       '${fetchCollection.collection?.urls.length}, start: $start, end: $end',
     );
 
     final urlIds = <String>[];
-    if (start > -1 && end >= start) {
+    if (start > -1 && end > start) {
       urlIds.addAll(
         fetchCollection.collection!.urls.sublist(start, end),
       );
@@ -192,7 +199,11 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
 
           return UrlFaviconLogoWidget(
             onPress: () => widget.onUrlTap(url.urlModel!),
-            onDoubleTap: () => widget.onUrlDoubleTap(url.urlModel!),
+            onDoubleTap: (urlMetaData) => widget.onUrlDoubleTap(
+              url.urlModel!.copyWith(
+                metaData: urlMetaData,
+              ),
+            ),
             urlModelData: url.urlModel!,
           );
         },

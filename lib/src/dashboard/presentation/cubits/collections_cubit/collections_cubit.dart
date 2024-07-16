@@ -328,7 +328,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }
 
   void updateUrl({required UrlModel url}) {
-    final fetchedCollection = state.collections[url.collectionId]!;
+    final fetchedCollection = state.collections[url.collectionId];
+
+    if (fetchedCollection == null) {
+      return;
+    }
 
     final fetchedUrlList = [...fetchedCollection.value.urlList];
 

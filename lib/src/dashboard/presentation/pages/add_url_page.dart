@@ -47,16 +47,16 @@ class _AddUrlPageState extends State<AddUrlPage> {
   Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
-      var urlMetaData = _previewMetaData.value != null
+      final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
               title: _urlNameController.text,
             );
 
-      final urlMetaDataJson = urlMetaData.toJson();
+      // final urlMetaDataJson = urlMetaData.toJson();
 
-      urlMetaDataJson['banner_image'] = null;
-      urlMetaData = UrlMetaData.fromJson(urlMetaDataJson);
+      // urlMetaDataJson['banner_image'] = null;
+      // urlMetaData = UrlMetaData.fromJson(urlMetaDataJson);
 
       final createdAt = DateTime.now().toUtc();
 
@@ -93,10 +93,10 @@ class _AddUrlPageState extends State<AddUrlPage> {
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
 
-    Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
-      Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+      // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
       _previewMetaData.value = metaData;
       _previewLoadingStates.value = LoadingStates.loaded;
       _previewError.value = null;

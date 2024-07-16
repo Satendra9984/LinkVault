@@ -201,6 +201,9 @@ class UrlParsingService {
     String imageUrl, {
     required int maxSize,
     required bool compressImage,
+    required int quality,
+    bool? autofillPng,
+    (int r, int g, int b)? autofillColor,
   }) async {
     try {
       // Logger.printLog('websiteImageUrl: $imageUrl');
@@ -208,26 +211,51 @@ class UrlParsingService {
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
         final originalImageBytes = response.bodyBytes;
+        // return originalImageBytes;
+        // Logger.printLog(
+        //   '[parsing][original] : $imageUrl, ${originalImageBytes.length}',
+        // );
         if (!compressImage) return originalImageBytes;
-        return getCompressedImage(originalImageBytes, maxSize: maxSize);
+        final compressedImage = await compressImageAsUint8List(
+          originalImageBytes,
+          maxSize: maxSize,
+          quality: quality,
+          autofillPng: autofillPng,
+          autofillColor: autofillColor,
+        );
+        // Logger.printLog(
+        //   '[parsing][compressed] : $imageUrl, ${compressedImage?.length}',
+        // );
+        return compressedImage;
       }
       return null;
     } catch (e) {
       Logger.printLog('error in "fetchImageAsUint8List" $e');
-
       return null;
     }
   }
 
-  static Future<Uint8List?> getCompressedImage(
+  static Future<Uint8List?> compressImageAsUint8List(
     Uint8List originalImageBytes, {
     required int maxSize,
+    required int quality,
+    required bool? autofillPng,
+    (int r, int g, int b)? autofillColor,
   }) async {
-    final compressedImage = await ImageUtils.compressImage(originalImageBytes);
+    try {
+      // Logger.printLog('websiteImageUrl: $imageUrl');
+      final compressedImage = await ImageUtils.compressImage(
+        originalImageBytes,
+        quality: quality,
+        autofillPng: autofillPng ?? false,
+        autofillColor: autofillColor,
+      );
 
-    return compressedImage == null || compressedImage.length > maxSize
-        ? null
-        : compressedImage;
+      return compressedImage;
+    } catch (e) {
+      Logger.printLog('error in "fetchImageAsUint8List" $e');
+      return null;
+    }
   }
 
 // Function to handle relative URLs
@@ -268,12 +296,16 @@ class UrlParsingService {
     if (websiteLogoUrl != null) {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;
-      Logger.printLog('logoUrl : $websiteLogoUrl');
       final faviconUint = await fetchImageAsUint8List(
         websiteLogoUrl,
-        maxSize: 50000,
-        compressImage: false,
+        maxSize: 100000,
+        compressImage: true,
+        quality: 80,
+        autofillPng: true,
       );
+      // Logger.printLog(
+      //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
+      // );
       if (faviconUint != null) {
         metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
       }
@@ -288,8 +320,12 @@ class UrlParsingService {
         imageUrl,
         maxSize: 150000,
         compressImage: true,
+        quality: 75,
+        autofillPng: false,
       );
-
+      // Logger.printLog(
+      //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
+      // );
       if (bannerImage != null) {
         metaData['banner_image'] =
             StringUtils.convertUint8ListToBase64(bannerImage);

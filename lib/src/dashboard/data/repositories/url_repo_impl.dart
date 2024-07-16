@@ -28,7 +28,14 @@ class UrlRepoImpl {
   }) async {
     // [TODO] : Add urlData in db
     try {
-      final addedUrlData = await _remoteDataSourcesImpl.addUrl(urlData);
+      final urlDataJson = urlData.toJson();
+      urlDataJson['favicon'] = null;
+      urlDataJson['banner_image'] = null;
+
+      final optimisedUrlData = UrlModel.fromJson(urlDataJson);
+
+      final addedUrlData =
+          await _remoteDataSourcesImpl.addUrl(optimisedUrlData);
 
       final urlList = collection.urls..insert(0, addedUrlData.id);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
@@ -62,7 +69,7 @@ class UrlRepoImpl {
       if (urlMetaData != null) {
         final metaDataJson = urlMetaData.toJson();
         metaDataJson['banner_image'] = null;
-
+        metaDataJson['favicon'] = null;
         urlMetaData = UrlMetaData.fromJson(metaDataJson);
       }
 
