@@ -3,15 +3,14 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class UrlFetchStateModel extends Equatable {
-  final String collectionId;
-  final UrlModel? urlModel;
-  final LoadingStates loadingStates;
 
   const UrlFetchStateModel({
     required this.collectionId,
-    this.urlModel,
-    required this.loadingStates,
+    required this.loadingStates, this.urlModel,
   });
+  final String collectionId;
+  final UrlModel? urlModel;
+  final LoadingStates loadingStates;
 
   @override
   List<Object?> get props => [

@@ -127,8 +127,8 @@ class ImageUtils {
     var totalBrightness = 0;
     var pixelCount = 0;
 
-    for (int y = 0; y < image.height; y++) {
-      for (int x = 0; x < image.width; x++) {
+    for (var y = 0; y < image.height; y++) {
+      for (var x = 0; x < image.width; x++) {
         // Get the pixel color
         final pixel = image.getPixel(x, y);
 
@@ -152,9 +152,9 @@ class ImageUtils {
     const threshold = 128; // You may adjust this value
 
     if (averageBrightness > threshold) {
-      return "black";
+      return 'black';
     } else {
-      return "white";
+      return 'white';
     }
   }
 }

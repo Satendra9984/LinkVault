@@ -1,17 +1,16 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:math';
+
 import 'package:equatable/equatable.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
-import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 
 part 'collections_state.dart';
 
@@ -39,7 +38,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       return;
     }
 
-    final fetchCollectionModel = CollectionFetchModel(
+    const fetchCollectionModel = CollectionFetchModel(
       collectionFetchingState: LoadingStates.loading,
       subCollectionFetchedIndex: -1,
     );
@@ -101,19 +100,36 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String collectionId,
     required String userId,
     required bool isRootCollection,
-    // required int start,
-    required int end,
-    required List<String> subCollectionIds,
   }) async {
     // assuming not collections in the state
     Logger.printLog(
-      'FetchedMoreBefore: ${state.collections.keys.length}, ids: ${subCollectionIds}',
+      'FetchedMoreBefore: ${state.collections.keys.length}, ids: ',
     );
 
-    final moreCollections = <String, CollectionFetchModel>{};
+    final fetchedCollection = state.collections[collectionId];
 
-    for (final subCollId in subCollectionIds) {
-      final fetchCollectionModel = CollectionFetchModel(
+    if (fetchedCollection == null ||
+        fetchedCollection.collectionFetchingState == LoadingStates.loading ||
+        fetchedCollection.collection == null) {
+      return;
+    }
+
+    final subCollections = fetchedCollection.collection!.subcollections;
+
+    if (fetchedCollection.subCollectionFetchedIndex >=
+        subCollections.length - 1) {
+      return;
+    }
+
+    final start = fetchedCollection.subCollectionFetchedIndex + 1;
+
+    final end = min(subCollections.length, start + 20);
+
+    final moreSubcollectionIds = [...subCollections.sublist(start, end)];
+
+    final moreCollections = <String, CollectionFetchModel>{};
+    for (final subCollId in moreSubcollectionIds) {
+      const fetchCollectionModel = CollectionFetchModel(
         collectionFetchingState: LoadingStates.loading,
         subCollectionFetchedIndex: -1,
       );
@@ -122,6 +138,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     }
 
     final newCollection = {...state.collections, ...moreCollections};
+    newCollection[collectionId] = fetchedCollection.copyWith(
+      subCollectionFetchedIndex: end - 1,
+    );
 
     emit(
       state.copyWith(
@@ -131,7 +150,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     /// NOW WILL FETCH AND UPDATE THE STATE AT ONCE FOR EACH SUBCOLLECTION
     final newFetchResultsState = {...state.collections};
-    for (final subCollId in subCollectionIds) {
+    for (final subCollId in moreSubcollectionIds) {
       final fetchCollectionModel = moreCollections[subCollId]!;
 
       final fetchedCollection = isRootCollection
@@ -227,9 +246,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }) {
     final prevCollection = state.collections[updatedCollection.id]!;
 
-    Logger.printLog(
-      'updatecollection: ${StringUtils.getJsonFormat(updatedCollection.toJson())}',
-    );
+    // Logger.printLog(
+    //   'updatecollection: ${StringUtils.getJsonFormat(prevCollection.collection?.toJson())}',
+    // );
 
     final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
@@ -246,22 +265,38 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
-    Logger.printLog(
-      'updatecollectionafter: ${StringUtils.getJsonFormat(prevCollection.collection?.toJson())}',
-    );
+    // Logger.printLog(
+    //   'updatecollectionafter: ${StringUtils.getJsonFormat(updatedCollectionfetch.collection?.toJson())}',
+    // );
   }
 
   // <--------------------------- URLS --------------------------------->
 
-  Future<void> fetchMoreUrls({
-    required String collectionId,
-    required String userId,
-    // required int start,
-    required int end,
-    required List<String> urlIds,
-  }) async {
-    final moreUrls = <UrlFetchStateModel>[];
+  Future<void> fetchMoreUrls(
+      {required String collectionId, required String userId,}) async {
+    final fetchCollection = state.collections[collectionId];
 
+    if (fetchCollection == null ||
+        fetchCollection.collectionFetchingState == LoadingStates.loading ||
+        fetchCollection.collection == null) {
+      return;
+    }
+
+    final urlsList = fetchCollection.collection!.urls;
+    final alreadyFetchedUrls = [
+      ...state.collectionUrls[collectionId] ?? <UrlFetchStateModel>[],
+    ];
+
+    if (alreadyFetchedUrls.length >= urlsList.length) {
+      return;
+    }
+
+    final start = alreadyFetchedUrls.length;
+    final end = min(urlsList.length, start + 20);
+
+    final urlIds = urlsList.sublist(start, end);
+
+    final moreUrls = <UrlFetchStateModel>[];
     for (final _ in urlIds) {
       final urlFetchModel = UrlFetchStateModel(
         collectionId: collectionId,
@@ -271,8 +306,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       moreUrls.add(urlFetchModel);
     }
 
-    final currentUrlsState = state.collectionUrls[collectionId]!;
-    final newUrls = [...currentUrlsState, ...moreUrls];
+    final newUrls = [...alreadyFetchedUrls, ...moreUrls];
     final updatedUrlsState = {...state.collectionUrls};
     updatedUrlsState[collectionId] = newUrls;
     emit(

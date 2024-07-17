@@ -1,11 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
-import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
-import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';

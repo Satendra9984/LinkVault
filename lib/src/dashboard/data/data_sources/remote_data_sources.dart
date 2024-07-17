@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
@@ -138,6 +137,7 @@ class RemoteDataSourcesImpl {
           await _firestore.collection(urlDataCollection).doc(urlId).get();
       final data = response.data();
       if (data == null) {
+        Logger.printLog('Url data is null');
         throw ServerException(
           message: 'Something Went Wrong',
           statusCode: 400,

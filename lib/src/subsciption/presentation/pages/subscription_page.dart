@@ -6,17 +6,17 @@ import 'package:link_vault/core/common/constants/user_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/core/common/widgets/container_button.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:lottie/lottie.dart';
 
 class SubscriptionPage extends StatefulWidget {
-  static const routeName = '/subscriptionPage';
   const SubscriptionPage({super.key});
+  static const routeName = '/subscriptionPage';
 
   @override
   State<SubscriptionPage> createState() => _SubscriptionPageState();
@@ -44,7 +44,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           Expanded(
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: BlocConsumer<SubscriptionCubit, SubscriptionState>(
                 listener: (context, state) async {
                   if (state.videoWatchingStates == LoadingStates.loaded) {
@@ -74,19 +74,19 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       const Text(
                         'Help Us Keeping this Platform Free',
                         style: TextStyle(
-                          fontSize: 24.0,
+                          fontSize: 24,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 8.0),
+                      const SizedBox(height: 8),
                       const Text(
                         'Just watch a video and use the app for $rewardedAdCreditLimit days without any interruption.',
                         style: TextStyle(
-                          fontSize: 16.0,
+                          fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(height: 16.0),
+                      const SizedBox(height: 16),
                       if (state.loadingStates == LoadingStates.initial)
                         ListTile(
                           onTap: subCubit.loadRewardedAd,
@@ -98,12 +98,12 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           // tileColor: Colors.green.shade300.withOpacity(0.5),
                           leading: const Icon(
                             Icons.repeat,
-                            size: 32.0,
+                            size: 32,
                           ),
                           title: const Text(
                             'Tap to Watch Again',
                             style: TextStyle(
-                              fontSize: 20.0,
+                              fontSize: 20,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -112,13 +112,13 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                         const ListTile(
                           leading: Icon(
                             Icons.video_library_rounded,
-                            size: 32.0,
+                            size: 32,
                             // color: ColourPallette.mountainMeadow,
                           ),
                           title: Text(
                             'Loading Video...',
                             style: TextStyle(
-                              fontSize: 20.0,
+                              fontSize: 20,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -178,7 +178,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           icon: const Text(
                             'Go To Dashboard',
                             style: TextStyle(
-                              fontSize: 18.0,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: ColourPallette.mountainMeadow,
                             ),
@@ -216,7 +216,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         'Thanks for Supporting Us.',
         style: TextStyle(
           fontWeight: FontWeight.w700,
-          fontSize: 20.0,
+          fontSize: 20,
         ),
       ),
       content: const Column(
@@ -226,7 +226,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             'Now you can enjoy $rewardedAdCreditLimit days of uniterrupted usage.',
             style: TextStyle(
               fontWeight: FontWeight.w400,
-              fontSize: 16.0,
+              fontSize: 16,
             ),
             textAlign: TextAlign.center,
           ),
@@ -252,7 +252,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     MaterialPageRoute(
                       builder: (context) => const DashboardHomePage(),
                     ),
-                    (route) => false),
+                    (route) => false,),
               ),
             ),
           ],

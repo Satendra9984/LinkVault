@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 class OpenOtherApps {
   OpenOtherApps._();
 
-  static void openGmailApp() async {
+  static Future<void> openGmailApp() async {
 // Replace with your email address
     // const email = 'example@gmail.com';
     const email = 'googlegmail://';

@@ -1,11 +1,9 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
-import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
 

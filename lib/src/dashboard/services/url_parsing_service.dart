@@ -1,17 +1,13 @@
 // ignore_for_file: public_member_api_docs
 
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
-import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:path_provider/path_provider.dart';
 
 class UrlParsingService {
 // Function to fetch webpage content
@@ -175,7 +171,7 @@ class UrlParsingService {
   static String extractWebsiteNameFromUrlString(String url) {
     try {
       final uri = Uri.parse(url);
-      String host = uri.host;
+      var host = uri.host;
 
       // Remove 'www.' if present
       if (host.startsWith('www.')) {

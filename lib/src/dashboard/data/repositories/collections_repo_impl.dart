@@ -4,12 +4,10 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
     required RemoteDataSourcesImpl remoteDataSourceImpl,
-    UrlRepoImpl? urlRepoImpl,
   }) : _remoteDataSourcesImpl = remoteDataSourceImpl;
   // _urlRepoImpl = urlRepoImpl ??
   //     UrlRepoImpl(remoteDataSourceImpl: remoteDataSourceImpl);
@@ -214,15 +212,6 @@ class CollectionsRepoImpl {
     // [TODO] : Fetch Subcollection
     try {
       final collection = await _remoteDataSourcesImpl.fetchUrl(urlId);
-
-      // if (collection == null) {
-      //   return Left(
-      //     ServerFailure(
-      //       message: 'Something Went Wrong. Collection Not Found',
-      //       statusCode: 400,
-      //     ),
-      //   );
-      // }
 
       // Now fetch subcollections
 

@@ -26,7 +26,7 @@ class DashboardHomePage extends StatelessWidget {
             collectionsRepoImpl: CollectionsRepoImpl(
                 remoteDataSourceImpl: RemoteDataSourcesImpl(
               firestore: FirebaseFirestore.instance,
-            )),
+            ),),
           ),
         ),
         // [TODO] : Create a CRUD cubit for managing crud operation a single collection

@@ -1,24 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/data/enums/collection_loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
-import 'package:path/path.dart';
 
 class UpdateUrlPage extends StatefulWidget {
   const UpdateUrlPage({
@@ -124,7 +117,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
     );
     _previewLoadingStates.value = LoadingStates.loaded;
-    await _showPreviewBottomSheet(this.context);
+    await _showPreviewBottomSheet(context);
   }
 
   @override

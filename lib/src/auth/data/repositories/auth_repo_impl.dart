@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';

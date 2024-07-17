@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:link_vault/core/common/constants/user_constants.dart';
@@ -66,7 +65,7 @@ class AuthRemoteDataSourcesImpl {
         );
       }
     } catch (e) {
-      debugPrint('[log] auth: ${e}');
+      debugPrint('[log] auth: $e');
 
       throw LocalAuthException(
         message: 'Could Not Authenticate',

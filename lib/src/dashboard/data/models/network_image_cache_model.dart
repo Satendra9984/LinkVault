@@ -1,5 +1,6 @@
-import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:equatable/equatable.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 

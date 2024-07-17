@@ -1,34 +1,24 @@
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collection_icon_button.dart';
 
 class CollectionsListWidget extends StatefulWidget {
   const CollectionsListWidget({
-    required this.collectionFetchModelNotifier,
-    required this.onAddFolderTap,
-    required this.onFolderTap,
-    required this.onFolderDoubleTap,
+    required this.collectionFetchModel,
     super.key,
   });
 
-  final ValueNotifier<CollectionFetchModel> collectionFetchModelNotifier;
-  final void Function() onAddFolderTap;
-  final void Function(CollectionModel subCollection) onFolderTap;
-  final void Function(CollectionModel subCollection) onFolderDoubleTap;
+  final CollectionFetchModel collectionFetchModel;
 
   @override
   State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
@@ -52,41 +42,12 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   }
 
   void _fetchMoreCollections() {
-    final fetchCollection = widget.collectionFetchModelNotifier.value;
-
-    if (fetchCollection.collectionFetchingState == LoadingStates.loading) {
-      return;
-    } else if (fetchCollection.subCollectionFetchedIndex >=
-        fetchCollection.collection!.subcollections.length - 1) {
-      return;
-    }
-
-    final start = fetchCollection.subCollectionFetchedIndex + 1;
-
-    final end = min(
-      fetchCollection.subCollectionFetchedIndex + 20,
-      fetchCollection.collection!.subcollections.length - 1,
-    );
-
-    Logger.printLog(
-      '${fetchCollection.subCollectionFetchedIndex}, start: $start, end: $end',
-    );
-
-    final subCollectionIds = <String>[];
-    if (start > -1 &&
-        end < fetchCollection.collection!.subcollections.length &&
-        end >= start) {
-      subCollectionIds.addAll(
-        fetchCollection.collection!.subcollections.sublist(start, end),
-      );
-    }
+    final fetchCollection = widget.collectionFetchModel;
 
     context.read<CollectionsCubit>().fetchMoreSubCollections(
           collectionId: fetchCollection.collection!.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: false,
-          end: end,
-          subCollectionIds: subCollectionIds,
         );
   }
 
@@ -94,9 +55,29 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   Widget build(BuildContext context) {
     const collectionIconWidth = 120.0;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: ColourPallette.white,
+        surfaceTintColor: ColourPallette.mystic,
+        title: Text(
+          widget.collectionFetchModel.collection!.name,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: ColourPallette.salemgreen,
-        onPressed: widget.onAddFolderTap,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => AddCollectionPage(
+                parentCollection: widget.collectionFetchModel.collection!,
+              ),
+            ),
+          );
+        },
         label: const Text(
           'Add Collection',
           style: TextStyle(
@@ -116,55 +97,110 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.topLeft,
-        child: ValueListenableBuilder(
-          valueListenable: widget.collectionFetchModelNotifier,
-          builder: (context, fetchCollectionModel, _) {
-            if (fetchCollectionModel.collection != null &&
-                fetchCollectionModel.collection!.subcollections.isEmpty) {
+        child: BlocConsumer<CollectionsCubit, CollectionsState>(
+          listener: (context, state) {},
+          builder: (context, state) {
+            final fetchCollection =
+                state.collections[widget.collectionFetchModel.collection!.id]!;
+
+            if (fetchCollection.collection!.subcollections.isEmpty ||
+                fetchCollection.subCollectionFetchedIndex < 0) {
               return Center(
                 child: SvgPicture.asset(
                   'assets/images/collections.svg',
                 ),
               );
             }
-            final availableSubCollections =
-                fetchCollectionModel.subCollectionFetchedIndex <= 0
-                    ? 0
-                    : fetchCollectionModel.subCollectionFetchedIndex;
-            return AlignedGridView.extent(
+            final availableSubCollections = <CollectionFetchModel>[];
+
+            for (var i = 0;
+                i <= fetchCollection.subCollectionFetchedIndex;
+                i++) {
+              final subCollId = fetchCollection.collection!.subcollections[i];
+              final subCollection = state.collections[subCollId];
+
+              if (subCollection == null) continue;
+
+              availableSubCollections.add(subCollection);
+            }
+
+            return SingleChildScrollView(
               controller: _scrollController,
-              shrinkWrap: true,
-              itemCount: availableSubCollections,
-              maxCrossAxisExtent: collectionIconWidth,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              itemBuilder: (context, index) {
-                final fetchCollectionCubit = context.read<CollectionsCubit>();
-                final subCollection = fetchCollectionCubit.getCollection(
-                  collectionId:
-                      fetchCollectionModel.collection!.subcollections[index],
-                )!;
+              child: Column(
+                children: [
+                  if (availableSubCollections.isEmpty)
+                    Center(
+                      child: SvgPicture.asset(
+                        'assets/images/collections.svg',
+                      ),
+                    )
+                  else
+                    AlignedGridView.extent(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: availableSubCollections.length,
+                      maxCrossAxisExtent: collectionIconWidth,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      itemBuilder: (context, index) {
+                        // final fetchCollectionCubit = context.read<CollectionsCubit>();
+                        final subCollection = availableSubCollections[index];
 
-                if (subCollection.collectionFetchingState ==
-                    LoadingStates.loading) {
-                  return const CircularProgressIndicator(
-                    backgroundColor: ColourPallette.black,
-                  );
-                } else if (subCollection.collectionFetchingState ==
-                    LoadingStates.errorLoading) {
-                  return const Icon(
-                    Icons.error,
-                    color: Colors.red,
-                  );
-                }
+                        if (subCollection.collectionFetchingState ==
+                            LoadingStates.loading) {
+                          return Container(
+                            width: 120,
+                            height: 120,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 60,
+                              horizontal: 60,
+                            ),
+                            decoration:
+                                const BoxDecoration(shape: BoxShape.circle),
+                            child: const CircularProgressIndicator(
+                              backgroundColor: ColourPallette.grey,
+                              color: ColourPallette.white,
+                            ),
+                          );
+                        } else if (subCollection.collectionFetchingState ==
+                            LoadingStates.errorLoading) {
+                          return const Icon(
+                            Icons.error,
+                            color: Colors.red,
+                          );
+                        }
 
-                return FolderIconButton(
-                  collection: subCollection.collection!,
-                  onDoubleTap: () =>
-                      widget.onFolderDoubleTap(subCollection.collection!),
-                  onPress: () => widget.onFolderTap(subCollection.collection!),
-                );
-              },
+                        return FolderIconButton(
+                          collection: subCollection.collection!,
+                          onDoubleTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => UpdateCollectionPage(
+                                  collection: subCollection.collection!,
+                                ),
+                              ),
+                            );
+                          },
+                          onPress: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => FolderCollectionPage(
+                                  collectionId: subCollection.collection!.id,
+                                  isRootCollection: false,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+
+                  // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
+                  const SizedBox(height: 120),
+                ],
+              ),
             );
           },
         ),

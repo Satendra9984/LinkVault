@@ -6,21 +6,19 @@ import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 
 class CollectionFetchModel extends Equatable {
-  final CollectionModel? collection;
-  final LoadingStates collectionFetchingState;
-  final int subCollectionFetchedIndex;
 
   // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
   // final LoadingStates urlFetchMoreState;
   // final List<UrlFetchStateModel> urlList;
 
-  CollectionFetchModel({
-    this.collection,
-    required this.collectionFetchingState,
-    required this.subCollectionFetchedIndex,
+  const CollectionFetchModel({
+    required this.collectionFetchingState, required this.subCollectionFetchedIndex, this.collection,
     // required this.urlFetchMoreState,
     // required this.urlList,
   });
+  final CollectionModel? collection;
+  final LoadingStates collectionFetchingState;
+  final int subCollectionFetchedIndex;
 
   @override
   List<Object?> get props => [
