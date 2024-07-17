@@ -6,34 +6,32 @@ import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 
 class CollectionFetchModel extends Equatable {
+
+  // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
+  // final LoadingStates urlFetchMoreState;
+  // final List<UrlFetchStateModel> urlList;
+
+  const CollectionFetchModel({
+    required this.collectionFetchingState, required this.subCollectionFetchedIndex, this.collection,
+    // required this.urlFetchMoreState,
+    // required this.urlList,
+  });
   final CollectionModel? collection;
   final LoadingStates collectionFetchingState;
   final int subCollectionFetchedIndex;
-
-  // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
-  final LoadingStates urlFetchMoreState;
-  final List<UrlFetchStateModel> urlList;
-
-  CollectionFetchModel({
-    this.collection,
-    required this.collectionFetchingState,
-    required this.subCollectionFetchedIndex,
-    required this.urlFetchMoreState,
-    required this.urlList,
-  });
 
   @override
   List<Object?> get props => [
         collection,
         collectionFetchingState,
         subCollectionFetchedIndex,
-        urlFetchMoreState,
-        urlList,
+        // urlFetchMoreState,
+        // urlList,
       ];
 
   CollectionFetchModel copyWith({
     CollectionModel? collection,
-    LoadingStates? subCollectionsFetchingState,
+    LoadingStates? collectionFetchingState,
     int? subCollectionFetchedIndex,
     LoadingStates? urlFetchMoreState,
     List<UrlFetchStateModel>? urlList,
@@ -41,11 +39,11 @@ class CollectionFetchModel extends Equatable {
     return CollectionFetchModel(
       collection: collection ?? this.collection,
       collectionFetchingState:
-          subCollectionsFetchingState ?? collectionFetchingState,
+          collectionFetchingState ?? this.collectionFetchingState,
       subCollectionFetchedIndex:
           subCollectionFetchedIndex ?? this.subCollectionFetchedIndex,
-      urlFetchMoreState: urlFetchMoreState ?? this.urlFetchMoreState,
-      urlList: urlList ?? this.urlList,
+      // urlFetchMoreState: urlFetchMoreState ?? this.urlFetchMoreState,
+      // urlList: urlList ?? this.urlList,
     );
   }
 }

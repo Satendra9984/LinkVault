@@ -7,7 +7,7 @@ import 'package:link_vault/core/utils/logger.dart';
 class ImageDecodeManager {
   static Future<ui.Image?> decodeImage(Uint8List imageData) async {
     try {
-      final decodedImage = await decodeImage(imageData);
+      final decodedImage = await _decodeImage(imageData);
 
       return decodedImage;
     } catch (e) {
@@ -22,29 +22,3 @@ class ImageDecodeManager {
     return frame.image;
   }
 }
-
-
-
-
-// class ImageDecodeManager {
-//   static Future<ui.Image?> decodeImage(Uint8List imageData) async {
-//     final receivePort = ReceivePort();
-//     await Isolate.spawn(_decodeIsolate, [receivePort.sendPort, imageData]);
-//     final result = await receivePort.first;
-
-//     if (result is ui.Image) {
-//       return result;
-//     }
-
-//     return null;
-//   }
-
-//   static void _decodeIsolate(List<dynamic> message) async {
-//     final sendPort = message[0] as SendPort;
-//     final imageData = message[1] as Uint8List;
-
-//     final codec = await ui.instantiateImageCodec(imageData);
-//     final frame = await codec.getNextFrame();
-//     sendPort.send(frame.image);
-//   }
-// }

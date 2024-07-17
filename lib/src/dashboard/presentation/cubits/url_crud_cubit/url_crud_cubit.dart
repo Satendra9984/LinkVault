@@ -1,11 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 
@@ -26,7 +22,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   final UrlRepoImpl _urlRepoImpl;
   final CollectionsCubit _collectionsCubit;
 
-  void addUrl({
+  Future<void> addUrl({
     required UrlModel urlData,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.adding));
@@ -63,7 +59,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     });
   }
 
-  void updateUrl({
+  Future<void> updateUrl({
     required UrlModel urlData,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.updating));
@@ -93,7 +89,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     );
   }
 
-  void deleteUrl({
+  Future<void> deleteUrl({
     required UrlModel urlData,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.deleting));

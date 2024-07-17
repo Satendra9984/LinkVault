@@ -17,7 +17,7 @@ class FolderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final folderColor = Colors.green.shade500;
+    const folderColor = ColourPallette.salemgreen;
     return GestureDetector(
       onTap: onPress,
       onDoubleTap: onDoubleTap,
@@ -40,7 +40,7 @@ class FolderIconButton extends StatelessWidget {
             },
             child: const Icon(
               Icons.folder ,
-              size: 72,
+              size: 80,
               color: Colors.white, // This color will be masked by the gradient
             ),
           ),
@@ -62,8 +62,3 @@ class FolderIconButton extends StatelessWidget {
     );
   }
 }
-
-// todo : solve error
-/*E/flutter (23234): [ERROR:flutter/lib/ui/ui_dart_state.cc(198)] Unhandled Exception: RangeError (index): Invalid value: Valid value range is empty: 0
-E/flutter (23234): #0      List.[] (dart:core-patch/growable_array.dart:264:36)
-E/flutter (23234): #1      FetchPreviewDetails.fetch (package:link_vault/app_models/fetch_preview_details.dart:23:55)*/

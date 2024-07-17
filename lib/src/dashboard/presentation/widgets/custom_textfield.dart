@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link_vault/constants.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 
 class CustomCollTextField extends StatefulWidget {

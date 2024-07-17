@@ -14,15 +14,15 @@ Future<Uint8List> compressImage(Uint8List imageBytes) async {
   return compressedBytes;
 }
 
-void main_() async {
-  Uint8List bodyBytes = Uint8List(144966); // Example data
+Future<void> main_() async {
+  final bodyBytes = Uint8List(144966); // Example data
 
   // Compress the image
-  Uint8List compressedBytes = await compressImage(bodyBytes);
+  final compressedBytes = await compressImage(bodyBytes);
 
   // Calculate the size in MB before and after compression
-  double originalSizeInMB = bodyBytes.length / (1024 * 1024);
-  double compressedSizeInMB = compressedBytes.length / (1024 * 1024);
+  final originalSizeInMB = bodyBytes.length / (1024 * 1024);
+  final compressedSizeInMB = compressedBytes.length / (1024 * 1024);
 
   print('Original size in MB: $originalSizeInMB');
   print('Compressed size in MB: $compressedSizeInMB');

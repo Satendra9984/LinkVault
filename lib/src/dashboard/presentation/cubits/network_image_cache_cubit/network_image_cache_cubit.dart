@@ -5,7 +5,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 import 'package:link_vault/src/dashboard/data/services/image_decoder.dart';
 // import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
@@ -36,7 +35,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     );
   }
 
-  void addImage(
+  Future<void> addImage(
     String imageUrl, {
     required bool compressImage,
   }) async {
@@ -79,22 +78,34 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
             loadingState: LoadingStates.errorLoading,
           );
         } else {
-          // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
-
           addedImageModel.value = addedImageModel.value.copyWith(
             imageBytesData: imageBytes,
             loadingState: LoadingStates.loaded,
             // uiImage: uiImage,
           );
+          // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
 
-          _imageQueueManager.addTask(() async {
-            final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
-            addedImageModel.value = addedImageModel.value.copyWith(
-              imageBytesData: imageBytes,
-              loadingState: LoadingStates.loaded,
-              uiImage: uiImage,
-            );
-          });
+          // _imageQueueManager.addTask(
+          //   () async {
+          //     final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
+
+          //     final newImagesstateWithUiImage = {...state.imagesData};
+
+          //     newImagesstateWithUiImage[imageUrl] = ValueNotifier(
+          //       addedImageModel.value.copyWith(
+          //         imageBytesData: imageBytes,
+          //         loadingState: LoadingStates.loaded,
+          //         uiImage: uiImage,
+          //       ),
+          //     );
+
+          //     emit(
+          //       state.copyWith(
+          //         imagesData: newImagesstateWithUiImage,
+          //       ),
+          //     );
+          //   },
+          // );
         }
       },
     );
@@ -118,7 +129,7 @@ class ImageQueueManager {
     _processNext();
   }
 
-  void _processNext() async {
+  Future<void> _processNext() async {
     if (_isProcessing || _taskQueue.isEmpty) return;
 
     _isProcessing = true;
@@ -127,7 +138,7 @@ class ImageQueueManager {
     await task();
 
     _isProcessing = false;
-    _processNext();
+    await _processNext();
   }
 }
 

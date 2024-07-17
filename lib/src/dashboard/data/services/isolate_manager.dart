@@ -48,7 +48,7 @@ class IsolateManager {
 
   Future<Uint8List?> executeTask(
     Future<Uint8List?> Function(String imageUrl,
-            {required int maxSize, required bool compressImage})
+            {required int maxSize, required bool compressImage,})
         customFunction,
     String imageUrl,
     int maxSize,
@@ -98,13 +98,13 @@ class IsolateManager {
 }
 
 class _IsolateTask {
+
+  _IsolateTask(this.customFunction, this.imageUrl, this.maxSize,
+      this.compressImage, this.completer,);
   final Future<Uint8List?> Function(String imageUrl,
-      {required int maxSize, required bool compressImage}) customFunction;
+      {required int maxSize, required bool compressImage,}) customFunction;
   final String imageUrl;
   final int maxSize;
   final bool compressImage;
   final Completer<Uint8List?> completer;
-
-  _IsolateTask(this.customFunction, this.imageUrl, this.maxSize,
-      this.compressImage, this.completer);
 }

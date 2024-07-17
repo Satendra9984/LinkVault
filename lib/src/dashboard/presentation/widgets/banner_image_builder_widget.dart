@@ -4,11 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/image_utils.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 
@@ -47,9 +44,9 @@ class NetworkImageBuilderWidget extends StatelessWidget {
           );
         }
 
-        imageData = cacheCubit.getImageData(imageUrl)!;
+        imageData = cacheCubit.getImageData(imageUrl);
         return ValueListenableBuilder<NetworkImageCacheModel>(
-          valueListenable: imageData,
+          valueListenable: imageData!,
           builder: (ctx, imageData, _) {
             if (imageData.loadingState == LoadingStates.loading) {
               return loadingWidgetBuilder != null

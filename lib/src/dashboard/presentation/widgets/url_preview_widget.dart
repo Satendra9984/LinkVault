@@ -1,12 +1,12 @@
 import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
@@ -277,9 +277,22 @@ class UrlPreviewWidget extends StatelessWidget {
         final bannerImageAspectRatio =
             bannerImageDim.height / bannerImageDim.width;
 
-        final isSideWaysBanner = bannerImageAspectRatio >= 1.5;
+        final isSideWaysBanner =
+            bannerImageAspectRatio >= 1.5 || bannerImageAspectRatio < 0.5;
         var width = bannerImageDim.width;
         var height = bannerImageDim.height;
+
+        // Logger.printLog(
+        //   '[bannerimage] : ${imageData.imageUrl.substring(0, 32)}, ${bannerImageAspectRatio}, screen: $size, ui.Image: ${imageData.uiImage != null}',
+        // );
+
+        if (bannerImageAspectRatio >= 1.5) {
+          width = 100;
+          height = min(80, width * bannerImageAspectRatio);
+        } else {
+          width = 100;
+          height = width * bannerImageAspectRatio;
+        }
 
         if (isSideWaysBanner) {
           return Row(
@@ -291,6 +304,7 @@ class UrlPreviewWidget extends StatelessWidget {
                   onDoubleTap: onDoubleTap,
                   child: Container(
                     alignment: Alignment.topLeft,
+                    // color: Colors.amber,
                     child: ValueListenableBuilder(
                       valueListenable: _showFullDescription,
                       builder: (context, showFullDescription, _) {
@@ -328,20 +342,24 @@ class UrlPreviewWidget extends StatelessWidget {
               ),
               // const SizedBox(width: 8),
               SizedBox(
-                width: 120,
-                height: 120 * min(bannerImageAspectRatio, 1.5),
+                // color: Colors.amber,
+                width: width,
+                height: height,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: (imageData.uiImage != null)
                       ? CustomPaint(
-                          size:
-                              Size(120, 120 * min(bannerImageAspectRatio, 1.5)),
+                          size: Size(width, height),
                           painter: ImagePainter(
                             imageData.uiImage!,
+
+                            // fit: bannerImageAspectRatio>=1.5 ? : ,
+                            fit: BoxFit.cover,
                           ),
                         )
                       : Image.memory(
                           imageBytes,
+                          fit: BoxFit.cover,
                           errorBuilder: (ctx, _, __) {
                             return SvgPicture.memory(
                               imageBytes,
@@ -360,10 +378,18 @@ class UrlPreviewWidget extends StatelessWidget {
           );
         }
 
-        if (bannerImageAspectRatio > 1 && bannerImageAspectRatio < 1.5) {
+        // Logger.printLog(
+        //   '[bannerimage] : ${imageData.imageUrl}, ${bannerImageAspectRatio}, screen: $size',
+        // );
+
+        if (bannerImageAspectRatio >= 0.65 && bannerImageAspectRatio < 1.5) {
           // height is greater
           width = min(size.width - 50, bannerImageDim.width);
           height = min(width * bannerImageAspectRatio, bannerImageDim.height);
+
+          // Logger.printLog(
+          //   '[bannerimage] : imagesize: ${width}, $height',
+          // );
 
           final averageBrightNess = ImageUtils.averageBrightness(
             ImageUtils.extractLowerHalf(imageBytes, fractionLowerHeight: 3 / 4),
@@ -374,16 +400,16 @@ class UrlPreviewWidget extends StatelessWidget {
 
           final linearGradient = LinearGradient(
             colors: [
-              gradientColor.withOpacity(0.75),
-              gradientColor.withOpacity(0.65),
+              gradientColor.withOpacity(0.60),
               gradientColor.withOpacity(0.55),
-              gradientColor.withOpacity(0.5),
-              gradientColor.withOpacity(0.35),
-              gradientColor.withOpacity(0.15),
+              gradientColor.withOpacity(0.50),
+              gradientColor.withOpacity(0.45),
+              gradientColor.withOpacity(0.40),
+              gradientColor.withOpacity(0.05),
             ],
             begin: Alignment.bottomCenter,
             end: Alignment.center,
-            stops: const [0.3, 0.5, 0.65, 0.75, 0.8, 1],
+            stops: const [0.55, 0.6, 0.65, 0.7, 0.75, 1],
             // tileMode: TileMode.decal,
           );
 
@@ -394,15 +420,14 @@ class UrlPreviewWidget extends StatelessWidget {
                 alignment: Alignment.bottomLeft,
                 children: [
                   // Banner Image
-                  SizedBox(
-                    // height: height,
-                    // width: width,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      height: height,
+                      width: width,
                       child: Image.memory(
                         imageBytes,
-                        height: height,
-                        width: width,
+                        // color: Colors.amber,
                         errorBuilder: (ctx, _, __) {
                           return SvgPicture.memory(
                             imageBytes,
@@ -419,13 +444,15 @@ class UrlPreviewWidget extends StatelessWidget {
                   ),
                   // title
                   Container(
-                    height: height * 0.5,
+                    height: height * 0.75,
                     alignment: Alignment.bottomLeft,
                     decoration: BoxDecoration(
                       gradient: linearGradient,
+                    borderRadius: BorderRadius.circular(12),
+
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                    padding:const EdgeInsets.symmetric(
+                      horizontal: 8,
                       vertical: 8,
                     ),
                     child: GestureDetector(
@@ -436,62 +463,63 @@ class UrlPreviewWidget extends StatelessWidget {
                         builder: (context, showFullDescription, _) {
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (urlMetaData.faviconUrl != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: SizedBox(
-                                    height: 56,
-                                    width: 56,
-                                    child: NetworkImageBuilderWidget(
-                                      imageUrl: urlMetaData.faviconUrl!,
-                                      compressImage: false,
-                                      errorWidgetBuilder: () {
-                                        return IconButton(
-                                          onPressed: () => context
-                                              .read<NetworkImageCacheCubit>()
-                                              .addImage(
-                                                urlMetaData.faviconUrl!,
-                                                compressImage: false,
-                                              ),
-                                          icon: const Icon(Icons.circle),
-                                          color: ColourPallette.black,
-                                        );
-                                      },
-                                      successWidgetBuilder: (imageBytes) {
-                                        if (imageData.uiImage != null) {
-                                          return CustomPaint(
-                                            size: const Size(16, 16),
-                                            painter: ImagePainter(
-                                              imageData.uiImage!,
-                                            ),
-                                          );
-                                        }
+                              // if (urlMetaData.faviconUrl != null)
+                              //   ClipRRect(
+                              //     borderRadius: BorderRadius.circular(4),
+                              //     child: SizedBox(
+                              //       height: 56,
+                              //       width: 56,
+                              //       child: NetworkImageBuilderWidget(
+                              //         imageUrl: urlMetaData.faviconUrl!,
+                              //         compressImage: false,
+                              //         errorWidgetBuilder: () {
+                              //           return IconButton(
+                              //             onPressed: () => context
+                              //                 .read<NetworkImageCacheCubit>()
+                              //                 .addImage(
+                              //                   urlMetaData.faviconUrl!,
+                              //                   compressImage: false,
+                              //                 ),
+                              //             icon: const Icon(Icons.circle),
+                              //             color: ColourPallette.black,
+                              //           );
+                              //         },
+                              //         successWidgetBuilder: (imageBytes) {
+                              //           if (imageData.uiImage != null) {
+                              //             return CustomPaint(
+                              //               size: const Size(16, 16),
+                              //               painter: ImagePainter(
+                              //                 imageData.uiImage!,
+                              //               ),
+                              //             );
+                              //           }
+                              //           return ClipRRect(
+                              //             borderRadius:
+                              //                 BorderRadius.circular(4),
+                              //             child: Image.memory(
+                              //               imageBytes.imageBytesData!,
+                              //               fit: BoxFit.contain,
+                              //               errorBuilder: (ctx, _, __) {
+                              //                 try {
+                              //                   final svgImage =
+                              //                       SvgPicture.memory(
+                              //                     urlMetaData.favicon!,
+                              //                   );
 
-                                        return ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          child: Image.memory(
-                                            imageData.imageBytesData!,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (ctx, _, __) {
-                                              try {
-                                                final svgImage =
-                                                    SvgPicture.memory(
-                                                  urlMetaData.favicon!,
-                                                );
+                              //                   return svgImage;
+                              //                 } catch (e) {
+                              //                   return const Icon(Icons.web);
+                              //                 }
+                              //               },
+                              //             ),
+                              //           );
+                              //         },
+                              //       ),
+                              //     ),
+                              //   ),
 
-                                                return svgImage;
-                                              } catch (e) {
-                                                return const Icon(Icons.web);
-                                              }
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
                               RichText(
                                 text: TextSpan(
                                   children: [
@@ -501,8 +529,10 @@ class UrlPreviewWidget extends StatelessWidget {
                                         color: averageBrightNess > 128
                                             ? Colors.grey.shade900
                                             : ColourPallette.white,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: bannerImageAspectRatio < 0.8
+                                            ? 17
+                                            : 20,
                                       ),
                                     ),
                                     TextSpan(
@@ -528,6 +558,7 @@ class UrlPreviewWidget extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   // title
                 ],
               ),
