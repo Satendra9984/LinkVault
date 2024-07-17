@@ -148,19 +148,29 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
 
                         if (subCollection.collectionFetchingState ==
                             LoadingStates.loading) {
-                          return Container(
-                            width: 120,
-                            height: 120,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 60,
-                              horizontal: 60,
-                            ),
-                            decoration:
-                                const BoxDecoration(shape: BoxShape.circle),
-                            child: const CircularProgressIndicator(
-                              backgroundColor: ColourPallette.grey,
-                              color: ColourPallette.white,
-                            ),
+                          return Column(
+                            children: [
+                              Container(
+                                width: 72,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.grey.shade200,
+                                ),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 8,
+                                ),
+                                width: 72,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                            ],
                           );
                         } else if (subCollection.collectionFetchingState ==
                             LoadingStates.errorLoading) {

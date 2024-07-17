@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -101,7 +100,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
         ),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16 , vertical: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -130,14 +129,14 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                       itemBuilder: (context, index) {
                         final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading) {
-                          return const Center(
-                            child: SizedBox(
-                              height: 36,
-                              width: 36,
-                              child: CircularProgressIndicator(
-                                backgroundColor: ColourPallette.grey,
-                                color: ColourPallette.white,
+                        if (url.loadingStates == LoadingStates.loading ) {
+                          return Center(
+                            child: Container(
+                              height: 80,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: Colors.grey.shade300,
                               ),
                             ),
                           );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter/material.dart';
+import 'package:link_vault/core/common/res/colours.dart';
 // import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 
@@ -16,7 +17,7 @@ class FolderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final folderColor = Colors.green.shade500;
+    const folderColor = ColourPallette.salemgreen;
     return GestureDetector(
       onTap: onPress,
       onDoubleTap: onDoubleTap,
@@ -39,7 +40,7 @@ class FolderIconButton extends StatelessWidget {
             },
             child: const Icon(
               Icons.folder ,
-              size: 72,
+              size: 80,
               color: Colors.white, // This color will be masked by the gradient
             ),
           ),

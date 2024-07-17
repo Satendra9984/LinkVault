@@ -76,6 +76,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -152,15 +153,31 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                       itemBuilder: (ctx, index) {
                         final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading) {
-                          return const SizedBox(
-                            height: 56,
-                            width: 56,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                backgroundColor: ColourPallette.black,
+                        if (url.loadingStates == LoadingStates.loading ) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: double.maxFinite,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.grey.shade200,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: size.width*0.75,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(32),
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                            ],
                           );
                         } else if (url.loadingStates ==
                             LoadingStates.errorLoading) {
