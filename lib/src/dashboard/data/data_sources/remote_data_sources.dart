@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
@@ -13,18 +14,55 @@ class RemoteDataSourcesImpl {
 
   final FirebaseFirestore _firestore;
 
+  Future<void> rebaseCollections() async {
+    await _firestore.collection(folderCollections).get().then((qsnp) async {
+      for (final doc in qsnp.docs) {
+        final data = doc.data();
+
+        await _firestore
+            .collection(userCollection)
+            .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
+            .collection(folderCollections)
+            .doc(doc.id)
+            .set(data);
+      }
+    });
+
+    await _firestore.collection(urlDataCollection).get().then(
+      (qsnp) async {
+        for (final doc in qsnp.docs) {
+          doc.data();
+
+          await _firestore
+              .collection(userCollection)
+              .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
+              .collection(urlDataCollection)
+              .doc(doc.id)
+              .set(doc.data());
+        }
+      },
+    );
+  }
+
   /// It will use `userId` to fetch root collection currently
   Future<CollectionModel?> fetchCollection({
     required String collectionId,
+    required String userId,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
       final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
           .collection(folderCollections)
           .doc(collectionId)
           .get();
 
+      // Logger.printLog('path: ${response.reference.path}, ');
+
       final data = response.data();
+      // Logger.printLog(
+      //     'path: ${response.reference.path}, data: ${data == null}');
 
       if (data == null) {
         // That mean user is using it first time may be
@@ -33,6 +71,7 @@ class RemoteDataSourcesImpl {
 
       // user is not using first time
       data['id'] = response.id;
+      // Logger.printLog(StringUtils.getJsonFormat(data));
 
       final collectionModel = CollectionModel.fromJson(data);
 
@@ -49,10 +88,13 @@ class RemoteDataSourcesImpl {
 
   Future<CollectionModel> addCollection({
     required CollectionModel collection,
+    required String userId,
   }) async {
     // [TODO] : Add subcollection in db
     try {
       final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
           .collection(folderCollections)
           .add(collection.toJson());
 
@@ -69,10 +111,13 @@ class RemoteDataSourcesImpl {
 
   Future<CollectionModel> updateCollection({
     required CollectionModel collection,
+    required String userId,
   }) async {
     // [TODO] : Add subcollection in db
     try {
       await _firestore
+          .collection(userCollection)
+          .doc(userId)
           .collection(folderCollections)
           .doc(collection.id)
           .set(collection.toJson());
@@ -90,12 +135,14 @@ class RemoteDataSourcesImpl {
 
   Future<void> deleteCollection({
     required String collectionId,
+    required String userId,
   }) async {
     // [TODO] : delete subcollection in db
     // trying bottom up approach
     try {
       final collection = await fetchCollection(
         collectionId: collectionId,
+        userId: userId,
       );
 
       if (collection == null) {
@@ -108,10 +155,15 @@ class RemoteDataSourcesImpl {
       final subCollections = collection.subcollections;
 
       for (final subcId in subCollections) {
-        await deleteCollection(collectionId: subcId);
+        await deleteCollection(
+          collectionId: subcId,
+          userId: userId,
+        );
       }
 
       await _firestore
+          .collection(userCollection)
+          .doc(userId)
           .collection(folderCollections)
           .doc(collection.id)
           .delete();
@@ -119,7 +171,10 @@ class RemoteDataSourcesImpl {
       final urlList = collection.urls;
 
       for (final urlId in urlList) {
-        await deleteUrlById(urlId);
+        await deleteUrlById(
+          urlId,
+          userId: urlId,
+        );
       }
     } catch (e) {
       throw ServerException(
@@ -129,12 +184,19 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<UrlModel> fetchUrl(String urlId) async {
+  Future<UrlModel> fetchUrl(
+    String urlId, {
+    required String userId,
+  }) async {
     try {
       Logger.printLog('fetchUrl : urlId $urlId');
 
-      final response =
-          await _firestore.collection(urlDataCollection).doc(urlId).get();
+      final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .doc(urlId)
+          .get();
       final data = response.data();
       if (data == null) {
         Logger.printLog('Url data is null');
@@ -156,13 +218,19 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<UrlModel> addUrl(UrlModel urlModel) async {
+  Future<UrlModel> addUrl(
+    UrlModel urlModel, {
+    required String userId,
+  }) async {
     try {
       // Logger.printLog('UrlModel length');
       // Logger.printLog(urlModel.toJson().toString().length.toString());
 
-      final response =
-          await _firestore.collection(urlDataCollection).add(urlModel.toJson());
+      final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .add(urlModel.toJson());
 
       final addedUrlData = urlModel.copyWith(id: response.id);
 
@@ -178,10 +246,13 @@ class RemoteDataSourcesImpl {
 
   Future<UrlModel> updateUrl({
     required UrlModel urlModel,
+    required String userId,
   }) async {
     // [TODO] : Add subcollection in db
     try {
       await _firestore
+          .collection(userCollection)
+          .doc(userId)
           .collection(urlDataCollection)
           .doc(urlModel.id)
           .set(urlModel.toJson());
@@ -199,12 +270,20 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<UrlModel> deleteUrl(UrlModel urlModel) async {
+  Future<UrlModel> deleteUrl(
+    UrlModel urlModel, {
+    required String userId,
+  }) async {
     try {
       // Logger.printLog('UrlModel length');
       Logger.printLog(urlModel.toString());
 
-      await _firestore.collection(urlDataCollection).doc(urlModel.id).delete();
+      await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .doc(urlModel.id)
+          .delete();
 
       return urlModel;
     } catch (e) {
@@ -216,12 +295,20 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<void> deleteUrlById(String urlId) async {
+  Future<void> deleteUrlById(
+    String urlId, {
+    required String userId,
+  }) async {
     try {
       // Logger.printLog('UrlModel length');
       // Logger.printLog(urlId);
 
-      await _firestore.collection(urlDataCollection).doc(urlId).delete();
+      await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .doc(urlId)
+          .delete();
 
       return;
     } catch (e) {

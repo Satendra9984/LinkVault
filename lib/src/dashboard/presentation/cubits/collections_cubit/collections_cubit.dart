@@ -4,8 +4,10 @@ import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
@@ -17,7 +19,9 @@ part 'collections_state.dart';
 class CollectionsCubit extends Cubit<CollectionsState> {
   CollectionsCubit({
     required CollectionsRepoImpl collectionsRepoImpl,
+    required GlobalUserCubit globalUserCubit,
   })  : _collectionsRepoImpl = collectionsRepoImpl,
+        _globalUserCubit = globalUserCubit,
         super(
           const CollectionsState(
             collections: {},
@@ -25,6 +29,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           ),
         );
 
+  final GlobalUserCubit _globalUserCubit;
   final CollectionsRepoImpl _collectionsRepoImpl;
 
   Future<void> fetchCollection({
@@ -60,6 +65,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           )
         : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
             collectionId: collectionId,
+            userId: _globalUserCubit.state.globalUser!.id,
           );
 
     // ignore: cascade_invocations
@@ -102,9 +108,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required bool isRootCollection,
   }) async {
     // assuming not collections in the state
-    Logger.printLog(
-      'FetchedMoreBefore: ${state.collections.keys.length}, ids: ',
-    );
 
     final fetchedCollection = state.collections[collectionId];
 
@@ -126,6 +129,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final end = min(subCollections.length, start + 20);
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
+
+    Logger.printLog(
+      'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
+    );
 
     final moreCollections = <String, CollectionFetchModel>{};
     for (final subCollId in moreSubcollectionIds) {
@@ -160,6 +167,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
             )
           : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
               collectionId: subCollId,
+              userId: _globalUserCubit.state.globalUser!.id,
             );
 
       // ignore: cascade_invocations
@@ -272,8 +280,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   // <--------------------------- URLS --------------------------------->
 
-  Future<void> fetchMoreUrls(
-      {required String collectionId, required String userId,}) async {
+  Future<void> fetchMoreUrls({
+    required String collectionId,
+    required String userId,
+  }) async {
     final fetchCollection = state.collections[collectionId];
 
     if (fetchCollection == null ||
@@ -317,7 +327,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final fetchedUrlsWithData = <UrlFetchStateModel>[];
     for (final urlId in urlIds) {
-      final fetchedUrl = await _collectionsRepoImpl.fetchUrl(urlId: urlId);
+      final fetchedUrl = await _collectionsRepoImpl.fetchUrl(
+        urlId: urlId,
+        userId: _globalUserCubit.state.globalUser!.id,
+      );
 
       // ignore: cascade_invocations
       fetchedUrl.fold(

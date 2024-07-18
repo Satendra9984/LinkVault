@@ -11,6 +11,7 @@ import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/c
 import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UrlsPreviewListWidget extends StatefulWidget {
@@ -153,7 +154,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                       itemBuilder: (ctx, index) {
                         final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading ) {
+                        if (url.loadingStates == LoadingStates.loading) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -167,7 +168,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                width: size.width*0.75,
+                                width: size.width * 0.75,
                                 height: 20,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(32),
@@ -214,7 +215,11 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                                   ),
                                 );
                               },
-                              onShareButtonTap: () {},
+                              onShareButtonTap: () {
+                                Share.share(
+                                  '${url.urlModel?.url}\n${urlMetaData.title}\n${urlMetaData.description}',
+                                );
+                              },
                               onMoreVertButtontap: () {},
                             ),
                             const SizedBox(height: 8),

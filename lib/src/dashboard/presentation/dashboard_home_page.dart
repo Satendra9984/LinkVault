@@ -24,9 +24,11 @@ class DashboardHomePage extends StatelessWidget {
         BlocProvider(
           create: (BuildContext context) => CollectionsCubit(
             collectionsRepoImpl: CollectionsRepoImpl(
-                remoteDataSourceImpl: RemoteDataSourcesImpl(
-              firestore: FirebaseFirestore.instance,
-            ),),
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+            ),
+            globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
         // [TODO] : Create a CRUD cubit for managing crud operation a single collection
@@ -39,6 +41,7 @@ class DashboardHomePage extends StatelessWidget {
               ),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
 
@@ -49,7 +52,8 @@ class DashboardHomePage extends StatelessWidget {
                 firestore: FirebaseFirestore.instance,
               ),
             ),
-            collectionsCubit: context.read<CollectionsCubit>(), 
+            collectionsCubit: context.read<CollectionsCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
 
@@ -67,7 +71,6 @@ class DashboardHomePage extends StatelessWidget {
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
           ),
-
           splashFactory: NoSplash.splashFactory,
         ),
         home: FolderCollectionPage(

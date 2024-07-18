@@ -71,7 +71,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
         metaData: urlMetaData,
       );
 
-      urlCrudCubit.addUrl(urlData: urlModelData);
+      await urlCrudCubit.addUrl(urlData: urlModelData);
     }
   }
 
@@ -106,7 +106,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
           _urlNameController.text = metaData.websiteName!.substring(0, 30);
         }
       }
-      
     } else {
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value = GeneralFailure(
@@ -118,13 +117,16 @@ class _AddUrlPageState extends State<AddUrlPage> {
     }
     // }
     Logger.printLog(
-        'metadata size: ${_previewMetaData.value!.toJson().toString().length}',);
+      'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
+    );
     _previewLoadingStates.value = LoadingStates.loaded;
     await _showPreviewBottomSheet();
   }
 
   @override
   void initState() {
+    context.read<UrlCrudCubit>().cleanUp();
+
     _selectedCategory.value = _predefinedCategories.first;
     super.initState();
   }
@@ -326,38 +328,38 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Favourite',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    ValueListenableBuilder<bool>(
-                        valueListenable: _isFavorite,
-                        builder: (context, isFavorite, child) {
-                          return Switch.adaptive(
-                            value: isFavorite,
-                            onChanged: (value) => _isFavorite.value = value,
-                            trackOutlineColor:
-                                MaterialStateProperty.resolveWith<Color?>(
-                              (Set<MaterialState> states) => Colors.transparent,
-                            ),
-                            thumbColor:
-                                MaterialStateProperty.resolveWith<Color?>(
-                              (Set<MaterialState> states) => Colors.transparent,
-                            ),
-                            activeTrackColor: ColourPallette.mountainMeadow,
-                            inactiveTrackColor: ColourPallette.error,
-                          );
-                        },),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     const Text(
+                //       'Favourite',
+                //       style: TextStyle(
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                //     ),
+                //     ValueListenableBuilder<bool>(
+                //       valueListenable: _isFavorite,
+                //       builder: (context, isFavorite, child) {
+                //         return Switch.adaptive(
+                //           value: isFavorite,
+                //           onChanged: (value) => _isFavorite.value = value,
+                //           trackOutlineColor:
+                //               MaterialStateProperty.resolveWith<Color?>(
+                //             (Set<MaterialState> states) => Colors.transparent,
+                //           ),
+                //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                //             (Set<MaterialState> states) => Colors.transparent,
+                //           ),
+                //           activeTrackColor: ColourPallette.mountainMeadow,
+                //           inactiveTrackColor: ColourPallette.error,
+                //         );
+                //       },
+                //     ),
+                //   ],
+                // ),
 
-                const SizedBox(height: 20),
+                // const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(

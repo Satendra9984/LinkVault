@@ -25,6 +25,7 @@ class UrlRepoImpl {
   Future<Either<Failure, (UrlModel, CollectionModel)>> addUrlData({
     required CollectionModel collection,
     required UrlModel urlData,
+    required String userId,
   }) async {
     // [TODO] : Add urlData in db
     try {
@@ -34,8 +35,10 @@ class UrlRepoImpl {
 
       final optimisedUrlData = UrlModel.fromJson(urlDataJson);
 
-      final addedUrlData =
-          await _remoteDataSourcesImpl.addUrl(optimisedUrlData);
+      final addedUrlData = await _remoteDataSourcesImpl.addUrl(
+        optimisedUrlData,
+        userId: userId,
+      );
 
       final urlList = collection.urls..insert(0, addedUrlData.id);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
@@ -44,6 +47,7 @@ class UrlRepoImpl {
       final serverUpdatedCollection =
           await _remoteDataSourcesImpl.updateCollection(
         collection: updatedCollectionWithUrls,
+        userId: userId,
       );
 
       return Right((addedUrlData, serverUpdatedCollection));
@@ -60,6 +64,8 @@ class UrlRepoImpl {
 
   Future<Either<Failure, UrlModel>> updateUrl({
     required UrlModel urlData,
+    required String userId,
+
   }) async {
     // [TODO] : Add urlData in db
 
@@ -81,7 +87,10 @@ class UrlRepoImpl {
         ),
       );
 
-      await _remoteDataSourcesImpl.updateUrl(urlModel: imgRemUrlModel);
+      await _remoteDataSourcesImpl.updateUrl(
+        urlModel: imgRemUrlModel,
+        userId: userId,
+      );
 
       return Right(imgRemUrlModel);
     } on ServerException catch (e) {
@@ -98,11 +107,16 @@ class UrlRepoImpl {
   Future<Either<Failure, (UrlModel, CollectionModel?)>> deleteUrlData({
     required CollectionModel? collection,
     required UrlModel urlData,
+    required String userId,
+
   }) async {
     // [TODO] : delete urlData in db
     // then we need to update the collections also
     try {
-      final deletedUrlData = await _remoteDataSourcesImpl.deleteUrl(urlData);
+      final deletedUrlData = await _remoteDataSourcesImpl.deleteUrl(
+        urlData,
+        userId: userId,
+      );
 
       if (collection == null) {
         return Right((deletedUrlData, null));
@@ -118,6 +132,7 @@ class UrlRepoImpl {
       final serverUpdatedCollection =
           await _remoteDataSourcesImpl.updateCollection(
         collection: updatedCollectionWithUrls,
+        userId: userId,
       );
 
       return Right((deletedUrlData, serverUpdatedCollection));

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
@@ -11,8 +12,10 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   UrlCrudCubit({
     required CollectionsCubit collectionsCubit,
     required UrlRepoImpl urlRepoImpl,
+    required GlobalUserCubit globalUserCubit,
   })  : _urlRepoImpl = urlRepoImpl,
         _collectionsCubit = collectionsCubit,
+        _globalUserCubit = globalUserCubit,
         super(
           const UrlCrudCubitState(
             urlCrudLoadingStates: UrlCrudLoadingStates.initial,
@@ -21,6 +24,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
   final UrlRepoImpl _urlRepoImpl;
   final CollectionsCubit _collectionsCubit;
+  final GlobalUserCubit _globalUserCubit;
+
+  void cleanUp() {
+    emit(
+      state.copyWith(
+        urlCrudLoadingStates: UrlCrudLoadingStates.initial,
+      ),
+    );
+  }
 
   Future<void> addUrl({
     required UrlModel urlData,
@@ -34,6 +46,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         .addUrlData(
       collection: collection!.collection!,
       urlData: urlData,
+      userId: _globalUserCubit.state.globalUser!.id,
     )
         .then((result) {
       result.fold(
@@ -64,28 +77,34 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.updating));
 
-    await _urlRepoImpl.updateUrl(urlData: urlData).then((result) {
-      result.fold(
-        (failed) {
-          emit(
-            state.copyWith(
-              urlCrudLoadingStates: UrlCrudLoadingStates.errorupdating,
-            ),
-          );
-        },
-        (response) {
-          final urlData = response;
+    await _urlRepoImpl
+        .updateUrl(
+      urlData: urlData,
+      userId: _globalUserCubit.state.globalUser!.id,
+    )
+        .then(
+      (result) {
+        result.fold(
+          (failed) {
+            emit(
+              state.copyWith(
+                urlCrudLoadingStates: UrlCrudLoadingStates.errorupdating,
+              ),
+            );
+          },
+          (response) {
+            final urlData = response;
 
-          _collectionsCubit.updateUrl(url: urlData);
+            _collectionsCubit.updateUrl(url: urlData);
 
-          emit(
-            state.copyWith(
-              urlCrudLoadingStates: UrlCrudLoadingStates.updatedSuccessfully,
-            ),
-          );
-        },
-      );
-    },
+            emit(
+              state.copyWith(
+                urlCrudLoadingStates: UrlCrudLoadingStates.updatedSuccessfully,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -98,7 +117,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
 
     await _urlRepoImpl
-        .deleteUrlData(collection: collection!.collection, urlData: urlData)
+        .deleteUrlData(
+      collection: collection!.collection,
+      urlData: urlData,
+      userId: _globalUserCubit.state.globalUser!.id,
+    )
         .then(
       (result) {
         result.fold(

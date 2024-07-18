@@ -1,6 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -23,7 +25,12 @@ class CollectionsRepoImpl {
     try {
       final collection = await _remoteDataSourcesImpl.fetchCollection(
         collectionId: collectionId,
+        userId: userId,
       );
+
+      // Logger.printLog(
+      //   'rootCollection: ${collection == null} ${StringUtils.getJsonFormat(collection?.toJson())}',
+      // );
 
       if (collection == null) {
         final todaydate = DateTime.now();
@@ -41,6 +48,7 @@ class CollectionsRepoImpl {
         final withId = rootCollection.copyWith(id: collectionId);
         final res = await _remoteDataSourcesImpl.updateCollection(
           collection: withId,
+          userId: userId,
         );
 
         return Right(res);
@@ -59,11 +67,13 @@ class CollectionsRepoImpl {
 
   Future<Either<Failure, CollectionModel>> fetchSubCollectionAsWhole({
     required String collectionId,
+    required String userId,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
       final collection = await _remoteDataSourcesImpl.fetchCollection(
         collectionId: collectionId,
+        userId: userId,
       );
 
       if (collection == null) {
@@ -90,11 +100,13 @@ class CollectionsRepoImpl {
 
   Future<Either<Failure, CollectionModel>> fetchSubCollectionOnly({
     required String collectionId,
+    required String userId,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
       final collection = await _remoteDataSourcesImpl.fetchCollection(
         collectionId: collectionId,
+        userId: userId,
       );
 
       if (collection == null) {
@@ -121,7 +133,7 @@ class CollectionsRepoImpl {
 
   Future<Either<Failure, (CollectionModel, CollectionModel?)>> addCollection({
     required CollectionModel subCollection,
-    // Optional as root collection does not have parent
+    required String userId, // Optional as root collection does not have parent
     CollectionModel? parentCollection,
   }) async {
     // [TODO] : Add subcollection in db
@@ -129,6 +141,7 @@ class CollectionsRepoImpl {
     try {
       final collection = await _remoteDataSourcesImpl.addCollection(
         collection: subCollection,
+        userId: userId,
       );
 
       if (parentCollection != null) {
@@ -140,6 +153,7 @@ class CollectionsRepoImpl {
         );
         await _remoteDataSourcesImpl.updateCollection(
           collection: updatedParentCollection,
+          userId: userId,
         );
         return Right((collection, updatedParentCollection));
       }
@@ -158,12 +172,14 @@ class CollectionsRepoImpl {
   Future<Either<Failure, (CollectionModel, CollectionModel)>> deleteCollection({
     required CollectionModel collection,
     required CollectionModel parentCollection,
+    required String userId,
   }) async {
     // [TODO] : delete subcollection in db
 
     try {
       await _remoteDataSourcesImpl.deleteCollection(
         collectionId: collection.id,
+        userId: userId,
       );
 
       final subCollList = parentCollection.subcollections
@@ -188,11 +204,13 @@ class CollectionsRepoImpl {
 
   Future<Either<Failure, CollectionModel>> updateSubCollection({
     required CollectionModel subCollection,
+    required String userId,
   }) async {
     // [TODO] : update subcollection in db
     try {
       final collection = await _remoteDataSourcesImpl.updateCollection(
         collection: subCollection,
+        userId: userId,
       );
 
       return Right(collection);
@@ -208,10 +226,14 @@ class CollectionsRepoImpl {
 
   Future<Either<Failure, UrlModel>> fetchUrl({
     required String urlId,
+    required String userId,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection = await _remoteDataSourcesImpl.fetchUrl(urlId);
+      final collection = await _remoteDataSourcesImpl.fetchUrl(
+        urlId,
+        userId: userId,
+      );
 
       // Now fetch subcollections
 
