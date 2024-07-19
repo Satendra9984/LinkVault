@@ -18,19 +18,20 @@ class UrlsPreviewListWidget extends StatefulWidget {
   const UrlsPreviewListWidget({
     required this.title,
     required this.collectionFetchModel,
-    required this.scrollController,
+    required this.showBottomBar,
     super.key,
   });
 
   final String title;
-  final ScrollController scrollController;
+  final ValueNotifier<bool> showBottomBar;
   final CollectionFetchModel collectionFetchModel;
 
   @override
   State<UrlsPreviewListWidget> createState() => _UrlsPreviewListWidgetState();
 }
 
-class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
+class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
   final ScrollController _scrollController = ScrollController();
@@ -48,8 +49,10 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
   void _onScroll() {
     if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
+      widget.showBottomBar.value = false;
     } else if (_scrollController.offset < _previousOffset) {
       _showAppBar.value = true;
+      widget.showBottomBar.value = true;
     }
     _previousOffset = _scrollController.offset;
 
@@ -77,34 +80,11 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      // appBar: PreferredSize(
-      //   preferredSize: const Size.fromHeight(kToolbarHeight),
-      //   child: ValueListenableBuilder<bool>(
-      //     valueListenable: _showAppBar,
-      //     builder: (context, isVisible, child) {
-      //       return AnimatedContainer(
-      //         duration: const Duration(milliseconds: 300),
-      //         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      //         height: isVisible ? kToolbarHeight + 16 : 24.0,
-      //         child: AppBar(
-      //           backgroundColor: ColourPallette.white,
-      //           surfaceTintColor: ColourPallette.mystic,
-      //           title: Text(
-      //             widget.collectionFetchModel.collection!.name,
-      //             style: const TextStyle(
-      //               fontSize: 18,
-      //               fontWeight: FontWeight.w500,
-      //             ),
-      //           ),
-      //         ),
-      //       );
-      //     },
-      //   ),
-      // ),
       body: Container(
-        padding: const EdgeInsets.only(left : 20, right: 20, top: 16),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -198,7 +178,9 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                               onMoreVertButtontap: () {},
                             ),
                             // const SizedBox(height: 4),
-                            const Divider(),
+                             Divider(
+                              color: Colors.grey.shade200,
+                            ),
                             // const SizedBox(height: 4),
                           ],
                         );
@@ -215,4 +197,8 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

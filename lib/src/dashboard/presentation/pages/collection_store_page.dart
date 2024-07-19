@@ -29,7 +29,8 @@ class FolderCollectionPage extends StatefulWidget {
 
 class _FolderCollectionPageState extends State<FolderCollectionPage>
     with SingleTickerProviderStateMixin {
-  late final ScrollController scrollController;
+  // late final ScrollController _scrollController;
+  final _showAppBar = ValueNotifier(true);
   // final PageController _pageController = PageController();
   late final TabController _pageController;
 
@@ -39,6 +40,12 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
   void initState() {
     super.initState();
     _pageController = TabController(length: 3, vsync: this);
+
+    context.read<CollectionsCubit>().fetchCollection(
+          collectionId: widget.collectionId,
+          userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+          isRootCollection: true,
+        );
   }
 
   @override
@@ -160,50 +167,60 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                 ],
               ),
               child: ValueListenableBuilder(
-                valueListenable: _currentPage,
-                builder: (context, currentPage, _) {
-                  return BottomNavigationBar(
-                    currentIndex: _currentPage.value,
-                    onTap: (currentIndex) {
-                      _currentPage.value = currentIndex;
-                      // _pageController.jumpToPage(currentIndex);
-                      _pageController.animateTo(currentIndex);
-                    },
-                    enableFeedback: false,
-                    backgroundColor: ColourPallette.white,
-                    elevation: 0,
-                    selectedItemColor: ColourPallette.black,
-                    selectedLabelStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                valueListenable: _showAppBar,
+                builder: (context, showBottomBar, _) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: showBottomBar ? null : 0,
+                    child: ValueListenableBuilder(
+                      valueListenable: _currentPage,
+                      builder: (context, currentPage, _) {
+                        return BottomNavigationBar(
+                          currentIndex: _currentPage.value,
+                          onTap: (currentIndex) {
+                            _currentPage.value = currentIndex;
+                            // _pageController.jumpToPage(currentIndex);
+                            _pageController.animateTo(currentIndex);
+                          },
+                          enableFeedback: false,
+                          backgroundColor: ColourPallette.white,
+                          elevation: 0,
+                          selectedItemColor: ColourPallette.black,
+                          selectedLabelStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                          unselectedItemColor: ColourPallette.black,
+                          unselectedLabelStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: ColourPallette.black,
+                          ),
+                          items: [
+                            _bottomNavBarWidget(
+                              label: 'Urls',
+                              unSelectedIcon: Icons.link_outlined,
+                              selectedIcon: Icons.link_rounded,
+                              index: 0,
+                            ),
+                            _bottomNavBarWidget(
+                              label: 'Collections',
+                              unSelectedIcon:
+                                  Icons.collections_bookmark_outlined,
+                              selectedIcon: Icons.collections_bookmark_rounded,
+                              index: 1,
+                            ),
+                            _bottomNavBarWidget(
+                              unSelectedIcon: Icons.preview_outlined,
+                              selectedIcon: Icons.preview_rounded,
+                              index: 2,
+                              label: 'Previews',
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    unselectedItemColor: ColourPallette.black,
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: ColourPallette.black,
-                    ),
-                    items: [
-                      _bottomNavBarWidget(
-                        label: 'Urls',
-                        unSelectedIcon: Icons.link_outlined,
-                        selectedIcon: Icons.link_rounded,
-                        index: 0,
-                      ),
-                      _bottomNavBarWidget(
-                        label: 'Collections',
-                        unSelectedIcon: Icons.collections_bookmark_outlined,
-                        selectedIcon: Icons.collections_bookmark_rounded,
-                        index: 1,
-                      ),
-                      _bottomNavBarWidget(
-                        unSelectedIcon: Icons.preview_outlined,
-                        selectedIcon: Icons.preview_rounded,
-                        index: 2,
-                        label: 'Previews',
-                      ),
-                    ],
                   );
                 },
               ),
@@ -222,7 +239,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                   collectionFetchModel: fetchCollection,
                 ),
                 UrlsPreviewListWidget(
-                  scrollController: scrollController,
+                  showBottomBar: _showAppBar,
                   title: 'Urls',
                   collectionFetchModel: fetchCollection,
                 ),
