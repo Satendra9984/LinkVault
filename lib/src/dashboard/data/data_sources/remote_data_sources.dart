@@ -189,7 +189,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      Logger.printLog('fetchUrl : urlId $urlId');
+      // Logger.printLog('fetchUrl : urlId $urlId');
 
       final response = await _firestore
           .collection(userCollection)

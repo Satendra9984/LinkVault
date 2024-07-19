@@ -126,7 +126,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final start = fetchedCollection.subCollectionFetchedIndex + 1;
 
-    final end = min(subCollections.length, start + 20);
+    final end = min(subCollections.length, start + 16);
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
 

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/constants/user_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
@@ -43,8 +44,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         children: [
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: BlocConsumer<SubscriptionCubit, SubscriptionState>(
                 listener: (context, state) async {
                   if (state.videoWatchingStates == LoadingStates.loaded) {
@@ -192,10 +192,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ),
           // const SizedBox(height: 16.0),
           Expanded(
-            child: Image.asset(
-              MediaRes.solidarityPNG,
-              fit: BoxFit.contain,
-              colorBlendMode: BlendMode.colorBurn,
+            child: SvgPicture.asset(
+              MediaRes.solidaritySVG,
             ),
           ),
         ],
@@ -249,10 +247,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               child: CustomElevatedButton(
                 text: 'Dashboard',
                 onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const DashboardHomePage(),
-                    ),
-                    (route) => false,),
+                  MaterialPageRoute(
+                    builder: (context) => const DashboardHomePage(),
+                  ),
+                  (route) => false,
+                ),
               ),
             ),
           ],

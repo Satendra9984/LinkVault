@@ -79,57 +79,32 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: ValueListenableBuilder<bool>(
-          valueListenable: _showAppBar,
-          builder: (context, isVisible, child) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              height: isVisible ? kToolbarHeight + 16 : 24.0,
-              child: AppBar(
-                backgroundColor: ColourPallette.white,
-                surfaceTintColor: ColourPallette.mystic,
-                title: Text(
-                  widget.collectionFetchModel.collection!.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: ColourPallette.salemgreen,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => AddUrlPage(
-                parentCollection: widget.collectionFetchModel.collection!,
-              ),
-            ),
-          );
-        },
-        label: const Text(
-          'Add URL',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: ColourPallette.white,
-          ),
-        ),
-        icon: const Icon(
-          Icons.add_link_rounded,
-          color: ColourPallette.white,
-        ),
-      ),
+      // appBar: PreferredSize(
+      //   preferredSize: const Size.fromHeight(kToolbarHeight),
+      //   child: ValueListenableBuilder<bool>(
+      //     valueListenable: _showAppBar,
+      //     builder: (context, isVisible, child) {
+      //       return AnimatedContainer(
+      //         duration: const Duration(milliseconds: 300),
+      //         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      //         height: isVisible ? kToolbarHeight + 16 : 24.0,
+      //         child: AppBar(
+      //           backgroundColor: ColourPallette.white,
+      //           surfaceTintColor: ColourPallette.mystic,
+      //           title: Text(
+      //             widget.collectionFetchModel.collection!.name,
+      //             style: const TextStyle(
+      //               fontSize: 18,
+      //               fontWeight: FontWeight.w500,
+      //             ),
+      //           ),
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+        padding: const EdgeInsets.only(left : 20, right: 20, top: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -175,9 +150,9 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                                   color: Colors.grey.shade300,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              // const SizedBox(height: 8),
                               const Divider(),
-                              const SizedBox(height: 8),
+                              // const SizedBox(height: 8),
                             ],
                           );
                         } else if (url.loadingStates ==
@@ -222,16 +197,16 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
                               },
                               onMoreVertButtontap: () {},
                             ),
-                            const SizedBox(height: 8),
+                            // const SizedBox(height: 4),
                             const Divider(),
-                            const SizedBox(height: 8),
+                            // const SizedBox(height: 4),
                           ],
                         );
                       },
                     ),
 
                   // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                  const SizedBox(height: 120),
+                  const SizedBox(height: 80),
                 ],
               ),
             );

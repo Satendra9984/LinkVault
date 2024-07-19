@@ -7,14 +7,19 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_preview_list.dart';
 import 'package:lottie/lottie.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class FolderCollectionPage extends StatefulWidget {
-  const FolderCollectionPage(
-      {required this.collectionId, required this.isRootCollection, super.key,});
+  const FolderCollectionPage({
+    required this.collectionId,
+    required this.isRootCollection,
+    super.key,
+  });
   final String collectionId;
   final bool isRootCollection;
 
@@ -22,20 +27,24 @@ class FolderCollectionPage extends StatefulWidget {
   State<FolderCollectionPage> createState() => _FolderCollectionPageState();
 }
 
-class _FolderCollectionPageState extends State<FolderCollectionPage> {
+class _FolderCollectionPageState extends State<FolderCollectionPage>
+    with SingleTickerProviderStateMixin {
   late final ScrollController scrollController;
-  final PageController _pageController = PageController();
+  // final PageController _pageController = PageController();
+  late final TabController _pageController;
+
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController();
-    context.read<CollectionsCubit>().fetchCollection(
-          collectionId: widget.collectionId,
-          userId: context.read<GlobalUserCubit>().state.globalUser!.id,
-          isRootCollection: true,
-        );
+    _pageController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,9 +71,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
           if (fetchCollection.collectionFetchingState ==
               LoadingStates.loading) {
             return Scaffold(
-              appBar: AppBar(
-                backgroundColor: ColourPallette.white,
-              ),
+              appBar: _getAppBar(title: 'Dashboard'),
               body: Center(
                 child: Column(
                   children: [
@@ -87,9 +94,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
           if (fetchCollection.collectionFetchingState ==
               LoadingStates.errorLoading) {
             return Scaffold(
-              appBar: AppBar(
-                backgroundColor: ColourPallette.white,
-              ),
+              appBar: _getAppBar(title: 'Dashboard'),
               body: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -140,17 +145,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
 
           return Scaffold(
             backgroundColor: ColourPallette.white,
-            // appBar: AppBar(
-            //   backgroundColor: ColourPallette.white,
-            //   surfaceTintColor: ColourPallette.mystic,
-            //   title: Text(
-            //     collection.name,
-            //     style: const TextStyle(
-            //       fontSize: 18,
-            //       fontWeight: FontWeight.w500,
-            //     ),
-            //   ),
-            // ),
+            drawer: _getDrawer(),
+            appBar: _getAppBar(title: collection.name),
             bottomNavigationBar: Container(
               padding: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
@@ -170,7 +166,8 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                     currentIndex: _currentPage.value,
                     onTap: (currentIndex) {
                       _currentPage.value = currentIndex;
-                      _pageController.jumpToPage(currentIndex);
+                      // _pageController.jumpToPage(currentIndex);
+                      _pageController.animateTo(currentIndex);
                     },
                     enableFeedback: false,
                     backgroundColor: ColourPallette.white,
@@ -211,11 +208,11 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
                 },
               ),
             ),
-            body: PageView(
+            body: TabBarView(
               controller: _pageController,
-              onPageChanged: (page) {
-                _currentPage.value = page;
-              },
+              // onPageChanged: (page) {
+              //   _currentPage.value = page;
+              // },
               children: [
                 UrlsListWidget(
                   title: 'Urls',
@@ -262,6 +259,60 @@ class _FolderCollectionPageState extends State<FolderCollectionPage> {
         ),
       ),
       label: label,
+    );
+  }
+
+  PreferredSize _getAppBar({
+    required String title,
+  }) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ValueListenableBuilder<int>(
+        valueListenable: _currentPage,
+        builder: (context, isVisible, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            height: isVisible != 2 ? kToolbarHeight + 16 : 24.0,
+            child: AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: ColourPallette.mystic,
+              title: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Drawer _getDrawer() {
+    return Drawer(
+      backgroundColor: ColourPallette.white,
+      child: ListView(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.support,
+            ),
+            title: Text(
+              'Support Us',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

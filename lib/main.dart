@@ -11,12 +11,12 @@ import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
 
-/// Before you can use the hive, you need to initialize it.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await MobileAds.instance.initialize();
@@ -43,6 +43,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        
+        BlocProvider(
+          create: (context) => SharedInputsCubit(),
+        ),
+
         BlocProvider(
           create: (context) => OnBoardCubit(
             onBoardingRepoImpl: OnBoardingRepoImpl(

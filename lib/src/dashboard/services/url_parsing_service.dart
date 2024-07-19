@@ -125,7 +125,7 @@ class UrlParsingService {
   }
 
   static String getWebsiteLogoUrl(String url) {
-    return 'https://www.google.com/s2/favicons?sz=64&domain_url={url}';
+    return 'https://www.google.com/s2/favicons?sz=64&domain_url=$url';
   }
 
 // Function to extract website logo
@@ -288,7 +288,7 @@ class UrlParsingService {
         extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
-
+    websiteLogoUrl ??= getWebsiteLogoUrl(url);
     if (websiteLogoUrl != null) {
       websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;

@@ -8,6 +8,7 @@ import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
@@ -17,9 +18,11 @@ import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 class AddUrlPage extends StatefulWidget {
   const AddUrlPage({
     required this.parentCollection,
+    this.url,
     super.key,
   });
   final CollectionModel parentCollection;
+  final String? url;
 
   @override
   State<AddUrlPage> createState() => _AddUrlPageState();
@@ -127,6 +130,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
   void initState() {
     context.read<UrlCrudCubit>().cleanUp();
 
+    _urlAddressController.text = widget.url ?? '';
+    // context.read<SharedInputsCubit>().removeInput();
     _selectedCategory.value = _predefinedCategories.first;
     super.initState();
   }
@@ -163,6 +168,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
           if (state.urlCrudLoadingStates ==
               UrlCrudLoadingStates.addedSuccessfully) {
             // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
+            if (widget.url != null) {
+              context.read<SharedInputsCubit>().removeUrlInput();
+            }
             Navigator.of(context).pop();
           }
         },
