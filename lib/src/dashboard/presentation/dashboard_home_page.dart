@@ -15,6 +15,7 @@ import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/collection_store_root_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class DashboardHomePage extends StatefulWidget {

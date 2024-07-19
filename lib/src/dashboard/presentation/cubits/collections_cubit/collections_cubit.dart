@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
@@ -31,6 +32,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   final GlobalUserCubit _globalUserCubit;
   final CollectionsRepoImpl _collectionsRepoImpl;
+
+  final AsyncQueueManager _collQueueManager = AsyncQueueManager();
+  final AsyncQueueManager _urlQueueManager = AsyncQueueManager();
+
 
   Future<void> fetchCollection({
     required String collectionId,
@@ -103,6 +108,19 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }
 
   Future<void> fetchMoreSubCollections({
+    required String collectionId,
+    required String userId,
+    required bool isRootCollection,
+  }) async {
+    _collQueueManager.addTask(
+      () => _fetchMoreSubCollections(
+          collectionId: collectionId,
+          userId: userId,
+          isRootCollection: isRootCollection),
+    );
+  }
+
+  Future<void> _fetchMoreSubCollections({
     required String collectionId,
     required String userId,
     required bool isRootCollection,
@@ -197,7 +215,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
-    Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
+    // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
   CollectionFetchModel? getCollection({
@@ -281,6 +299,18 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   // <--------------------------- URLS --------------------------------->
 
   Future<void> fetchMoreUrls({
+    required String collectionId,
+    required String userId,
+  }) async {
+    _urlQueueManager.addTask(
+      () => _fetchMoreUrls(
+        collectionId: collectionId,
+        userId: userId,
+      ),
+    );
+  }
+
+  Future<void> _fetchMoreUrls({
     required String collectionId,
     required String userId,
   }) async {

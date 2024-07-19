@@ -9,15 +9,21 @@ class MediaRes {
   static const String mailboxBroSVG = 'assets/images/mailbox_bro.svg';
   static const String savingMoenyPNG = 'assets/images/saving-money.png';
   static const String solidaritySVG = 'assets/images/solidarity.svg';
-  // static const String = '';
-
+  static const String personSVG = 'assets/images/person.svg';
+  static const String collectionSVG = 'assets/images/collections.svg';
+  static const String folderSVG = 'assets/images/folder_6.svg';
+  static const String webSurf1SVG= 'assets/images/web_surf_1.svg';
+  static const String webSurf3SVG= 'assets/images/web_surf_3.svg';
+  // static const String SVG= 'assets/images/.svg';
+  // static const String SVG= 'assets/images/.svg';
 
 
   /// ---------------------------- ANIMATIONS ----------------------------------
   static const String loadingANIMATION = 'assets/animations/loading.json';
   static const String hurrayANIMATION = 'assets/animations/hurray.json';
   static const String errorANIMATION = 'assets/animations/error.json';
-  // static const String = '';
-
+  // static const String ANIMATION = 'assets/animations/.json';
+  // static const String ANIMATION = 'assets/animations/.json';
+  // static const String ANIMATION = 'assets/animations/.json';
 
 }

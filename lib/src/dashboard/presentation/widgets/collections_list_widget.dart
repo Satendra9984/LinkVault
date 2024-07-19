@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
@@ -25,7 +26,8 @@ class CollectionsListWidget extends StatefulWidget {
   State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
 }
 
-class _CollectionsListWidgetState extends State<CollectionsListWidget> {
+class _CollectionsListWidgetState extends State<CollectionsListWidget>
+    with AutomaticKeepAliveClientMixin {
   late final ScrollController _scrollController;
 
   @override
@@ -54,19 +56,13 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: ColourPallette.white,
-      //   surfaceTintColor: ColourPallette.mystic,
-      //   title: Text(
-      //     widget.collectionFetchModel.collection!.name,
-      //     style: const TextStyle(
-      //       fontSize: 18,
-      //       fontWeight: FontWeight.w500,
-      //     ),
-      //   ),
-      // ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: '${widget.collectionFetchModel.hashCode}',
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50),
+        ),
         backgroundColor: ColourPallette.salemgreen,
         onPressed: () {
           Navigator.push(
@@ -119,14 +115,15 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
 
             const collectionIconWidth = 96.0;
             return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               controller: _scrollController,
               child: Column(
                 children: [
                   if (availableSubCollections.isEmpty)
                     Center(
                       child: SvgPicture.asset(
-                        'assets/images/collections.svg',
+                        MediaRes.collectionSVG,
                       ),
                     )
                   else
@@ -212,4 +209,7 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

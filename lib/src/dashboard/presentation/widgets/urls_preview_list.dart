@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
@@ -98,7 +99,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                   if (availableUrls == null || availableUrls.isEmpty)
                     Center(
                       child: SvgPicture.asset(
-                        'assets/images/web_surf_3.svg',
+                        MediaRes.webSurf3SVG,
                       ),
                     )
                   else
@@ -178,7 +179,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                               onMoreVertButtontap: () {},
                             ),
                             // const SizedBox(height: 4),
-                             Divider(
+                            Divider(
                               color: Colors.grey.shade200,
                             ),
                             // const SizedBox(height: 4),

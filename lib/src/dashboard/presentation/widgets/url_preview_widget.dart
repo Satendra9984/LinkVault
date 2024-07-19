@@ -397,18 +397,30 @@ class UrlPreviewWidget extends StatelessWidget {
           final gradientColor =
               averageBrightNess < 128 ? Colors.black : Colors.white;
 
+          final colors = averageBrightNess < 128
+              ? [
+                  gradientColor.withOpacity(0.60),
+                  gradientColor.withOpacity(0.55),
+                  gradientColor.withOpacity(0.50),
+                  gradientColor.withOpacity(0.45),
+                  gradientColor.withOpacity(0.40),
+                  gradientColor.withOpacity(0.05),
+                ]
+              : [
+                  gradientColor.withOpacity(0.9),
+                  gradientColor.withOpacity(0.68),
+                  gradientColor.withOpacity(0.50),
+                  gradientColor.withOpacity(0.45),
+                  gradientColor.withOpacity(0.35),
+                  gradientColor.withOpacity(0.05),
+                ];
+
           final linearGradient = LinearGradient(
-            colors: [
-              gradientColor.withOpacity(0.60),
-              gradientColor.withOpacity(0.55),
-              gradientColor.withOpacity(0.50),
-              gradientColor.withOpacity(0.45),
-              gradientColor.withOpacity(0.40),
-              gradientColor.withOpacity(0.05),
-            ],
+            colors: colors,
+
             begin: Alignment.bottomCenter,
             end: Alignment.center,
-            stops: const [0.55, 0.6, 0.65, 0.7, 0.75, 1],
+            stops: const [0.40, 0.6, 0.65, 0.7, 0.75, 1],
             // tileMode: TileMode.decal,
           );
 

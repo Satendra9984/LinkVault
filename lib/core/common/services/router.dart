@@ -21,14 +21,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case SubscriptionPage.routeName:
       {
         return _pageRouteBuilder(
-          (_) => BlocProvider(
-            create: (context) => SubscriptionCubit(
-              adRepoImpl: RewardedAdRepoImpl(
-                subsciptionRemoteDataSources: SubsciptionRemoteDataSources(),
-              ),
-            ),
-            child: const SubscriptionPage(),
-          ),
+          (_) => const SubscriptionPage(),
           settings: settings,
         );
       }

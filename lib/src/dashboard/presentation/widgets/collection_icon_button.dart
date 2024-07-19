@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
 // import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 
@@ -47,7 +48,7 @@ class FolderIconButton extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: SvgPicture.asset(
-                'assets/images/folder_6.svg',
+                MediaRes.folderSVG,
                 height: 56,
                 width: 56,
                 // color: folderColor,

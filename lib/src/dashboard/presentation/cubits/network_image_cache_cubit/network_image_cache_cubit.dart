@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 import 'package:link_vault/src/dashboard/data/services/image_decoder.dart';
@@ -20,7 +21,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
           ),
         );
 
-  final ImageQueueManager _imageQueueManager = ImageQueueManager();
+  final AsyncQueueManager _imageQueueManager = AsyncQueueManager();
 
   Future<Uint8List?> fetchImageInIsolate(
     String imageUrl, {
@@ -120,29 +121,9 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
   }
 }
 
-class ImageQueueManager {
-  final Queue<Function> _taskQueue = Queue();
-  bool _isProcessing = false;
 
-  void addTask(Function task) {
-    _taskQueue.add(task);
-    _processNext();
-  }
 
-  Future<void> _processNext() async {
-    if (_isProcessing || _taskQueue.isEmpty) return;
-
-    _isProcessing = true;
-
-    final task = _taskQueue.removeFirst();
-    await task();
-
-    _isProcessing = false;
-    await _processNext();
-  }
-}
-
-final ImageQueueManager _imageQueueManager = ImageQueueManager();
+// final ImageQueueManager _imageQueueManager = ImageQueueManager();
 
 // class IsolateManager {
 //   final _queue = <_IsolateTask>[];

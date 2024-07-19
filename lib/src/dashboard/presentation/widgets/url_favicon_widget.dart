@@ -54,7 +54,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: ColourPallette.mystic.withOpacity(0.5),
+              // color: ColourPallette.mystic.withOpacity(0.15),
             ),
             child: _getLogoWidget(
               context: context,

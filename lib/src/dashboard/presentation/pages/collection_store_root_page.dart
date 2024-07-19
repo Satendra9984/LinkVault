@@ -7,8 +7,6 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
@@ -22,8 +20,8 @@ import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.
 import 'package:lottie/lottie.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
-class FolderCollectionPage extends StatefulWidget {
-  const FolderCollectionPage({
+class FolderCollectionRootPage extends StatefulWidget {
+  const FolderCollectionRootPage({
     required this.collectionId,
     required this.isRootCollection,
     super.key,
@@ -32,10 +30,11 @@ class FolderCollectionPage extends StatefulWidget {
   final bool isRootCollection;
 
   @override
-  State<FolderCollectionPage> createState() => _FolderCollectionPageState();
+  State<FolderCollectionRootPage> createState() =>
+      _FolderCollectionRootPageState();
 }
 
-class _FolderCollectionPageState extends State<FolderCollectionPage>
+class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
@@ -85,7 +84,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
             return Container();
           }
 
-          // Logger.printLog('Updated collection store page');
+          Logger.printLog('Updated collection store page');
 
           if (fetchCollection.collectionFetchingState ==
               LoadingStates.loading) {
@@ -366,10 +365,19 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
               ListTile(
                 onTap: () {
                   if (mounted) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).popUntil(
-                      (route) => route.isFirst,
-                    );
+                    // Navigator.of(context).pop (
+                    //   MaterialPageRoute(
+                    //     builder: (ctx) => FolderCollectionRootPage(
+                    //       collectionId: context
+                    //           .read<GlobalUserCubit>()
+                    //           .state
+                    //           .globalUser!
+                    //           .id,
+                    //       isRootCollection: true,
+                    //     ),
+                    //   ),
+                    //   (route) => false,
+                    // );
                   }
                 },
                 leading: Icon(
@@ -411,18 +419,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
             ],
           ),
           ListTile(
-            onTap: () async {
-              await context.read<AuthenticationCubit>().signOut().then(
-                (value) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (ctx) => const LoginPage(),
-                    ),
-                    (route) => false,
-                  );
-                },
-              );
-            },
+            onTap: () {},
             leading: Icon(
               Icons.logout_rounded,
             ),

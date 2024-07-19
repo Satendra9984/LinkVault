@@ -16,6 +16,9 @@ import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_im
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
+import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
+import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
+import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,11 +46,16 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        
         BlocProvider(
           create: (context) => SharedInputsCubit(),
         ),
-
+        BlocProvider(
+          create: (context) => SubscriptionCubit(
+            adRepoImpl: RewardedAdRepoImpl(
+              subsciptionRemoteDataSources: SubsciptionRemoteDataSources(),
+            ),
+          ),
+        ),
         BlocProvider(
           create: (context) => OnBoardCubit(
             onBoardingRepoImpl: OnBoardingRepoImpl(

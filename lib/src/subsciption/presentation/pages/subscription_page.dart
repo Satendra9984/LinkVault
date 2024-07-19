@@ -164,13 +164,20 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       const SizedBox(height: 8),
                       if (state.videoWatchingStates == LoadingStates.loaded)
                         TextButton.icon(
-                          onPressed: () =>
+                          onPressed: () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
+                            } else {
                               Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (context) => const DashboardHomePage(),
-                            ),
-                            (route) => false,
-                          ),
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DashboardHomePage(),
+                                ),
+                                (route) => false,
+                              );
+                            }
+                          },
                           label: const Icon(
                             Icons.arrow_forward_rounded,
                             color: ColourPallette.mountainMeadow,
@@ -246,12 +253,18 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             Expanded(
               child: CustomElevatedButton(
                 text: 'Dashboard',
-                onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => const DashboardHomePage(),
-                  ),
-                  (route) => false,
-                ),
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  } else {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const DashboardHomePage(),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                },
               ),
             ),
           ],

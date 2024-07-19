@@ -85,13 +85,16 @@ class RewardedAdRepoImpl {
   }) async {
     try {
       num rewardAmount = 0;
-
+      await Future.delayed(
+        const Duration(seconds: 2),
+      );
       if (_rewardedAd == null) {
         debugPrint('[log] : ad is null');
-        // throw ServerException(
-        //   message: 'Something Went Wrong. Ad not Loaded null',
-        //   statusCode: 400,
-        // );
+        throw ServerException(
+          message:
+              'Something Went Wrong. Video not Loaded. Check Internet Connection!!!',
+          statusCode: 400,
+        );
       }
 
       await _rewardedAd?.show(
@@ -120,7 +123,7 @@ class RewardedAdRepoImpl {
       debugPrint('[log] : showad ${e.message}');
       return Left(
         ServerFailure(
-          message: 'Something Went Wrong',
+          message: 'Something Went Wrong. Check Internet and try again.',
           statusCode: 400,
         ),
       );
@@ -128,7 +131,7 @@ class RewardedAdRepoImpl {
       debugPrint('[log] : showad $e');
       return Left(
         ServerFailure(
-          message: 'Something Went Wrong',
+          message: 'Something Went Wrong. Check Internet and try again.',
           statusCode: 400,
         ),
       );

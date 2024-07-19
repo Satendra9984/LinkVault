@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -122,6 +123,9 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
           final url = urls.isNotEmpty ? urls[0] : null;
 
           return FloatingActionButton.extended(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50),
+            ),
             backgroundColor: ColourPallette.salemgreen,
             onPressed: () {
               Navigator.push(
@@ -167,7 +171,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                   if (availableUrls == null || availableUrls.isEmpty)
                     Center(
                       child: SvgPicture.asset(
-                        'assets/images/web_surf_1.svg',
+                        MediaRes.webSurf1SVG,
                       ),
                     )
                   else
@@ -177,16 +181,16 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                       shrinkWrap: true,
                       itemCount: availableUrls.length,
                       maxCrossAxisExtent: 80,
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 24,
+                      crossAxisSpacing: 20,
                       itemBuilder: (context, index) {
                         final url = availableUrls[index];
 
                         if (url.loadingStates == LoadingStates.loading) {
                           return Center(
                             child: Container(
-                              height: 80,
-                              width: 80,
+                              height: 72,
+                              width: 72,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 color: Colors.grey.shade300,
