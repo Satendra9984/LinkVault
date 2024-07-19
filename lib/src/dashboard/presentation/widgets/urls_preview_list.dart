@@ -30,7 +30,8 @@ class UrlsPreviewListWidget extends StatefulWidget {
   State<UrlsPreviewListWidget> createState() => _UrlsPreviewListWidgetState();
 }
 
-class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
+class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
   final ScrollController _scrollController = ScrollController();
@@ -77,6 +78,8 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final size = MediaQuery.of(context).size;
     return Scaffold(
       // appBar: PreferredSize(
@@ -104,7 +107,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
       //   ),
       // ),
       body: Container(
-        padding: const EdgeInsets.only(left : 20, right: 20, top: 16),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -215,4 +218,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

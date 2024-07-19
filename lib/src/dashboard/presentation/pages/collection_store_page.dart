@@ -38,7 +38,13 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
   @override
   void initState() {
     super.initState();
+    scrollController = ScrollController();
     _pageController = TabController(length: 3, vsync: this);
+    context.read<CollectionsCubit>().fetchCollection(
+          collectionId: widget.collectionId,
+          userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+          isRootCollection: true,
+        );
   }
 
   @override
@@ -171,6 +177,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                     },
                     enableFeedback: false,
                     backgroundColor: ColourPallette.white,
+                    useLegacyColorScheme: false,
                     elevation: 0,
                     selectedItemColor: ColourPallette.black,
                     selectedLabelStyle: const TextStyle(
