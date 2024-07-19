@@ -1,7 +1,8 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
@@ -83,8 +84,6 @@ class UrlPreviewWidget extends StatelessWidget {
             },
           ),
 
-        // const SizedBox(height: 8),
-
         /// Website details and other option
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,7 +92,7 @@ class UrlPreviewWidget extends StatelessWidget {
               flex: 8,
               child: GestureDetector(
                 onTap: onTap,
-                onDoubleTap: onDoubleTap,
+                // onDoubleTap: onDoubleTap,
                 child: Row(
                   children: [
                     if (urlMetaData.favicon != null)
@@ -179,12 +178,11 @@ class UrlPreviewWidget extends StatelessWidget {
                         ),
                       )
                     else
-                      const SizedBox(
-                        height: 56,
-                        width: 56,
-                        child: Icon(Icons.web),
+                      const Icon(
+                        Icons.web,
+                        size: 16,
                       ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '${urlMetaData.websiteName}',
@@ -208,13 +206,13 @@ class UrlPreviewWidget extends StatelessWidget {
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: onMoreVertButtontap,
-                  icon: const Icon(
-                    Icons.more_vert_rounded,
-                  ),
-                ),
+                // const SizedBox(width: 8),
+                // IconButton(
+                //   onPressed: onMoreVertButtontap,
+                //   icon: const Icon(
+                //     Icons.more_vert_rounded,
+                //   ),
+                // ),
               ],
             ),
           ],
@@ -277,8 +275,8 @@ class UrlPreviewWidget extends StatelessWidget {
         final bannerImageAspectRatio =
             bannerImageDim.height / bannerImageDim.width;
 
-        final isSideWaysBanner =
-            bannerImageAspectRatio >= 1.5 || bannerImageAspectRatio < 0.5;
+        final isSideWaysBanner = bannerImageAspectRatio >= 1.5 ||
+            (bannerImageAspectRatio < 1 && bannerImageAspectRatio > 0.65);
         var width = bannerImageDim.width;
         var height = bannerImageDim.height;
 
@@ -295,6 +293,9 @@ class UrlPreviewWidget extends StatelessWidget {
         }
 
         if (isSideWaysBanner) {
+          // Logger.printLog(
+          //   '[bannerimage] : imagesize: ${width}, $height',
+          // );
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -340,7 +341,7 @@ class UrlPreviewWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              // const SizedBox(width: 8),
+              const SizedBox(width: 4),
               SizedBox(
                 // color: Colors.amber,
                 width: width,
@@ -352,8 +353,6 @@ class UrlPreviewWidget extends StatelessWidget {
                           size: Size(width, height),
                           painter: ImagePainter(
                             imageData.uiImage!,
-
-                            // fit: bannerImageAspectRatio>=1.5 ? : ,
                             fit: BoxFit.cover,
                           ),
                         )
@@ -384,7 +383,7 @@ class UrlPreviewWidget extends StatelessWidget {
 
         if (bannerImageAspectRatio >= 0.65 && bannerImageAspectRatio < 1.5) {
           // height is greater
-          width = min(size.width - 50, bannerImageDim.width);
+          width = min(size.width - 32, bannerImageDim.width);
           height = min(width * bannerImageAspectRatio, bannerImageDim.height);
 
           // Logger.printLog(
@@ -425,21 +424,31 @@ class UrlPreviewWidget extends StatelessWidget {
                     child: SizedBox(
                       height: height,
                       width: width,
-                      child: Image.memory(
-                        imageBytes,
-                        // color: Colors.amber,
-                        errorBuilder: (ctx, _, __) {
-                          return SvgPicture.memory(
-                            imageBytes,
-                            placeholderBuilder: (context) {
-                              return const SizedBox(
-                                height: 150,
-                                width: 600,
-                              );
-                            },
-                          );
-                        },
-                      ),
+                      child: (imageData.uiImage != null)
+                          ? CustomPaint(
+                              size: Size(width, height),
+                              painter: ImagePainter(
+                                imageData.uiImage!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Image.memory(
+                              imageBytes,
+                              height: height,
+                              width: width,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, _, __) {
+                                return SvgPicture.memory(
+                                  imageBytes,
+                                  placeholderBuilder: (context) {
+                                    return const SizedBox(
+                                      height: 150,
+                                      width: 600,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                     ),
                   ),
                   // title
@@ -448,10 +457,9 @@ class UrlPreviewWidget extends StatelessWidget {
                     alignment: Alignment.bottomLeft,
                     decoration: BoxDecoration(
                       gradient: linearGradient,
-                    borderRadius: BorderRadius.circular(12),
-
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    padding:const EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 8,
                     ),
@@ -571,27 +579,35 @@ class UrlPreviewWidget extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.memory(
-                  imageBytes,
-                  errorBuilder: (ctx, _, __) {
-                    return SvgPicture.memory(
-                      imageBytes,
-                      placeholderBuilder: (context) {
-                        return const SizedBox(
-                          height: 150,
-                          width: 600,
-                        );
-                      },
-                    );
-                  },
-                ),
+                child: (imageData.uiImage != null)
+                    ? CustomPaint(
+                        size: Size(width, height),
+                        painter: ImagePainter(
+                          imageData.uiImage!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.memory(
+                        imageBytes,
+                        errorBuilder: (ctx, _, __) {
+                          return SvgPicture.memory(
+                            imageBytes,
+                            placeholderBuilder: (context) {
+                              return const SizedBox(
+                                height: 150,
+                                width: 600,
+                              );
+                            },
+                          );
+                        },
+                      ),
               ),
               if (urlMetaData.title != null)
                 GestureDetector(
                   onTap: onTap,
                   onDoubleTap: onDoubleTap,
                   child: Container(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 4),
                     alignment: Alignment.topLeft,
                     child: ValueListenableBuilder(
                       valueListenable: _showFullDescription,

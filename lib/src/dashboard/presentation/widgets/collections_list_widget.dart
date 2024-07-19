@@ -7,6 +7,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
@@ -34,17 +35,17 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
     _fetchMoreCollections();
   }
 
-  void _onScroll() {
+  Future<void> _onScroll() async {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      _fetchMoreCollections();
+      await _fetchMoreCollections();
     }
   }
 
-  void _fetchMoreCollections() {
+  Future<void> _fetchMoreCollections() async {
     final fetchCollection = widget.collectionFetchModel;
 
-    context.read<CollectionsCubit>().fetchMoreSubCollections(
+    await context.read<CollectionsCubit>().fetchMoreSubCollections(
           collectionId: fetchCollection.collection!.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: false,
@@ -53,19 +54,18 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const collectionIconWidth = 120.0;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColourPallette.white,
-        surfaceTintColor: ColourPallette.mystic,
-        title: Text(
-          widget.collectionFetchModel.collection!.name,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: ColourPallette.white,
+      //   surfaceTintColor: ColourPallette.mystic,
+      //   title: Text(
+      //     widget.collectionFetchModel.collection!.name,
+      //     style: const TextStyle(
+      //       fontSize: 18,
+      //       fontWeight: FontWeight.w500,
+      //     ),
+      //   ),
+      // ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: ColourPallette.salemgreen,
         onPressed: () {
@@ -92,7 +92,8 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
         ),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        margin: EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -103,14 +104,6 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
             final fetchCollection =
                 state.collections[widget.collectionFetchModel.collection!.id]!;
 
-            if (fetchCollection.collection!.subcollections.isEmpty ||
-                fetchCollection.subCollectionFetchedIndex < 0) {
-              return Center(
-                child: SvgPicture.asset(
-                  'assets/images/collections.svg',
-                ),
-              );
-            }
             final availableSubCollections = <CollectionFetchModel>[];
 
             for (var i = 0;
@@ -124,7 +117,9 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
               availableSubCollections.add(subCollection);
             }
 
+            const collectionIconWidth = 96.0;
             return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               controller: _scrollController,
               child: Column(
                 children: [

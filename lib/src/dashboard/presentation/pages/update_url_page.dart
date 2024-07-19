@@ -12,6 +12,7 @@ import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart'
 import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UpdateUrlPage extends StatefulWidget {
   const UpdateUrlPage({
@@ -70,7 +71,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
         metaData: urlMetaData,
       );
 
-      urlCrudCubit.updateUrl(
+      await urlCrudCubit.updateUrl(
         urlData: urlModelData,
       );
     }
@@ -103,6 +104,20 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
         _urlTitleController.text = metaData.websiteName!;
       }
+      
+      /// DONT NEED AS WEBSITE DESCRIIPTION IS PRESENT IN URL_PREVIEW_LIST
+      /// USER CAN SHARE FROM THERE
+      /// AND TO SAVE DB SPACE
+      // if (_urlDescriptionController.text.isEmpty &&
+      //     metaData.description != null) {
+      //   Logger.printLog('desclen: ${metaData.description?.length}');
+      //   if (metaData.description!.length > 1000) {
+      //     _urlDescriptionController.text =
+      //         metaData.description?.substring(0, 1000) ?? '';
+      //   } else {
+      //     _urlDescriptionController.text = metaData.description ?? '';
+      //   }
+      // }
     } else {
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value = GeneralFailure(
@@ -122,6 +137,8 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
   @override
   void initState() {
+    context.read<UrlCrudCubit>().cleanUp();
+
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
@@ -165,6 +182,21 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 ),
             icon: const Icon(
               Icons.delete_rounded,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              final urlAddress = _urlAddressController.text;
+              final urlTitle = _urlTitleController.text;
+              final urlDescription = _urlDescriptionController.text;
+
+              Share.share(
+                '${urlAddress}\n${urlTitle}\n${urlDescription}',
+              );
+            },
+            icon: const Icon(
+              Icons.share_rounded,
+              size: 20,
             ),
           ),
         ],
@@ -354,38 +386,38 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Favourite',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isFavorite,
-                      builder: (context, isFavorite, child) {
-                        return Switch.adaptive(
-                          value: isFavorite,
-                          onChanged: (value) => _isFavorite.value = value,
-                          trackOutlineColor:
-                              MaterialStateProperty.resolveWith<Color?>(
-                            (Set<MaterialState> states) => Colors.transparent,
-                          ),
-                          thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                            (Set<MaterialState> states) => Colors.transparent,
-                          ),
-                          activeTrackColor: ColourPallette.mountainMeadow,
-                          inactiveTrackColor: ColourPallette.error,
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     const Text(
+                //       'Favourite',
+                //       style: TextStyle(
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                //     ),
+                //     ValueListenableBuilder<bool>(
+                //       valueListenable: _isFavorite,
+                //       builder: (context, isFavorite, child) {
+                //         return Switch.adaptive(
+                //           value: isFavorite,
+                //           onChanged: (value) => _isFavorite.value = value,
+                //           trackOutlineColor:
+                //               MaterialStateProperty.resolveWith<Color?>(
+                //             (Set<MaterialState> states) => Colors.transparent,
+                //           ),
+                //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                //             (Set<MaterialState> states) => Colors.transparent,
+                //           ),
+                //           activeTrackColor: ColourPallette.mountainMeadow,
+                //           inactiveTrackColor: ColourPallette.error,
+                //         );
+                //       },
+                //     ),
+                //   ],
+                // ),
 
-                const SizedBox(height: 20),
+                // const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(

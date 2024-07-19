@@ -6,7 +6,9 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_favicon_widget.dart';
@@ -63,44 +65,93 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColourPallette.white,
-        surfaceTintColor: ColourPallette.mystic,
-        title: Text(
-          widget.collectionFetchModel.collection!.name,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: ColourPallette.salemgreen,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => AddUrlPage(
-                parentCollection: widget.collectionFetchModel.collection!,
+      // appBar: AppBar(
+      //   backgroundColor: ColourPallette.white,
+      //   surfaceTintColor: ColourPallette.mystic,
+      //   title: Text(
+      //     widget.collectionFetchModel.collection!.name,
+      //     style: const TextStyle(
+      //       fontSize: 18,
+      //       fontWeight: FontWeight.w500,
+      //     ),
+      //   ),
+      // ),
+      floatingActionButton: BlocBuilder<SharedInputsCubit, SharedInputsState>(
+        builder: (context, state) {
+          final urls = context.read<SharedInputsCubit>().getUrlsList();
+
+          // if (urls.isNotEmpty) {
+          //   return Align(
+          //     alignment: Alignment.bottomCenter,
+          //     child: Container(
+          //       alignment: Alignment.bottomCenter,
+          //       margin: EdgeInsets.only(left: 20),
+          //       child: Column(
+          //         mainAxisAlignment: MainAxisAlignment.end,
+          //         crossAxisAlignment: CrossAxisAlignment.end,
+          //         children: [
+          //           if (urls.length > 1)
+          //             Container(
+          //               height: 6,
+          //               margin: const EdgeInsets.symmetric(horizontal: 20),
+          //               decoration: const BoxDecoration(
+          //                 color: Colors.grey,
+          //                 border: Border(),
+          //                 borderRadius: BorderRadius.only(
+          //                   topLeft: Radius.circular(24),
+          //                   topRight: Radius.circular(24),
+          //                 ),
+          //               ),
+          //             ),
+          //           Card(
+          //             // padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          //             margin: const EdgeInsets.symmetric(horizontal: 8),
+          //             // decoration: BoxDecoration(
+          //             //   color: Colors.amber,
+          //             //   border: Border(),
+          //             //   borderRadius: BorderRadius.circular(16),
+          //             // ),
+          //             child: Text(urls.toString()),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   );
+          // }
+
+          final url = urls.isNotEmpty ? urls[0] : null;
+
+          return FloatingActionButton.extended(
+            backgroundColor: ColourPallette.salemgreen,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => AddUrlPage(
+                    parentCollection: widget.collectionFetchModel.collection!,
+                    url: url,
+                  ),
+                ),
+              );
+            },
+            label: const Text(
+              'Add URL',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: ColourPallette.white,
               ),
+            ),
+            icon: const Icon(
+              Icons.add_link_rounded,
+              color: ColourPallette.white,
             ),
           );
         },
-        label: const Text(
-          'Add URL',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: ColourPallette.white,
-          ),
-        ),
-        icon: const Icon(
-          Icons.add_link_rounded,
-          color: ColourPallette.white,
-        ),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        margin: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -108,6 +159,8 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
 
             return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               controller: _scrollController,
               child: Column(
                 children: [
@@ -129,7 +182,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                       itemBuilder: (context, index) {
                         final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading ) {
+                        if (url.loadingStates == LoadingStates.loading) {
                           return Center(
                             child: Container(
                               height: 80,

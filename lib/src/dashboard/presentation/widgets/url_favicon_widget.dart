@@ -85,9 +85,9 @@ class UrlFaviconLogoWidget extends StatelessWidget {
     required UrlMetaData urlMetaData,
   }) {
     if (urlMetaData.favicon != null) {
-      Logger.printLog(
-        '[favicon]: ${urlMetaData.faviconUrl}, size: ${urlMetaData.favicon?.length}',
-      );
+      // Logger.printLog(
+      //   '[favicon]: ${urlMetaData.faviconUrl}, size: ${urlMetaData.favicon?.length}',
+      // );
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.memory(

@@ -3,20 +3,21 @@
 class MediaRes {
   MediaRes._();
 
+  /// ------------------------------  SVGS  ------------------------------------
   static const String loginPasswordSVG = 'assets/images/login_password.svg';
   static const String loginSVG = 'assets/images/login.svg';
   static const String mailboxBroSVG = 'assets/images/mailbox_bro.svg';
-
   static const String savingMoenyPNG = 'assets/images/saving-money.png';
-  static const String solidarityPNG = 'assets/images/solidarity-concept.png';
+  static const String solidaritySVG = 'assets/images/solidarity.svg';
   // static const String = '';
 
 
 
-  /// ANIMATIONS
+  /// ---------------------------- ANIMATIONS ----------------------------------
   static const String loadingANIMATION = 'assets/animations/loading.json';
   static const String hurrayANIMATION = 'assets/animations/hurray.json';
   static const String errorANIMATION = 'assets/animations/error.json';
+  // static const String = '';
 
 
 }
