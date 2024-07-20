@@ -145,6 +145,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
     _selectedCategory.dispose();
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
+    if (widget.url != null) {
+      context.read<SharedInputsCubit>().removeUrlInput();
+    }
     super.dispose();
   }
 

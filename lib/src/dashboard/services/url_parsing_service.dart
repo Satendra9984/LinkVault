@@ -66,19 +66,41 @@ class UrlParsingService {
 
         Element? largestImageElement;
         for (final img in imageElements) {
-          final width = int.tryParse(img.attributes['width'] ?? '') ?? 1;
-          final height = int.tryParse(img.attributes['height'] ?? '') ?? 1;
+          final width = int.tryParse(img.attributes['width'] ?? '1') ?? 1;
+          final height = int.tryParse(img.attributes['height'] ?? '1') ?? 1;
           final area = width * height;
-          final aspectRatio = width ~/ height;
+          // final aspectRatio = width ~/ height;
+
+          // Logger.printLog('img: ${img.attributes}, area: $area');
 
           if (area >= minBannerArea &&
-              (width >= minBannerWidth || height >= minBannerHeight) &&
-              (aspectRatio >= 1.5 && aspectRatio <= 6)) {
+                  (width >= minBannerWidth || height >= minBannerHeight)
+              // &&
+              // (aspectRatio >= 1.5 && aspectRatio <= 6)
+
+              ) {
+            final containesLogoAlt =
+                (img.attributes['alt'] ?? '').toLowerCase().contains('logo');
+
+            final containesLogoClass =
+                (img.attributes['class'] ?? '').toLowerCase().contains('logo');
+
+            if (containesLogoAlt || containesLogoClass) continue;
+            final containesAuthorAlt =
+                (img.attributes['alt'] ?? '').toLowerCase().contains('author');
+
+            final containesAuthorClass = (img.attributes['class'] ?? '')
+                .toLowerCase()
+                .contains('author');
+            if (containesAuthorAlt || containesAuthorClass) continue;
+
             largestImageElement = img;
             break;
           }
         }
 
+        // Logger.printLog(
+        //     'after loop: ${largestImageElement?.attributes['src']}');
         if (largestImageElement != null) {
           final src = largestImageElement.attributes['src'];
           if (src != null) {
@@ -271,16 +293,17 @@ class UrlParsingService {
 // Main parsing function
   static Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
     final htmlContent = await fetchWebpageContent(url);
+    final metaData = <String, dynamic>{};
 
     if (htmlContent == null) {
-      return (null, null);
+      metaData['websiteName'] = extractWebsiteNameFromUrlString(url);
+      final websiteLogoUrl = getWebsiteLogoUrl(url);
+      metaData['favicon_url'] = websiteLogoUrl;
+
+      return (null, UrlMetaData.fromJson(metaData));
     }
 
-    // final directory = await getApplicationDocumentsDirectory()..path;
-    // await File('htmlContent.html').writeAsString(htmlContent);
-
     final document = html_parser.parse(htmlContent);
-    final metaData = <String, dynamic>{};
 
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
@@ -289,26 +312,24 @@ class UrlParsingService {
 
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
     websiteLogoUrl ??= getWebsiteLogoUrl(url);
-    if (websiteLogoUrl != null) {
-      websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
-      metaData['favicon_url'] = websiteLogoUrl;
-      final faviconUint = await fetchImageAsUint8List(
-        websiteLogoUrl,
-        maxSize: 100000,
-        compressImage: true,
-        quality: 80,
-        autofillPng: true,
-      );
-      // Logger.printLog(
-      //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
-      // );
-      if (faviconUint != null) {
-        metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
-      }
+    websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
+    metaData['favicon_url'] = websiteLogoUrl;
+    final faviconUint = await fetchImageAsUint8List(
+      websiteLogoUrl,
+      maxSize: 100000,
+      compressImage: true,
+      quality: 80,
+      autofillPng: true,
+    );
+    // Logger.printLog(
+    //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
+    // );
+    if (faviconUint != null) {
+      metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
     }
 
-    var imageUrl = extractImageUrl(document);
-    Logger.printLog('imageUrl : $imageUrl');
+    var imageUrl = extractImageUrl(document) ?? websiteLogoUrl;
+    // Logger.printLog('imageUrl : $imageUrl');
     if (imageUrl != null) {
       imageUrl = handleRelativeUrl(imageUrl, url);
       metaData['banner_image_url'] = imageUrl;
