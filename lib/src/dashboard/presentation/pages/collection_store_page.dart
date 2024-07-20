@@ -6,21 +6,14 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_preview_list.dart';
-import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
-import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
-import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:lottie/lottie.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class FolderCollectionPage extends StatefulWidget {
   const FolderCollectionPage({
@@ -38,39 +31,43 @@ class FolderCollectionPage extends StatefulWidget {
 class _FolderCollectionPageState extends State<FolderCollectionPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
-  final _showAppBar = ValueNotifier(true);
-  // final PageController _pageController = PageController();
-  late final TabController _pageController;
+  final _showBottomNavBar = ValueNotifier(true);
+  final PageController _pageController = PageController();
+  // late final TabController _pageController;
 
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
   void initState() {
+    // _pageController = TabController(length: 3, vsync: this);
+    // _pageController.index = _currentPage.value;
+    // if (mounted) {
+    // context.read<CollectionsCubit>().fetchCollection(
+    //       collectionId: widget.collectionId,
+    //       userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+    //       isRootCollection: true,
+    //     );
+    // }
     super.initState();
-    _pageController = TabController(length: 3, vsync: this);
-
-    if (mounted) {
-      context.read<CollectionsCubit>().fetchCollection(
-            collectionId: widget.collectionId,
-            userId: context.read<GlobalUserCubit>().state.globalUser!.id,
-            isRootCollection: true,
-          );
-    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _showAppBar.dispose();
+    _showBottomNavBar.dispose();
     _currentPage.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColourPallette.white,
-      body: BlocConsumer<CollectionsCubit, CollectionsState>(
+    return 
+    
+    // Scaffold(
+    //   backgroundColor: ColourPallette.white,
+    //   body: 
+      
+      BlocConsumer<CollectionsCubit, CollectionsState>(
         listener: (context, state) {
           // [TODO]: implement listener
         },
@@ -82,13 +79,16 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
           final fetchCollection = state.collections[widget.collectionId];
 
           if (fetchCollection == null) {
-            return Container();
+            context.read<CollectionsCubit>().fetchCollection(
+                  collectionId: widget.collectionId,
+                  userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+                  isRootCollection: true,
+                );
           }
 
-          // Logger.printLog('Updated collection store page');
-
-          if (fetchCollection.collectionFetchingState ==
-              LoadingStates.loading) {
+          if (fetchCollection == null ||
+              fetchCollection.collectionFetchingState ==
+                  LoadingStates.loading) {
             return Scaffold(
               appBar: _getAppBar(title: 'Dashboard'),
               body: Center(
@@ -156,6 +156,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
               ),
             );
           }
+          // Logger.printLog('Updated collection store page');
 
           final collection = fetchCollection.collection;
           if (collection == null) {
@@ -179,7 +180,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                 ],
               ),
               child: ValueListenableBuilder(
-                valueListenable: _showAppBar,
+                valueListenable: _showBottomNavBar,
                 builder: (context, showBottomBar, _) {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -192,7 +193,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                           onTap: (currentIndex) {
                             _currentPage.value = currentIndex;
                             // _pageController.jumpToPage(currentIndex);
-                            _pageController.animateTo(currentIndex);
+                            _pageController.jumpToPage(currentIndex);
                           },
                           enableFeedback: false,
                           backgroundColor: ColourPallette.white,
@@ -237,11 +238,11 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                 },
               ),
             ),
-            body: TabBarView(
+            body: PageView(
               controller: _pageController,
-              // onPageChanged: (page) {
-              //   _currentPage.value = page;
-              // },
+              onPageChanged: (page) {
+                _currentPage.value = page;
+              },
               children: [
                 UrlsListWidget(
                   title: 'Urls',
@@ -251,7 +252,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                   collectionFetchModel: fetchCollection,
                 ),
                 UrlsPreviewListWidget(
-                  showBottomBar: _showAppBar,
+                  showBottomBar: _showBottomNavBar,
                   title: 'Urls',
                   collectionFetchModel: fetchCollection,
                 ),
@@ -259,7 +260,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
             ),
           );
         },
-      ),
+      // ),
     );
   }
 
@@ -372,17 +373,17 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                     );
                   }
                 },
-                leading: Icon(
+                leading: const Icon(
                   Icons.home_rounded,
                 ),
-                title: Text(
+                title: const Text(
                   'Home',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.arrow_forward_ios_rounded,
                 ),
               ),
@@ -394,17 +395,17 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                     ),
                   );
                 },
-                leading: Icon(
+                leading: const Icon(
                   Icons.support,
                 ),
-                title: Text(
+                title: const Text(
                   'Support Us',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.arrow_forward_ios_rounded,
                 ),
               ),
@@ -423,17 +424,17 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                 },
               );
             },
-            leading: Icon(
+            leading: const Icon(
               Icons.logout_rounded,
             ),
-            title: Text(
+            title: const Text(
               'Log Out',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            trailing: Icon(
+            trailing: const Icon(
               Icons.arrow_forward_ios_rounded,
             ),
           ),

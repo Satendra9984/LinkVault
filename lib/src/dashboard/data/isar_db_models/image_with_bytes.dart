@@ -12,12 +12,6 @@ class ImagesByteData {
     required this.imageBytes,
   });
 
-  Id id = Isar.autoIncrement;
-
-  String imageUrl;
-
-  List<int> imageBytes;
-
   factory ImagesByteData.fromBytes({
     required String imageUrl,
     required Uint8List bytes,
@@ -27,4 +21,10 @@ class ImagesByteData {
       imageBytes: bytes,
     );
   }
+
+  Id id = Isar.autoIncrement;
+
+  String imageUrl;
+
+  List<int> imageBytes;
 }

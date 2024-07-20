@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 // import 'dart:isolate';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +8,6 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/local_image_data_source.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
-import 'package:link_vault/src/dashboard/data/services/image_decoder.dart';
 // import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
@@ -40,6 +38,18 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     );
   }
 
+  // Future<void> addImage(
+  //   String imageUrl, {
+  //   required bool compressImage,
+  // }) async {
+  //   _imageQueueManager.addTask(
+  //     () => _addImage(
+  //       imageUrl,
+  //       compressImage: compressImage,
+  //     ),
+  //   );
+  // }
+
   Future<void> addImage(
     String imageUrl, {
     required bool compressImage,
@@ -57,68 +67,49 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       ),
     );
 
-    final localImageBytes = await _localImageDataSource.getImageData(imageUrl);
+    _imageQueueManager.addTask(
+      () async {
+        final localImageBytes =
+            await _localImageDataSource.getImageData(imageUrl);
 
-    Logger.printLog('isarImage: ${localImageBytes != null}');
+        Logger.printLog('isarImage: ${localImageBytes != null}');
 
-    final imageBytes = localImageBytes ??
-        await UrlParsingService.fetchImageAsUint8List(
-          imageUrl,
-          maxSize: 2 * 102 * 1024,
-          compressImage: compressImage,
-          quality: 75,
-        );
+        final imageBytes = localImageBytes ??
+            await UrlParsingService.fetchImageAsUint8List(
+              imageUrl,
+              maxSize: 2 * 102 * 1024,
+              compressImage: compressImage,
+              quality: 75,
+            );
 
-    final addedImageModel = getImageData(imageUrl) ??
-        ValueNotifier(
-          NetworkImageCacheModel(
+        final addedImageModel = getImageData(imageUrl) ??
+            ValueNotifier(
+              NetworkImageCacheModel(
+                loadingState: LoadingStates.errorLoading,
+                imageUrl: imageUrl,
+              ),
+            );
+
+        if (imageBytes == null) {
+          addedImageModel.value = addedImageModel.value.copyWith(
             loadingState: LoadingStates.errorLoading,
-            imageUrl: imageUrl,
-          ),
-        );
+          );
+        } else {
+          addedImageModel.value = addedImageModel.value.copyWith(
+            imageBytesData: imageBytes,
+            loadingState: LoadingStates.loaded,
+            // uiImage: uiImage,
+          );
 
-    if (imageBytes == null) {
-      addedImageModel.value = addedImageModel.value.copyWith(
-        loadingState: LoadingStates.errorLoading,
-      );
-    } else {
-      addedImageModel.value = addedImageModel.value.copyWith(
-        imageBytesData: imageBytes,
-        loadingState: LoadingStates.loaded,
-        // uiImage: uiImage,
-      );
-
-      if (localImageBytes == null) {
-        await _localImageDataSource.addImageData(
-          imageUrl: imageUrl,
-          imageBytes: imageBytes,
-        );
-      }
-
-      // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
-
-      // _imageQueueManager.addTask(
-      //   () async {
-      //     final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
-
-      //     final newImagesstateWithUiImage = {...state.imagesData};
-
-      //     newImagesstateWithUiImage[imageUrl] = ValueNotifier(
-      //       addedImageModel.value.copyWith(
-      //         imageBytesData: imageBytes,
-      //         loadingState: LoadingStates.loaded,
-      //         uiImage: uiImage,
-      //       ),
-      //     );
-
-      //     emit(
-      //       state.copyWith(
-      //         imagesData: newImagesstateWithUiImage,
-      //       ),
-      //     );
-      //   },
-      // );
-    }
+          if (localImageBytes == null) {
+            await _localImageDataSource.addImageData(
+              imageUrl: imageUrl,
+              imageBytes: imageBytes,
+            );
+          }
+        }
+      },
+    );
   }
 
   ValueNotifier<NetworkImageCacheModel>? getImageData(String imageUrl) {

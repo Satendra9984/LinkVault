@@ -8,7 +8,6 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
@@ -35,7 +34,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   final AsyncQueueManager _collQueueManager = AsyncQueueManager();
   final AsyncQueueManager _urlQueueManager = AsyncQueueManager();
-
 
   Future<void> fetchCollection({
     required String collectionId,
@@ -116,7 +114,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       () => _fetchMoreSubCollections(
           collectionId: collectionId,
           userId: userId,
-          isRootCollection: isRootCollection),
+          isRootCollection: isRootCollection,),
     );
   }
 

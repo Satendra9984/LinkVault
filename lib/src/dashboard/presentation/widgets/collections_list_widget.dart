@@ -8,7 +8,6 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
@@ -26,15 +25,17 @@ class CollectionsListWidget extends StatefulWidget {
   State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
 }
 
-class _CollectionsListWidgetState extends State<CollectionsListWidget>
-    with AutomaticKeepAliveClientMixin {
+class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   late final ScrollController _scrollController;
 
   @override
   void initState() {
-    super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // _scrollController;
     _fetchMoreCollections();
+    // });
+    super.initState();
   }
 
   Future<void> _onScroll() async {
@@ -56,7 +57,7 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         heroTag: '${widget.collectionFetchModel.hashCode}',
@@ -88,8 +89,8 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget>
         ),
       ),
       body: Container(
-        margin: EdgeInsets.only(top: 16),
-        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        margin: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -98,7 +99,17 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget>
           listener: (context, state) {},
           builder: (context, state) {
             final fetchCollection =
-                state.collections[widget.collectionFetchModel.collection!.id]!;
+                state.collections[widget.collectionFetchModel.collection!.id];
+
+            if (fetchCollection == null) {
+              // _fetchMoreCollections();
+
+              return Center(
+                child: SvgPicture.asset(
+                  MediaRes.collectionSVG,
+                ),
+              );
+            }
 
             final availableSubCollections = <CollectionFetchModel>[];
 
@@ -116,7 +127,8 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget>
             const collectionIconWidth = 96.0;
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(
-                  parent: AlwaysScrollableScrollPhysics()),
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               controller: _scrollController,
               child: Column(
                 children: [
@@ -210,6 +222,6 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget>
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 }

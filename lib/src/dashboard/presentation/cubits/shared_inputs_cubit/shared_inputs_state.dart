@@ -1,9 +1,9 @@
 part of 'shared_inputs_cubit.dart';
 
 class SharedInputsState extends Equatable {
-  final List<UrlInput> inputs;
 
   const SharedInputsState(this.inputs);
+  final List<UrlInput> inputs;
 
   @override
   List<Object?> get props => [inputs];

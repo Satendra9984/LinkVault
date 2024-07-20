@@ -90,7 +90,7 @@ class AuthRemoteDataSourcesImpl {
       final todayDate = DateTime.now().toUtc();
       final creditExpiryDate = todayDate.add(
         const Duration(
-          minutes: accountSingUpCreditLimit,  // [TODO] : WILL CHANGE TO DAYS
+          days: accountSingUpCreditLimit,  // [TODO] : WILL CHANGE TO DAYS
         ),
       );
 

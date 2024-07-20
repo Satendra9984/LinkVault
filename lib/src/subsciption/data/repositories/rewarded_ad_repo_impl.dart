@@ -32,8 +32,6 @@ class RewardedAdRepoImpl {
 
   Future<Either<Failure, Unit>> loadAd() async {
     try {
-      var isFailed = false;
-
       await RewardedAd.load(
         adUnitId: _adUnitId,
         request: const AdRequest(),
@@ -42,11 +40,13 @@ class RewardedAdRepoImpl {
           onAdLoaded: (ad) async {
             debugPrint('$ad loaded.');
             // Keep a reference to the ad so you can show it later.
+            // await Future.delayed(
+            //   const Duration(seconds:7),
+            // );
             _rewardedAd = ad;
           },
           // Called when an ad request failed.
           onAdFailedToLoad: (onAdFailedToLoad) {
-            isFailed = true;
             debugPrint(
               '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
             );
@@ -57,12 +57,10 @@ class RewardedAdRepoImpl {
           },
         ),
       ).catchError((e) {
-        debugPrint('[log] : $e');
+        debugPrint('[log][ads] : $e');
       });
-      await Future.delayed(
-        const Duration(seconds: 3),
-      );
-      if (isFailed) {
+
+      if (_rewardedAd == null) {
         throw ServerException(
           message: 'Video Not loaded',
           statusCode: 400,
@@ -106,8 +104,8 @@ class RewardedAdRepoImpl {
 
       final currentTime = DateTime.now().toUtc();
       final nextExpiryDate = currentTime.add(
-        // [TODO] : CONVERT TO DAYS
-        const Duration(minutes: rewardedAdCreditLimit),
+        // CONVERT TO DAYS
+        const Duration(days: rewardedAdCreditLimit),
       );
 
       await _subsciptionRemoteDataSources.rewardUserForWatchingVideo(

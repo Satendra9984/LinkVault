@@ -191,7 +191,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
               final urlDescription = _urlDescriptionController.text;
 
               Share.share(
-                '${urlAddress}\n${urlTitle}\n${urlDescription}',
+                '$urlAddress\n$urlTitle\n$urlDescription',
               );
             },
             icon: const Icon(

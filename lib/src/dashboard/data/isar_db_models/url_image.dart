@@ -12,12 +12,6 @@ class UrlImage {
     required this.base64ImageBytes,
   });
 
-  Id id = Isar.autoIncrement;
-
-  String imageUrl;
-
-  String base64ImageBytes;
-
   factory UrlImage.fromBytes({
     required String imageUrl,
     required Uint8List bytes,
@@ -27,4 +21,10 @@ class UrlImage {
       base64ImageBytes: StringUtils.convertUint8ListToBase64(bytes)??'',
     );
   }
+
+  Id id = Isar.autoIncrement;
+
+  String imageUrl;
+
+  String base64ImageBytes;
 }

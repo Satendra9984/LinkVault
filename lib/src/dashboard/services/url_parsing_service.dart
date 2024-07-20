@@ -330,25 +330,23 @@ class UrlParsingService {
 
     var imageUrl = extractImageUrl(document) ?? websiteLogoUrl;
     // Logger.printLog('imageUrl : $imageUrl');
-    if (imageUrl != null) {
-      imageUrl = handleRelativeUrl(imageUrl, url);
-      metaData['banner_image_url'] = imageUrl;
-      final bannerImage = await fetchImageAsUint8List(
-        imageUrl,
-        maxSize: 150000,
-        compressImage: true,
-        quality: 75,
-        autofillPng: false,
-      );
-      // Logger.printLog(
-      //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
-      // );
-      if (bannerImage != null) {
-        metaData['banner_image'] =
-            StringUtils.convertUint8ListToBase64(bannerImage);
-      }
+    imageUrl = handleRelativeUrl(imageUrl, url);
+    metaData['banner_image_url'] = imageUrl;
+    final bannerImage = await fetchImageAsUint8List(
+      imageUrl,
+      maxSize: 150000,
+      compressImage: true,
+      quality: 75,
+      autofillPng: false,
+    );
+    // Logger.printLog(
+    //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
+    // );
+    if (bannerImage != null) {
+      metaData['banner_image'] =
+          StringUtils.convertUint8ListToBase64(bannerImage);
     }
-
+  
     // Fetch image as Uint8List
     final metaDataObject = UrlMetaData.fromJson(metaData);
 

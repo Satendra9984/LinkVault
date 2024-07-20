@@ -8,17 +8,11 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_preview_list.dart';
-import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
-import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
-import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:lottie/lottie.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class FolderCollectionRootPage extends StatefulWidget {
   const FolderCollectionRootPage({
@@ -380,17 +374,17 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                     // );
                   }
                 },
-                leading: Icon(
+                leading: const Icon(
                   Icons.home_rounded,
                 ),
-                title: Text(
+                title: const Text(
                   'Home',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.arrow_forward_ios_rounded,
                 ),
               ),
@@ -402,17 +396,17 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                     ),
                   );
                 },
-                leading: Icon(
+                leading: const Icon(
                   Icons.support,
                 ),
-                title: Text(
+                title: const Text(
                   'Support Us',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.arrow_forward_ios_rounded,
                 ),
               ),
@@ -420,17 +414,17 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
           ),
           ListTile(
             onTap: () {},
-            leading: Icon(
+            leading: const Icon(
               Icons.logout_rounded,
             ),
-            title: Text(
+            title: const Text(
               'Log Out',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            trailing: Icon(
+            trailing: const Icon(
               Icons.arrow_forward_ios_rounded,
             ),
           ),

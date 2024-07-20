@@ -25,7 +25,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
   late final TextEditingController _collectionNameController;
   late final TextEditingController _descEditingController;
   late final List<String> _predefinedCategories;
-  bool _favourite = false;
+  final bool _favourite = false;
   String _selectedCategory = '';
 
   Future<void> addCollection(

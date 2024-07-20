@@ -5,11 +5,9 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
@@ -39,12 +37,12 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
 
   @override
   void initState() {
-    super.initState();
     _scrollController.addListener(_onScroll);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchMoreUrls();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // _fetchMoreUrls();
+    // });
+    super.initState();
   }
 
   void _onScroll() {
@@ -91,6 +89,10 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
           builder: (context, state) {
             final availableUrls = state
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
+
+            if (availableUrls == null) {
+              _fetchMoreUrls();
+            }
 
             return SingleChildScrollView(
               controller: _scrollController,

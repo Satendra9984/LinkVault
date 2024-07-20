@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
@@ -15,7 +13,6 @@ import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/collection_store_root_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class DashboardHomePage extends StatefulWidget {

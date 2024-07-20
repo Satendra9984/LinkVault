@@ -19,7 +19,7 @@ class FolderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final folderColor = ColourPallette.freepikLoginImage;
+    const folderColor = ColourPallette.freepikLoginImage;
     return GestureDetector(
       onTap: onPress,
       onDoubleTap: onDoubleTap,

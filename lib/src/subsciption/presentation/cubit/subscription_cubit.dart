@@ -82,7 +82,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             videoWatchingStates: LoadingStates.errorLoading,
-            loadingStates: LoadingStates.initial ,
+            loadingStates: LoadingStates.initial,
           ),
         );
       },
@@ -100,7 +100,4 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     return isLoaded;
   }
-
-
-  
 }
