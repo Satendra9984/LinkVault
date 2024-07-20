@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/local_image_data_source.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 import 'package:link_vault/src/dashboard/data/services/image_decoder.dart';
 // import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
@@ -20,6 +22,8 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
             imagesData: {},
           ),
         );
+
+  final LocalImageDataSource _localImageDataSource = LocalImageDataSource();
 
   final AsyncQueueManager _imageQueueManager = AsyncQueueManager();
 
@@ -53,69 +57,74 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
       ),
     );
 
-    await UrlParsingService.fetchImageAsUint8List(
-      imageUrl,
-      maxSize: 2 * 102 * 1024,
-      compressImage: compressImage,
-      quality: 75,
-    ).then(
-      (imageBytes) async {
-        // final imagesData2 = {...state.imagesData};
+    final localImageBytes = await _localImageDataSource.getImageData(imageUrl);
 
-        // Logger.printLog(
-        //   '[Image][isolate] : ${imageUrl} ${imageBytes != null}',
-        // );
+    Logger.printLog('isarImage: ${localImageBytes != null}');
 
-        final addedImageModel = getImageData(imageUrl) ??
-            ValueNotifier(
-              NetworkImageCacheModel(
-                loadingState: LoadingStates.errorLoading,
-                imageUrl: imageUrl,
-              ),
-            );
+    final imageBytes = localImageBytes ??
+        await UrlParsingService.fetchImageAsUint8List(
+          imageUrl,
+          maxSize: 2 * 102 * 1024,
+          compressImage: compressImage,
+          quality: 75,
+        );
 
-        if (imageBytes == null) {
-          addedImageModel.value = addedImageModel.value.copyWith(
+    final addedImageModel = getImageData(imageUrl) ??
+        ValueNotifier(
+          NetworkImageCacheModel(
             loadingState: LoadingStates.errorLoading,
-          );
-        } else {
-          addedImageModel.value = addedImageModel.value.copyWith(
-            imageBytesData: imageBytes,
-            loadingState: LoadingStates.loaded,
-            // uiImage: uiImage,
-          );
-          // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
+            imageUrl: imageUrl,
+          ),
+        );
 
-          // _imageQueueManager.addTask(
-          //   () async {
-          //     final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
+    if (imageBytes == null) {
+      addedImageModel.value = addedImageModel.value.copyWith(
+        loadingState: LoadingStates.errorLoading,
+      );
+    } else {
+      addedImageModel.value = addedImageModel.value.copyWith(
+        imageBytesData: imageBytes,
+        loadingState: LoadingStates.loaded,
+        // uiImage: uiImage,
+      );
 
-          //     final newImagesstateWithUiImage = {...state.imagesData};
+      if (localImageBytes == null) {
+        await _localImageDataSource.addImageData(
+          imageUrl: imageUrl,
+          imageBytes: imageBytes,
+        );
+      }
 
-          //     newImagesstateWithUiImage[imageUrl] = ValueNotifier(
-          //       addedImageModel.value.copyWith(
-          //         imageBytesData: imageBytes,
-          //         loadingState: LoadingStates.loaded,
-          //         uiImage: uiImage,
-          //       ),
-          //     );
+      // final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
 
-          //     emit(
-          //       state.copyWith(
-          //         imagesData: newImagesstateWithUiImage,
-          //       ),
-          //     );
-          //   },
-          // );
-        }
-      },
-    );
+      // _imageQueueManager.addTask(
+      //   () async {
+      //     final uiImage = await ImageDecodeManager.decodeImage(imageBytes);
+
+      //     final newImagesstateWithUiImage = {...state.imagesData};
+
+      //     newImagesstateWithUiImage[imageUrl] = ValueNotifier(
+      //       addedImageModel.value.copyWith(
+      //         imageBytesData: imageBytes,
+      //         loadingState: LoadingStates.loaded,
+      //         uiImage: uiImage,
+      //       ),
+      //     );
+
+      //     emit(
+      //       state.copyWith(
+      //         imagesData: newImagesstateWithUiImage,
+      //       ),
+      //     );
+      //   },
+      // );
+    }
   }
 
   ValueNotifier<NetworkImageCacheModel>? getImageData(String imageUrl) {
     final imageData = state.imagesData[imageUrl];
 
-    if (imageData == null) {}
+    // if (imageData == null) {}
 
     return imageData;
   }

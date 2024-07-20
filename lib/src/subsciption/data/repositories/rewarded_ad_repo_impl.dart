@@ -39,7 +39,7 @@ class RewardedAdRepoImpl {
         request: const AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           // Called when an ad is successfully received.
-          onAdLoaded: (ad) {
+          onAdLoaded: (ad) async {
             debugPrint('$ad loaded.');
             // Keep a reference to the ad so you can show it later.
             _rewardedAd = ad;
@@ -59,7 +59,9 @@ class RewardedAdRepoImpl {
       ).catchError((e) {
         debugPrint('[log] : $e');
       });
-
+      await Future.delayed(
+        const Duration(seconds: 3),
+      );
       if (isFailed) {
         throw ServerException(
           message: 'Video Not loaded',
@@ -85,9 +87,7 @@ class RewardedAdRepoImpl {
   }) async {
     try {
       num rewardAmount = 0;
-      await Future.delayed(
-        const Duration(seconds: 2),
-      );
+
       if (_rewardedAd == null) {
         debugPrint('[log] : ad is null');
         throw ServerException(
