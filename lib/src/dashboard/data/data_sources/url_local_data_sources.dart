@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'package:isar/isar.dart';
-import 'package:flutter/widgets.dart';
-import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
@@ -33,7 +30,7 @@ class UrlLocalDataSourcesImpl {
         );
       }
     } catch (e) {
-      Logger.printLog('urloffline: initialize ${e}');
+      Logger.printLog('urloffline: initialize $e');
 
       return;
     }
@@ -53,7 +50,7 @@ class UrlLocalDataSourcesImpl {
       if (urlModelOffline == null) {
         return null;
       }
-      Logger.printLog('urloffline: fetchedUrl');
+      // Logger.printLog('urloffline: fetchedUrl');
       return urlModelOffline.toUrlModel();
     } catch (e) {
       Logger.printLog('fetchUrlLocal : $e');
@@ -69,8 +66,8 @@ class UrlLocalDataSourcesImpl {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
-      Logger.printLog(
-          'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
+      // Logger.printLog(
+      //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
 
@@ -80,7 +77,9 @@ class UrlLocalDataSourcesImpl {
       if (urlModelOffline == null) {
         return null;
       }
-      Logger.printLog('urloffline: fetchedUrlOfflineModel');
+      // Logger.printLog(
+      //   'urloffline: fetchedUrlOfflineModel ${urlModelOffline.id}, ${urlModelOffline.firestoreId}',
+      // );
 
       return urlModelOffline;
     } catch (e) {
@@ -110,7 +109,7 @@ class UrlLocalDataSourcesImpl {
         },
       );
 
-      Logger.printLog('urloffline: addedUrl');
+      // Logger.printLog('urloffline: addedUrl');
 
       return urlModelOffline.toUrlModel();
     } catch (e) {
@@ -124,54 +123,68 @@ class UrlLocalDataSourcesImpl {
   }
 
   // Update UrlModelOffline
-  Future<UrlModel?> updateUrl(UrlModel urlModel) async {
+  Future<void> updateUrl(UrlModel urlModel) async {
     try {
       await _initializeIsar();
-      Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
-      if (_isar == null) return null;
+      // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
+      if (_isar == null) return;
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
 
-      final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
+      // final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
+      await fetchUrlModelOffline(urlModel.firestoreId).then(
+        (urlModelOffline) async {
+          // if (urlModelOffline == null) return;
 
-      // Update the UrlModelOffline in Isar
-      await _isar!.writeTxn(
-        () async {
-          await urlModelOfflineCollection.put(urlModelOffline);
+          // Logger.printLog(
+          //   'fetchedUpdate: ${urlModelOffline != null}, ${urlModelOffline?.id}',
+          // );
+
+          final updatedUrlOffline =
+              urlModelOffline?.copyWith(urlModel: urlModel) ??
+                  UrlModelOffline.fromUrlModel(urlModel);
+
+          // Logger.printLog('fetchedUpdate: updated ${updatedUrlOffline.id}');
+
+          await _isar!.writeTxn(
+            () async {
+              await urlModelOfflineCollection.put(updatedUrlOffline);
+            },
+          );
         },
       );
-      Logger.printLog('urloffline: updatedUrl');
+      // Logger.printLog('urloffline: updatedUrl');
 
-      return urlModelOffline.toUrlModel();
+      return;
     } catch (e) {
       Logger.printLog('updateUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
       // );
-      return null;
+      return;
     }
   }
 
   // Delete UrlModelOffline by id
-  Future<void> deleteUrl(String urlId) async {
+  Future<void> deleteUrl(String urlFirestoreId) async {
     try {
       await _initializeIsar();
       if (_isar == null) return;
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
 
-      await fetchUrlModelOffline(urlId).then(
+      await fetchUrlModelOffline(urlFirestoreId).then(
         (urlModelOffline) async {
           if (urlModelOffline == null) return;
           await _isar!.writeTxn(
             () async {
-              await urlModelOfflineCollection.delete(urlModelOffline.id);
+              await urlModelOfflineCollection.delete(urlModelOffline.id!);
             },
           );
         },
       );
-      Logger.printLog('urloffline: deletedUrl');
+      // Logger.printLog('urloffline: deletedUrl');
     } catch (e) {
       Logger.printLog('deleteUrlOffline : $e');
       // throw ServerException(

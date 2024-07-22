@@ -135,6 +135,7 @@ class RemoteDataSourcesImpl {
   Future<void> deleteCollection({
     required String collectionId,
     required String userId,
+    void Function({required String collectionId})? locaDBDelete,
   }) async {
     // [TODO] : delete subcollection in db
     // trying bottom up approach
@@ -166,6 +167,8 @@ class RemoteDataSourcesImpl {
           .collection(folderCollections)
           .doc(collection.id)
           .delete();
+      
+      
 
       final urlList = collection.urls;
 
@@ -175,6 +178,27 @@ class RemoteDataSourcesImpl {
           userId: urlId,
         );
       }
+    } catch (e) {
+      throw ServerException(
+        message: 'Something went wrong.',
+        statusCode: 400,
+      );
+    }
+  }
+
+  Future<void> deleteCollectionSingle({
+    required String collectionId,
+    required String userId,
+  }) async {
+    // [TODO] : delete subcollection in db
+    // trying bottom up approach
+    try {
+      await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(folderCollections)
+          .doc(collectionId)
+          .delete();
     } catch (e) {
       throw ServerException(
         message: 'Something went wrong.',
@@ -269,22 +293,22 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<UrlModel> deleteUrl(
-    UrlModel urlModel, {
+  Future<String> deleteUrl(
+    String urlId, {
     required String userId,
   }) async {
     try {
       // Logger.printLog('UrlModel length');
-      Logger.printLog(urlModel.toString());
+      Logger.printLog(urlId);
 
       await _firestore
           .collection(userCollection)
           .doc(userId)
           .collection(urlDataCollection)
-          .doc(urlModel.firestoreId)
+          .doc(urlId)
           .delete();
 
-      return urlModel;
+      return urlId;
     } catch (e) {
       Logger.printLog('deleteUrl : $e');
       throw ServerException(

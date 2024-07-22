@@ -120,12 +120,12 @@ class UrlRepoImpl {
     // then we need to update the collections also
     try {
       final deletedUrlData = await _remoteDataSourcesImpl.deleteUrl(
-        urlData,
+        urlData.firestoreId,
         userId: userId,
       );
 
       if (collection == null) {
-        return Right((deletedUrlData, null));
+        return Right((urlData, null));
       }
       final urlList = collection.urls
         ..removeWhere(
@@ -143,7 +143,7 @@ class UrlRepoImpl {
 
       await _urlLocalDataSourcesImpl.deleteUrl(urlData.firestoreId);
 
-      return Right((deletedUrlData, serverUpdatedCollection));
+      return Right((urlData, serverUpdatedCollection));
     } on ServerException catch (e) {
       Logger.printLog('deleteUrlData : $e');
       return Left(

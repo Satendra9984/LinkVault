@@ -163,7 +163,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                                   await launchUrl(uri);
                                 }
                               },
-                              onDoubleTap: () {
+                              onLongPress: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

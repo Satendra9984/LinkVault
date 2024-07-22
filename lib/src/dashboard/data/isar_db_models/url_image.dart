@@ -10,6 +10,7 @@ class UrlImage {
   UrlImage({
     required this.imageUrl,
     required this.base64ImageBytes,
+    this.id,
   });
 
   factory UrlImage.fromBytes({
@@ -22,8 +23,9 @@ class UrlImage {
     );
   }
 
-  Id id = Isar.autoIncrement;
-
+  final Id? id;
+  
+  @Index(unique: true, replace: true)
   String imageUrl;
 
   String base64ImageBytes;

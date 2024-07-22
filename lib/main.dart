@@ -13,6 +13,7 @@ import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/collection_model_offline.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_model_offline.dart';
@@ -41,6 +42,7 @@ void main() async {
 
     await Isar.open(
       [
+        CollectionModelOfflineSchema,
         UrlImageSchema,
         ImagesByteDataSchema,
         UrlModelOfflineSchema,

@@ -503,7 +503,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 child: UrlPreviewWidget(
                   urlMetaData: _previewMetaData.value!,
                   onTap: () => {},
-                  onDoubleTap: () => {},
+                  onLongPress: () => {},
                   onShareButtonTap: () {},
                   onMoreVertButtontap: () {},
                 ),

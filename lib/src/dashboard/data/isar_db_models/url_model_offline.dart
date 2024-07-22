@@ -8,11 +8,10 @@ part 'url_model_offline.g.dart';
 
 @Collection()
 class UrlModelOffline {
-
   UrlModelOffline({
-    // required this.id,
     required this.firestoreId,
     required this.jsonData,
+    this.id,
   });
 
   factory UrlModelOffline.fromUrlModel(UrlModel urlModel) {
@@ -22,14 +21,24 @@ class UrlModelOffline {
     );
   }
 
-  
-  final Id id = Isar.autoIncrement;
+  final Id? id;
 
   @Index()
   final String firestoreId;
 
   // urlmodel json data
   final String jsonData;
+
+  UrlModelOffline copyWith({
+    String? firestoreId,
+    UrlModel? urlModel,
+  }) {
+    return UrlModelOffline(
+      id: id,
+      firestoreId: firestoreId ?? this.firestoreId,
+      jsonData: urlModel != null ? jsonEncode(urlModel.toJson()) : jsonData,
+    );
+  }
 
   UrlModel toUrlModel() {
     return UrlModel.fromJson(jsonDecode(jsonData) as Map<String, dynamic>);

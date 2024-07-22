@@ -51,7 +51,7 @@ class AuthRepositoryImpl {
     } on LocalAuthException catch (e) {
       return Left(
         AuthFailure(
-          message: '${e.message}',
+          message: e.message,
           statusCode: 402,
         ),
       );
@@ -91,7 +91,7 @@ class AuthRepositoryImpl {
     } on LocalAuthException catch (e) {
       return Left(
         AuthFailure(
-          message: '${e.message}',
+          message: e.message,
           statusCode: 402,
         ),
       );

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'url_model_offline.dart';
+part of 'collection_model_offline.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,14 @@ part of 'url_model_offline.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetUrlModelOfflineCollection on Isar {
-  IsarCollection<UrlModelOffline> get urlModelOfflines => this.collection();
+extension GetCollectionModelOfflineCollection on Isar {
+  IsarCollection<CollectionModelOffline> get collectionModelOfflines =>
+      this.collection();
 }
 
-const UrlModelOfflineSchema = CollectionSchema(
-  name: r'UrlModelOffline',
-  id: 5120251326308922998,
+const CollectionModelOfflineSchema = CollectionSchema(
+  name: r'CollectionModelOffline',
+  id: 8805183473584028723,
   properties: {
     r'firestoreId': PropertySchema(
       id: 0,
@@ -28,10 +29,10 @@ const UrlModelOfflineSchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _urlModelOfflineEstimateSize,
-  serialize: _urlModelOfflineSerialize,
-  deserialize: _urlModelOfflineDeserialize,
-  deserializeProp: _urlModelOfflineDeserializeProp,
+  estimateSize: _collectionModelOfflineEstimateSize,
+  serialize: _collectionModelOfflineSerialize,
+  deserialize: _collectionModelOfflineDeserialize,
+  deserializeProp: _collectionModelOfflineDeserializeProp,
   idName: r'id',
   indexes: {
     r'firestoreId': IndexSchema(
@@ -50,14 +51,14 @@ const UrlModelOfflineSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
-  getId: _urlModelOfflineGetId,
-  getLinks: _urlModelOfflineGetLinks,
-  attach: _urlModelOfflineAttach,
+  getId: _collectionModelOfflineGetId,
+  getLinks: _collectionModelOfflineGetLinks,
+  attach: _collectionModelOfflineAttach,
   version: '3.1.0+1',
 );
 
-int _urlModelOfflineEstimateSize(
-  UrlModelOffline object,
+int _collectionModelOfflineEstimateSize(
+  CollectionModelOffline object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -67,8 +68,8 @@ int _urlModelOfflineEstimateSize(
   return bytesCount;
 }
 
-void _urlModelOfflineSerialize(
-  UrlModelOffline object,
+void _collectionModelOfflineSerialize(
+  CollectionModelOffline object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -77,13 +78,13 @@ void _urlModelOfflineSerialize(
   writer.writeString(offsets[1], object.jsonData);
 }
 
-UrlModelOffline _urlModelOfflineDeserialize(
+CollectionModelOffline _collectionModelOfflineDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = UrlModelOffline(
+  final object = CollectionModelOffline(
     firestoreId: reader.readString(offsets[0]),
     id: id,
     jsonData: reader.readString(offsets[1]),
@@ -91,7 +92,7 @@ UrlModelOffline _urlModelOfflineDeserialize(
   return object;
 }
 
-P _urlModelOfflineDeserializeProp<P>(
+P _collectionModelOfflineDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -107,30 +108,32 @@ P _urlModelOfflineDeserializeProp<P>(
   }
 }
 
-Id _urlModelOfflineGetId(UrlModelOffline object) {
+Id _collectionModelOfflineGetId(CollectionModelOffline object) {
   return object.id ?? Isar.autoIncrement;
 }
 
-List<IsarLinkBase<dynamic>> _urlModelOfflineGetLinks(UrlModelOffline object) {
+List<IsarLinkBase<dynamic>> _collectionModelOfflineGetLinks(
+    CollectionModelOffline object) {
   return [];
 }
 
-void _urlModelOfflineAttach(
-    IsarCollection<dynamic> col, Id id, UrlModelOffline object) {}
+void _collectionModelOfflineAttach(
+    IsarCollection<dynamic> col, Id id, CollectionModelOffline object) {}
 
-extension UrlModelOfflineQueryWhereSort
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QWhere> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhere> anyId() {
+extension CollectionModelOfflineQueryWhereSort
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QWhere> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterWhere>
+      anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension UrlModelOfflineQueryWhere
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QWhereClause> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause> idEqualTo(
-      Id id) {
+extension CollectionModelOfflineQueryWhere on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QWhereClause> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -139,8 +142,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -162,8 +165,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -171,9 +174,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -181,7 +183,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause> idBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -197,8 +200,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause>
-      firestoreIdEqualTo(String firestoreId) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> firestoreIdEqualTo(String firestoreId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'firestoreId',
@@ -207,8 +210,8 @@ extension UrlModelOfflineQueryWhere
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterWhereClause>
-      firestoreIdNotEqualTo(String firestoreId) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> firestoreIdNotEqualTo(String firestoreId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -243,10 +246,10 @@ extension UrlModelOfflineQueryWhere
   }
 }
 
-extension UrlModelOfflineQueryFilter
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QFilterCondition> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdEqualTo(
+extension CollectionModelOfflineQueryFilter on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -259,8 +262,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -275,8 +278,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -291,8 +294,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -311,8 +314,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdStartsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -325,8 +328,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdEndsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -339,7 +342,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
       firestoreIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -350,7 +354,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
       firestoreIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -361,8 +366,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdIsEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'firestoreId',
@@ -371,8 +376,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      firestoreIdIsNotEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'firestoreId',
@@ -381,8 +386,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idIsNull() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'id',
@@ -390,8 +395,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idIsNotNull() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'id',
@@ -399,8 +404,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idEqualTo(Id? value) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -409,8 +414,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idGreaterThan(
     Id? value, {
     bool include = false,
   }) {
@@ -423,8 +428,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idLessThan(
     Id? value, {
     bool include = false,
   }) {
@@ -437,8 +442,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      idBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
@@ -455,8 +460,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataEqualTo(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -469,8 +474,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -485,8 +490,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -501,8 +506,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -521,8 +526,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataStartsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -535,8 +540,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataEndsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -549,7 +554,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
       jsonDataContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -560,7 +566,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
       jsonDataMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -571,8 +578,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataIsEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'jsonData',
@@ -581,8 +588,8 @@ extension UrlModelOfflineQueryFilter
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterFilterCondition>
-      jsonDataIsNotEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'jsonData',
@@ -592,36 +599,36 @@ extension UrlModelOfflineQueryFilter
   }
 }
 
-extension UrlModelOfflineQueryObject
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QFilterCondition> {}
+extension CollectionModelOfflineQueryObject on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {}
 
-extension UrlModelOfflineQueryLinks
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QFilterCondition> {}
+extension CollectionModelOfflineQueryLinks on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {}
 
-extension UrlModelOfflineQuerySortBy
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QSortBy> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+extension CollectionModelOfflineQuerySortBy
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QSortBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       sortByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'firestoreId', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       sortByFirestoreIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'firestoreId', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       sortByJsonData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'jsonData', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       sortByJsonDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'jsonData', Sort.desc);
@@ -629,42 +636,44 @@ extension UrlModelOfflineQuerySortBy
   }
 }
 
-extension UrlModelOfflineQuerySortThenBy
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QSortThenBy> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+extension CollectionModelOfflineQuerySortThenBy on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QSortThenBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       thenByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'firestoreId', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       thenByFirestoreIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'firestoreId', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy> thenById() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       thenByJsonData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'jsonData', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QAfterSortBy>
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       thenByJsonDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'jsonData', Sort.desc);
@@ -672,39 +681,40 @@ extension UrlModelOfflineQuerySortThenBy
   }
 }
 
-extension UrlModelOfflineQueryWhereDistinct
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QDistinct> {
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QDistinct>
+extension CollectionModelOfflineQueryWhereDistinct
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
       distinctByFirestoreId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'firestoreId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UrlModelOffline, UrlModelOffline, QDistinct> distinctByJsonData(
-      {bool caseSensitive = true}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByJsonData({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'jsonData', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension UrlModelOfflineQueryProperty
-    on QueryBuilder<UrlModelOffline, UrlModelOffline, QQueryProperty> {
-  QueryBuilder<UrlModelOffline, int, QQueryOperations> idProperty() {
+extension CollectionModelOfflineQueryProperty on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QQueryProperty> {
+  QueryBuilder<CollectionModelOffline, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<UrlModelOffline, String, QQueryOperations>
+  QueryBuilder<CollectionModelOffline, String, QQueryOperations>
       firestoreIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'firestoreId');
     });
   }
 
-  QueryBuilder<UrlModelOffline, String, QQueryOperations> jsonDataProperty() {
+  QueryBuilder<CollectionModelOffline, String, QQueryOperations>
+      jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'jsonData');
     });

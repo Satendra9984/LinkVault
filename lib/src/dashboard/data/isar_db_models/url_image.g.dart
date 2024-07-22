@@ -33,7 +33,21 @@ const UrlImageSchema = CollectionSchema(
   deserialize: _urlImageDeserialize,
   deserializeProp: _urlImageDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'imageUrl': IndexSchema(
+      id: 2199101571095643083,
+      name: r'imageUrl',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'imageUrl',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _urlImageGetId,
@@ -71,9 +85,9 @@ UrlImage _urlImageDeserialize(
 ) {
   final object = UrlImage(
     base64ImageBytes: reader.readString(offsets[0]),
+    id: id,
     imageUrl: reader.readString(offsets[1]),
   );
-  object.id = id;
   return object;
 }
 
@@ -94,15 +108,68 @@ P _urlImageDeserializeProp<P>(
 }
 
 Id _urlImageGetId(UrlImage object) {
-  return object.id;
+  return object.id ?? Isar.autoIncrement;
 }
 
 List<IsarLinkBase<dynamic>> _urlImageGetLinks(UrlImage object) {
   return [];
 }
 
-void _urlImageAttach(IsarCollection<dynamic> col, Id id, UrlImage object) {
-  object.id = id;
+void _urlImageAttach(IsarCollection<dynamic> col, Id id, UrlImage object) {}
+
+extension UrlImageByIndex on IsarCollection<UrlImage> {
+  Future<UrlImage?> getByImageUrl(String imageUrl) {
+    return getByIndex(r'imageUrl', [imageUrl]);
+  }
+
+  UrlImage? getByImageUrlSync(String imageUrl) {
+    return getByIndexSync(r'imageUrl', [imageUrl]);
+  }
+
+  Future<bool> deleteByImageUrl(String imageUrl) {
+    return deleteByIndex(r'imageUrl', [imageUrl]);
+  }
+
+  bool deleteByImageUrlSync(String imageUrl) {
+    return deleteByIndexSync(r'imageUrl', [imageUrl]);
+  }
+
+  Future<List<UrlImage?>> getAllByImageUrl(List<String> imageUrlValues) {
+    final values = imageUrlValues.map((e) => [e]).toList();
+    return getAllByIndex(r'imageUrl', values);
+  }
+
+  List<UrlImage?> getAllByImageUrlSync(List<String> imageUrlValues) {
+    final values = imageUrlValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'imageUrl', values);
+  }
+
+  Future<int> deleteAllByImageUrl(List<String> imageUrlValues) {
+    final values = imageUrlValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'imageUrl', values);
+  }
+
+  int deleteAllByImageUrlSync(List<String> imageUrlValues) {
+    final values = imageUrlValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'imageUrl', values);
+  }
+
+  Future<Id> putByImageUrl(UrlImage object) {
+    return putByIndex(r'imageUrl', object);
+  }
+
+  Id putByImageUrlSync(UrlImage object, {bool saveLinks = true}) {
+    return putByIndexSync(r'imageUrl', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByImageUrl(List<UrlImage> objects) {
+    return putAllByIndex(r'imageUrl', objects);
+  }
+
+  List<Id> putAllByImageUrlSync(List<UrlImage> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'imageUrl', objects, saveLinks: saveLinks);
+  }
 }
 
 extension UrlImageQueryWhereSort on QueryBuilder<UrlImage, UrlImage, QWhere> {
@@ -176,6 +243,51 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> imageUrlEqualTo(
+      String imageUrl) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'imageUrl',
+        value: [imageUrl],
+      ));
+    });
+  }
+
+  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> imageUrlNotEqualTo(
+      String imageUrl) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'imageUrl',
+              lower: [],
+              upper: [imageUrl],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'imageUrl',
+              lower: [imageUrl],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'imageUrl',
+              lower: [imageUrl],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'imageUrl',
+              lower: [],
+              upper: [imageUrl],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }
@@ -318,7 +430,23 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'id',
+      ));
+    });
+  }
+
+  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'id',
+      ));
+    });
+  }
+
+  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -328,7 +456,7 @@ extension UrlImageQueryFilter
   }
 
   QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idGreaterThan(
-    Id value, {
+    Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -341,7 +469,7 @@ extension UrlImageQueryFilter
   }
 
   QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idLessThan(
-    Id value, {
+    Id? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -354,8 +482,8 @@ extension UrlImageQueryFilter
   }
 
   QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idBetween(
-    Id lower,
-    Id upper, {
+    Id? lower,
+    Id? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
