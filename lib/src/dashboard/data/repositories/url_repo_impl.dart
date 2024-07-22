@@ -6,16 +6,19 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class UrlRepoImpl {
   UrlRepoImpl({
     required RemoteDataSourcesImpl remoteDataSourceImpl,
-  }) : _remoteDataSourcesImpl = remoteDataSourceImpl;
+    required UrlLocalDataSourcesImpl urlLocalDataSourcesImpl,
+  })  : _remoteDataSourcesImpl = remoteDataSourceImpl,
+        _urlLocalDataSourcesImpl = urlLocalDataSourcesImpl;
 
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
-
+  final UrlLocalDataSourcesImpl _urlLocalDataSourcesImpl;
   Future<void> fetchUrlData({
     required String urlDataId,
   }) async {
@@ -49,6 +52,8 @@ class UrlRepoImpl {
         collection: updatedCollectionWithUrls,
         userId: userId,
       );
+
+      await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
       return Right((addedUrlData, serverUpdatedCollection));
     } on ServerException catch (e) {
@@ -91,6 +96,9 @@ class UrlRepoImpl {
         userId: userId,
       );
 
+      Logger.printLog('calling update url local');
+      await _urlLocalDataSourcesImpl.updateUrl(imgRemUrlModel);
+
       return Right(imgRemUrlModel);
     } on ServerException catch (e) {
       Logger.printLog('updateUrlrepo : ${e.message}');
@@ -132,6 +140,8 @@ class UrlRepoImpl {
         collection: updatedCollectionWithUrls,
         userId: userId,
       );
+
+      await _urlLocalDataSourcesImpl.deleteUrl(urlData.firestoreId);
 
       return Right((deletedUrlData, serverUpdatedCollection));
     } on ServerException catch (e) {

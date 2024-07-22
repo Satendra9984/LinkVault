@@ -72,7 +72,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
         final localImageBytes =
             await _localImageDataSource.getImageData(imageUrl);
 
-        Logger.printLog('isarImage: ${localImageBytes != null}');
+        // Logger.printLog('isarImage: ${localImageBytes != null}');
 
         final imageBytes = localImageBytes ??
             await UrlParsingService.fetchImageAsUint8List(

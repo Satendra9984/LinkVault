@@ -6,6 +6,7 @@ import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/url_model_offline.dart';
 import 'package:path_provider/path_provider.dart';
 
 class LocalImageDataSource {
@@ -15,6 +16,8 @@ class LocalImageDataSource {
 
   Future<void> _initializeIsar() async {
     try {
+      final currentInstance = Isar.getInstance();
+      _isar = currentInstance;
       if (_isar == null) {
         final dir = await getApplicationDocumentsDirectory();
 
@@ -22,6 +25,7 @@ class LocalImageDataSource {
           [
             UrlImageSchema,
             ImagesByteDataSchema,
+            UrlModelOfflineSchema,
           ],
           directory: dir.path,
         );

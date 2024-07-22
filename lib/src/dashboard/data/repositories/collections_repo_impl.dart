@@ -2,17 +2,21 @@ import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
     required RemoteDataSourcesImpl remoteDataSourceImpl,
-  }) : _remoteDataSourcesImpl = remoteDataSourceImpl;
+    required UrlLocalDataSourcesImpl urlLocalDataSourcesImpl,
+  })  : _remoteDataSourcesImpl = remoteDataSourceImpl,
+        _urlLocalDataSourcesImpl = urlLocalDataSourcesImpl;
   // _urlRepoImpl = urlRepoImpl ??
   //     UrlRepoImpl(remoteDataSourceImpl: remoteDataSourceImpl);
 
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
+  final UrlLocalDataSourcesImpl _urlLocalDataSourcesImpl;
   // final UrlRepoImpl _urlRepoImpl;
 
   Future<Either<Failure, CollectionModel>> fetchRootCollection({
@@ -21,7 +25,7 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection = await _remoteDataSourcesImpl.fetchCollection(
+      final collection =  await _remoteDataSourcesImpl.fetchCollection(
         collectionId: collectionId,
         userId: userId,
       );
@@ -228,7 +232,7 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection = await _remoteDataSourcesImpl.fetchUrl(
+      final collection = await _urlLocalDataSourcesImpl.fetchUrl(urlId)?? await _remoteDataSourcesImpl.fetchUrl(
         urlId,
         userId: userId,
       );

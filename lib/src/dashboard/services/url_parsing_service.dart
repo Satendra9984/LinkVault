@@ -92,8 +92,8 @@ class UrlParsingService {
                 .contains('author');
             if (containesAuthorAlt || containesAuthorClass) continue;
 
-            Logger.printLog('img: ${img.attributes}, area: $area');
-            Logger.printLog('this img selected as banner');
+            // Logger.printLog('img: ${img.attributes}, area: $area');
+            // Logger.printLog('this img selected as banner');
             largestImageElement = img;
             break;
           }
@@ -330,9 +330,9 @@ class UrlParsingService {
       quality: 80,
       autofillPng: true,
     );
-    Logger.printLog(
-      '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
-    );
+    // Logger.printLog(
+    //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
+    // );
     if (faviconUint != null) {
       metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
     }
@@ -349,9 +349,9 @@ class UrlParsingService {
         quality: 75,
         autofillPng: false,
       );
-      Logger.printLog(
-        '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
-      );
+      // Logger.printLog(
+      //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
+      // );
       if (bannerImage != null) {
         metaData['banner_image'] =
             StringUtils.convertUint8ListToBase64(bannerImage);
