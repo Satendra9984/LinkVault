@@ -16,7 +16,7 @@ class UrlPreviewWidget extends StatelessWidget {
   UrlPreviewWidget({
     required this.urlMetaData,
     required this.onTap,
-    required this.onDoubleTap,
+    required this.onLongPress,
     required this.onShareButtonTap,
     required this.onMoreVertButtontap,
     this.outerScreenHorizontalDistance = 50,
@@ -26,7 +26,7 @@ class UrlPreviewWidget extends StatelessWidget {
   final UrlMetaData urlMetaData;
   final double outerScreenHorizontalDistance;
   final void Function() onTap;
-  final void Function() onDoubleTap;
+  final void Function() onLongPress;
   final void Function() onShareButtonTap;
   final void Function() onMoreVertButtontap;
 
@@ -43,7 +43,7 @@ class UrlPreviewWidget extends StatelessWidget {
             urlMetaData.bannerImageUrl!.isNotEmpty)
           GestureDetector(
             onTap: onTap,
-            onDoubleTap: onDoubleTap,
+            onLongPress: onLongPress,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: _bannerImageBuilder(
@@ -56,7 +56,6 @@ class UrlPreviewWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Expanded(child: _getTitle()),
                 if (urlMetaData.faviconUrl != null)
@@ -126,7 +125,7 @@ class UrlPreviewWidget extends StatelessWidget {
                 return Container();
               }
               return Padding(
-                padding: const EdgeInsets.only(bottom: 0),
+                padding: const EdgeInsets.only(),
                 child: RichText(
                   text: TextSpan(
                     children: [
@@ -153,7 +152,7 @@ class UrlPreviewWidget extends StatelessWidget {
               flex: 8,
               child: GestureDetector(
                 onTap: onTap,
-                onDoubleTap: onDoubleTap,
+                onLongPress: onLongPress,
                 child: Row(
                   children: [
                     if (urlMetaData.faviconUrl != null)
@@ -528,7 +527,7 @@ class UrlPreviewWidget extends StatelessWidget {
   Widget _getTitle({TextStyle? titleTextStyle}) {
     return GestureDetector(
       onTap: onTap,
-      onDoubleTap: onDoubleTap,
+      onLongPress: onLongPress,
       child: ValueListenableBuilder(
         valueListenable: _showFullDescription,
         builder: (context, showFullDescription, _) {

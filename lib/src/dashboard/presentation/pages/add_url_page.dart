@@ -465,7 +465,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 child: UrlPreviewWidget(
                   urlMetaData: _previewMetaData.value!,
                   onTap: () {},
-                  onDoubleTap: () {},
+                  onLongPress: () {},
                   onShareButtonTap: () {},
                   onMoreVertButtontap: () {},
                 ),

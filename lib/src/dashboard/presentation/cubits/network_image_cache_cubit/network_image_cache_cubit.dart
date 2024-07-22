@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/local_image_data_source.dart';
 import 'package:link_vault/src/dashboard/data/models/network_image_cache_model.dart';
 // import 'package:link_vault/src/dashboard/data/services/isolate_manager.dart';
@@ -72,7 +71,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
         final localImageBytes =
             await _localImageDataSource.getImageData(imageUrl);
 
-        Logger.printLog('isarImage: ${localImageBytes != null}');
+        // Logger.printLog('isarImage: ${localImageBytes != null}');
 
         final imageBytes = localImageBytes ??
             await UrlParsingService.fetchImageAsUint8List(

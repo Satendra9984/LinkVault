@@ -22,7 +22,7 @@ class FolderIconButton extends StatelessWidget {
     const folderColor = ColourPallette.freepikLoginImage;
     return GestureDetector(
       onTap: onPress,
-      onDoubleTap: onDoubleTap,
+      onLongPress: onDoubleTap,
       child: Column(
         children: [
           ShaderMask(

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'url_image.dart';
+part of 'collection_model_offline.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,39 +9,40 @@ part of 'url_image.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetUrlImageCollection on Isar {
-  IsarCollection<UrlImage> get urlImages => this.collection();
+extension GetCollectionModelOfflineCollection on Isar {
+  IsarCollection<CollectionModelOffline> get collectionModelOfflines =>
+      this.collection();
 }
 
-const UrlImageSchema = CollectionSchema(
-  name: r'UrlImage',
-  id: -7543795334065980052,
+const CollectionModelOfflineSchema = CollectionSchema(
+  name: r'CollectionModelOffline',
+  id: 8805183473584028723,
   properties: {
-    r'base64ImageBytes': PropertySchema(
+    r'firestoreId': PropertySchema(
       id: 0,
-      name: r'base64ImageBytes',
+      name: r'firestoreId',
       type: IsarType.string,
     ),
-    r'imageUrl': PropertySchema(
+    r'jsonData': PropertySchema(
       id: 1,
-      name: r'imageUrl',
+      name: r'jsonData',
       type: IsarType.string,
     )
   },
-  estimateSize: _urlImageEstimateSize,
-  serialize: _urlImageSerialize,
-  deserialize: _urlImageDeserialize,
-  deserializeProp: _urlImageDeserializeProp,
+  estimateSize: _collectionModelOfflineEstimateSize,
+  serialize: _collectionModelOfflineSerialize,
+  deserialize: _collectionModelOfflineDeserialize,
+  deserializeProp: _collectionModelOfflineDeserializeProp,
   idName: r'id',
   indexes: {
-    r'imageUrl': IndexSchema(
-      id: 2199101571095643083,
-      name: r'imageUrl',
-      unique: true,
-      replace: true,
+    r'firestoreId': IndexSchema(
+      id: 1863077355534729001,
+      name: r'firestoreId',
+      unique: false,
+      replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'imageUrl',
+          name: r'firestoreId',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -50,48 +51,48 @@ const UrlImageSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
-  getId: _urlImageGetId,
-  getLinks: _urlImageGetLinks,
-  attach: _urlImageAttach,
+  getId: _collectionModelOfflineGetId,
+  getLinks: _collectionModelOfflineGetLinks,
+  attach: _collectionModelOfflineAttach,
   version: '3.1.0+1',
 );
 
-int _urlImageEstimateSize(
-  UrlImage object,
+int _collectionModelOfflineEstimateSize(
+  CollectionModelOffline object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.base64ImageBytes.length * 3;
-  bytesCount += 3 + object.imageUrl.length * 3;
+  bytesCount += 3 + object.firestoreId.length * 3;
+  bytesCount += 3 + object.jsonData.length * 3;
   return bytesCount;
 }
 
-void _urlImageSerialize(
-  UrlImage object,
+void _collectionModelOfflineSerialize(
+  CollectionModelOffline object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.base64ImageBytes);
-  writer.writeString(offsets[1], object.imageUrl);
+  writer.writeString(offsets[0], object.firestoreId);
+  writer.writeString(offsets[1], object.jsonData);
 }
 
-UrlImage _urlImageDeserialize(
+CollectionModelOffline _collectionModelOfflineDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = UrlImage(
-    base64ImageBytes: reader.readString(offsets[0]),
+  final object = CollectionModelOffline(
+    firestoreId: reader.readString(offsets[0]),
     id: id,
-    imageUrl: reader.readString(offsets[1]),
+    jsonData: reader.readString(offsets[1]),
   );
   return object;
 }
 
-P _urlImageDeserializeProp<P>(
+P _collectionModelOfflineDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -107,81 +108,32 @@ P _urlImageDeserializeProp<P>(
   }
 }
 
-Id _urlImageGetId(UrlImage object) {
+Id _collectionModelOfflineGetId(CollectionModelOffline object) {
   return object.id ?? Isar.autoIncrement;
 }
 
-List<IsarLinkBase<dynamic>> _urlImageGetLinks(UrlImage object) {
+List<IsarLinkBase<dynamic>> _collectionModelOfflineGetLinks(
+    CollectionModelOffline object) {
   return [];
 }
 
-void _urlImageAttach(IsarCollection<dynamic> col, Id id, UrlImage object) {}
+void _collectionModelOfflineAttach(
+    IsarCollection<dynamic> col, Id id, CollectionModelOffline object) {}
 
-extension UrlImageByIndex on IsarCollection<UrlImage> {
-  Future<UrlImage?> getByImageUrl(String imageUrl) {
-    return getByIndex(r'imageUrl', [imageUrl]);
-  }
-
-  UrlImage? getByImageUrlSync(String imageUrl) {
-    return getByIndexSync(r'imageUrl', [imageUrl]);
-  }
-
-  Future<bool> deleteByImageUrl(String imageUrl) {
-    return deleteByIndex(r'imageUrl', [imageUrl]);
-  }
-
-  bool deleteByImageUrlSync(String imageUrl) {
-    return deleteByIndexSync(r'imageUrl', [imageUrl]);
-  }
-
-  Future<List<UrlImage?>> getAllByImageUrl(List<String> imageUrlValues) {
-    final values = imageUrlValues.map((e) => [e]).toList();
-    return getAllByIndex(r'imageUrl', values);
-  }
-
-  List<UrlImage?> getAllByImageUrlSync(List<String> imageUrlValues) {
-    final values = imageUrlValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'imageUrl', values);
-  }
-
-  Future<int> deleteAllByImageUrl(List<String> imageUrlValues) {
-    final values = imageUrlValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'imageUrl', values);
-  }
-
-  int deleteAllByImageUrlSync(List<String> imageUrlValues) {
-    final values = imageUrlValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'imageUrl', values);
-  }
-
-  Future<Id> putByImageUrl(UrlImage object) {
-    return putByIndex(r'imageUrl', object);
-  }
-
-  Id putByImageUrlSync(UrlImage object, {bool saveLinks = true}) {
-    return putByIndexSync(r'imageUrl', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByImageUrl(List<UrlImage> objects) {
-    return putAllByIndex(r'imageUrl', objects);
-  }
-
-  List<Id> putAllByImageUrlSync(List<UrlImage> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'imageUrl', objects, saveLinks: saveLinks);
-  }
-}
-
-extension UrlImageQueryWhereSort on QueryBuilder<UrlImage, UrlImage, QWhere> {
-  QueryBuilder<UrlImage, UrlImage, QAfterWhere> anyId() {
+extension CollectionModelOfflineQueryWhereSort
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QWhere> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterWhere>
+      anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> idEqualTo(Id id) {
+extension CollectionModelOfflineQueryWhere on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QWhereClause> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -190,7 +142,8 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -212,8 +165,8 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -221,8 +174,8 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -230,7 +183,8 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> idBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -246,45 +200,45 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> imageUrlEqualTo(
-      String imageUrl) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> firestoreIdEqualTo(String firestoreId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'imageUrl',
-        value: [imageUrl],
+        indexName: r'firestoreId',
+        value: [firestoreId],
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterWhereClause> imageUrlNotEqualTo(
-      String imageUrl) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> firestoreIdNotEqualTo(String firestoreId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'imageUrl',
+              indexName: r'firestoreId',
               lower: [],
-              upper: [imageUrl],
+              upper: [firestoreId],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'imageUrl',
-              lower: [imageUrl],
+              indexName: r'firestoreId',
+              lower: [firestoreId],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'imageUrl',
-              lower: [imageUrl],
+              indexName: r'firestoreId',
+              lower: [firestoreId],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'imageUrl',
+              indexName: r'firestoreId',
               lower: [],
-              upper: [imageUrl],
+              upper: [firestoreId],
               includeUpper: false,
             ));
       }
@@ -292,24 +246,24 @@ extension UrlImageQueryWhere on QueryBuilder<UrlImage, UrlImage, QWhereClause> {
   }
 }
 
-extension UrlImageQueryFilter
-    on QueryBuilder<UrlImage, UrlImage, QFilterCondition> {
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesEqualTo(
+extension CollectionModelOfflineQueryFilter on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -317,15 +271,15 @@ extension UrlImageQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -333,15 +287,15 @@ extension UrlImageQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -350,7 +304,7 @@ extension UrlImageQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -360,77 +314,80 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesStartsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesEndsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      firestoreIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      firestoreIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesIsEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition>
-      base64ImageBytesIsNotEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> firestoreIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'base64ImageBytes',
+        property: r'firestoreId',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idIsNull() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'id',
@@ -438,7 +395,8 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idIsNotNull() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'id',
@@ -446,7 +404,8 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idEqualTo(Id? value) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -455,7 +414,8 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idGreaterThan(
     Id? value, {
     bool include = false,
   }) {
@@ -468,7 +428,8 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idLessThan(
     Id? value, {
     bool include = false,
   }) {
@@ -481,7 +442,8 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> idBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> idBetween(
     Id? lower,
     Id? upper, {
     bool includeLower = true,
@@ -498,20 +460,22 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlEqualTo(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlGreaterThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -519,14 +483,15 @@ extension UrlImageQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlLessThan(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -534,14 +499,15 @@ extension UrlImageQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlBetween(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -550,7 +516,7 @@ extension UrlImageQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'imageUrl',
+        property: r'jsonData',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -560,181 +526,197 @@ extension UrlImageQueryFilter
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlStartsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlEndsWith(
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      jsonDataContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      jsonDataMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'imageUrl',
+        property: r'jsonData',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlIsEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterFilterCondition> imageUrlIsNotEmpty() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> jsonDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'imageUrl',
+        property: r'jsonData',
         value: '',
       ));
     });
   }
 }
 
-extension UrlImageQueryObject
-    on QueryBuilder<UrlImage, UrlImage, QFilterCondition> {}
+extension CollectionModelOfflineQueryObject on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {}
 
-extension UrlImageQueryLinks
-    on QueryBuilder<UrlImage, UrlImage, QFilterCondition> {}
+extension CollectionModelOfflineQueryLinks on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QFilterCondition> {}
 
-extension UrlImageQuerySortBy on QueryBuilder<UrlImage, UrlImage, QSortBy> {
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> sortByBase64ImageBytes() {
+extension CollectionModelOfflineQuerySortBy
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QSortBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'base64ImageBytes', Sort.asc);
+      return query.addSortBy(r'firestoreId', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> sortByBase64ImageBytesDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByFirestoreIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'base64ImageBytes', Sort.desc);
+      return query.addSortBy(r'firestoreId', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> sortByImageUrl() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByJsonData() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageUrl', Sort.asc);
+      return query.addSortBy(r'jsonData', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> sortByImageUrlDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByJsonDataDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageUrl', Sort.desc);
+      return query.addSortBy(r'jsonData', Sort.desc);
     });
   }
 }
 
-extension UrlImageQuerySortThenBy
-    on QueryBuilder<UrlImage, UrlImage, QSortThenBy> {
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenByBase64ImageBytes() {
+extension CollectionModelOfflineQuerySortThenBy on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QSortThenBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'base64ImageBytes', Sort.asc);
+      return query.addSortBy(r'firestoreId', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenByBase64ImageBytesDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByFirestoreIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'base64ImageBytes', Sort.desc);
+      return query.addSortBy(r'firestoreId', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenById() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenByImageUrl() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByJsonData() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageUrl', Sort.asc);
+      return query.addSortBy(r'jsonData', Sort.asc);
     });
   }
 
-  QueryBuilder<UrlImage, UrlImage, QAfterSortBy> thenByImageUrlDesc() {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByJsonDataDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageUrl', Sort.desc);
-    });
-  }
-}
-
-extension UrlImageQueryWhereDistinct
-    on QueryBuilder<UrlImage, UrlImage, QDistinct> {
-  QueryBuilder<UrlImage, UrlImage, QDistinct> distinctByBase64ImageBytes(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'base64ImageBytes',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<UrlImage, UrlImage, QDistinct> distinctByImageUrl(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'imageUrl', caseSensitive: caseSensitive);
+      return query.addSortBy(r'jsonData', Sort.desc);
     });
   }
 }
 
-extension UrlImageQueryProperty
-    on QueryBuilder<UrlImage, UrlImage, QQueryProperty> {
-  QueryBuilder<UrlImage, int, QQueryOperations> idProperty() {
+extension CollectionModelOfflineQueryWhereDistinct
+    on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByFirestoreId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'firestoreId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByJsonData({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'jsonData', caseSensitive: caseSensitive);
+    });
+  }
+}
+
+extension CollectionModelOfflineQueryProperty on QueryBuilder<
+    CollectionModelOffline, CollectionModelOffline, QQueryProperty> {
+  QueryBuilder<CollectionModelOffline, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<UrlImage, String, QQueryOperations> base64ImageBytesProperty() {
+  QueryBuilder<CollectionModelOffline, String, QQueryOperations>
+      firestoreIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'base64ImageBytes');
+      return query.addPropertyName(r'firestoreId');
     });
   }
 
-  QueryBuilder<UrlImage, String, QQueryOperations> imageUrlProperty() {
+  QueryBuilder<CollectionModelOffline, String, QQueryOperations>
+      jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'imageUrl');
+      return query.addPropertyName(r'jsonData');
     });
   }
 }

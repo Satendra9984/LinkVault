@@ -26,7 +26,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: onPress,
-      onDoubleTap: () {
+      onLongPress: () {
         if (urlMetaData.faviconUrl != null) {
           final favicon = context
               .read<NetworkImageCacheCubit>()

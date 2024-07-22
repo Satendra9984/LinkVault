@@ -29,7 +29,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<OnBoardCubit, OnBoardState>(
       listener: (context, state) {
-        debugPrint('[log] : listening onboarding');
+        // debugPrint('[log] : listening onboarding');
         final onBoardCubit = context.read<OnBoardCubit>();
         if (state.onBoardingStates == OnBoardingStates.isLoggedIn) {
           context

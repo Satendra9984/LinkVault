@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/services/router.dart';
@@ -12,6 +13,10 @@ import 'package:link_vault/firebase_options.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/collection_model_offline.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
+import 'package:link_vault/src/dashboard/data/isar_db_models/url_model_offline.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
@@ -20,6 +25,7 @@ import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dar
 import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
 import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +34,22 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
-    cacheSizeBytes: 5*1024*1024,
+    cacheSizeBytes: 5 * 1024 * 1024,
   );
+
+  if (Isar.instanceNames.isEmpty) {
+    final dir = await getApplicationDocumentsDirectory();
+
+    await Isar.open(
+      [
+        CollectionModelOfflineSchema,
+        UrlImageSchema,
+        ImagesByteDataSchema,
+        UrlModelOfflineSchema,
+      ],
+      directory: dir.path,
+    );
+  }
 
   /// running the app
   runApp(

@@ -92,7 +92,6 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     required CollectionModel collection,
   }) async {
     // [TODO] : delete subcollection in db it will be cascade delete
-
     Logger.printLog(
       'deleting collection ${collection.id}',
     );
@@ -109,12 +108,12 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
     final deletedCollection = await _collectionRepoImpl.deleteCollection(
-      collection: collection,
-      parentCollection: parentCollection!.collection!,
+      collectionId: collection.id,
+      parentCollectionId: parentCollection!.collection!.id,
       userId: _globalUserCubit.state.globalUser!.id,
     );
 
-    deletedCollection.fold(
+    await deletedCollection.fold(
       (failed) {
         emit(
           state.copyWith(
@@ -123,8 +122,13 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           ),
         );
       },
-      (result) {
+      (result) async {
         final (collection, updatedParentCollection) = result;
+
+        await _collectionRepoImpl.updateSubCollection(
+          subCollection: updatedParentCollection,
+          userId: _globalUserCubit.state.globalUser!.id,
+        );
 
         _collectionsCubit
           ..deleteCollection(collection: collection)

@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
@@ -59,6 +61,9 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,
               ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             globalUserCubit: context.read<GlobalUserCubit>(),
           ),
@@ -71,6 +76,7 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,
               ),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
@@ -83,6 +89,9 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,
               ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
