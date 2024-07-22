@@ -112,9 +112,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }) async {
     _collQueueManager.addTask(
       () => _fetchMoreSubCollections(
-          collectionId: collectionId,
-          userId: userId,
-          isRootCollection: isRootCollection,),
+        collectionId: collectionId,
+        userId: userId,
+        isRootCollection: isRootCollection,
+      ),
     );
   }
 
@@ -434,7 +435,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final index = fetchedUrlList.indexWhere(
       (element) {
-        if (element.urlModel != null && element.urlModel!.id == url.id) {
+        if (element.urlModel != null &&
+            element.urlModel!.firestoreId == url.firestoreId) {
           return true;
         }
         return false;
@@ -472,7 +474,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final updatedList = [...fetchedUrlList]..removeWhere(
         (element) {
-          if (element.urlModel != null && element.urlModel!.id == url.id) {
+          if (element.urlModel != null &&
+              element.urlModel!.firestoreId == url.firestoreId) {
             return true;
           }
           return false;

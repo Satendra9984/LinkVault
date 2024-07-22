@@ -58,7 +58,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       final createdAt = DateTime.now().toUtc();
 
       final urlModelData = UrlModel(
-        id: widget.urlModel.id,
+        firestoreId: widget.urlModel.firestoreId,
         collectionId: widget.urlModel.collectionId,
         url: _urlAddressController.text,
         title: _urlTitleController.text,
@@ -104,7 +104,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
         _urlTitleController.text = metaData.websiteName!;
       }
-      
+
       /// DONT NEED AS WEBSITE DESCRIIPTION IS PRESENT IN URL_PREVIEW_LIST
       /// USER CAN SHARE FROM THERE
       /// AND TO SAVE DB SPACE

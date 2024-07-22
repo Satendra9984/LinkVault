@@ -40,7 +40,7 @@ class UrlRepoImpl {
         userId: userId,
       );
 
-      final urlList = collection.urls..insert(0, addedUrlData.id);
+      final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
       // updating collection
@@ -65,7 +65,6 @@ class UrlRepoImpl {
   Future<Either<Failure, UrlModel>> updateUrl({
     required UrlModel urlData,
     required String userId,
-
   }) async {
     // [TODO] : Add urlData in db
 
@@ -108,7 +107,6 @@ class UrlRepoImpl {
     required CollectionModel? collection,
     required UrlModel urlData,
     required String userId,
-
   }) async {
     // [TODO] : delete urlData in db
     // then we need to update the collections also
@@ -123,7 +121,7 @@ class UrlRepoImpl {
       }
       final urlList = collection.urls
         ..removeWhere(
-          (url) => url == urlData.id,
+          (url) => url == urlData.firestoreId,
         );
 
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);

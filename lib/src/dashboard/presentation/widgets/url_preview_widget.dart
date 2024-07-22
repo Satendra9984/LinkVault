@@ -34,9 +34,6 @@ class UrlPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Logger.printLog(
-    //   'website ${urlMetaData.faviconUrl} ${urlMetaData.websiteName}, url: ${urlMetaData.bannerImageUrl}',
-    // );
     final size = MediaQuery.of(context).size;
 
     return Column(
@@ -48,11 +45,76 @@ class UrlPreviewWidget extends StatelessWidget {
             onTap: onTap,
             onDoubleTap: onDoubleTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: _bannerImageBuilder(
                 context: context,
                 size: size,
               ),
+            ),
+          )
+        else if (urlMetaData.title != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(child: _getTitle()),
+                if (urlMetaData.faviconUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      height: 56,
+                      width: 56,
+                      child: NetworkImageBuilderWidget(
+                        imageUrl: urlMetaData.faviconUrl!,
+                        compressImage: false,
+                        errorWidgetBuilder: () {
+                          return IconButton(
+                            onPressed: () =>
+                                context.read<NetworkImageCacheCubit>().addImage(
+                                      urlMetaData.faviconUrl!,
+                                      compressImage: false,
+                                    ),
+                            icon: const Icon(Icons.circle),
+                            color: ColourPallette.black,
+                          );
+                        },
+                        successWidgetBuilder: (imageData) {
+                          final imageBytes = imageData.imageBytesData!;
+
+                          if (imageData.uiImage != null) {
+                            return CustomPaint(
+                              size: const Size(16, 16),
+                              painter: ImagePainter(
+                                imageData.uiImage!,
+                              ),
+                            );
+                          }
+
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.memory(
+                              imageBytes,
+                              fit: BoxFit.contain,
+                              errorBuilder: (ctx, _, __) {
+                                try {
+                                  final svgImage = SvgPicture.memory(
+                                    urlMetaData.favicon!,
+                                  );
+
+                                  return svgImage;
+                                } catch (e) {
+                                  return const Icon(Icons.web);
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
 
@@ -64,7 +126,7 @@ class UrlPreviewWidget extends StatelessWidget {
                 return Container();
               }
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.only(bottom: 0),
                 child: RichText(
                   text: TextSpan(
                     children: [
@@ -91,37 +153,10 @@ class UrlPreviewWidget extends StatelessWidget {
               flex: 8,
               child: GestureDetector(
                 onTap: onTap,
-                // onDoubleTap: onDoubleTap,
+                onDoubleTap: onDoubleTap,
                 child: Row(
                   children: [
-                    if (urlMetaData.favicon != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.memory(
-                          urlMetaData.favicon!,
-                          height: 16,
-                          width: 16,
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, _, __) {
-                            // bool isSvg = false;
-                            // try {
-                            //   final svgImage = SvgPicture.memory(
-                            //     urlMetaData.favicon!,
-                            //   );
-
-                            //   isSvg = true;
-                            // } catch (e) {
-                            // Logger.printLog('[SVG] $e');
-                            return const SizedBox(
-                              height: 16,
-                              width: 16,
-                              child: Icon(Icons.web),
-                            );
-                            // }
-                          },
-                        ),
-                      )
-                    else if (urlMetaData.faviconUrl != null)
+                    if (urlMetaData.faviconUrl != null)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: SizedBox(
@@ -299,46 +334,7 @@ class UrlPreviewWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: onTap,
-                  onDoubleTap: onDoubleTap,
-                  child: Container(
-                    alignment: Alignment.topLeft,
-                    // color: Colors.amber,
-                    child: ValueListenableBuilder(
-                      valueListenable: _showFullDescription,
-                      builder: (context, showFullDescription, _) {
-                        return RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '${urlMetaData.title}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 17,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    !showFullDescription ? '  more' : '  less',
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    _showFullDescription.value =
-                                        !_showFullDescription.value;
-                                  },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                child: _getTitle(),
               ),
               const SizedBox(width: 4),
               SizedBox(
@@ -423,164 +419,69 @@ class UrlPreviewWidget extends StatelessWidget {
             // tileMode: TileMode.decal,
           );
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Stack(
+            alignment: Alignment.bottomLeft,
             children: [
-              Stack(
-                alignment: Alignment.bottomLeft,
-                children: [
-                  // Banner Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: SizedBox(
-                      height: height,
-                      width: width,
-                      child: (imageData.uiImage != null)
-                          ? CustomPaint(
-                              size: Size(width, height),
-                              painter: ImagePainter(
-                                imageData.uiImage!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Image.memory(
+              // Banner Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: height,
+                  width: width,
+                  child: (imageData.uiImage != null)
+                      ? CustomPaint(
+                          size: Size(width, height),
+                          painter: ImagePainter(
+                            imageData.uiImage!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Image.memory(
+                          imageBytes,
+                          height: height,
+                          width: width,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, _, __) {
+                            return SvgPicture.memory(
                               imageBytes,
-                              height: height,
-                              width: width,
-                              fit: BoxFit.cover,
-                              errorBuilder: (ctx, _, __) {
-                                return SvgPicture.memory(
-                                  imageBytes,
-                                  placeholderBuilder: (context) {
-                                    return const SizedBox(
-                                      height: 150,
-                                      width: 600,
-                                    );
-                                  },
+                              placeholderBuilder: (context) {
+                                return const SizedBox(
+                                  height: 150,
+                                  width: 600,
                                 );
                               },
-                            ),
-                    ),
-                  ),
-                  // title
-                  Container(
-                    height: height * 0.75,
-                    alignment: Alignment.bottomLeft,
-                    decoration: BoxDecoration(
-                      gradient: linearGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 8,
-                    ),
-                    child: GestureDetector(
-                      onTap: onTap,
-                      onDoubleTap: onDoubleTap,
-                      child: ValueListenableBuilder(
-                        valueListenable: _showFullDescription,
-                        builder: (context, showFullDescription, _) {
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // if (urlMetaData.faviconUrl != null)
-                              //   ClipRRect(
-                              //     borderRadius: BorderRadius.circular(4),
-                              //     child: SizedBox(
-                              //       height: 56,
-                              //       width: 56,
-                              //       child: NetworkImageBuilderWidget(
-                              //         imageUrl: urlMetaData.faviconUrl!,
-                              //         compressImage: false,
-                              //         errorWidgetBuilder: () {
-                              //           return IconButton(
-                              //             onPressed: () => context
-                              //                 .read<NetworkImageCacheCubit>()
-                              //                 .addImage(
-                              //                   urlMetaData.faviconUrl!,
-                              //                   compressImage: false,
-                              //                 ),
-                              //             icon: const Icon(Icons.circle),
-                              //             color: ColourPallette.black,
-                              //           );
-                              //         },
-                              //         successWidgetBuilder: (imageBytes) {
-                              //           if (imageData.uiImage != null) {
-                              //             return CustomPaint(
-                              //               size: const Size(16, 16),
-                              //               painter: ImagePainter(
-                              //                 imageData.uiImage!,
-                              //               ),
-                              //             );
-                              //           }
-                              //           return ClipRRect(
-                              //             borderRadius:
-                              //                 BorderRadius.circular(4),
-                              //             child: Image.memory(
-                              //               imageBytes.imageBytesData!,
-                              //               fit: BoxFit.contain,
-                              //               errorBuilder: (ctx, _, __) {
-                              //                 try {
-                              //                   final svgImage =
-                              //                       SvgPicture.memory(
-                              //                     urlMetaData.favicon!,
-                              //                   );
-
-                              //                   return svgImage;
-                              //                 } catch (e) {
-                              //                   return const Icon(Icons.web);
-                              //                 }
-                              //               },
-                              //             ),
-                              //           );
-                              //         },
-                              //       ),
-                              //     ),
-                              //   ),
-
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '${urlMetaData.title}',
-                                      style: TextStyle(
-                                        color: averageBrightNess > 128
-                                            ? Colors.grey.shade900
-                                            : ColourPallette.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: bannerImageAspectRatio < 0.8
-                                            ? 17
-                                            : 20,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: !showFullDescription
-                                          ? '  more'
-                                          : '  less',
-                                      style: const TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          _showFullDescription.value =
-                                              !_showFullDescription.value;
-                                        },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  // title
-                ],
+                            );
+                          },
+                        ),
+                ),
               ),
+              // title
+              Container(
+                height: height * 0.75,
+                alignment: Alignment.bottomLeft,
+                decoration: BoxDecoration(
+                  gradient: linearGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                child: Container(
+                  alignment: Alignment.bottomLeft,
+                  child: _getTitle(
+                    titleTextStyle: TextStyle(
+                      color: averageBrightNess > 128
+                          ? Colors.grey.shade900
+                          : ColourPallette.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: bannerImageAspectRatio < 0.8 ? 17 : 20,
+                    ),
+                  ),
+                ),
+              ),
+
+              // title
             ],
           );
         } else {
@@ -613,51 +514,52 @@ class UrlPreviewWidget extends StatelessWidget {
                         },
                       ),
               ),
-              if (urlMetaData.title != null)
-                GestureDetector(
-                  onTap: onTap,
-                  onDoubleTap: onDoubleTap,
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 4),
-                    alignment: Alignment.topLeft,
-                    child: ValueListenableBuilder(
-                      valueListenable: _showFullDescription,
-                      builder: (context, showFullDescription, _) {
-                        return RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '${urlMetaData.title}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 17,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    !showFullDescription ? '  more' : '  less',
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    _showFullDescription.value =
-                                        !_showFullDescription.value;
-                                  },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              if (urlMetaData.title != null) Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _getTitle(),
+              ),
             ],
           );
         }
       },
+    );
+  }
+
+  Widget _getTitle({TextStyle? titleTextStyle}) {
+    return GestureDetector(
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      child: ValueListenableBuilder(
+        valueListenable: _showFullDescription,
+        builder: (context, showFullDescription, _) {
+          return RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${urlMetaData.title}',
+                  style: titleTextStyle ??
+                      TextStyle(
+                        color: Colors.grey.shade800,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 17,
+                      ),
+                ),
+                TextSpan(
+                  text: !showFullDescription ? '  more' : '  less',
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _showFullDescription.value = !_showFullDescription.value;
+                    },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

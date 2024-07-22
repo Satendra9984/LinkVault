@@ -40,6 +40,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.errorSigningUp,
+            authenticationFailure: failed,
           ),
         );
       },

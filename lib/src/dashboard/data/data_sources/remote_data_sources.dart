@@ -231,7 +231,7 @@ class RemoteDataSourcesImpl {
           .collection(urlDataCollection)
           .add(urlModel.toJson());
 
-      final addedUrlData = urlModel.copyWith(id: response.id);
+      final addedUrlData = urlModel.copyWith(firestoreId: response.id);
 
       return addedUrlData;
     } catch (e) {
@@ -253,14 +253,14 @@ class RemoteDataSourcesImpl {
           .collection(userCollection)
           .doc(userId)
           .collection(urlDataCollection)
-          .doc(urlModel.id)
+          .doc(urlModel.firestoreId)
           .set(urlModel.toJson());
 
       final urlModelUp = urlModel;
 
       return urlModelUp;
     } catch (e) {
-      Logger.printLog('updateUrl : $e urlId: ${urlModel.id}');
+      Logger.printLog('updateUrl : $e urlId: ${urlModel.firestoreId}');
 
       throw ServerException(
         message: 'Something Went Wrong',
@@ -281,7 +281,7 @@ class RemoteDataSourcesImpl {
           .collection(userCollection)
           .doc(userId)
           .collection(urlDataCollection)
-          .doc(urlModel.id)
+          .doc(urlModel.firestoreId)
           .delete();
 
       return urlModel;

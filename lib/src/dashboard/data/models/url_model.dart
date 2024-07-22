@@ -6,7 +6,7 @@ import 'package:link_vault/core/utils/string_utils.dart';
 
 class UrlModel {
   UrlModel({
-    required this.id,
+    required this.firestoreId,
     required this.collectionId,
     required this.url,
     required this.title,
@@ -22,7 +22,7 @@ class UrlModel {
 
   factory UrlModel.fromJson(Map<String, dynamic> json) {
     return UrlModel(
-      id: json['id'] as String,
+      firestoreId: json['id'] as String,
       collectionId: json['collection_id'] as String,
       url: json['url'] as String,
       title: json['title'] as String,
@@ -40,7 +40,7 @@ class UrlModel {
   }
 
   // these data are for the user
-  final String id;
+  final String firestoreId;
   final String collectionId;
   // User filled data
   final String url;
@@ -61,7 +61,7 @@ class UrlModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': firestoreId,
       'collection_id': collectionId,
       'url': url,
       'title': title,
@@ -72,12 +72,12 @@ class UrlModel {
       'html_content': htmlContent,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
-      'is_favourite' : isFavourite,
+      'is_favourite': isFavourite,
     };
   }
 
   UrlModel copyWith({
-    String? id,
+    String? firestoreId,
     String? collectionId,
     String? url,
     String? title,
@@ -91,7 +91,7 @@ class UrlModel {
     DateTime? updatedAt,
   }) {
     return UrlModel(
-      id: id ?? this.id,
+      firestoreId: firestoreId ?? this.firestoreId,
       collectionId: collectionId ?? this.collectionId,
       url: url ?? this.url,
       title: title ?? this.title,
@@ -105,19 +105,6 @@ class UrlModel {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-
-  // bool get isEmpty {
-  //   return id.isEmpty &&
-  //          collectionId.isEmpty &&
-  //          url.isEmpty &&
-  //          title.isEmpty &&
-  //          (description == null || description!.isEmpty) &&
-  //          tag.isEmpty &&
-  //          (metaData == null || metaData!.isEmpty) &&
-  //          (htmlContent == null || htmlContent!.isEmpty) &&
-  //          createdAt.isEmpty &&
-  //          updatedAt.isEmpty;
-  // }
 }
 
 class UrlMetaData {
@@ -203,11 +190,4 @@ class UrlMetaData {
       websiteName: websiteName ?? this.websiteName,
     );
   }
-
-  // static Uint8List? convertToUint8List(dynamic data) {
-  //   if (data is List<dynamic>) {
-  //     return Uint8List.fromList(data.map((item) => item as int).toList());
-  //   }
-  //   return null;
-  // }
 }

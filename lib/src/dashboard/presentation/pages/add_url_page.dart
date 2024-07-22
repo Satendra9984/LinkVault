@@ -61,7 +61,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
       final createdAt = DateTime.now().toUtc();
 
       final urlModelData = UrlModel(
-        id: '',
+        firestoreId: '',
         collectionId: widget.parentCollection.id,
         url: _urlAddressController.text,
         title: _urlNameController.text,
@@ -145,291 +145,300 @@ class _AddUrlPageState extends State<AddUrlPage> {
     _selectedCategory.dispose();
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
-    if (widget.url != null) {
-      context.read<SharedInputsCubit>().removeUrlInput();
-    }
+    // if (widget.url != null) {
+    //   context.read<SharedInputsCubit>().removeUrlInput();
+    // }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColourPallette.white,
-      appBar: AppBar(
+    return PopScope(
+      onPopInvoked: (popInv) {
+        if (widget.url != null) {
+          context.read<SharedInputsCubit>().removeUrlInput();
+        }
+      },
+      child: Scaffold(
         backgroundColor: ColourPallette.white,
-        surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
-        title: Text(
-          'Add Url',
-          style: TextStyle(
-            color: Colors.grey.shade800,
-            fontWeight: FontWeight.w500,
+        appBar: AppBar(
+          backgroundColor: ColourPallette.white,
+          surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
+          title: Text(
+            'Add Url',
+            style: TextStyle(
+              color: Colors.grey.shade800,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
-        listener: (context, state) {
-          if (state.urlCrudLoadingStates ==
-              UrlCrudLoadingStates.addedSuccessfully) {
-            // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
-            if (widget.url != null) {
-              context.read<SharedInputsCubit>().removeUrlInput();
+        bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
+          listener: (context, state) {
+            if (state.urlCrudLoadingStates ==
+                UrlCrudLoadingStates.addedSuccessfully) {
+              // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
+              if (widget.url != null) {
+                context.read<SharedInputsCubit>().removeUrlInput();
+              }
+              Navigator.of(context).pop();
             }
-            Navigator.of(context).pop();
-          }
-        },
-        builder: (context, state) {
-          // final globalUserCubit = context.read<GlobalUserCubit>();
-          final urlCrudCubit = context.read<UrlCrudCubit>();
+          },
+          builder: (context, state) {
+            // final globalUserCubit = context.read<GlobalUserCubit>();
+            final urlCrudCubit = context.read<UrlCrudCubit>();
 
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: CustomElevatedButton(
-              onPressed: () async {
-                await _addUrl(
-                  urlCrudCubit: urlCrudCubit,
-                );
-              },
-              text: 'Add Url',
-              icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.adding
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                        color: ColourPallette.bitterlemon,
-                      ),
-                    )
-                  : null,
-            ),
-          );
-        },
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomCollTextField(
-                  controller: _urlAddressController,
-                  labelText: 'Url Address',
-                  hintText: ' eg. https://www.youtube.com ',
-                  keyboardType: TextInputType.name,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                ValueListenableBuilder<LoadingStates?>(
-                  valueListenable: _previewLoadingStates,
-                  builder: (context, previewMetaDataLoadingState, _) {
-                    final trailingWidgetList = <Widget>[];
-
-                    final previewButton = IconButton(
-                      onPressed: () async {
-                        if (_previewMetaData.value != null) {
-                          await _showPreviewBottomSheet();
-                        } else {
-                          await _loadPreview();
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.preview_rounded,
-                        color: ColourPallette.black,
-                      ),
-                    );
-
-                    final loadAgain = IconButton(
-                      onPressed: _loadPreview,
-                      icon: const Icon(
-                        Icons.restore_rounded,
-                        color: ColourPallette.black,
-                      ),
-                    );
-
-                    if (previewMetaDataLoadingState == LoadingStates.loading) {
-                      trailingWidgetList.add(
-                        const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            backgroundColor: ColourPallette.black,
-                            color: ColourPallette.white,
-                          ),
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: CustomElevatedButton(
+                onPressed: () async {
+                  await _addUrl(
+                    urlCrudCubit: urlCrudCubit,
+                  );
+                },
+                text: 'Add Url',
+                icon: state.urlCrudLoadingStates == UrlCrudLoadingStates.adding
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                          color: ColourPallette.bitterlemon,
                         ),
-                      );
-                    } else if (previewMetaDataLoadingState ==
-                        LoadingStates.loaded) {
-                      trailingWidgetList.addAll(
-                        [loadAgain, previewButton],
-                      );
-                    } else {
-                      trailingWidgetList.add(previewButton);
-                    }
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Preview and Autofill',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: ColourPallette.black,
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: trailingWidgetList,
-                            ),
-                          ],
-                        ),
-                        if (previewMetaDataLoadingState ==
-                            LoadingStates.errorLoading)
-                          Text(
-                            '${_previewError.value?.message}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: ColourPallette.error,
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                CustomCollTextField(
-                  controller: _urlNameController,
-                  labelText: 'Title',
-                  hintText: ' eg. google ',
-                  keyboardType: TextInputType.name,
-                  maxLength: 30,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomCollTextField(
-                  controller: _descEditingController,
-                  labelText: 'Notes',
-                  hintText: ' Add your important detail here. ',
-                  maxLength: 1000,
-                  maxLines: 5,
-                  validator: (value) {
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                // IS fAVOURITE
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     const Text(
-                //       'Favourite',
-                //       style: TextStyle(
-                //         fontSize: 16,
-                //         fontWeight: FontWeight.w500,
-                //       ),
-                //     ),
-                //     ValueListenableBuilder<bool>(
-                //       valueListenable: _isFavorite,
-                //       builder: (context, isFavorite, child) {
-                //         return Switch.adaptive(
-                //           value: isFavorite,
-                //           onChanged: (value) => _isFavorite.value = value,
-                //           trackOutlineColor:
-                //               MaterialStateProperty.resolveWith<Color?>(
-                //             (Set<MaterialState> states) => Colors.transparent,
-                //           ),
-                //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                //             (Set<MaterialState> states) => Colors.transparent,
-                //           ),
-                //           activeTrackColor: ColourPallette.mountainMeadow,
-                //           inactiveTrackColor: ColourPallette.error,
-                //         );
-                //       },
-                //     ),
-                //   ],
-                // ),
-
-                // const SizedBox(height: 20),
-
-                // Selected Category
-                const Text(
-                  'Category',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                      )
+                    : null,
+              ),
+            );
+          },
+        ),
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomCollTextField(
+                    controller: _urlAddressController,
+                    labelText: 'Url Address',
+                    hintText: ' eg. https://www.youtube.com ',
+                    keyboardType: TextInputType.name,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter title';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                ValueListenableBuilder<String>(
-                  valueListenable: _selectedCategory,
-                  builder: (context, selectedCategory, child) {
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: List.generate(
-                        _predefinedCategories.length,
-                        (index) {
-                          final category = _predefinedCategories[index];
-                          final isSelected =
-                              category == _selectedCategory.value;
-                          return GestureDetector(
-                            onTap: () => _selectedCategory.value = category,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                  ValueListenableBuilder<LoadingStates?>(
+                    valueListenable: _previewLoadingStates,
+                    builder: (context, previewMetaDataLoadingState, _) {
+                      final trailingWidgetList = <Widget>[];
+
+                      final previewButton = IconButton(
+                        onPressed: () async {
+                          if (_previewMetaData.value != null) {
+                            await _showPreviewBottomSheet();
+                          } else {
+                            await _loadPreview();
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.preview_rounded,
+                          color: ColourPallette.black,
+                        ),
+                      );
+
+                      final loadAgain = IconButton(
+                        onPressed: _loadPreview,
+                        icon: const Icon(
+                          Icons.restore_rounded,
+                          color: ColourPallette.black,
+                        ),
+                      );
+
+                      if (previewMetaDataLoadingState ==
+                          LoadingStates.loading) {
+                        trailingWidgetList.add(
+                          const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              backgroundColor: ColourPallette.black,
+                              color: ColourPallette.white,
+                            ),
+                          ),
+                        );
+                      } else if (previewMetaDataLoadingState ==
+                          LoadingStates.loaded) {
+                        trailingWidgetList.addAll(
+                          [loadAgain, previewButton],
+                        );
+                      } else {
+                        trailingWidgetList.add(previewButton);
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Preview and Autofill',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: ColourPallette.black,
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? ColourPallette.mountainMeadow
-                                    : Colors.white,
-                                border: Border.all(
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: trailingWidgetList,
+                              ),
+                            ],
+                          ),
+                          if (previewMetaDataLoadingState ==
+                              LoadingStates.errorLoading)
+                            Text(
+                              '${_previewError.value?.message}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: ColourPallette.error,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  CustomCollTextField(
+                    controller: _urlNameController,
+                    labelText: 'Title',
+                    hintText: ' eg. google ',
+                    keyboardType: TextInputType.name,
+                    maxLength: 30,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter title';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomCollTextField(
+                    controller: _descEditingController,
+                    labelText: 'Notes',
+                    hintText: ' Add your important detail here. ',
+                    maxLength: 1000,
+                    maxLines: 5,
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // IS fAVOURITE
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     const Text(
+                  //       'Favourite',
+                  //       style: TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.w500,
+                  //       ),
+                  //     ),
+                  //     ValueListenableBuilder<bool>(
+                  //       valueListenable: _isFavorite,
+                  //       builder: (context, isFavorite, child) {
+                  //         return Switch.adaptive(
+                  //           value: isFavorite,
+                  //           onChanged: (value) => _isFavorite.value = value,
+                  //           trackOutlineColor:
+                  //               MaterialStateProperty.resolveWith<Color?>(
+                  //             (Set<MaterialState> states) => Colors.transparent,
+                  //           ),
+                  //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                  //             (Set<MaterialState> states) => Colors.transparent,
+                  //           ),
+                  //           activeTrackColor: ColourPallette.mountainMeadow,
+                  //           inactiveTrackColor: ColourPallette.error,
+                  //         );
+                  //       },
+                  //     ),
+                  //   ],
+                  // ),
+
+                  // const SizedBox(height: 20),
+
+                  // Selected Category
+                  const Text(
+                    'Category',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  ValueListenableBuilder<String>(
+                    valueListenable: _selectedCategory,
+                    builder: (context, selectedCategory, child) {
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: List.generate(
+                          _predefinedCategories.length,
+                          (index) {
+                            final category = _predefinedCategories[index];
+                            final isSelected =
+                                category == _selectedCategory.value;
+                            return GestureDetector(
+                              onTap: () => _selectedCategory.value = category,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
                                   color: isSelected
                                       ? ColourPallette.mountainMeadow
-                                      : Colors.black,
+                                      : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? ColourPallette.mountainMeadow
+                                        : Colors.black,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                category,
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? Colors.white : Colors.black,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
+                                child: Text(
+                                  category,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

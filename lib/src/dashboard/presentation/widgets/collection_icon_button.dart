@@ -49,8 +49,8 @@ class FolderIconButton extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               child: SvgPicture.asset(
                 MediaRes.folderSVG,
-                height: 56,
-                width: 56,
+                height: 60,
+                width: 60,
                 // color: folderColor,
               ),
             ),
@@ -71,6 +71,8 @@ class FolderIconButton extends StatelessWidget {
           //     // color: folderColor,
           //   ),
           // ),
+          const SizedBox(height: 4),
+
           Text(
             collection.name,
             maxLines: 2,

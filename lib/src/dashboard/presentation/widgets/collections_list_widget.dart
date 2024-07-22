@@ -143,9 +143,9 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: availableSubCollections.length,
-                      maxCrossAxisExtent: collectionIconWidth,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
+                      maxCrossAxisExtent: 80,
+                      mainAxisSpacing: 24,
+                      crossAxisSpacing: 20,
                       itemBuilder: (context, index) {
                         // final fetchCollectionCubit = context.read<CollectionsCubit>();
                         final subCollection = availableSubCollections[index];

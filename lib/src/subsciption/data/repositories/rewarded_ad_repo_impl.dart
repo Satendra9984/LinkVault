@@ -23,12 +23,13 @@ class RewardedAdRepoImpl {
   RewardedAd? get rewardedAd => _rewardedAd;
 
   final _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/5224354917'
-      : 'ca-app-pub-3940256099942544/1712485313';
+      // [TODO] : USE THESE KEYS FOR PRODUCTION
+      ? 'ca-app-pub-9004947579124903/9607023869'
+      : 'ca-app-pub-9004947579124903/9180149465';
 
-  // [TODO] : USE THESE KEYS FOR PRODUCTION
-  // ? 'ca-app-pub-9004947579124903/9607023869'
-  // : 'ca-app-pub-9004947579124903/9180149465';
+  // Below are test ads
+  // ? 'ca-app-pub-3940256099942544/5224354917'
+  // : 'ca-app-pub-3940256099942544/1712485313';
 
   Future<Either<Failure, Unit>> loadAd() async {
     try {

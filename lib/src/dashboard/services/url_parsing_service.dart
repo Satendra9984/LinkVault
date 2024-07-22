@@ -71,8 +71,6 @@ class UrlParsingService {
           final area = width * height;
           // final aspectRatio = width ~/ height;
 
-          // Logger.printLog('img: ${img.attributes}, area: $area');
-
           if (area >= minBannerArea &&
                   (width >= minBannerWidth || height >= minBannerHeight)
               // &&
@@ -94,6 +92,8 @@ class UrlParsingService {
                 .contains('author');
             if (containesAuthorAlt || containesAuthorClass) continue;
 
+            Logger.printLog('img: ${img.attributes}, area: $area');
+            Logger.printLog('this img selected as banner');
             largestImageElement = img;
             break;
           }
@@ -108,20 +108,29 @@ class UrlParsingService {
           }
         }
       }
+
+      Logger.printLog('now will check metatags');
+
       // List of possible meta tag attributes for images
       final metaTags = [
+        'meta[itemprop="image"]',
         'meta[property="og:image"]',
         'meta[name="twitter:image"]',
-        'meta[itemprop="image"]',
       ];
 
       // Try to find the image URL from meta tags
       for (final metaTag in metaTags) {
         final element = document.head?.querySelector(metaTag);
+        Logger.printLog('img: ${element?.attributes['content']}');
         if (element != null && element.attributes['content'] != null) {
+          final image = element.attributes['content']!.toLowerCase();
+          if (image.contains('favicon') || image.contains('logo')) {
+            continue;
+          }
           return element.attributes['content'];
         }
       }
+      // Logger.printLog('nothing found on metatags');
 
       return null;
     } catch (e) {
@@ -321,34 +330,37 @@ class UrlParsingService {
       quality: 80,
       autofillPng: true,
     );
-    // Logger.printLog(
-    //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
-    // );
+    Logger.printLog(
+      '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
+    );
     if (faviconUint != null) {
       metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
     }
 
-    var imageUrl = extractImageUrl(document) ?? websiteLogoUrl;
-    // Logger.printLog('imageUrl : $imageUrl');
-    imageUrl = handleRelativeUrl(imageUrl, url);
-    metaData['banner_image_url'] = imageUrl;
-    final bannerImage = await fetchImageAsUint8List(
-      imageUrl,
-      maxSize: 150000,
-      compressImage: true,
-      quality: 75,
-      autofillPng: false,
-    );
-    // Logger.printLog(
-    //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
-    // );
-    if (bannerImage != null) {
-      metaData['banner_image'] =
-          StringUtils.convertUint8ListToBase64(bannerImage);
+    var imageUrl = extractImageUrl(document);
+    Logger.printLog('imageUrl : $imageUrl');
+    if (imageUrl != null) {
+      imageUrl = handleRelativeUrl(imageUrl, url);
+      metaData['banner_image_url'] = imageUrl;
+      final bannerImage = await fetchImageAsUint8List(
+        imageUrl,
+        maxSize: 150000,
+        compressImage: true,
+        quality: 75,
+        autofillPng: false,
+      );
+      Logger.printLog(
+        '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
+      );
+      if (bannerImage != null) {
+        metaData['banner_image'] =
+            StringUtils.convertUint8ListToBase64(bannerImage);
+      }
     }
-  
     // Fetch image as Uint8List
     final metaDataObject = UrlMetaData.fromJson(metaData);
+
+    // Logger.printLog(StringUtils.getJsonFormat(metaDataObject.toJson()));
 
     return (htmlContent, metaDataObject);
   }

@@ -44,10 +44,17 @@ class AuthRepositoryImpl {
           ),
         );
       }
-      
+
       // [TODO] : Return a Global User
-      
+
       return Right(result);
+    } on LocalAuthException catch (e) {
+      return Left(
+        AuthFailure(
+          message: '${e.message}',
+          statusCode: 402,
+        ),
+      );
     } catch (e) {
       return Left(
         AuthFailure(
@@ -81,6 +88,13 @@ class AuthRepositoryImpl {
       }
 
       return Right(globalUser);
+    } on LocalAuthException catch (e) {
+      return Left(
+        AuthFailure(
+          message: '${e.message}',
+          statusCode: 402,
+        ),
+      );
     } catch (e) {
       // debugPrint()
       return Left(
