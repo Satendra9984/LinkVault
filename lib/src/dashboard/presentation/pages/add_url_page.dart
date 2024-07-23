@@ -156,7 +156,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
     return PopScope(
       onPopInvoked: (popInv) {
         if (widget.url != null) {
-          context.read<SharedInputsCubit>().removeUrlInput();
+          context.read<SharedInputsCubit>().removeUrlInput(widget.url );
         }
       },
       child: Scaffold(
@@ -178,7 +178,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                 UrlCrudLoadingStates.addedSuccessfully) {
               // PUSH REPLACE THIS SCREEN WITH COLLECTION PAGE
               if (widget.url != null) {
-                context.read<SharedInputsCubit>().removeUrlInput();
+                context.read<SharedInputsCubit>().removeUrlInput(widget.url);
               }
               Navigator.of(context).pop();
             }

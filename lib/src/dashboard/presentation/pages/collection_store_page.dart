@@ -305,7 +305,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             height: isVisible != 2 ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
-              backgroundColor: Colors.transparent,
+              // backgroundColor: Colors.transparent,
               surfaceTintColor: ColourPallette.mystic,
               title: Text(
                 title,

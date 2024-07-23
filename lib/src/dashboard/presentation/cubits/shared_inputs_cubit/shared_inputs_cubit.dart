@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/shared_input_type';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -48,8 +49,16 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
   }
 
   // Method to remove an input
-  void removeUrlInput() {
-    final updatedInputs = List<UrlInput>.from(state.inputs)..removeAt(0);
-    emit(state.copyWith(inputs: updatedInputs));
+  void removeUrlInput(String? url) {
+    if (url == null) return;
+    try {
+      final updatedInputs = List<UrlInput>.from(state.inputs)
+        ..removeWhere(
+          (element) => element.url == url,
+        );
+      emit(state.copyWith(inputs: updatedInputs));
+    } catch (e) {
+      Logger.printLog('Error removing sharedurl from $e');
+    }
   }
 }

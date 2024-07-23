@@ -29,16 +29,18 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection =
-          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId) ??
-              await _remoteDataSourcesImpl.fetchCollection(
-                collectionId: collectionId,
-                userId: userId,
-              );
+      final localCollection =
+          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
 
-      // Logger.printLog(
-      //   'rootCollection: ${collection == null} ${StringUtils.getJsonFormat(collection?.toJson())}',
-      // );
+      final collection = localCollection ??
+          await _remoteDataSourcesImpl.fetchCollection(
+            collectionId: collectionId,
+            userId: userId,
+          );
+
+      if (localCollection == null && collection != null) {
+        await _collectionLocalDataSourcesImpl.addCollection(collection);
+      }
 
       if (collection == null) {
         final todaydate = DateTime.now();
@@ -79,12 +81,18 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection =
-          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId) ??
-              await _remoteDataSourcesImpl.fetchCollection(
-                collectionId: collectionId,
-                userId: userId,
-              );
+      final localCollection =
+          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
+
+      final collection = localCollection ??
+          await _remoteDataSourcesImpl.fetchCollection(
+            collectionId: collectionId,
+            userId: userId,
+          );
+
+      if (localCollection == null && collection != null) {
+        await _collectionLocalDataSourcesImpl.addCollection(collection);
+      }
 
       if (collection == null) {
         return Left(
@@ -114,12 +122,18 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection =
-          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId) ??
-              await _remoteDataSourcesImpl.fetchCollection(
-                collectionId: collectionId,
-                userId: userId,
-              );
+      final localCollection =
+          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
+
+      final collection = localCollection ??
+          await _remoteDataSourcesImpl.fetchCollection(
+            collectionId: collectionId,
+            userId: userId,
+          );
+
+      if (localCollection == null && collection != null) {
+        await _collectionLocalDataSourcesImpl.addCollection(collection);
+      }
 
       if (collection == null) {
         return Left(
@@ -218,6 +232,7 @@ class CollectionsRepoImpl {
   //     );
   //   }
   // }
+
   Future<Either<Failure, (CollectionModel, CollectionModel)>> deleteCollection({
     required String collectionId,
     required String parentCollectionId,
@@ -313,15 +328,21 @@ class CollectionsRepoImpl {
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final collection = await _urlLocalDataSourcesImpl.fetchUrl(urlId) ??
+      final localUrl = await _urlLocalDataSourcesImpl.fetchUrl(urlId);
+
+      final url = localUrl ??
           await _remoteDataSourcesImpl.fetchUrl(
             urlId,
             userId: userId,
           );
 
+      if (localUrl == null && url != null) {
+        await _urlLocalDataSourcesImpl.addUrl(url);
+      }
+
       // Now fetch subcollections
 
-      return Right(collection);
+      return Right(url);
     } catch (e) {
       return Left(
         ServerFailure(

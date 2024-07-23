@@ -2,7 +2,7 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -19,8 +19,8 @@ dependencies:
   permission_handler: ^11.3.1
 
   # flutter_layout_grid: ^2.0.1
-  flutter_staggered_grid_view: ^0.7.0
   flutter_riverpod: ^2.5.1
+  flutter_staggered_grid_view: ^0.7.0
   receive_sharing_intent: ^1.4.5
   share_plus: ^9.0.0
   url_launcher: ^6.3.0

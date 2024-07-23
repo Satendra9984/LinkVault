@@ -33,9 +33,11 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
+    persistenceEnabled: false,
     cacheSizeBytes: 5 * 1024 * 1024,
   );
+
+  await FirebaseFirestore.instance.enableNetwork();
 
   if (Isar.instanceNames.isEmpty) {
     final dir = await getApplicationDocumentsDirectory();

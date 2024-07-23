@@ -76,6 +76,8 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,
               ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
               urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),

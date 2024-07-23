@@ -167,8 +167,6 @@ class RemoteDataSourcesImpl {
           .collection(folderCollections)
           .doc(collection.id)
           .delete();
-      
-      
 
       final urlList = collection.urls;
 
@@ -248,7 +246,7 @@ class RemoteDataSourcesImpl {
     try {
       // Logger.printLog('UrlModel length');
       // Logger.printLog(urlModel.toJson().toString().length.toString());
-
+      // await  _firestore.enableNetwork();
       final response = await _firestore
           .collection(userCollection)
           .doc(userId)

@@ -121,7 +121,7 @@ class UrlPreviewWidget extends StatelessWidget {
           ValueListenableBuilder(
             valueListenable: _showFullDescription,
             builder: (context, showFullDescription, _) {
-              if (!showFullDescription) {
+              if (!showFullDescription && urlMetaData.title != null) {
                 return Container();
               }
               return Padding(
