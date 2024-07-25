@@ -47,6 +47,12 @@ class _AddUrlPageState extends State<AddUrlPage> {
   Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
+      while (_previewLoadingStates.value == LoadingStates.loading) {}
+
+      if (_previewMetaData.value == null) {
+        await _loadPreview();
+      }
+
       final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
@@ -156,7 +162,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
     return PopScope(
       onPopInvoked: (popInv) {
         if (widget.url != null) {
-          context.read<SharedInputsCubit>().removeUrlInput(widget.url );
+          context.read<SharedInputsCubit>().removeUrlInput(widget.url);
         }
       },
       child: Scaffold(
@@ -222,6 +228,22 @@ class _AddUrlPageState extends State<AddUrlPage> {
                     controller: _urlAddressController,
                     labelText: 'Url Address',
                     hintText: ' eg. https://www.youtube.com ',
+                    onTapOutside: (pointer) async {
+                      if (_previewMetaData.value == null &&
+                              _previewLoadingStates.value !=
+                                  LoadingStates.loading ||
+                          _previewLoadingStates.value != LoadingStates.loaded) {
+                        await _loadPreview();
+                      }
+                    },
+                    onSubmitted: (value) async {
+                      if (_previewMetaData.value == null &&
+                              _previewLoadingStates.value !=
+                                  LoadingStates.loading ||
+                          _previewLoadingStates.value != LoadingStates.loaded) {
+                        await _loadPreview();
+                      }
+                    },
                     keyboardType: TextInputType.name,
                     validator: (value) {
                       if (value == null || value.isEmpty) {

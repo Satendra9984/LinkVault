@@ -7,6 +7,9 @@ class CustomCollTextField extends StatefulWidget {
     required this.labelText,
     required this.validator,
     super.key,
+    this.onEditingCompleted,
+    this.onSubmitted,
+    this.onTapOutside,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.maxLength,
@@ -14,6 +17,10 @@ class CustomCollTextField extends StatefulWidget {
     this.hintText = '',
   });
   final TextEditingController controller;
+  final void Function(String)? onSubmitted;
+  final void Function()? onEditingCompleted;
+  final void Function(PointerDownEvent)? onTapOutside;
+
   final String labelText;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -55,6 +62,9 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
         ),
         TextFormField(
           controller: widget.controller,
+          onEditingComplete: widget.onEditingCompleted,
+          onFieldSubmitted: widget.onSubmitted,
+          onTapOutside: widget.onTapOutside,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           obscureText: _isObscure,
           keyboardType: widget.keyboardType,
@@ -72,9 +82,11 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
             ),
             suffixIcon: widget.obscureText
                 ? IconButton(
-                    onPressed: () => setState(() {
-                      _isObscure = !_isObscure;
-                    }),
+                    onPressed: () => setState(
+                      () {
+                        _isObscure = !_isObscure;
+                      },
+                    ),
                     icon: _isObscure
                         ? const Icon(Icons.visibility_off)
                         : const Icon(Icons.visibility),
