@@ -56,6 +56,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         );
       },
       (loaded) {
+         
         emit(
           state.copyWith(
             loadingStates: LoadingStates.loaded,

@@ -237,9 +237,14 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     newCollection[collection.id] = fetchCollectionModel;
 
+    final newCollectionUrls = {...state.collectionUrls};
+
+    newCollectionUrls[collection.id] = [];
+
     emit(
       state.copyWith(
         collections: newCollection,
+        collectionUrls: newCollectionUrls,
       ),
     );
   }
@@ -410,8 +415,15 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       urlModel: url,
     );
 
-    final updatedUrlsState = {...state.collectionUrls};
 
+    final urlCollection = state.collectionUrls[url.collectionId];
+
+    if (urlCollection == null) {
+      addCollection(collection: collection);
+    }
+
+    final updatedUrlsState = {...state.collectionUrls};
+    // [TODO] : NULL CHECK ERROR
     final updatedUrlsList = [
       fetchedUrl,
       ...updatedUrlsState[url.collectionId]!,

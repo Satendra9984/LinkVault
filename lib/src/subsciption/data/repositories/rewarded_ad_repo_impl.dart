@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:link_vault/core/common/constants/user_constants.dart';
 import 'package:link_vault/core/common/models/global_user_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
 
 class RewardedAdRepoImpl {
@@ -23,63 +25,116 @@ class RewardedAdRepoImpl {
   RewardedAd? get rewardedAd => _rewardedAd;
 
   final _adUnitId = Platform.isAndroid
-      // [TODO] : USE THESE KEYS FOR PRODUCTION
+      // USE THESE KEYS FOR PRODUCTION
       ? 'ca-app-pub-9004947579124903/9607023869'
       : 'ca-app-pub-9004947579124903/9180149465';
 
   // Below are test ads
   // ? 'ca-app-pub-3940256099942544/5224354917'
   // : 'ca-app-pub-3940256099942544/1712485313';
+  Future<Either<ServerFailure, Unit>> loadAd() async {
+    final completer = Completer<Either<ServerFailure, Unit>>();
+    // Exception? serverException;
 
-  Future<Either<Failure, Unit>> loadAd() async {
-    try {
-      await RewardedAd.load(
-        adUnitId: _adUnitId,
-        request: const AdRequest(),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(
-          // Called when an ad is successfully received.
-          onAdLoaded: (ad) async {
-            debugPrint('$ad loaded.');
-            // Keep a reference to the ad so you can show it later.
-            // await Future.delayed(
-            //   const Duration(seconds:7),
-            // );
-            _rewardedAd = ad;
-          },
-          // Called when an ad request failed.
-          onAdFailedToLoad: (onAdFailedToLoad) {
-            debugPrint(
-              '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
+    await RewardedAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) async {
+          Logger.printLog('$ad loaded.');
+          _rewardedAd = ad;
+          if (!completer.isCompleted) {
+            completer.complete(const Right(unit));
+          }
+        },
+        onAdFailedToLoad: (onAdFailedToLoad) {
+          debugPrint(
+            '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
+          );
+          // serverException = ServerException(
+          //   message: 'Video Not loaded',
+          //   statusCode: 400,
+          // );
+          if (!completer.isCompleted) {
+            completer.complete(
+              Left(
+                ServerFailure(
+                  message:
+                      'Video Not Loaded. Check Internet Connection and try again.',
+                  statusCode: 400,
+                ),
+              ),
             );
-            throw ServerException(
-              message: 'Video Not loaded',
+          }
+        },
+      ),
+    ).catchError((e) {
+      Logger.printLog('[ads] : $e');
+      if (!completer.isCompleted) {
+        completer.complete(
+          Left(
+            ServerFailure(
+              message:
+                  'Video Not Loaded. Check Internet Connection and try again.',
               statusCode: 400,
-            );
-          },
-        ),
-      ).catchError((e) {
-        debugPrint('[log][ads] : $e');
-      });
-
-      if (_rewardedAd == null) {
-        throw ServerException(
-          message: 'Video Not loaded',
-          statusCode: 400,
+            ),
+          ),
         );
       }
+    });
 
-      return const Right(unit);
-    } catch (e) {
-      debugPrint('[log] : ad video not loaded');
-
-      return Left(
-        ServerFailure(
-          message: 'Video Not Loaded. Check Internet Connection and try again.',
-          statusCode: 400,
-        ),
-      );
-    }
+    return completer.future;
   }
+  // Future<Either<Failure, Unit>> loadAd() async {
+  //   try {
+  //     Exception? serverException;
+
+  //     await RewardedAd.load(
+  //       adUnitId: _adUnitId,
+  //       request: const AdRequest(),
+  //       rewardedAdLoadCallback: RewardedAdLoadCallback(
+  //         // Called when an ad is successfully received.
+  //         onAdLoaded: (ad) async {
+  //           debugPrint('$ad loaded.');
+  //           // Keep a reference to the ad so you can show it later.
+
+  //           _rewardedAd = ad;
+  //         },
+  //         // Called when an ad request failed.
+  //         onAdFailedToLoad: (onAdFailedToLoad) {
+  //           debugPrint(
+  //             '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
+  //           );
+  //           serverException = ServerException(
+  //             message: 'Video Not loaded',
+  //             statusCode: 400,
+  //           );
+  //         },
+  //       ),
+  //     ).catchError((e) {
+  //       debugPrint('[log][ads] : $e');
+  //     });
+
+  //     if (serverException != null) {
+  //       throw serverException!;
+  //     }
+
+  //     if (_rewardedAd == null) {
+  //       throw serverException!;
+  //     }
+
+  //     return const Right(unit);
+  //   } catch (e) {
+  //     debugPrint('[log] : ad video not loaded');
+
+  //     return Left(
+  //       ServerFailure(
+  //         message: 'Video Not Loaded. Check Internet Connection and try again.',
+  //         statusCode: 400,
+  //       ),
+  //     );
+  //   }
+  // }
 
   Future<Either<Failure, GlobalUser>> showRewardedAd({
     required GlobalUser globalUser,

@@ -309,7 +309,7 @@ class UrlPreviewWidget extends StatelessWidget {
             bannerImageDim.height / bannerImageDim.width;
 
         final isSideWaysBanner = bannerImageAspectRatio >= 1.5 ||
-            (bannerImageAspectRatio < 1 && bannerImageAspectRatio > 0.65);
+            (bannerImageAspectRatio <= 1.31 && bannerImageAspectRatio > 0.65);
         var width = bannerImageDim.width;
         var height = bannerImageDim.height;
 
@@ -375,7 +375,7 @@ class UrlPreviewWidget extends StatelessWidget {
         //   '[bannerimage] : ${imageData.imageUrl}, ${bannerImageAspectRatio}, screen: $size',
         // );
 
-        if (bannerImageAspectRatio >= 0.65 && bannerImageAspectRatio < 1.5) {
+        if (bannerImageAspectRatio >= 0.65 && bannerImageAspectRatio < 1.31) {
           // height is greater
           width = min(size.width - 32, bannerImageDim.width);
           height = min(width * bannerImageAspectRatio, bannerImageDim.height);
@@ -540,7 +540,7 @@ class UrlPreviewWidget extends StatelessWidget {
                       TextStyle(
                         color: Colors.grey.shade800,
                         fontWeight: FontWeight.w500,
-                        fontSize: 17,
+                        fontSize: 18,
                       ),
                 ),
                 TextSpan(

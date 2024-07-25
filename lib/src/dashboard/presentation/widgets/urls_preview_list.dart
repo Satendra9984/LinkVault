@@ -155,30 +155,33 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
 
                         return Column(
                           children: [
-                            UrlPreviewWidget(
-                              urlMetaData: urlMetaData,
-                              onTap: () async {
-                                final uri = Uri.parse(url.urlModel!.url);
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
-                                }
-                              },
-                              onLongPress: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (ctx) => UpdateUrlPage(
-                                      urlModel: url.urlModel!,
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 4),
+                              child: UrlPreviewWidget(
+                                urlMetaData: urlMetaData,
+                                onTap: () async {
+                                  final uri = Uri.parse(url.urlModel!.url);
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(uri);
+                                  }
+                                },
+                                onLongPress: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (ctx) => UpdateUrlPage(
+                                        urlModel: url.urlModel!,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              onShareButtonTap: () {
-                                Share.share(
-                                  '${url.urlModel?.url}\n${urlMetaData.title}\n${urlMetaData.description}',
-                                );
-                              },
-                              onMoreVertButtontap: () {},
+                                  );
+                                },
+                                onShareButtonTap: () {
+                                  Share.share(
+                                    '${url.urlModel?.url}\n${urlMetaData.title}\n${urlMetaData.description}',
+                                  );
+                                },
+                                onMoreVertButtontap: () {},
+                              ),
                             ),
                             // const SizedBox(height: 4),
                             Divider(
