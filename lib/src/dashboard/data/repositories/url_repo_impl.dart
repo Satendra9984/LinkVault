@@ -62,16 +62,24 @@ class UrlRepoImpl {
   }) async {
     // [TODO] : Add urlData in db
     try {
-      final urlDataJson = urlData.toJson();
-      urlDataJson['favicon'] = null;
-      urlDataJson['banner_image'] = null;
+      // Removing images bytes data for remote database storage
+      final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
+      urlMetaDataJson['favicon'] = null;
+      urlMetaDataJson['banner_image'] = null;
 
-      final optimisedUrlData = UrlModel.fromJson(urlDataJson);
+      final optimisedUrlData = urlData.copyWith(
+        metaData: UrlMetaData.fromJson(urlMetaDataJson),
+      );
+
+      // Logger.printLog('Adding url metadata');
+      // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
 
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(
         optimisedUrlData,
         userId: userId,
       );
+
+      // But storing addedurldata in local for firestore id
       await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
       final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
@@ -84,9 +92,14 @@ class UrlRepoImpl {
         userId: userId,
       );
 
+      // final url with metadata for app state
+      final readdedMetaDataUrlModel = addedUrlData.copyWith(
+        metaData: urlData.metaData,
+      );
+
       await _collectionLocalDataSourcesImpl
           .updateCollection(updatedCollectionWithUrls);
-      return Right((addedUrlData, serverUpdatedCollection));
+      return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
     } on ServerException catch (e) {
       Logger.printLog('addUrlrepo : $e');
       return Left(
@@ -105,32 +118,30 @@ class UrlRepoImpl {
     // [TODO] : Add urlData in db
 
     try {
-      var urlMetaData = urlData.metaData;
+      final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
+      urlMetaDataJson['favicon'] = null;
+      urlMetaDataJson['banner_image'] = null;
 
-      if (urlMetaData != null) {
-        final metaDataJson = urlMetaData.toJson();
-        metaDataJson['banner_image'] = null;
-        metaDataJson['favicon'] = null;
-        urlMetaData = UrlMetaData.fromJson(metaDataJson);
-      }
-
-      final imgRemUrlModel = urlData.copyWith(metaData: urlMetaData);
-
-      Logger.printLog(
-        StringUtils.getJsonFormat(
-          imgRemUrlModel.toJson().toString(),
-        ),
+      final optimisedUrlData = urlData.copyWith(
+        metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
+      // Logger.printLog('Updating url metadata');
+      // Logger.printLog(
+      //   StringUtils.getJsonFormat(
+      //     optimisedUrlData.toJson(),
+      //   ),
+      // );
+
       await _remoteDataSourcesImpl.updateUrl(
-        urlModel: imgRemUrlModel,
+        urlModel: optimisedUrlData,
         userId: userId,
       );
 
-      Logger.printLog('calling update url local');
-      await _urlLocalDataSourcesImpl.updateUrl(imgRemUrlModel);
+      // Logger.printLog('calling update url local');
+      await _urlLocalDataSourcesImpl.updateUrl(optimisedUrlData);
 
-      return Right(imgRemUrlModel);
+      return Right(optimisedUrlData);
     } on ServerException catch (e) {
       Logger.printLog('updateUrlrepo : ${e.message}');
       return Left(

@@ -41,57 +41,15 @@ class ImageUtils {
     // Check if the image has an alpha channel
     final hasAlpha = image.numChannels == 4;
 
-    // Logger.printLog('[parsing] hasAlpha: $hasAlpha');
-    // If the image has transparency, add a white background
-    // img.Image imageToCompress;
-    // if (hasAlpha && autofillPng) {
-    //   imageToCompress = img.Image(
-    //     width: imageSize.width.toInt(),
-    //     height: imageSize.height.toInt(),
-    //   );
-    //   img.fill(
-    //     imageToCompress,
-    //     color: autofillColor != null
-    //         ? img.ColorInt8.rgb(
-    //             autofillColor.$1,
-    //             autofillColor.$2,
-    //             autofillColor.$3,
-    //           )
-    //         : img.ColorInt8.rgb(255, 255, 255),
-    //   );
-    //   img.compositeImage(imageToCompress, image);
-    // } else {
-    //   imageToCompress = image;
-    // }
-
-    // var compressedBytes = img.encodePng(
-    //   imageToCompress,
-    //   // level: 6,
-    // );
-
-    // final jpgEncoder = img.JpegEncoder(quality: quality);
-    // compressedBytes = jpgEncoder.encode(img.decodeImage(compressedBytes)!);
-
     // Compress while preserving transparency if it has alpha channel
     final compressedBytes = await FlutterImageCompress.compressWithList(
-      // compressedBytes,
       imageBytes,
-      // imageToCompress.getBytes(),
       quality: quality,
       format:
           hasAlpha && autofillPng ? CompressFormat.png : CompressFormat.jpeg,
       keepExif: true,
     );
 
-    // Logger.printLog(
-    //   '[parsing] hasAlpha: $hasAlpha so used filling method level: 6, ${compressedBytes.length}',
-    // );
-    // compressedBytes = await FlutterImageCompress.compressWithList(
-    //   imageBytes,
-    //   quality: quality,
-    // format: hasAlpha ? CompressFormat.png : CompressFormat.jpeg,
-    // keepExif: true,
-    // );
     return Uint8List.fromList(compressedBytes);
   }
 

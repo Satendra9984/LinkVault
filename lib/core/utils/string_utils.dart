@@ -11,16 +11,6 @@ class StringUtils {
     return const JsonEncoder.withIndent('  ').convert(data);
   }
 
-  // static String? convertHtmlStringIntoString(String? htmlString) {
-  //   if (htmlString == null) return null;
-
-  //   final plainText = HtmlUnescape()
-  //       .convert(htmlString)
-  //       .replaceAll(RegExp(r'\s+'), ' ')
-  //       .trim();
-
-  //   return plainText;
-  // }
 
   static String getUnicodeString(String uncodedString) {
     try {
@@ -43,7 +33,7 @@ class StringUtils {
     return GZipEncoder().encode(encodedData) as Uint8List?;
   }
 
-// Function to convert Base64 string back to Uint8List
+  // Function to convert Base64 string back to Uint8List
   static Uint8List? convertBase64ToUint8List(String? base64String) {
     if (base64String == null) {
       return null;

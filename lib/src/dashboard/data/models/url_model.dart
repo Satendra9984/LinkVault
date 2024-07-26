@@ -98,7 +98,7 @@ class UrlModel {
       description: description ?? this.description,
       isFavourite: isFavourite ?? this.isFavourite,
       tag: tag ?? this.tag,
-      metaData: metaData ?? this.metaData,
+      metaData: metaData ,
       isOffline: isOffline ?? this.isOffline,
       htmlContent: htmlContent ?? this.htmlContent,
       createdAt: createdAt ?? this.createdAt,
