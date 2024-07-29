@@ -2,7 +2,7 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -72,17 +72,17 @@ flutter:
      - assets/animations/
 
 
-  fonts:
-    - family: Ubuntu
-      fonts:
-        - asset: assets/fonts/ubuntu/Ubuntu-Bold.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-BoldItalic.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-Italic.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-Light.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-LightItalic.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-Medium.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-MediumItalic.ttf
-        - asset: assets/fonts/ubuntu/Ubuntu-Regular.ttf
+  # fonts:
+  #   - family: Ubuntu
+  #     fonts:
+  #       - asset: assets/fonts/ubuntu/Ubuntu-Bold.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-BoldItalic.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-Italic.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-Light.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-LightItalic.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-Medium.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-MediumItalic.ttf
+  #       - asset: assets/fonts/ubuntu/Ubuntu-Regular.ttf
 
 
 flutter_launcher_icons:

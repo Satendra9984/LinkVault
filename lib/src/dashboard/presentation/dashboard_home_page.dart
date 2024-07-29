@@ -29,19 +29,21 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      ReceiveSharingIntent.instance.getMediaStream().listen(
-        context.read<SharedInputsCubit>().addInputFiles,
-        onError: (err) {
-          debugPrint('getMediaStream error: $err');
-        },
-      );
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) {
+        ReceiveSharingIntent.instance.getMediaStream().listen(
+          context.read<SharedInputsCubit>().addInputFiles,
+          onError: (err) {
+            debugPrint('getMediaStream error: $err');
+          },
+        );
 
-      // For sharing images coming from outside the app while the app is closed
-      ReceiveSharingIntent.instance.getInitialMedia().then(
-            context.read<SharedInputsCubit>().addInputFiles,
-          );
-    });
+        // For sharing images coming from outside the app while the app is closed
+        ReceiveSharingIntent.instance.getInitialMedia().then(
+              context.read<SharedInputsCubit>().addInputFiles,
+            );
+      },
+    );
   }
 
   @override

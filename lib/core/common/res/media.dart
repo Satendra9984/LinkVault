@@ -12,8 +12,13 @@ class MediaRes {
   static const String personSVG = 'assets/images/person.svg';
   static const String collectionSVG = 'assets/images/collections.svg';
   static const String folderSVG = 'assets/images/folder_6.svg';
-  static const String webSurf1SVG= 'assets/images/web_surf_1.svg';
-  static const String webSurf3SVG= 'assets/images/web_surf_3.svg';
+  static const String webSurf1SVG = 'assets/images/web_surf_1.svg';
+  static const String webSurf3SVG = 'assets/images/web_surf_3.svg';
+  static const String linkVaultLogoSVG = 'assets/images/link_vault_logo.svg';
+  static const String favouriteSVG = 'assets/images/favourite.svg';
+  static const String recentSVG = 'assets/images/recent.svg';
+  static const String searchSVG= 'assets/images/search.svg';
+  static const String collaborateSVG= 'assets/images/collaborate.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
 
@@ -25,5 +30,4 @@ class MediaRes {
   // static const String ANIMATION = 'assets/animations/.json';
   // static const String ANIMATION = 'assets/animations/.json';
   // static const String ANIMATION = 'assets/animations/.json';
-
 }

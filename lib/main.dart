@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
@@ -27,9 +28,12 @@ import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_im
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:path_provider/path_provider.dart';
 
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await MobileAds.instance.initialize();
+  await MobileAds.instance.initialize();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(

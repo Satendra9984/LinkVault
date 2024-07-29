@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
@@ -45,7 +46,9 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (ctx) => const DashboardHomePage(),
+                // builder: (ctx) => const DashboardHomePage(),
+                builder: (ctx) => const AppHomePage()
+
               ),
             );
           }

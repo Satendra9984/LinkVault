@@ -7,6 +7,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
+import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/forget_password/password_reset.dart';
@@ -90,7 +91,9 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (ctx) => const DashboardHomePage(),
+                    // builder: (ctx) => const DashboardHomePage(),
+                    builder: (ctx) => const AppHomePage(),
+                    
                   ),
                   (route) => false,
                 );

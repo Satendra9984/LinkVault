@@ -165,7 +165,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
 
           return Scaffold(
             backgroundColor: ColourPallette.white,
-            drawer: _getDrawer(),
+            // drawer: _getDrawer(),
             appBar: _getAppBar(title: collection.name),
             bottomNavigationBar: Container(
               padding: const EdgeInsets.only(top: 8),
@@ -302,7 +302,6 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
         builder: (context, isVisible, child) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             height: isVisible != 2 ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
               // backgroundColor: Colors.transparent,
@@ -321,125 +320,131 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
     );
   }
 
-  Drawer _getDrawer() {
-    return Drawer(
-      backgroundColor: ColourPallette.white,
-      child: Column(
-        // shrinkWrap: true,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              DrawerHeader(
-                child: BlocBuilder<GlobalUserCubit, GlobalUserState>(
-                  builder: (context, state) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor:
-                              ColourPallette.mountainMeadow.withOpacity(0.5),
-                          child: SvgPicture.asset(
-                            MediaRes.personSVG,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '${state.globalUser?.name}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          '@${state.globalUser?.email}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              ListTile(
-                onTap: () {
-                  if (mounted) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).popUntil(
-                      (route) => route.isFirst,
-                    );
-                  }
-                },
-                leading: const Icon(
-                  Icons.home_rounded,
-                ),
-                title: const Text(
-                  'Home',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                ),
-              ),
-              ListTile(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => const SubscriptionPage(),
-                    ),
-                  );
-                },
-                leading: const Icon(
-                  Icons.support,
-                ),
-                title: const Text(
-                  'Support Us',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                ),
-              ),
-            ],
-          ),
-          ListTile(
-            onTap: () async {
-              await context.read<AuthenticationCubit>().signOut().then(
-                (value) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (ctx) => const LoginPage(),
-                    ),
-                    (route) => false,
-                  );
-                },
-              );
-            },
-            leading: const Icon(
-              Icons.logout_rounded,
-            ),
-            title: const Text(
-              'Log Out',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_rounded,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Drawer _getDrawer() {
+  //   return Drawer(
+  //     backgroundColor: ColourPallette.white,
+  //     child: Column(
+  //       // shrinkWrap: true,
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         Column(
+  //           children: [
+  //             DrawerHeader(
+  //               child: BlocBuilder<GlobalUserCubit, GlobalUserState>(
+  //                 builder: (context, state) {
+  //                   return Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       CircleAvatar(
+  //                         radius: 32,
+  //                         backgroundColor:
+  //                             ColourPallette.mountainMeadow.withOpacity(0.5),
+  //                         child: SvgPicture.asset(
+  //                           MediaRes.personSVG,
+  //                         ),
+  //                       ),
+  //                       const SizedBox(height: 16),
+  //                       Text(
+  //                         '${state.globalUser?.name}',
+  //                         style: const TextStyle(
+  //                           fontSize: 18,
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ),
+  //                       Text(
+  //                         '@${state.globalUser?.email}',
+  //                         style: const TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //             ListTile(
+  //               onTap: () {
+  //                 if (mounted) {
+  //                   Navigator.of(context).pop();
+  //                   Navigator.of(context).popUntil(
+  //                     (route) => route.isFirst,
+  //                   );
+  //                 }
+  //               },
+  //               leading: const Icon(
+  //                 Icons.home_rounded,
+  //               ),
+  //               title: const Text(
+  //                 'Home',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //               trailing: const Icon(
+  //                 Icons.arrow_forward_ios_rounded,
+  //               ),
+  //             ),
+  //             ListTile(
+  //               onTap: () {
+  //                 Navigator.of(context).push(
+  //                   MaterialPageRoute(
+  //                     builder: (ctx) => const SubscriptionPage(),
+  //                   ),
+  //                 );
+  //               },
+  //               leading: const Icon(
+  //                 Icons.support,
+  //               ),
+  //               title: const Text(
+  //                 'Support Us',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //               trailing: const Icon(
+  //                 Icons.arrow_forward_ios_rounded,
+  //               ),
+  //             ),
+            
+            
+            
+  //           ],
+  //         ),
+  //         ListTile(
+  //           onTap: () async {
+  //             await context.read<AuthenticationCubit>().signOut().then(
+  //               (value) {
+  //                 Navigator.of(context).pushAndRemoveUntil(
+  //                   MaterialPageRoute(
+  //                     builder: (ctx) => const LoginPage(),
+  //                   ),
+  //                   (route) => false,
+  //                 );
+  //               },
+  //             );
+  //           },
+  //           leading: const Icon(
+  //             Icons.logout_rounded,
+  //           ),
+  //           title: const Text(
+  //             'Log Out',
+  //             style: TextStyle(
+  //               fontSize: 18,
+  //               fontWeight: FontWeight.w500,
+  //             ),
+  //           ),
+  //           trailing: const Icon(
+  //             Icons.arrow_forward_ios_rounded,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+
+
 }
