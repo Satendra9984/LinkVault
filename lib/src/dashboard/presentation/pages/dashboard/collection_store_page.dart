@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/collections_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_list_widget.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/urls_preview_list.dart';
-import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:lottie/lottie.dart';
 
-class FolderCollectionRootPage extends StatefulWidget {
-  const FolderCollectionRootPage({
+class FolderCollectionPage extends StatefulWidget {
+  const FolderCollectionPage({
     required this.collectionId,
     required this.isRootCollection,
     super.key,
@@ -24,46 +21,49 @@ class FolderCollectionRootPage extends StatefulWidget {
   final bool isRootCollection;
 
   @override
-  State<FolderCollectionRootPage> createState() =>
-      _FolderCollectionRootPageState();
+  State<FolderCollectionPage> createState() => _FolderCollectionPageState();
 }
 
-class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
+class _FolderCollectionPageState extends State<FolderCollectionPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
-  final _showAppBar = ValueNotifier(true);
-  // final PageController _pageController = PageController();
-  late final TabController _pageController;
+  final _showBottomNavBar = ValueNotifier(true);
+  final PageController _pageController = PageController();
+  // late final TabController _pageController;
 
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
   void initState() {
+    // _pageController = TabController(length: 3, vsync: this);
+    // _pageController.index = _currentPage.value;
+    // if (mounted) {
+    // context.read<CollectionsCubit>().fetchCollection(
+    //       collectionId: widget.collectionId,
+    //       userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+    //       isRootCollection: true,
+    //     );
+    // }
     super.initState();
-    _pageController = TabController(length: 3, vsync: this);
-
-    if (mounted) {
-      context.read<CollectionsCubit>().fetchCollection(
-            collectionId: widget.collectionId,
-            userId: context.read<GlobalUserCubit>().state.globalUser!.id,
-            isRootCollection: true,
-          );
-    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _showAppBar.dispose();
+    _showBottomNavBar.dispose();
     _currentPage.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColourPallette.white,
-      body: BlocConsumer<CollectionsCubit, CollectionsState>(
+    return 
+    
+    // Scaffold(
+    //   backgroundColor: ColourPallette.white,
+    //   body: 
+      
+      BlocConsumer<CollectionsCubit, CollectionsState>(
         listener: (context, state) {
           // [TODO]: implement listener
         },
@@ -75,13 +75,16 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
           final fetchCollection = state.collections[widget.collectionId];
 
           if (fetchCollection == null) {
-            return Container();
+            context.read<CollectionsCubit>().fetchCollection(
+                  collectionId: widget.collectionId,
+                  userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+                  isRootCollection: true,
+                );
           }
 
-          Logger.printLog('Updated collection store page');
-
-          if (fetchCollection.collectionFetchingState ==
-              LoadingStates.loading) {
+          if (fetchCollection == null ||
+              fetchCollection.collectionFetchingState ==
+                  LoadingStates.loading) {
             return Scaffold(
               appBar: _getAppBar(title: 'Dashboard'),
               body: Center(
@@ -149,6 +152,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
               ),
             );
           }
+          // Logger.printLog('Updated collection store page');
 
           final collection = fetchCollection.collection;
           if (collection == null) {
@@ -157,7 +161,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
 
           return Scaffold(
             backgroundColor: ColourPallette.white,
-            drawer: _getDrawer(),
+            // drawer: _getDrawer(),
             appBar: _getAppBar(title: collection.name),
             bottomNavigationBar: Container(
               padding: const EdgeInsets.only(top: 8),
@@ -172,7 +176,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                 ],
               ),
               child: ValueListenableBuilder(
-                valueListenable: _showAppBar,
+                valueListenable: _showBottomNavBar,
                 builder: (context, showBottomBar, _) {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -185,7 +189,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                           onTap: (currentIndex) {
                             _currentPage.value = currentIndex;
                             // _pageController.jumpToPage(currentIndex);
-                            _pageController.animateTo(currentIndex);
+                            _pageController.jumpToPage(currentIndex);
                           },
                           enableFeedback: false,
                           backgroundColor: ColourPallette.white,
@@ -230,11 +234,11 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                 },
               ),
             ),
-            body: TabBarView(
+            body: PageView(
               controller: _pageController,
-              // onPageChanged: (page) {
-              //   _currentPage.value = page;
-              // },
+              onPageChanged: (page) {
+                _currentPage.value = page;
+              },
               children: [
                 UrlsListWidget(
                   title: 'Urls',
@@ -244,7 +248,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
                   collectionFetchModel: fetchCollection,
                 ),
                 UrlsPreviewListWidget(
-                  showBottomBar: _showAppBar,
+                  showBottomBar: _showBottomNavBar,
                   title: 'Urls',
                   collectionFetchModel: fetchCollection,
                 ),
@@ -252,7 +256,7 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
             ),
           );
         },
-      ),
+      // ),
     );
   }
 
@@ -294,10 +298,9 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
         builder: (context, isVisible, child) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             height: isVisible != 2 ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
-              backgroundColor: Colors.transparent,
+              // backgroundColor: Colors.transparent,
               surfaceTintColor: ColourPallette.mystic,
               title: Text(
                 title,
@@ -313,123 +316,131 @@ class _FolderCollectionRootPageState extends State<FolderCollectionRootPage>
     );
   }
 
-  Drawer _getDrawer() {
-    return Drawer(
-      backgroundColor: ColourPallette.white,
-      child: Column(
-        // shrinkWrap: true,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              DrawerHeader(
-                child: BlocBuilder<GlobalUserCubit, GlobalUserState>(
-                  builder: (context, state) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor:
-                              ColourPallette.mountainMeadow.withOpacity(0.5),
-                          child: SvgPicture.asset(
-                            MediaRes.personSVG,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '${state.globalUser?.name}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          '@${state.globalUser?.email}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              ListTile(
-                onTap: () {
-                  if (mounted) {
-                    // Navigator.of(context).pop (
-                    //   MaterialPageRoute(
-                    //     builder: (ctx) => FolderCollectionRootPage(
-                    //       collectionId: context
-                    //           .read<GlobalUserCubit>()
-                    //           .state
-                    //           .globalUser!
-                    //           .id,
-                    //       isRootCollection: true,
-                    //     ),
-                    //   ),
-                    //   (route) => false,
-                    // );
-                  }
-                },
-                leading: const Icon(
-                  Icons.home_rounded,
-                ),
-                title: const Text(
-                  'Home',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                ),
-              ),
-              ListTile(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => const SubscriptionPage(),
-                    ),
-                  );
-                },
-                leading: const Icon(
-                  Icons.support,
-                ),
-                title: const Text(
-                  'Support Us',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                ),
-              ),
-            ],
-          ),
-          ListTile(
-            onTap: () {},
-            leading: const Icon(
-              Icons.logout_rounded,
-            ),
-            title: const Text(
-              'Log Out',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_rounded,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Drawer _getDrawer() {
+  //   return Drawer(
+  //     backgroundColor: ColourPallette.white,
+  //     child: Column(
+  //       // shrinkWrap: true,
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         Column(
+  //           children: [
+  //             DrawerHeader(
+  //               child: BlocBuilder<GlobalUserCubit, GlobalUserState>(
+  //                 builder: (context, state) {
+  //                   return Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       CircleAvatar(
+  //                         radius: 32,
+  //                         backgroundColor:
+  //                             ColourPallette.mountainMeadow.withOpacity(0.5),
+  //                         child: SvgPicture.asset(
+  //                           MediaRes.personSVG,
+  //                         ),
+  //                       ),
+  //                       const SizedBox(height: 16),
+  //                       Text(
+  //                         '${state.globalUser?.name}',
+  //                         style: const TextStyle(
+  //                           fontSize: 18,
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ),
+  //                       Text(
+  //                         '@${state.globalUser?.email}',
+  //                         style: const TextStyle(
+  //                           fontSize: 14,
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //             ListTile(
+  //               onTap: () {
+  //                 if (mounted) {
+  //                   Navigator.of(context).pop();
+  //                   Navigator.of(context).popUntil(
+  //                     (route) => route.isFirst,
+  //                   );
+  //                 }
+  //               },
+  //               leading: const Icon(
+  //                 Icons.home_rounded,
+  //               ),
+  //               title: const Text(
+  //                 'Home',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //               trailing: const Icon(
+  //                 Icons.arrow_forward_ios_rounded,
+  //               ),
+  //             ),
+  //             ListTile(
+  //               onTap: () {
+  //                 Navigator.of(context).push(
+  //                   MaterialPageRoute(
+  //                     builder: (ctx) => const SubscriptionPage(),
+  //                   ),
+  //                 );
+  //               },
+  //               leading: const Icon(
+  //                 Icons.support,
+  //               ),
+  //               title: const Text(
+  //                 'Support Us',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //               trailing: const Icon(
+  //                 Icons.arrow_forward_ios_rounded,
+  //               ),
+  //             ),
+            
+            
+            
+  //           ],
+  //         ),
+  //         ListTile(
+  //           onTap: () async {
+  //             await context.read<AuthenticationCubit>().signOut().then(
+  //               (value) {
+  //                 Navigator.of(context).pushAndRemoveUntil(
+  //                   MaterialPageRoute(
+  //                     builder: (ctx) => const LoginPage(),
+  //                   ),
+  //                   (route) => false,
+  //                 );
+  //               },
+  //             );
+  //           },
+  //           leading: const Icon(
+  //             Icons.logout_rounded,
+  //           ),
+  //           title: const Text(
+  //             'Log Out',
+  //             style: TextStyle(
+  //               fontSize: 18,
+  //               fontWeight: FontWeight.w500,
+  //             ),
+  //           ),
+  //           trailing: const Icon(
+  //             Icons.arrow_forward_ios_rounded,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+
+
 }

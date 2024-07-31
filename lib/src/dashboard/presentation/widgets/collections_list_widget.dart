@@ -8,10 +8,10 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/add_collection_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/collection_store_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/update_collection_page.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/collection_icon_button.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/add_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/update_collection_page.dart';
+import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
 
 class CollectionsListWidget extends StatefulWidget {
   const CollectionsListWidget({

@@ -1,8 +1,13 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
@@ -54,7 +59,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     final addedCollection = await _collectionRepoImpl.addCollection(
       subCollection: collection,
       parentCollection: parentCollection!.collection,
-      userId: _globalUserCubit.state.globalUser!.id,
+      userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
     addedCollection.fold(
@@ -84,6 +89,8 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
                 CollectionCrudLoadingStates.addedSuccessfully,
           ),
         );
+
+        addCollectionToFavourites(collection: collection);
       },
     );
   }
@@ -92,9 +99,9 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     required CollectionModel collection,
   }) async {
     // [TODO] : delete subcollection in db it will be cascade delete
-    Logger.printLog(
-      'deleting collection ${collection.id}',
-    );
+    // Logger.printLog(
+    //   'deleting collection ${collection.id}',
+    // );
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.deleting,
@@ -110,7 +117,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     final deletedCollection = await _collectionRepoImpl.deleteCollection(
       collectionId: collection.id,
       parentCollectionId: parentCollection!.collection!.id,
-      userId: _globalUserCubit.state.globalUser!.id,
+      userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
     await deletedCollection.fold(
@@ -143,6 +150,10 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
                 CollectionCrudLoadingStates.deletedSuccessfully,
           ),
         );
+
+        await deleteCollectionToFavourites(
+          collection: collection,
+        );
       },
     );
   }
@@ -159,7 +170,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     final addedCollection = await _collectionRepoImpl.updateSubCollection(
       subCollection: collection,
-      userId: _globalUserCubit.state.globalUser!.id,
+      userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
     addedCollection.fold(
@@ -184,6 +195,186 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           ),
         );
       },
+    );
+  }
+
+  // <-------------------------- FAVOURITES ------------------------------------>
+
+  Future<void> addCollectionToFavourites({
+    required CollectionModel collection,
+  }) async {
+    final status = collection.status ?? {};
+    final isFav = status['is_favourite'] ?? false;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionRepoImpl
+          .fetchRootCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        collectionName: favourites,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) => null,
+            (fetched) {
+              _collectionsCubit.addCollection(collection: fetched);
+            },
+          );
+        },
+      );
+    }
+    
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final favouriteCollectionsList = [
+      collection.id,
+      ...favouriteCollection.collection!.subcollections,
+    ];
+
+    final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
+      subcollections: favouriteCollectionsList,
+    );
+
+    await _collectionRepoImpl.updateSubCollection(
+      subCollection: updatedFavouriteCollection,
+      userId: _globalUserCubit.getGlobalUser()!.id,
+    );
+
+    _collectionsCubit.updateCollection(
+      updatedCollection: updatedFavouriteCollection,
+      fetchSubCollIndexAdded: 1,
+    );
+  }
+
+  Future<void> updateCollectionToFavourites({
+    required CollectionModel collection,
+  }) async {
+    final status = collection.status ?? {};
+    final isFav = status['is_favourite'] as bool? ?? false;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionRepoImpl
+          .fetchRootCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        collectionName: favourites,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) => null,
+            (fetched) {
+              _collectionsCubit.addCollection(collection: fetched);
+            },
+          );
+        },
+      );
+    }
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final isCollectionAlreadyPresent =
+        favouriteCollection.collection!.subcollections.contains(
+      collection.id,
+    );
+
+    if (isCollectionAlreadyPresent && isFav == false) {
+      await deleteCollectionToFavourites(collection: collection);
+    } else if (isCollectionAlreadyPresent == false && isFav) {
+      await addCollectionToFavourites(collection: collection);
+    }
+  }
+
+  Future<void> deleteCollectionToFavourites({
+    required CollectionModel collection,
+  }) async {
+    final status = collection.status ?? {};
+    final isFav = status['is_favourite'] ?? false;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionRepoImpl
+          .fetchRootCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        collectionName: favourites,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) => null,
+            (fetched) {
+              _collectionsCubit.addCollection(collection: fetched);
+            },
+          );
+        },
+      );
+    }
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final favouriteCollectionsList = [
+      ...favouriteCollection.collection!.subcollections,
+    ]..removeWhere((element) => element == collection.id);
+
+    final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
+      subcollections: favouriteCollectionsList,
+    );
+
+    await _collectionRepoImpl.updateSubCollection(
+      subCollection: updatedFavouriteCollection,
+      userId: _globalUserCubit.getGlobalUser()!.id,
+    );
+
+    _collectionsCubit.updateCollection(
+      updatedCollection: updatedFavouriteCollection,
+      fetchSubCollIndexAdded: 1,
     );
   }
 }

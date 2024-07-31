@@ -13,35 +13,35 @@ class RemoteDataSourcesImpl {
 
   final FirebaseFirestore _firestore;
 
-  Future<void> rebaseCollections() async {
-    await _firestore.collection(folderCollections).get().then((qsnp) async {
-      for (final doc in qsnp.docs) {
-        final data = doc.data();
+  // Future<void> rebaseCollections() async {
+  //   await _firestore.collection(folderCollections).get().then((qsnp) async {
+  //     for (final doc in qsnp.docs) {
+  //       final data = doc.data();
 
-        await _firestore
-            .collection(userCollection)
-            .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
-            .collection(folderCollections)
-            .doc(doc.id)
-            .set(data);
-      }
-    });
+  //       await _firestore
+  //           .collection(userCollection)
+  //           .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
+  //           .collection(folderCollections)
+  //           .doc(doc.id)
+  //           .set(data);
+  //     }
+  //   });
 
-    await _firestore.collection(urlDataCollection).get().then(
-      (qsnp) async {
-        for (final doc in qsnp.docs) {
-          doc.data();
+  //   await _firestore.collection(urlDataCollection).get().then(
+  //     (qsnp) async {
+  //       for (final doc in qsnp.docs) {
+  //         doc.data();
 
-          await _firestore
-              .collection(userCollection)
-              .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
-              .collection(urlDataCollection)
-              .doc(doc.id)
-              .set(doc.data());
-        }
-      },
-    );
-  }
+  //         await _firestore
+  //             .collection(userCollection)
+  //             .doc('hzx1SlJoeyRcnEvTx0U1OdkXMEQ2')
+  //             .collection(urlDataCollection)
+  //             .doc(doc.id)
+  //             .set(doc.data());
+  //       }
+  //     },
+  //   );
+  // }
 
   /// It will use `userId` to fetch root collection currently
   Future<CollectionModel?> fetchCollection({

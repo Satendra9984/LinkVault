@@ -6,7 +6,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/custom_painter.dart';
+import 'package:link_vault/core/common/widgets/custom_image_painter.dart';
 
 class UrlFaviconLogoWidget extends StatelessWidget {
   const UrlFaviconLogoWidget({

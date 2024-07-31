@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
@@ -15,19 +17,17 @@ class CollectionsRepoImpl {
   })  : _remoteDataSourcesImpl = remoteDataSourceImpl,
         _urlLocalDataSourcesImpl = urlLocalDataSourcesImpl,
         _collectionLocalDataSourcesImpl = collectionLocalDataSourcesImpl;
-  // _urlRepoImpl = urlRepoImpl ??
-  //     UrlRepoImpl(remoteDataSourceImpl: remoteDataSourceImpl);
 
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
   final UrlLocalDataSourcesImpl _urlLocalDataSourcesImpl;
   final CollectionLocalDataSourcesImpl _collectionLocalDataSourcesImpl;
-  // final UrlRepoImpl _urlRepoImpl;
 
   Future<Either<Failure, CollectionModel>> fetchRootCollection({
     required String collectionId,
     required String userId,
+    String? collectionName,
   }) async {
-    // [TODO] : Fetch Subcollection
+    // Fetch Subcollection
     try {
       final localCollection =
           await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
@@ -48,7 +48,7 @@ class CollectionsRepoImpl {
 
         final rootCollection = CollectionModel.isEmpty(
           userId: userId,
-          name: rootCollectionName,
+          name: collectionName ?? rootCollectionName,
           parentCollection: userId,
           status: status,
           createdAt: todaydate,
@@ -75,7 +75,7 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<Either<Failure, CollectionModel>> fetchSubCollectionAsWhole({
+  Future<Either<Failure, CollectionModel>> fetchSubCollection({
     required String collectionId,
     required String userId,
   }) async {
@@ -104,47 +104,6 @@ class CollectionsRepoImpl {
       }
 
       // Now fetch subcollections
-
-      return Right(collection);
-    } catch (e) {
-      return Left(
-        ServerFailure(
-          message: 'Something Went Wrong',
-          statusCode: 400,
-        ),
-      );
-    }
-  }
-
-  Future<Either<Failure, CollectionModel>> fetchSubCollectionOnly({
-    required String collectionId,
-    required String userId,
-  }) async {
-    // [TODO] : Fetch Subcollection
-    try {
-      final localCollection =
-          await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
-
-      final collection = localCollection ??
-          await _remoteDataSourcesImpl.fetchCollection(
-            collectionId: collectionId,
-            userId: userId,
-          );
-
-      if (localCollection == null && collection != null) {
-        await _collectionLocalDataSourcesImpl.addCollection(collection);
-      }
-
-      if (collection == null) {
-        return Left(
-          ServerFailure(
-            message: 'Something Went Wrong. Collection Not Found',
-            statusCode: 400,
-          ),
-        );
-      }
-
-      // Now fetch subcollections and Urls also
 
       return Right(collection);
     } catch (e) {
@@ -197,41 +156,6 @@ class CollectionsRepoImpl {
       );
     }
   }
-
-  // Future<Either<Failure, (CollectionModel, CollectionModel)>> deleteCollection({
-  //   required CollectionModel collection,
-  //   required CollectionModel parentCollection,
-  //   required String userId,
-  // }) async {
-  //   try {
-  //     await _remoteDataSourcesImpl.deleteCollection(
-  //       collectionId: collection.id,
-  //       userId: userId,
-  //     );
-
-  //     await _collectionLocalDataSourcesImpl.deleteCollection(
-  //       collection.id,
-  //     );
-
-  //     final subCollList = parentCollection.subcollections
-  //       ..removeWhere(
-  //         (subCollId) => subCollId == collection.id,
-  //       );
-
-  //     final updatedParentColl = parentCollection.copyWith(
-  //       subcollections: subCollList,
-  //     );
-  //     // await _collectionLocalDataSourcesImpl.deleteCollection(collection.id);
-  //     return Right((collection, updatedParentColl));
-  //   } catch (e) {
-  //     return Left(
-  //       ServerFailure(
-  //         message: 'Could Not Deleted. Check internet and try again.',
-  //         statusCode: 400,
-  //       ),
-  //     );
-  //   }
-  // }
 
   Future<Either<Failure, (CollectionModel, CollectionModel)>> deleteCollection({
     required String collectionId,
@@ -352,4 +276,6 @@ class CollectionsRepoImpl {
       );
     }
   }
+
+
 }

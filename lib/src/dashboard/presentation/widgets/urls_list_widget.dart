@@ -9,9 +9,9 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/add_url_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/url_favicon_widget.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/add_url_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
+import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UrlsListWidget extends StatefulWidget {

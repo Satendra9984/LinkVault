@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 
@@ -12,8 +14,10 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   UrlCrudCubit({
     required CollectionsCubit collectionsCubit,
     required UrlRepoImpl urlRepoImpl,
+    required CollectionsRepoImpl collectionRepoImpl,
     required GlobalUserCubit globalUserCubit,
   })  : _urlRepoImpl = urlRepoImpl,
+        _collectionRepoImpl = collectionRepoImpl,
         _collectionsCubit = collectionsCubit,
         _globalUserCubit = globalUserCubit,
         super(
@@ -23,6 +27,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         );
 
   final UrlRepoImpl _urlRepoImpl;
+  final CollectionsRepoImpl _collectionRepoImpl;
+
   final CollectionsCubit _collectionsCubit;
   final GlobalUserCubit _globalUserCubit;
 
@@ -67,6 +73,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
               urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,
             ),
           );
+
+          addURLToFavourites(urlData: urlData);
         },
       );
     });
@@ -148,6 +156,169 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           },
         );
       },
+    );
+  }
+
+  void addURLToFavourites({
+    required UrlModel urlData,
+  }) async {
+    final isFav = urlData.isFavourite;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: true,
+      );
+    }
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final favouriteURLsList = [
+      urlData.firestoreId,
+      ...favouriteCollection.collection!.urls,
+    ];
+
+    final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
+      urls: favouriteURLsList,
+    );
+
+    await _collectionRepoImpl.updateSubCollection(
+      subCollection: updatedFavouriteCollection,
+      userId: _globalUserCubit.getGlobalUser()!.id,
+    );
+
+    _collectionsCubit.updateCollection(
+      updatedCollection: updatedFavouriteCollection,
+      fetchSubCollIndexAdded: 0,
+    );
+  }
+
+  Future<void> updateURLToFavourites({
+    required UrlModel urlData,
+  }) async {
+    final isFav = urlData.isFavourite;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionRepoImpl
+          .fetchRootCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        collectionName: favourites,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) => null,
+            (fetched) {
+              _collectionsCubit.addCollection(collection: fetched);
+            },
+          );
+        },
+      );
+    }
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final isCollectionAlreadyPresent =
+        favouriteCollection.collection!.subcollections.contains(
+      urlData.firestoreId,
+    );
+
+    if (isCollectionAlreadyPresent && isFav == false) {
+      await deleteURLToFavourites(urlData: urlData);
+    } else if (isCollectionAlreadyPresent == false && isFav) {
+      await deleteURLToFavourites(urlData: urlData);
+    }
+  }
+
+  Future<void> deleteURLToFavourites({
+    required UrlModel urlData,
+  }) async {
+    final isFav = urlData.isFavourite;
+
+    if (isFav == false) return;
+
+    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    final favouriteCollectionId =
+        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+    var favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    // IF NOT THEN FETCH IT FROM REPO AS ROOT COLLECTION (IMPTORTANT)
+    // AND ADD TO THE COLLECTIONS
+    if (favouriteCollection == null) {
+      await _collectionRepoImpl
+          .fetchRootCollection(
+        collectionId: favouriteCollectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        collectionName: favourites,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) => null,
+            (fetched) {
+              _collectionsCubit.addCollection(collection: fetched);
+            },
+          );
+        },
+      );
+    }
+    // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
+    favouriteCollection = _collectionsCubit.getCollection(
+      collectionId: favouriteCollectionId,
+    );
+
+    if (favouriteCollection == null) return;
+
+    final favouriteCollectionsList = [
+      ...favouriteCollection.collection!.subcollections,
+    ]..removeWhere((element) => element == urlData.firestoreId);
+
+    final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
+      subcollections: favouriteCollectionsList,
+    );
+
+    await _collectionRepoImpl.updateSubCollection(
+      subCollection: updatedFavouriteCollection,
+      userId: _globalUserCubit.getGlobalUser()!.id,
+    );
+
+    _collectionsCubit.updateCollection(
+      updatedCollection: updatedFavouriteCollection,
+      fetchSubCollIndexAdded: 1,
     );
   }
 }

@@ -9,7 +9,7 @@ import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 import 'package:share_plus/share_plus.dart';

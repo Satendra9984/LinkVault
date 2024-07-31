@@ -7,7 +7,7 @@ import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_stat
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 
 class AddCollectionPage extends StatefulWidget {
   const AddCollectionPage({
