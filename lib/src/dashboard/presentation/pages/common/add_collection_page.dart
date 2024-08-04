@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
+import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 
 class AddCollectionPage extends StatefulWidget {
   const AddCollectionPage({

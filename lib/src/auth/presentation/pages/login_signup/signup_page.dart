@@ -12,7 +12,6 @@ import 'package:link_vault/src/auth/presentation/cubit/authentication/authentica
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

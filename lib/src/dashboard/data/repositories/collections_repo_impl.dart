@@ -260,7 +260,7 @@ class CollectionsRepoImpl {
             userId: userId,
           );
 
-      if (localUrl == null && url != null) {
+      if (localUrl == null) {
         await _urlLocalDataSourcesImpl.addUrl(url);
       }
 

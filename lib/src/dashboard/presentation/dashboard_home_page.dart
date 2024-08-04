@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class DashboardHomePage extends StatefulWidget {
   const DashboardHomePage({super.key});
@@ -45,19 +43,9 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   Widget build(BuildContext context) {
     final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-        ),
-        splashFactory: NoSplash.splashFactory,
-      ),
-      home: FolderCollectionPage(
-        collectionId: globalUser,
-        isRootCollection: true,
-      ),
+    return FolderCollectionPage(
+      collectionId: globalUser,
+      isRootCollection: true,
     );
   }
 }

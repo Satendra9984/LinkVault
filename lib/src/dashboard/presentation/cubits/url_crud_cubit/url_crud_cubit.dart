@@ -159,7 +159,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     );
   }
 
-  void addURLToFavourites({
+  Future<void> addURLToFavourites({
     required UrlModel urlData,
   }) async {
     final isFav = urlData.isFavourite;
