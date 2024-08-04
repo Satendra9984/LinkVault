@@ -18,6 +18,7 @@ import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/c
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -181,8 +182,8 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => FolderCollectionPage(
-                            collectionId: '$globalUser/$favourites',
+                          builder: (ctx) => FavouriteFolderCollectionPage(
+                            collectionId: '$globalUser$favourites',
                             isRootCollection: true,
                           ),
                         ),
@@ -211,29 +212,29 @@ class _AppHomePageState extends State<AppHomePage> {
                   ),
     
                   // RECENT COLLECTIONS STORE
-                  ListTile(
-                    onTap: () {},
-                    // leading: const Icon(
-                    //   Icons.restore_rounded,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
-                    leading: SvgPicture.asset(
-                      MediaRes.recentSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Recent',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
-                    ),
-                  ),
+                  // ListTile(
+                  //   onTap: () {},
+                  //   // leading: const Icon(
+                  //   //   Icons.restore_rounded,
+                  //   //   color: ColourPallette.mountainMeadow,
+                  //   // ),
+                  //   leading: SvgPicture.asset(
+                  //     MediaRes.recentSVG,
+                  //     height: 20,
+                  //     width: 20,
+                  //   ),
+                  //   title: const Text(
+                  //     'Recent',
+                  //     style: TextStyle(
+                  //       fontSize: 18,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  //   trailing: const Icon(
+                  //     Icons.arrow_forward_ios_rounded,
+                  //     color: ColourPallette.salemgreen,
+                  //   ),
+                  // ),
     
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(

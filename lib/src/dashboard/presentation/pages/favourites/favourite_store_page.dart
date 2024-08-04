@@ -11,8 +11,8 @@ import 'package:link_vault/src/dashboard/presentation/pages/common/urls_list_wid
 import 'package:link_vault/src/dashboard/presentation/pages/common/urls_preview_list.dart';
 import 'package:lottie/lottie.dart';
 
-class FolderCollectionPage extends StatefulWidget {
-  const FolderCollectionPage({
+class FavouriteFolderCollectionPage extends StatefulWidget {
+  const FavouriteFolderCollectionPage({
     required this.collectionId,
     required this.isRootCollection,
     super.key,
@@ -21,10 +21,10 @@ class FolderCollectionPage extends StatefulWidget {
   final bool isRootCollection;
 
   @override
-  State<FolderCollectionPage> createState() => _FolderCollectionPageState();
+  State<FavouriteFolderCollectionPage> createState() => _FavouriteFolderCollectionPageState();
 }
 
-class _FolderCollectionPageState extends State<FolderCollectionPage>
+class _FavouriteFolderCollectionPageState extends State<FavouriteFolderCollectionPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
@@ -64,6 +64,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                 collectionId: widget.collectionId,
                 userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                 isRootCollection: widget.isRootCollection,
+                collectionName: 'Favourites'
               );
         }
 
@@ -225,11 +226,11 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
               UrlsListWidget(
                 title: 'Urls',
                 collectionFetchModel: fetchCollection,
-                showAddCollectionButton: true,
+                showAddCollectionButton: false,
               ),
               CollectionsListWidget(
                 collectionFetchModel: fetchCollection,
-                showAddCollectionButton: true,
+                showAddCollectionButton: false,
               ),
               UrlsPreviewListWidget(
                 showBottomBar: _showBottomNavBar,

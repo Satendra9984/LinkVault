@@ -153,7 +153,7 @@ class UrlRepoImpl {
   }
 
   Future<Either<Failure, (UrlModel, CollectionModel?)>> deleteUrlData({
-    required CollectionModel? collection,
+    required CollectionModel collection,
     required UrlModel urlData,
     required String userId,
   }) async {

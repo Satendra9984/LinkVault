@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -83,6 +84,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   Future<void> updateUrl({
     required UrlModel urlData,
   }) async {
+    // await updateURLToFavourites(urlData: urlData);
+
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.updating));
 
     await _urlRepoImpl
@@ -91,8 +94,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       userId: _globalUserCubit.state.globalUser!.id,
     )
         .then(
-      (result) {
-        result.fold(
+      (result) async {
+        await result.fold(
           (failed) {
             emit(
               state.copyWith(
@@ -100,7 +103,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
               ),
             );
           },
-          (response) {
+          (response) async {
             final urlData = response;
 
             _collectionsCubit.updateUrl(url: urlData);
@@ -110,6 +113,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
                 urlCrudLoadingStates: UrlCrudLoadingStates.updatedSuccessfully,
               ),
             );
+            await updateURLToFavourites(urlData: urlData);
           },
         );
       },
@@ -126,7 +130,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     await _urlRepoImpl
         .deleteUrlData(
-      collection: collection!.collection,
+      collection: collection!.collection!,
       urlData: urlData,
       userId: _globalUserCubit.state.globalUser!.id,
     )
@@ -140,12 +144,12 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
               ),
             );
           },
-          (response) {
-            final (urlData, collection) = response;
+          (response) async {
+            final (urlData, _) = response;
 
             _collectionsCubit.deleteUrl(
               url: urlData,
-              collectionModel: collection,
+              collectionModel: collection.collection!,
             );
 
             emit(
@@ -153,6 +157,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
                 urlCrudLoadingStates: UrlCrudLoadingStates.deletedSuccessfully,
               ),
             );
+
+            await deleteURLToFavourites(urlData: urlData);
           },
         );
       },
@@ -166,9 +172,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (isFav == false) return;
 
-    // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
+    Logger.printLog('addingUrl: ${urlData.firestoreId}, to favourites');
+
+    // CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -203,10 +211,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    _collectionsCubit.updateCollection(
-      updatedCollection: updatedFavouriteCollection,
-      fetchSubCollIndexAdded: 0,
-    );
+    _collectionsCubit
+      ..addUrl(
+        url: urlData,
+        collection: updatedFavouriteCollection,
+      )
+      ..updateCollection(
+        updatedCollection: updatedFavouriteCollection,
+        fetchSubCollIndexAdded: 0,
+      );
   }
 
   Future<void> updateURLToFavourites({
@@ -214,11 +227,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   }) async {
     final isFav = urlData.isFavourite;
 
-    if (isFav == false) return;
+    // if (isFav == false) return;
 
     // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -250,15 +263,19 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (favouriteCollection == null) return;
 
-    final isCollectionAlreadyPresent =
-        favouriteCollection.collection!.subcollections.contains(
+    final isUrlAlreadyPresentInList =
+        favouriteCollection.collection!.urls.contains(
       urlData.firestoreId,
     );
 
-    if (isCollectionAlreadyPresent && isFav == false) {
+    // Logger.printLog(
+    //   '${urlData.firestoreId}, alp: $isCollectionAlreadyPresentInList, $isFav',
+    // );
+
+    if (isUrlAlreadyPresentInList && isFav == false) {
       await deleteURLToFavourites(urlData: urlData);
-    } else if (isCollectionAlreadyPresent == false && isFav) {
-      await deleteURLToFavourites(urlData: urlData);
+    } else if (isUrlAlreadyPresentInList == false && isFav) {
+      await addURLToFavourites(urlData: urlData);
     }
   }
 
@@ -267,11 +284,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   }) async {
     final isFav = urlData.isFavourite;
 
-    if (isFav == false) return;
+    // if (isFav == false) return;
 
     // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -303,12 +320,19 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (favouriteCollection == null) return;
 
+    Logger.printLog('urlslist: ${favouriteCollection.collection!.urls}');
     final favouriteCollectionsList = [
-      ...favouriteCollection.collection!.subcollections,
-    ]..removeWhere((element) => element == urlData.firestoreId);
+      ...favouriteCollection.collection!.urls,
+    ]..removeWhere(
+        (element) => element == urlData.firestoreId,
+      );
+
+    Logger.printLog(
+      'after removing ${urlData.firestoreId} urlslist: ${favouriteCollectionsList}',
+    );
 
     final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
-      subcollections: favouriteCollectionsList,
+      urls: favouriteCollectionsList,
     );
 
     await _collectionRepoImpl.updateSubCollection(
@@ -316,9 +340,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    _collectionsCubit.updateCollection(
-      updatedCollection: updatedFavouriteCollection,
-      fetchSubCollIndexAdded: 1,
-    );
+    Logger.printLog('calling url for cubits collections deleteurl');
+    _collectionsCubit
+      ..deleteUrl(
+        url: urlData,
+        collectionModel: updatedFavouriteCollection,
+      )
+      ..updateCollection(
+        updatedCollection: updatedFavouriteCollection,
+        fetchSubCollIndexAdded: 0,
+      );
   }
 }

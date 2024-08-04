@@ -19,8 +19,11 @@ class MediaRes {
   static const String recentSVG = 'assets/images/recent.svg';
   static const String searchSVG= 'assets/images/search.svg';
   static const String collaborateSVG= 'assets/images/collaborate.svg';
+  static const String websiteSVG= 'assets/images/website.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
+  // static const String SVG= 'assets/images/.svg';
+
 
 
   /// ---------------------------- ANIMATIONS ----------------------------------

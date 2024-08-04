@@ -32,6 +32,8 @@ class CollectionsRepoImpl {
       final localCollection =
           await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
 
+      // Logger.printLog('fetchRootCollection : $collectionId');
+
       final collection = localCollection ??
           await _remoteDataSourcesImpl.fetchCollection(
             collectionId: collectionId,
@@ -60,7 +62,7 @@ class CollectionsRepoImpl {
           collection: withId,
           userId: userId,
         );
-
+        await _collectionLocalDataSourcesImpl.updateCollection(res);
         return Right(res);
       }
 
@@ -226,13 +228,18 @@ class CollectionsRepoImpl {
   Future<Either<Failure, CollectionModel>> updateSubCollection({
     required CollectionModel subCollection,
     required String userId,
+    bool isOfflineOnly = false,
   }) async {
-    // [TODO] : update subcollection in db
+    // update subcollection in db
     try {
-      final collection = await _remoteDataSourcesImpl.updateCollection(
-        collection: subCollection,
-        userId: userId,
-      );
+      var collection = subCollection;
+      if (isOfflineOnly == false) {
+        collection = await _remoteDataSourcesImpl.updateCollection(
+          collection: subCollection,
+          userId: userId,
+        );
+      }
+
       await _collectionLocalDataSourcesImpl.updateCollection(subCollection);
 
       return Right(collection);
@@ -276,6 +283,4 @@ class CollectionsRepoImpl {
       );
     }
   }
-
-
 }

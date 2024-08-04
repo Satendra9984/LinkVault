@@ -16,11 +16,12 @@ import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection
 class CollectionsListWidget extends StatefulWidget {
   const CollectionsListWidget({
     required this.collectionFetchModel,
+    required this.showAddCollectionButton,
     super.key,
   });
 
   final CollectionFetchModel collectionFetchModel;
-
+  final bool showAddCollectionButton;
   @override
   State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
 }
@@ -59,35 +60,37 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   Widget build(BuildContext context) {
     // super.build(context);
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: '${widget.collectionFetchModel.hashCode}',
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-        ),
-        backgroundColor: ColourPallette.salemgreen,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => AddCollectionPage(
-                parentCollection: widget.collectionFetchModel.collection!,
+      floatingActionButton: widget.showAddCollectionButton == false
+          ? null
+          : FloatingActionButton.extended(
+              heroTag: '${widget.collectionFetchModel.hashCode}',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              backgroundColor: ColourPallette.salemgreen,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => AddCollectionPage(
+                      parentCollection: widget.collectionFetchModel.collection!,
+                    ),
+                  ),
+                );
+              },
+              label: const Text(
+                'Add Collection',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: ColourPallette.white,
+                ),
+              ),
+              icon: const Icon(
+                Icons.create_new_folder_rounded,
+                color: ColourPallette.white,
               ),
             ),
-          );
-        },
-        label: const Text(
-          'Add Collection',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: ColourPallette.white,
-          ),
-        ),
-        icon: const Icon(
-          Icons.create_new_folder_rounded,
-          color: ColourPallette.white,
-        ),
-      ),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16),

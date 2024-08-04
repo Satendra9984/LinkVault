@@ -18,11 +18,13 @@ class UrlsListWidget extends StatefulWidget {
   const UrlsListWidget({
     required this.title,
     required this.collectionFetchModel,
-    // required this.scrollController,
+    required this.showAddCollectionButton,
     super.key,
   });
 
   final String title;
+  final bool showAddCollectionButton;
+
   // final ScrollController scrollController;
   final CollectionFetchModel collectionFetchModel;
 
@@ -65,43 +67,48 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: BlocBuilder<SharedInputsCubit, SharedInputsState>(
-        builder: (context, state) {
-          final urls = context.read<SharedInputsCubit>().getUrlsList();
+      floatingActionButton: widget.showAddCollectionButton == false
+          ? null
+          : BlocBuilder<SharedInputsCubit, SharedInputsState>(
+              builder: (context, state) {
+                if (widget.showAddCollectionButton == false) return Container();
 
-          final url = urls.isNotEmpty ? urls[0] : null;
+                final urls = context.read<SharedInputsCubit>().getUrlsList();
 
-          return FloatingActionButton.extended(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
-            ),
-            backgroundColor: ColourPallette.salemgreen,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => AddUrlPage(
-                    parentCollection: widget.collectionFetchModel.collection!,
-                    url: url,
+                final url = urls.isNotEmpty ? urls[0] : null;
+
+                return FloatingActionButton.extended(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
                   ),
-                ),
-              );
-            },
-            label: const Text(
-              'Add URL',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: ColourPallette.white,
-              ),
+                  backgroundColor: ColourPallette.salemgreen,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => AddUrlPage(
+                          parentCollection:
+                              widget.collectionFetchModel.collection!,
+                          url: url,
+                        ),
+                      ),
+                    );
+                  },
+                  label: const Text(
+                    'Add URL',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: ColourPallette.white,
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.add_link_rounded,
+                    color: ColourPallette.white,
+                  ),
+                );
+              },
             ),
-            icon: const Icon(
-              Icons.add_link_rounded,
-              color: ColourPallette.white,
-            ),
-          );
-        },
-      ),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16),

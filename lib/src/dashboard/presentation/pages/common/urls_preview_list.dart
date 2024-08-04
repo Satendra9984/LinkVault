@@ -98,8 +98,9 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
 
             return SingleChildScrollView(
               controller: _scrollController,
-              physics: const BouncingScrollPhysics(
-                  parent: AlwaysScrollableScrollPhysics()),
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               child: Column(
                 children: [
                   if (availableUrls == null || availableUrls.isEmpty)

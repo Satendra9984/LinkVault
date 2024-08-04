@@ -21,6 +21,7 @@ class ImageUtils {
       return Size(width, height);
     } else {
       Logger.printLog('Failed to decode image');
+      // return Size(600, 150);
       return null;
     }
   }

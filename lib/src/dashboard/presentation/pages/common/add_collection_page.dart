@@ -25,7 +25,7 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
   late final TextEditingController _collectionNameController;
   late final TextEditingController _descEditingController;
   late final List<String> _predefinedCategories;
-  final bool _favourite = false;
+  bool _favourite = false;
   String _selectedCategory = '';
 
   Future<void> addCollection(
@@ -164,35 +164,35 @@ class _AddCollectionPageState extends State<AddCollectionPage> {
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     const Text(
-                //       'Favourite',
-                //       style: TextStyle(
-                //         fontSize: 16,
-                //         fontWeight: FontWeight.w500,
-                //       ),
-                //     ),
-                //     Switch.adaptive(
-                //       value: _favourite,
-                //       onChanged: (value) => setState(() {
-                //         _favourite = !_favourite;
-                //       }),
-                //       trackOutlineColor:
-                //           MaterialStateProperty.resolveWith<Color?>(
-                //         (Set<MaterialState> states) => Colors.transparent,
-                //       ),
-                //       thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                //         (Set<MaterialState> states) => Colors.transparent,
-                //       ),
-                //       activeTrackColor: ColourPallette.mountainMeadow,
-                //       inactiveTrackColor: ColourPallette.error,
-                //     ),
-                //   ],
-                // ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: _favourite,
+                      onChanged: (value) => setState(() {
+                        _favourite = !_favourite;
+                      }),
+                      trackOutlineColor:
+                          MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
+                      ),
+                      thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) => Colors.transparent,
+                      ),
+                      activeTrackColor: ColourPallette.mountainMeadow,
+                      inactiveTrackColor: ColourPallette.error,
+                    ),
+                  ],
+                ),
 
-                // const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(
