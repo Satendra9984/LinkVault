@@ -41,7 +41,10 @@
         android:label="Link Vault"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="true">
+
+
         <!--android:launchMode="singleTop"-->
 
         <activity
@@ -78,42 +81,6 @@
                 <data android:mimeType="text/*" />
             </intent-filter>
 
-            <!--TODO: Add this filter, if you want to support sharing images into your app-->
-            <!-- <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="image/*" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="image/*" />
-            </intent-filter> -->
-
-            <!--TODO: Add this filter, if you want to support sharing videos into your app-->
-            <!-- <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="video/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="video/*" />
-            </intent-filter> -->
-
-            <!--TODO: Add this filter, if you want to support sharing any type of files-->
-            <!-- <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter> -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -122,9 +89,10 @@
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         
+        <!-- Enalbling impeller on non Vulkan devices gives error -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="true" />
+            android:value="false" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
@@ -133,93 +101,3 @@
             android:value="ca-app-pub-9004947579124903~7491162260"/>
     </application>
 </manifest>
-
-
-
-
-
-
-
-
-
-<!--<manifest xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    package="com.example.link_vault">-->
-<!--    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>-->
-<!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>-->
-
-<!--    &lt;!&ndash; Permissions options for the `manage external storage` group &ndash;&gt;-->
-<!--    <uses-permission android:name="android.permission.INTERNET"/> &lt;!&ndash; Add this &ndash;&gt;-->
-<!--    <application-->
-<!--        android:label="com.example.link_vault"-->
-<!--        android:name="${applicationName}"-->
-<!--        android:usesCleartextTraffic="true"-->
-<!--        android:icon="@mipmap/launcher_icon"-->
-<!--        android:requestLegacyExternalStorage="true">-->
-<!--        <activity-->
-<!--            android:name=".MainActivity"-->
-<!--            android:exported="true"-->
-<!--            android:launchMode="singleTask"-->
-<!--            android:theme="@style/LaunchTheme"-->
-<!--            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"-->
-<!--            android:hardwareAccelerated="true"-->
-<!--            android:windowSoftInputMode="adjustResize">-->
-<!--            &lt;!&ndash; Specifies an Android theme to apply to this Activity as soon as-->
-<!--                 the Android process has started. This theme is visible to the user-->
-<!--                 while the Flutter UI initializes. After that, this theme continues-->
-<!--                 to determine the Window background behind the Flutter UI. &ndash;&gt;-->
-<!--            <meta-data-->
-<!--                android:name="io.flutter.embedding.android.NormalTheme"-->
-<!--                android:resource="@style/NormalTheme"-->
-<!--                />-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.VIEW" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <category android:name="android.intent.category.BROWSABLE" />-->
-<!--                &lt;!&ndash; Add this filter, if you want support opening urls into your app&ndash;&gt;-->
-<!--                <data-->
-<!--                    android:scheme="https"-->
-<!--                    android:host="example.com"-->
-<!--                    android:pathPrefix="/invite"/>-->
-
-<!--            </intent-filter>-->
-
-<!--            &lt;!&ndash;Add this filter, if you want to support sharing text into your app&ndash;&gt;-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="text/*" />-->
-<!--            </intent-filter>-->
-
-<!--            &lt;!&ndash;Add this filter, if you want to support sharing images into your app&ndash;&gt;-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="image/*" />-->
-<!--            </intent-filter>-->
-
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND_MULTIPLE" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="image/*" />-->
-<!--            </intent-filter>-->
-
-<!--            &lt;!&ndash;Add this filter, if you want to support sharing videos into your app&ndash;&gt;-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="video/*" />-->
-<!--            </intent-filter>-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND_MULTIPLE" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="video/*" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
-
-<!--        &lt;!&ndash; Don't delete the meta-data below.-->
-<!--             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java &ndash;&gt;-->
-<!--        <meta-data-->
-<!--            android:name="flutterEmbedding"-->
-<!--            android:value="2" />-->
-<!--    </application>-->
-<!--</manifest>-->

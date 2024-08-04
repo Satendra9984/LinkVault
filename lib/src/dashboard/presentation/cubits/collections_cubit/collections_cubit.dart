@@ -39,6 +39,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String collectionId,
     required String userId,
     required bool isRootCollection,
+    String? collectionName,
   }) async {
     // [TODO] : Fetch Subcollection
     if (state.collections.containsKey(collectionId)) {
@@ -65,8 +66,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         ? await _collectionsRepoImpl.fetchRootCollection(
             collectionId: collectionId,
             userId: userId,
+            collectionName: collectionName,
           )
-        : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
+        : await _collectionsRepoImpl.fetchSubCollection(
             collectionId: collectionId,
             userId: _globalUserCubit.state.globalUser!.id,
           );
@@ -182,7 +184,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
               collectionId: subCollId,
               userId: userId,
             )
-          : await _collectionsRepoImpl.fetchSubCollectionAsWhole(
+          : await _collectionsRepoImpl.fetchSubCollection(
               collectionId: subCollId,
               userId: _globalUserCubit.state.globalUser!.id,
             );
@@ -276,10 +278,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }) {
     final prevCollection = state.collections[updatedCollection.id]!;
 
-    // Logger.printLog(
-    //   'updatecollection: ${StringUtils.getJsonFormat(prevCollection.collection?.toJson())}',
-    // );
-
     final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
       subCollectionFetchedIndex:
@@ -294,10 +292,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         collections: newState,
       ),
     );
-
-    // Logger.printLog(
-    //   'updatecollectionafter: ${StringUtils.getJsonFormat(updatedCollectionfetch.collection?.toJson())}',
-    // );
   }
 
   // <--------------------------- URLS --------------------------------->
@@ -414,7 +408,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       loadingStates: LoadingStates.loaded,
       urlModel: url,
     );
-
 
     final urlCollection = state.collectionUrls[url.collectionId];
 

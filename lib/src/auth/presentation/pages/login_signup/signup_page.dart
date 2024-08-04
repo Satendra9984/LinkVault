@@ -7,11 +7,11 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
+import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -167,7 +167,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (ctx) => const DashboardHomePage(),
+                              // builder: (ctx) => const DashboardHomePage(),
+                              builder: (ctx) => const AppHomePage(),
                             ),
                             (route) => false,
                           );

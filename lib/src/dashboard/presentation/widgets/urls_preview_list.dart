@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -8,7 +10,7 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/update_url_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -96,6 +98,8 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
 
             return SingleChildScrollView(
               controller: _scrollController,
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               child: Column(
                 children: [
                   if (availableUrls == null || availableUrls.isEmpty)
@@ -156,7 +160,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                         return Column(
                           children: [
                             Container(
-                              margin: EdgeInsets.symmetric(vertical: 4),
+                              margin: const EdgeInsets.symmetric(vertical: 4),
                               child: UrlPreviewWidget(
                                 urlMetaData: urlMetaData,
                                 onTap: () async {

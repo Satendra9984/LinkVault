@@ -23,4 +23,8 @@ class GlobalUserCubit extends Cubit<GlobalUserState> {
     );
     debugPrint('[log] : ${globleUser.toJson()}');
   }
+
+  GlobalUser? getGlobalUser() {
+    return state.globalUser;
+  }
 }

@@ -6,15 +6,10 @@ import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 
 class CollectionFetchModel extends Equatable {
-
-  // No need explicit urlFetchMoreState as UrlFetchStateModel already handles various states
-  // final LoadingStates urlFetchMoreState;
-  // final List<UrlFetchStateModel> urlList;
-
   const CollectionFetchModel({
-    required this.collectionFetchingState, required this.subCollectionFetchedIndex, this.collection,
-    // required this.urlFetchMoreState,
-    // required this.urlList,
+    required this.collectionFetchingState,
+    required this.subCollectionFetchedIndex,
+    this.collection,
   });
   final CollectionModel? collection;
   final LoadingStates collectionFetchingState;
@@ -25,15 +20,12 @@ class CollectionFetchModel extends Equatable {
         collection,
         collectionFetchingState,
         subCollectionFetchedIndex,
-        // urlFetchMoreState,
-        // urlList,
       ];
 
   CollectionFetchModel copyWith({
     CollectionModel? collection,
     LoadingStates? collectionFetchingState,
     int? subCollectionFetchedIndex,
-    LoadingStates? urlFetchMoreState,
     List<UrlFetchStateModel>? urlList,
   }) {
     return CollectionFetchModel(
@@ -42,8 +34,6 @@ class CollectionFetchModel extends Equatable {
           collectionFetchingState ?? this.collectionFetchingState,
       subCollectionFetchedIndex:
           subCollectionFetchedIndex ?? this.subCollectionFetchedIndex,
-      // urlFetchMoreState: urlFetchMoreState ?? this.urlFetchMoreState,
-      // urlList: urlList ?? this.urlList,
     );
   }
 }

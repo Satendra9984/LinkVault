@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/widgets/custom_image_painter.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/custom_painter.dart';
 
 class UrlPreviewWidget extends StatelessWidget {
   UrlPreviewWidget({
@@ -309,7 +309,7 @@ class UrlPreviewWidget extends StatelessWidget {
             bannerImageDim.height / bannerImageDim.width;
 
         final isSideWaysBanner = bannerImageAspectRatio >= 1.5 ||
-            (bannerImageAspectRatio <= 1.31 && bannerImageAspectRatio > 0.65);
+            (bannerImageAspectRatio <= 1.3 && bannerImageAspectRatio > 0.65);
         var width = bannerImageDim.width;
         var height = bannerImageDim.height;
 
@@ -326,9 +326,6 @@ class UrlPreviewWidget extends StatelessWidget {
         }
 
         if (isSideWaysBanner) {
-          // Logger.printLog(
-          //   '[bannerimage] : imagesize: ${width}, $height',
-          // );
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -371,18 +368,10 @@ class UrlPreviewWidget extends StatelessWidget {
           );
         }
 
-        // Logger.printLog(
-        //   '[bannerimage] : ${imageData.imageUrl}, ${bannerImageAspectRatio}, screen: $size',
-        // );
-
-        if (bannerImageAspectRatio >= 0.65 && bannerImageAspectRatio < 1.31) {
+        if (bannerImageAspectRatio > 1.3 && bannerImageAspectRatio < 1.5) {
           // height is greater
           width = min(size.width - 32, bannerImageDim.width);
           height = min(width * bannerImageAspectRatio, bannerImageDim.height);
-
-          // Logger.printLog(
-          //   '[bannerimage] : imagesize: ${width}, $height',
-          // );
 
           final averageBrightNess = ImageUtils.averageBrightness(
             ImageUtils.extractLowerHalf(imageBytes, fractionLowerHeight: 3 / 4),
@@ -411,7 +400,6 @@ class UrlPreviewWidget extends StatelessWidget {
 
           final linearGradient = LinearGradient(
             colors: colors,
-
             begin: Alignment.bottomCenter,
             end: Alignment.center,
             stops: const [0.40, 0.6, 0.65, 0.7, 0.75, 1],
@@ -479,8 +467,6 @@ class UrlPreviewWidget extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // title
             ],
           );
         } else {
