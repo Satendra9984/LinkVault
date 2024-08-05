@@ -29,8 +29,6 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
-  // late final TabController _pageController;
-
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
 
   @override
@@ -175,6 +173,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
                           _pageController.jumpToPage(currentIndex);
                         },
                         enableFeedback: false,
+                        type: BottomNavigationBarType.fixed,
                         backgroundColor: ColourPallette.white,
                         elevation: 0,
                         selectedItemColor: ColourPallette.black,
@@ -289,7 +288,7 @@ class _FolderCollectionPageState extends State<FolderCollectionPage>
               title: Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),

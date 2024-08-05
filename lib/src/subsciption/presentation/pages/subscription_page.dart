@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/constants/user_constants.dart';
+import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
@@ -34,11 +34,24 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          // title: const Text(
-          //   'Support Us',
-          //   style: TextStyle(fontWeight: FontWeight.w500),
-          // ),
-          ),
+        title: Row(
+          children: [
+            SvgPicture.asset(
+              MediaRes.collaborateSVG,
+              height: 18,
+              width: 18,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Support Us',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

@@ -2,10 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/constants/database_constants.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/advance_search_page.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
@@ -88,7 +89,7 @@ class _AppHomePageState extends State<AppHomePage> {
           // padding: EdgeInsets.symmetric(horizontal: 8),
           children: [
             const SizedBox(height: 8),
-    
+
             // Some Profile Details
             BlocBuilder<GlobalUserCubit, GlobalUserState>(
               builder: (context, state) {
@@ -118,10 +119,7 @@ class _AppHomePageState extends State<AppHomePage> {
                   ),
                   trailing: IconButton(
                     onPressed: () async {
-                      await context
-                          .read<AuthenticationCubit>()
-                          .signOut()
-                          .then(
+                      await context.read<AuthenticationCubit>().signOut().then(
                         (value) {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
@@ -140,9 +138,9 @@ class _AppHomePageState extends State<AppHomePage> {
                 );
               },
             ),
-    
+
             const SizedBox(height: 32),
-    
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -152,7 +150,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) =>  FolderCollectionPage(
+                          builder: (ctx) => FolderCollectionPage(
                             collectionId: globalUser,
                             isRootCollection: true,
                           ),
@@ -176,7 +174,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       color: ColourPallette.salemgreen,
                     ),
                   ),
-    
+
                   // FAVOURITE COLLECTIONS STORE
                   ListTile(
                     onTap: () {
@@ -210,7 +208,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       color: ColourPallette.salemgreen,
                     ),
                   ),
-    
+
                   // RECENT COLLECTIONS STORE
                   // ListTile(
                   //   onTap: () {},
@@ -235,14 +233,16 @@ class _AppHomePageState extends State<AppHomePage> {
                   //     color: ColourPallette.salemgreen,
                   //   ),
                   // ),
-    
+
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(
-                    onTap: () {},
-                    // leading: const Icon(
-                    //   Icons.restore_rounded,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const AdvanceSearchPage(),
+                        ),
+                      );
+                    },
                     leading: SvgPicture.asset(
                       MediaRes.searchSVG,
                       height: 20,
@@ -260,7 +260,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       color: ColourPallette.salemgreen,
                     ),
                   ),
-    
+
                   // SUPPORT US
                   ListTile(
                     onTap: () {
