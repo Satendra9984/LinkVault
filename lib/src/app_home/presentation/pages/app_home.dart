@@ -261,6 +261,70 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
+                  // DISCOVER
+                  ListTile(
+                    onTap: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => const AdvanceSearchPage(),
+                      //   ),
+                      // );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.compassSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'Your Feeds',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // trailing: const Icon(
+                    //   Icons.arrow_forward_ios_rounded,
+                    //   color: ColourPallette.salemgreen,
+                    // ),
+                    trailing: SvgPicture.asset(
+                      MediaRes.comingSoonSVG,
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
+
+                  // NEWSLETTERS
+                  ListTile(
+                    onTap: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => const AdvanceSearchPage(),
+                      //   ),
+                      // );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.newsletterSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'Newsletters',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // trailing: const Icon(
+                    //   Icons.arrow_forward_ios_rounded,
+                    //   color: ColourPallette.salemgreen,
+                    // ),
+                    trailing: SvgPicture.asset(
+                      MediaRes.comingSoonSVG,
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
+
                   // SUPPORT US
                   ListTile(
                     onTap: () {
