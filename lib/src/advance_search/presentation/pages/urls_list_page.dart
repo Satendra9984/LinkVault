@@ -24,7 +24,6 @@ class SearchedUrlsListWidget extends StatefulWidget {
   final String title;
   final bool showAddCollectionButton;
 
-
   @override
   State<SearchedUrlsListWidget> createState() => _SearchedUrlsListWidgetState();
 }
@@ -70,6 +69,13 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget> {
             //   _fetchMoreUrls();
             // }
 
+            return Center(
+              child: SvgPicture.asset(
+                // MediaRes.webSurf1SVG,
+                MediaRes.pageUnderConstructionSVG,
+              ),
+            );
+
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
@@ -80,7 +86,8 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget> {
                   if (availableUrls == null || availableUrls.isEmpty)
                     Center(
                       child: SvgPicture.asset(
-                        MediaRes.webSurf1SVG,
+                        // MediaRes.webSurf1SVG,
+                        MediaRes.comingSoonSVG,
                       ),
                     )
                   else
