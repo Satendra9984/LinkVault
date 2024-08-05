@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
-import 'package:link_vault/core/common/constants/database_constants.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';

@@ -2,7 +2,7 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:link_vault/core/common/constants/database_constants.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';

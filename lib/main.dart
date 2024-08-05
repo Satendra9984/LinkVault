@@ -1,12 +1,8 @@
 // ignore_for_file: public_member_api_docs, library_private_types_in_public_api
-import 'dart:io';
-import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -15,15 +11,24 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/services/router.dart';
 import 'package:link_vault/firebase_options.dart';
+import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/favourites_cubit.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
+import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/collection_model_offline.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
+import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
@@ -32,16 +37,6 @@ import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_d
 import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
-import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
-import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
-import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/dashboard_home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -179,6 +174,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(
           create: (BuildContext context) => NetworkImageCacheCubit(),
         ),
+        BlocProvider(
+          create: (BuildContext context) => AdvanceSearchCubit(),
+        ),
       ],
       child: MaterialApp(
         title: 'link_vault',
@@ -188,7 +186,7 @@ class _MyAppState extends State<MyApp> {
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
           ),
-          primarySwatch: Colors.blue, // Change to your desired primary color
+          primarySwatch: Colors.green, // Change to your desired primary color
         ),
         initialRoute: OnBoardingHomePage.routeName,
         onGenerateRoute: generateRoute,

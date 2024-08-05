@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
@@ -21,10 +22,12 @@ class FavouriteFolderCollectionPage extends StatefulWidget {
   final bool isRootCollection;
 
   @override
-  State<FavouriteFolderCollectionPage> createState() => _FavouriteFolderCollectionPageState();
+  State<FavouriteFolderCollectionPage> createState() =>
+      _FavouriteFolderCollectionPageState();
 }
 
-class _FavouriteFolderCollectionPageState extends State<FavouriteFolderCollectionPage>
+class _FavouriteFolderCollectionPageState
+    extends State<FavouriteFolderCollectionPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
@@ -61,11 +64,10 @@ class _FavouriteFolderCollectionPageState extends State<FavouriteFolderCollectio
 
         if (fetchCollection == null) {
           context.read<CollectionsCubit>().fetchCollection(
-                collectionId: widget.collectionId,
-                userId: context.read<GlobalUserCubit>().state.globalUser!.id,
-                isRootCollection: widget.isRootCollection,
-                collectionName: 'Favourites'
-              );
+              collectionId: widget.collectionId,
+              userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+              isRootCollection: widget.isRootCollection,
+              collectionName: 'Favourites');
         }
 
         if (fetchCollection == null ||
@@ -175,6 +177,7 @@ class _FavouriteFolderCollectionPageState extends State<FavouriteFolderCollectio
                           // _pageController.jumpToPage(currentIndex);
                           _pageController.jumpToPage(currentIndex);
                         },
+                        type: BottomNavigationBarType.fixed,
                         enableFeedback: false,
                         backgroundColor: ColourPallette.white,
                         elevation: 0,
@@ -287,12 +290,22 @@ class _FavouriteFolderCollectionPageState extends State<FavouriteFolderCollectio
             child: AppBar(
               // backgroundColor: Colors.transparent,
               surfaceTintColor: ColourPallette.mystic,
-              title: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+              title: Row(
+                children: [
+                  SvgPicture.asset(
+                    MediaRes.favouriteSVG,
+                    height: 18,
+                    width: 18,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           );

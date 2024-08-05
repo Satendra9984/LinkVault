@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:fpdart/fpdart.dart';
-import 'package:link_vault/core/common/constants/database_constants.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
