@@ -56,7 +56,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage> {
             ),
             GestureDetector(
               onTap: () async {
-               await context.read<AdvanceSearchCubit>().searchLocalDatabase();
+              //  await context.read<AdvanceSearchCubit>().searchLocalDatabaseCollections();
               },
               child: const Text(
                 'Advance Search Filters',
