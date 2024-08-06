@@ -11,7 +11,9 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/services/router.dart';
 import 'package:link_vault/firebase_options.dart';
-import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/favourites_cubit.dart';
+import 'package:link_vault/src/advance_search/data/local_data_source.dart';
+import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
+import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
@@ -88,7 +90,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(
           create: (context) => SharedInputsCubit(),
         ),
-        
+
         BlocProvider(
           create: (context) => SubscriptionCubit(
             adRepoImpl: RewardedAdRepoImpl(
@@ -175,7 +177,12 @@ class _MyAppState extends State<MyApp> {
           create: (BuildContext context) => NetworkImageCacheCubit(),
         ),
         BlocProvider(
-          create: (BuildContext context) => AdvanceSearchCubit(),
+          create: (BuildContext context) => AdvanceSearchCubit(
+            searchingRepoImpl: SearchingRepoImpl(
+              searchLocalDataSourcesImpl:
+                  SearchLocalDataSourcesImpl(isar: null),
+            ),
+          ),
         ),
       ],
       child: MaterialApp(

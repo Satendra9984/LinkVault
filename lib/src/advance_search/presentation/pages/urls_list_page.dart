@@ -7,7 +7,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/favourites_cubit.dart';
+import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';

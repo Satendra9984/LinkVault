@@ -355,6 +355,37 @@ class _AppHomePageState extends State<AppHomePage> {
                       color: ColourPallette.mountainMeadow,
                     ),
                   ),
+
+                  ListTile(
+                    onTap: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => const AdvanceSearchPage(),
+                      //   ),
+                      // );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.newsletterSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'Sync Data',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // trailing: const Icon(
+                    //   Icons.arrow_forward_ios_rounded,
+                    //   color: ColourPallette.salemgreen,
+                    // ),
+                    trailing: SvgPicture.asset(
+                      MediaRes.comingSoonSVG,
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
                 ],
               ),
             ),

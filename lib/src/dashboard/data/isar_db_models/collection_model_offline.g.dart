@@ -18,15 +18,35 @@ const CollectionModelOfflineSchema = CollectionSchema(
   name: r'CollectionModelOffline',
   id: 8805183473584028723,
   properties: {
-    r'firestoreId': PropertySchema(
+    r'category': PropertySchema(
       id: 0,
+      name: r'category',
+      type: IsarType.string,
+    ),
+    r'createdAt': PropertySchema(
+      id: 1,
+      name: r'createdAt',
+      type: IsarType.dateTime,
+    ),
+    r'firestoreId': PropertySchema(
+      id: 2,
       name: r'firestoreId',
       type: IsarType.string,
     ),
     r'jsonData': PropertySchema(
-      id: 1,
+      id: 3,
       name: r'jsonData',
       type: IsarType.string,
+    ),
+    r'name': PropertySchema(
+      id: 4,
+      name: r'name',
+      type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 5,
+      name: r'updatedAt',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _collectionModelOfflineEstimateSize,
@@ -47,6 +67,58 @@ const CollectionModelOfflineSchema = CollectionSchema(
           caseSensitive: true,
         )
       ],
+    ),
+    r'name': IndexSchema(
+      id: 879695947855722453,
+      name: r'name',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'name',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'category': IndexSchema(
+      id: -7560358558326323820,
+      name: r'category',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'category',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'createdAt': IndexSchema(
+      id: -3433535483987302584,
+      name: r'createdAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'createdAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'updatedAt': IndexSchema(
+      id: -6238191080293565125,
+      name: r'updatedAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'updatedAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
     )
   },
   links: {},
@@ -63,8 +135,20 @@ int _collectionModelOfflineEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.category;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.firestoreId.length * 3;
   bytesCount += 3 + object.jsonData.length * 3;
+  {
+    final value = object.name;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -74,8 +158,12 @@ void _collectionModelOfflineSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.firestoreId);
-  writer.writeString(offsets[1], object.jsonData);
+  writer.writeString(offsets[0], object.category);
+  writer.writeDateTime(offsets[1], object.createdAt);
+  writer.writeString(offsets[2], object.firestoreId);
+  writer.writeString(offsets[3], object.jsonData);
+  writer.writeString(offsets[4], object.name);
+  writer.writeDateTime(offsets[5], object.updatedAt);
 }
 
 CollectionModelOffline _collectionModelOfflineDeserialize(
@@ -85,9 +173,13 @@ CollectionModelOffline _collectionModelOfflineDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = CollectionModelOffline(
-    firestoreId: reader.readString(offsets[0]),
+    category: reader.readStringOrNull(offsets[0]),
+    createdAt: reader.readDateTimeOrNull(offsets[1]),
+    firestoreId: reader.readString(offsets[2]),
     id: id,
-    jsonData: reader.readString(offsets[1]),
+    jsonData: reader.readString(offsets[3]),
+    name: reader.readStringOrNull(offsets[4]),
+    updatedAt: reader.readDateTimeOrNull(offsets[5]),
   );
   return object;
 }
@@ -100,9 +192,17 @@ P _collectionModelOfflineDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 2:
       return (reader.readString(offset)) as P;
+    case 3:
+      return (reader.readString(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -126,6 +226,24 @@ extension CollectionModelOfflineQueryWhereSort
       anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterWhere>
+      anyCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createdAt'),
+      );
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterWhere>
+      anyUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'updatedAt'),
+      );
     });
   }
 }
@@ -244,10 +362,604 @@ extension CollectionModelOfflineQueryWhere on QueryBuilder<
       }
     });
   }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> nameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> nameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'name',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> nameEqualTo(String? name) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name',
+        value: [name],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> nameNotEqualTo(String? name) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> categoryIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'category',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> categoryIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'category',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> categoryEqualTo(String? category) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'category',
+        value: [category],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> categoryNotEqualTo(String? category) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'category',
+              lower: [],
+              upper: [category],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'category',
+              lower: [category],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'category',
+              lower: [category],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'category',
+              lower: [],
+              upper: [category],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtEqualTo(DateTime? createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [createdAt],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtNotEqualTo(DateTime? createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtGreaterThan(
+    DateTime? createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [createdAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtLessThan(
+    DateTime? createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [],
+        upper: [createdAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> createdAtBetween(
+    DateTime? lowerCreatedAt,
+    DateTime? upperCreatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [lowerCreatedAt],
+        includeLower: includeLower,
+        upper: [upperCreatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtEqualTo(DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'updatedAt',
+        value: [updatedAt],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtNotEqualTo(DateTime? updatedAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [updatedAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'updatedAt',
+              lower: [],
+              upper: [updatedAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtGreaterThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [updatedAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtLessThan(
+    DateTime? updatedAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [],
+        upper: [updatedAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterWhereClause> updatedAtBetween(
+    DateTime? lowerUpdatedAt,
+    DateTime? upperUpdatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'updatedAt',
+        lower: [lowerUpdatedAt],
+        includeLower: includeLower,
+        upper: [upperUpdatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension CollectionModelOfflineQueryFilter on QueryBuilder<
     CollectionModelOffline, CollectionModelOffline, QFilterCondition> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'category',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'category',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'category',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      categoryContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'category',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      categoryMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'category',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'category',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> categoryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'category',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'createdAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'createdAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> createdAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<CollectionModelOffline, CollectionModelOffline,
       QAfterFilterCondition> firestoreIdEqualTo(
     String value, {
@@ -597,6 +1309,236 @@ extension CollectionModelOfflineQueryFilter on QueryBuilder<
       ));
     });
   }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'name',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'name',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'name',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      nameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+          QAfterFilterCondition>
+      nameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'name',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> nameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'updatedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline,
+      QAfterFilterCondition> updatedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension CollectionModelOfflineQueryObject on QueryBuilder<
@@ -607,6 +1549,34 @@ extension CollectionModelOfflineQueryLinks on QueryBuilder<
 
 extension CollectionModelOfflineQuerySortBy
     on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QSortBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByCategory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'category', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByCategoryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'category', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       sortByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
@@ -634,10 +1604,66 @@ extension CollectionModelOfflineQuerySortBy
       return query.addSortBy(r'jsonData', Sort.desc);
     });
   }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      sortByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
 }
 
 extension CollectionModelOfflineQuerySortThenBy on QueryBuilder<
     CollectionModelOffline, CollectionModelOffline, QSortThenBy> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByCategory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'category', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByCategoryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'category', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
       thenByFirestoreId() {
     return QueryBuilder.apply(this, (query) {
@@ -679,10 +1705,52 @@ extension CollectionModelOfflineQuerySortThenBy on QueryBuilder<
       return query.addSortBy(r'jsonData', Sort.desc);
     });
   }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QAfterSortBy>
+      thenByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
 }
 
 extension CollectionModelOfflineQueryWhereDistinct
     on QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct> {
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByCategory({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'category', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'createdAt');
+    });
+  }
+
   QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
       distinctByFirestoreId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -696,6 +1764,20 @@ extension CollectionModelOfflineQueryWhereDistinct
       return query.addDistinctBy(r'jsonData', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, CollectionModelOffline, QDistinct>
+      distinctByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updatedAt');
+    });
+  }
 }
 
 extension CollectionModelOfflineQueryProperty on QueryBuilder<
@@ -703,6 +1785,20 @@ extension CollectionModelOfflineQueryProperty on QueryBuilder<
   QueryBuilder<CollectionModelOffline, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, String?, QQueryOperations>
+      categoryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'category');
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, DateTime?, QQueryOperations>
+      createdAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'createdAt');
     });
   }
 
@@ -717,6 +1813,20 @@ extension CollectionModelOfflineQueryProperty on QueryBuilder<
       jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'jsonData');
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, String?, QQueryOperations>
+      nameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<CollectionModelOffline, DateTime?, QQueryOperations>
+      updatedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updatedAt');
     });
   }
 }
