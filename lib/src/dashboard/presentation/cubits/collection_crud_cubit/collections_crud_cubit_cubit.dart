@@ -95,19 +95,39 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
   Future<void> deleteCollection({
     required CollectionModel collection,
   }) async {
-    // [TODO] : delete subcollection in db it will be cascade delete
-    // Logger.printLog(
-    //   'deleting collection ${collection.id}',
-    // );
+    // delete subcollection in db it will be cascade delete
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.deleting,
       ),
     );
 
-    final parentCollection = _collectionsCubit.getCollection(
+    var parentCollection = _collectionsCubit.getCollection(
       collectionId: collection.parentCollection,
     );
+
+    if (parentCollection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: collection.parentCollection,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: false,
+      );
+    }
+
+    parentCollection = _collectionsCubit.getCollection(
+      collectionId: collection.parentCollection,
+    );
+
+    if (parentCollection == null) {
+      emit(
+        state.copyWith(
+          collectionCrudLoadingStates:
+              CollectionCrudLoadingStates.errordeleting,
+        ),
+      );
+
+      return;
+    }
 
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
@@ -158,7 +178,6 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
   Future<void> updateCollection({
     required CollectionModel collection,
   }) async {
-    // [TODO] : update subcollection in db
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.updating,

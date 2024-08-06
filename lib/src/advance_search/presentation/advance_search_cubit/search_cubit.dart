@@ -1,4 +1,7 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
@@ -19,6 +22,23 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
 
   final SearchingRepoImpl _searchingRepoImpl;
 
+  // ADD SEARCH FIELDS NOTIFIERS HERE FOR MULTI PAGE CONTROL
+  // Define ValueNotifiers for each parameter
+  final _nameSearchNotifier = ValueNotifier<String>('');
+  final _categoriesNotifier = ValueNotifier<List<String>>([]);
+  final _createStartDateNotifier = ValueNotifier<DateTime?>(null);
+  final _createEndDateNotifier = ValueNotifier<DateTime?>(null);
+  final _updatedStartDateNotifier = ValueNotifier<DateTime?>(null);
+  final _updatedEndDateNotifier = ValueNotifier<DateTime?>(null);
+
+  // Getters for each ValueNotifier
+  ValueNotifier<String> get nameSearch => _nameSearchNotifier;
+  ValueNotifier<List<String>> get categories => _categoriesNotifier;
+  ValueNotifier<DateTime?> get createStartDate => _createStartDateNotifier;
+  ValueNotifier<DateTime?> get createEndDate => _createEndDateNotifier;
+  ValueNotifier<DateTime?> get updatedStartDate => _updatedStartDateNotifier;
+  ValueNotifier<DateTime?> get updatedEndDate => _updatedEndDateNotifier;
+
   Future<void> migrateData() async {
     await _searchingRepoImpl.migrateDatabase();
   }
@@ -29,52 +49,29 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     );
   }
 
-  Future<void> searchDB({
-    required String nameSearch,
-    required List<String> categories,
-    required DateTime createStartDate,
-    required DateTime createEndDate,
-    required DateTime updatedStartDate,
-    required DateTime updatedEndDate,
-  }) async {
-    await searchLocalDatabaseCollections(
-      nameSearch: nameSearch,
-      categories: categories,
-      createStartDate: createStartDate,
-      createEndDate: createEndDate,
-      updatedStartDate: updatedStartDate,
-      updatedEndDate: updatedEndDate,
-    );
-
-    await searchLocalDatabaseURLs(
-      nameSearch: nameSearch,
-      categories: categories,
-      createStartDate: createStartDate,
-      createEndDate: createEndDate,
-      updatedStartDate: updatedStartDate,
-      updatedEndDate: updatedEndDate,
-    );
+  Future<void> searchDB() async {
+    await searchLocalDatabaseCollections();
+    await searchLocalDatabaseURLs();
   }
 
-  Future<void> searchLocalDatabaseCollections({
-    required String nameSearch,
-    required List<String> categories,
-    required DateTime createStartDate,
-    required DateTime createEndDate,
-    required DateTime updatedStartDate,
-    required DateTime updatedEndDate,
-  }) async {
+  Future<void> searchLocalDatabaseCollections() async {
     final collectionsIndex = state.collections.length;
+
+    createStartDate.value ??= DateTime(2024, 7);
+    createEndDate.value ??= DateTime.now();
+    updatedStartDate.value ??= DateTime(2024, 7);
+    updatedEndDate.value ??= DateTime.now();
+
     await _searchingRepoImpl
         .searchLocalDatabase(
       pageSize: 28,
       startIndex: collectionsIndex,
-      nameSearch: nameSearch,
-      categories: categories,
-      createStartDate: createStartDate,
-      createEndDate: createEndDate,
-      updatedStartDate: updatedStartDate,
-      updatedEndDate: updatedEndDate,
+      nameSearch: nameSearch.value,
+      categories: categories.value,
+      createStartDate: createStartDate.value!,
+      createEndDate: createEndDate.value!,
+      updatedStartDate: updatedStartDate.value!,
+      updatedEndDate: updatedEndDate.value!,
     )
         .then(
       (result) {
@@ -93,26 +90,24 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     );
   }
 
-  Future<void> searchLocalDatabaseURLs({
-    required String nameSearch,
-    required List<String> categories,
-    required DateTime createStartDate,
-    required DateTime createEndDate,
-    required DateTime updatedStartDate,
-    required DateTime updatedEndDate,
-  }) async {
+  Future<void> searchLocalDatabaseURLs() async {
     final urlsIndex = state.urls.length;
+
+    createStartDate.value ??= DateTime(2024, 7);
+    createEndDate.value ??= DateTime.now();
+    updatedStartDate.value ??= DateTime(2024, 7);
+    updatedEndDate.value ??= DateTime.now();
 
     await _searchingRepoImpl
         .searchLocalURLs(
       pageSize: 28,
       startIndex: urlsIndex,
-      nameSearch: nameSearch,
-      categories: categories,
-      createStartDate: createStartDate,
-      createEndDate: createEndDate,
-      updatedStartDate: updatedStartDate,
-      updatedEndDate: updatedEndDate,
+      nameSearch: nameSearch.value,
+      categories: categories.value,
+      createStartDate: createStartDate.value!,
+      createEndDate: createEndDate.value!,
+      updatedStartDate: updatedStartDate.value!,
+      updatedEndDate: updatedEndDate.value!,
     )
         .then(
       (result) {
