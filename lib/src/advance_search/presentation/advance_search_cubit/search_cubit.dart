@@ -24,20 +24,24 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
 
   // ADD SEARCH FIELDS NOTIFIERS HERE FOR MULTI PAGE CONTROL
   // Define ValueNotifiers for each parameter
-  final _nameSearchNotifier = ValueNotifier<String>('');
+  final _formKey = GlobalKey<FormState>();
+  final _nameSearchNotifier = TextEditingController();
   final _categoriesNotifier = ValueNotifier<List<String>>([]);
   final _createStartDateNotifier = ValueNotifier<DateTime?>(null);
   final _createEndDateNotifier = ValueNotifier<DateTime?>(null);
   final _updatedStartDateNotifier = ValueNotifier<DateTime?>(null);
   final _updatedEndDateNotifier = ValueNotifier<DateTime?>(null);
+  final _isFavouriteNotifier = ValueNotifier<bool>(true);
 
   // Getters for each ValueNotifier
-  ValueNotifier<String> get nameSearch => _nameSearchNotifier;
+  GlobalKey get formKey => _formKey;
+  TextEditingController get nameSearch => _nameSearchNotifier;
   ValueNotifier<List<String>> get categories => _categoriesNotifier;
   ValueNotifier<DateTime?> get createStartDate => _createStartDateNotifier;
   ValueNotifier<DateTime?> get createEndDate => _createEndDateNotifier;
   ValueNotifier<DateTime?> get updatedStartDate => _updatedStartDateNotifier;
   ValueNotifier<DateTime?> get updatedEndDate => _updatedEndDateNotifier;
+  ValueNotifier<bool> get isFavourite => _isFavouriteNotifier;
 
   Future<void> migrateData() async {
     await _searchingRepoImpl.migrateDatabase();
@@ -50,6 +54,10 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
   }
 
   Future<void> searchDB() async {
+    if (_formKey.currentState!.validate() == false) {
+      return;
+    }
+
     await searchLocalDatabaseCollections();
     await searchLocalDatabaseURLs();
   }
@@ -66,7 +74,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
         .searchLocalDatabase(
       pageSize: 28,
       startIndex: collectionsIndex,
-      nameSearch: nameSearch.value,
+      nameSearch: nameSearch.text,
       categories: categories.value,
       createStartDate: createStartDate.value!,
       createEndDate: createEndDate.value!,
@@ -102,7 +110,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
         .searchLocalURLs(
       pageSize: 28,
       startIndex: urlsIndex,
-      nameSearch: nameSearch.value,
+      nameSearch: nameSearch.text,
       categories: categories.value,
       createStartDate: createStartDate.value!,
       createEndDate: createEndDate.value!,

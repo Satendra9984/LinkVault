@@ -437,9 +437,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
                                   border: Border.all(
                                     color: isSelected
                                         ? ColourPallette.mountainMeadow
-                                        : Colors.black,
+                                        : ColourPallette.grey,
                                   ),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
                                   category,
@@ -459,6 +459,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
                       );
                     },
                   ),
+                
+                
+                
                 ],
               ),
             ),

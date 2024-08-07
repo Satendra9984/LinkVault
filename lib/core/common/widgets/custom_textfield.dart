@@ -45,7 +45,7 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(12);
+    final borderRadius = BorderRadius.circular(24);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
