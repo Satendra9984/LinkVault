@@ -46,6 +46,66 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: [
+            SvgPicture.asset(
+              MediaRes.searchSVG,
+              height: 18,
+              width: 18,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Advance Search',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    context.read<AdvanceSearchCubit>().searchDB();
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: ColourPallette.mountainMeadow.withOpacity(0.25),
+                      border: Border.all(color: ColourPallette.mountainMeadow),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Row(
+                      children: [
+                        Text(
+                          'Search',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.search_rounded,
+                          color: ColourPallette.salemgreen,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -67,7 +127,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                       onSubmitted: (value) async {},
                       keyboardType: TextInputType.name,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null) {
                           return 'Please enter title';
                         }
                         return null;
@@ -75,7 +135,10 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                     ),
                     const SizedBox(height: 24),
 
+
+
                     // CREATED AT RANGE
+                    
                     FormField<DateTime>(
                       validator: (dateTime) {
                         if (searchCubit.createEndDate.value == null &&
@@ -88,6 +151,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                             0) {
                           return 'End Date Should be greater than Start Date';
                         }
+                        return null;
                       },
                       builder: (formSate) {
                         return Column(
@@ -264,14 +328,16 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                     FormField<DateTime>(
                       validator: (dateTime) {
                         if (searchCubit.updatedEndDate.value == null &&
-                            searchCubit.updatedEndDate.value == null)
+                            searchCubit.updatedEndDate.value == null) {
                           return null;
+                        }
 
                         if (searchCubit.updatedEndDate.value!.compareTo(
                                 searchCubit.updatedStartDate.value!) <
                             0) {
                           return 'End Date Should be greater than Start Date';
                         }
+                        return null;
                       },
                       builder: (formSate) {
                         return Column(

@@ -6,10 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/collections_list_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/search_filters_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/urls_list_page.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/urls_preview_page.dart';
 
 class AdvanceSearchPage extends StatefulWidget {
   const AdvanceSearchPage({super.key});
@@ -37,66 +38,7 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              MediaRes.searchSVG,
-              height: 18,
-              width: 18,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Advance Search',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    context.read<AdvanceSearchCubit>().searchDB();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: ColourPallette.mountainMeadow.withOpacity(0.25),
-                      border: Border.all(color: ColourPallette.mountainMeadow),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Row(
-                      children: [
-                        Text(
-                          'Search',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(
-                          Icons.search_rounded,
-                          color: ColourPallette.salemgreen,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 8),
         decoration: BoxDecoration(
@@ -175,21 +117,11 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
         onPageChanged: (page) {
           _currentPage.value = page;
         },
-        children: [
-          const AdvanceSearchFiltersPage(),
-          
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
+        children: const [
+          AdvanceSearchFiltersPage(),
+          SearchedUrlsListWidget(),
+          SearchedCollectionsListWidget(),
+          SearchedUrlsPreviewListWidget(),
         ],
       ),
     );

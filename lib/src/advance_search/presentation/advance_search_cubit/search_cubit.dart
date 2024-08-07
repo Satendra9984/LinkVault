@@ -3,6 +3,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -87,7 +88,20 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
         result.fold(
           (failed) {},
           (collections) {
-            final updatedCollections = [...collections, ...state.collections];
+            final updatedCollections = [...state.collections, ...collections]
+              ..removeWhere(
+                (element) {
+                  if (element.status == null ||
+                      element.status?.containsKey('is_favourite') == false) {
+                    return true;
+                  }
+
+                  final isFavourite = element.status!['is_favourite'];
+
+                  return isFavourite != _isFavouriteNotifier.value;
+                },
+              );
+
             emit(
               state.copyWith(
                 collections: updatedCollections,
@@ -123,7 +137,8 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
         result.fold(
           (failed) {},
           (urls) {
-            final upurls = [...urls, ...state.urls];
+            final upurls = [...state.urls, ...urls];
+            Logger.printLog('urls length: ${urls.length}');
             emit(
               state.copyWith(
                 urls: upurls,
