@@ -63,18 +63,18 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget> {
         child: BlocConsumer<AdvanceSearchCubit, AdvanceSearchState>(
           listener: (context, state) {},
           builder: (context, state) {
-            final availableUrls = <UrlFetchStateModel>[];
+            final availableUrls = state.urls;
 
             // if (availableUrls == null) {
             //   _fetchMoreUrls();
             // }
 
-            return Center(
-              child: SvgPicture.asset(
-                // MediaRes.webSurf1SVG,
-                MediaRes.pageUnderConstructionSVG,
-              ),
-            );
+            // return Center(
+            //   child: SvgPicture.asset(
+            //     // MediaRes.webSurf1SVG,
+            //     MediaRes.pageUnderConstructionSVG,
+            //   ),
+            // );
 
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(
@@ -102,41 +102,16 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget> {
                       itemBuilder: (context, index) {
                         final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading) {
-                          return Center(
-                            child: Container(
-                              height: 72,
-                              width: 72,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          );
-                        } else if (url.loadingStates ==
-                            LoadingStates.errorLoading) {
-                          return SizedBox(
-                            height: 56,
-                            width: 56,
-                            child: IconButton(
-                              onPressed: _fetchMoreUrls,
-                              icon: const Icon(
-                                Icons.restore,
-                                color: ColourPallette.black,
-                              ),
-                            ),
-                          );
-                        }
-
+                        
                         return UrlFaviconLogoWidget(
                           onPress: () async {
-                            final uri = Uri.parse(url.urlModel!.url);
+                            final uri = Uri.parse(url.url);
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri);
                             }
                           },
                           onDoubleTap: (urlMetaData) {
-                            final urlc = url.urlModel!.copyWith(
+                            final urlc = url.copyWith(
                               metaData: urlMetaData,
                             );
 
@@ -149,7 +124,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget> {
                               ),
                             );
                           },
-                          urlModelData: url.urlModel!,
+                          urlModelData: url,
                         );
                       },
                     ),

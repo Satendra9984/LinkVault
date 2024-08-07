@@ -176,7 +176,8 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
           _currentPage.value = page;
         },
         children: [
-          AdvanceSearchFiltersPage(),
+          const AdvanceSearchFiltersPage(),
+          
           SearchedUrlsListWidget(
             title: 'Urls',
             showAddCollectionButton: false,

@@ -556,39 +556,42 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                     const SizedBox(height: 24),
 
                     // IS fAVOURITE
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Favourite',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Favourite',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        ValueListenableBuilder<bool>(
-                          valueListenable: searchCubit.isFavourite,
-                          builder: (context, isFavorite, child) {
-                            return Switch.adaptive(
-                              value: isFavorite,
-                              onChanged: (value) =>
-                                  searchCubit.isFavourite.value = value,
-                              trackOutlineColor:
-                                  MaterialStateProperty.resolveWith<Color?>(
-                                (Set<MaterialState> states) =>
-                                    Colors.transparent,
-                              ),
-                              thumbColor:
-                                  MaterialStateProperty.resolveWith<Color?>(
-                                (Set<MaterialState> states) =>
-                                    Colors.transparent,
-                              ),
-                              activeTrackColor: ColourPallette.mountainMeadow,
-                              inactiveTrackColor: ColourPallette.error,
-                            );
-                          },
-                        ),
-                      ],
+                          ValueListenableBuilder<bool>(
+                            valueListenable: searchCubit.isFavourite,
+                            builder: (context, isFavorite, child) {
+                              return Switch.adaptive(
+                                value: isFavorite,
+                                onChanged: (value) =>
+                                    searchCubit.isFavourite.value = value,
+                                trackOutlineColor:
+                                    MaterialStateProperty.resolveWith<Color?>(
+                                  (Set<MaterialState> states) =>
+                                      Colors.transparent,
+                                ),
+                                thumbColor:
+                                    MaterialStateProperty.resolveWith<Color?>(
+                                  (Set<MaterialState> states) =>
+                                      Colors.transparent,
+                                ),
+                                activeTrackColor: ColourPallette.mountainMeadow,
+                                inactiveTrackColor: ColourPallette.error,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),

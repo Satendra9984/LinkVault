@@ -58,6 +58,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
       return;
     }
 
+    clearPrevResults();
     await searchLocalDatabaseCollections();
     await searchLocalDatabaseURLs();
   }
