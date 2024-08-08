@@ -28,6 +28,9 @@ class SearchedCollectionsListWidget extends StatefulWidget {
 class _SearchedCollectionsListWidgetState
     extends State<SearchedCollectionsListWidget>
     with AutomaticKeepAliveClientMixin {
+  final _showAppBar = ValueNotifier(true);
+  var _previousOffset = 0.0;
+
   late final ScrollController _scrollController;
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
@@ -45,6 +48,15 @@ class _SearchedCollectionsListWidgetState
   }
 
   Future<void> _onScroll() async {
+    if (_scrollController.offset > _previousOffset) {
+      _showAppBar.value = false;
+      // widget.showBottomBar.value = false;
+    } else if (_scrollController.offset < _previousOffset) {
+      _showAppBar.value = true;
+      // widget.showBottomBar.value = true;
+    }
+    _previousOffset = _scrollController.offset;
+
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
       _fetchMoreCollections();
@@ -135,29 +147,7 @@ class _SearchedCollectionsListWidgetState
     super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      appBar: AppBar(
-        surfaceTintColor: ColourPallette.white,
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              MediaRes.searchSVG,
-              height: 18,
-              width: 18,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Advance Search',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          _filterOptions(),
-        ],
-      ),
+      appBar: _getAppBar(),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -173,8 +163,8 @@ class _SearchedCollectionsListWidgetState
             _list.value = state.collections;
 
             _filterList();
-            if (_list.value .isEmpty) {
-             return Center(
+            if (_list.value.isEmpty) {
+              return Center(
                 child: SvgPicture.asset(
                   MediaRes.collectionSVG,
                 ),
@@ -192,7 +182,7 @@ class _SearchedCollectionsListWidgetState
                   );
                 }
                 return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(
+                  physics: const AlwaysScrollableScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
                   controller: _scrollController,
@@ -258,6 +248,34 @@ class _SearchedCollectionsListWidgetState
             );
           },
         ),
+      ),
+    );
+  }
+
+  PreferredSize _getAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _showAppBar,
+        builder: (context, isVisible, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isVisible ? kToolbarHeight + 16 : 24.0,
+            child: AppBar(
+              surfaceTintColor: ColourPallette.mystic,
+              title: const Text(
+                'Advance Search',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              actions: [
+                _filterOptions(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

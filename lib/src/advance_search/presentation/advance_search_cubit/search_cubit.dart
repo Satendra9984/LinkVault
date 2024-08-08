@@ -32,7 +32,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
   final _createEndDateNotifier = ValueNotifier<DateTime?>(null);
   final _updatedStartDateNotifier = ValueNotifier<DateTime?>(null);
   final _updatedEndDateNotifier = ValueNotifier<DateTime?>(null);
-  final _isFavouriteNotifier = ValueNotifier<bool>(true);
+  final _isFavouriteNotifier = ValueNotifier<bool?>(null);
 
   // Getters for each ValueNotifier
   GlobalKey get formKey => _formKey;
@@ -42,7 +42,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
   ValueNotifier<DateTime?> get createEndDate => _createEndDateNotifier;
   ValueNotifier<DateTime?> get updatedStartDate => _updatedStartDateNotifier;
   ValueNotifier<DateTime?> get updatedEndDate => _updatedEndDateNotifier;
-  ValueNotifier<bool> get isFavourite => _isFavouriteNotifier;
+  ValueNotifier<bool?> get isFavourite => _isFavouriteNotifier;
 
   Future<void> migrateData() async {
     await _searchingRepoImpl.migrateDatabase();
@@ -93,7 +93,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
                 (element) {
                   if (element.status == null ||
                       element.status?.containsKey('is_favourite') == false) {
-                    return true;
+                    return false;
                   }
 
                   final isFavourite = element.status!['is_favourite'];
@@ -137,8 +137,17 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
         result.fold(
           (failed) {},
           (urls) {
-            final upurls = [...state.urls, ...urls];
-            Logger.printLog('urls length: ${urls.length}');
+            final upurls = [...state.urls, ...urls]..removeWhere(
+                (element) {
+                  if (_isFavouriteNotifier.value == null) {
+                    return false;
+                  }
+                  return element.isFavourite != _isFavouriteNotifier.value;
+                },
+              );
+            // Logger.printLog(
+            //   'urls length: ${urls.length}, isFav: ${isFavourite.value}',
+            // );
             emit(
               state.copyWith(
                 urls: upurls,

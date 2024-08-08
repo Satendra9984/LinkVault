@@ -21,6 +21,10 @@ class AdvanceSearchFiltersPage extends StatefulWidget {
 
 class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
     with AutomaticKeepAliveClientMixin {
+  final _showAppBar = ValueNotifier(true);
+  var _previousOffset = 0.0;
+  late final ScrollController _scrollController;
+
   final _showCategoriesOptions = ValueNotifier(true);
   final _predefinedCategories = [...categories];
   // final _selectedCategory = ValueNotifier<String>('');
@@ -28,6 +32,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
 
     final searchCubit = context.read<AdvanceSearchCubit>();
 
@@ -35,6 +40,17 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
     searchCubit.createEndDate.value = DateTime.now();
     searchCubit.updatedStartDate.value = DateTime(2024, 7);
     searchCubit.updatedEndDate.value = DateTime.now();
+  }
+
+  Future<void> _onScroll() async {
+    if (_scrollController.offset > _previousOffset) {
+      _showAppBar.value = false;
+      // widget.showBottomBar.value = false;
+    } else if (_scrollController.offset < _previousOffset) {
+      _showAppBar.value = true;
+      // widget.showBottomBar.value = true;
+    }
+    _previousOffset = _scrollController.offset;
   }
 
   @override
@@ -46,67 +62,9 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              MediaRes.searchSVG,
-              height: 18,
-              width: 18,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Advance Search',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    context.read<AdvanceSearchCubit>().searchDB();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: ColourPallette.mountainMeadow.withOpacity(0.25),
-                      border: Border.all(color: ColourPallette.mountainMeadow),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Row(
-                      children: [
-                        Text(
-                          'Search',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(
-                          Icons.search_rounded,
-                          color: ColourPallette.salemgreen,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      appBar: _getAppBar(),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: BlocConsumer<AdvanceSearchCubit, AdvanceSearchState>(
@@ -135,10 +93,8 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                     ),
                     const SizedBox(height: 24),
 
-
-
                     // CREATED AT RANGE
-                    
+
                     FormField<DateTime>(
                       validator: (dateTime) {
                         if (searchCubit.createEndDate.value == null &&
@@ -634,25 +590,68 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          ValueListenableBuilder<bool>(
+                          ValueListenableBuilder<bool?>(
                             valueListenable: searchCubit.isFavourite,
                             builder: (context, isFavorite, child) {
-                              return Switch.adaptive(
-                                value: isFavorite,
-                                onChanged: (value) =>
-                                    searchCubit.isFavourite.value = value,
-                                trackOutlineColor:
-                                    MaterialStateProperty.resolveWith<Color?>(
-                                  (Set<MaterialState> states) =>
-                                      Colors.transparent,
+                              // print('isfav: $isFavorite');
+                              var color = ColourPallette.white;
+                              if (isFavorite == null) {
+                                color = ColourPallette.white;
+                              } else if (isFavorite) {
+                                color = ColourPallette.salemgreen;
+                              } else {
+                                color = ColourPallette.error;
+                              }
+                              return GestureDetector(
+                                onTap: () {
+                                  if (isFavorite == null) {
+                                    searchCubit.isFavourite.value = true;
+                                  } else if (isFavorite == true) {
+                                    searchCubit.isFavourite.value = false;
+                                  } else if (isFavorite == false) {
+                                    searchCubit.isFavourite.value = null;
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  alignment: Alignment.center,
+                                  height: 24,
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(),
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: color,
+                                  ),
+                                  child: Builder(
+                                    builder: (ctx) {
+                                      if (isFavorite == null) {
+                                        return Container();
+                                      }
+
+                                      if (isFavorite) {
+                                        return const Text(
+                                          '✓',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: ColourPallette.white,
+                                            height: 1,
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text(
+                                          'X',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: ColourPallette.white,
+                                            height: 1,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
                                 ),
-                                thumbColor:
-                                    MaterialStateProperty.resolveWith<Color?>(
-                                  (Set<MaterialState> states) =>
-                                      Colors.transparent,
-                                ),
-                                activeTrackColor: ColourPallette.mountainMeadow,
-                                inactiveTrackColor: ColourPallette.error,
                               );
                             },
                           ),
@@ -669,6 +668,96 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
         ),
       ),
     );
+  }
+
+  PreferredSize _getAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _showAppBar,
+        builder: (context, isVisible, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isVisible ? kToolbarHeight + 16 : 24.0,
+            child: AppBar(
+              surfaceTintColor: ColourPallette.white,
+              title: Row(
+                children: [
+                  SvgPicture.asset(
+                    MediaRes.searchSVG,
+                    height: 18,
+                    width: 18,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Advance Search',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.read<AdvanceSearchCubit>().searchDB();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color:
+                                ColourPallette.mountainMeadow.withOpacity(0.25),
+                            border: Border.all(
+                                color: ColourPallette.mountainMeadow),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: const Row(
+                            children: [
+                              Text(
+                                'Search',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.search_rounded,
+                                color: ColourPallette.salemgreen,
+                                size: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Color _activeColor(bool? isFavorite) {
+    if (isFavorite == null) {
+      return ColourPallette.white;
+    }
+
+    if (isFavorite) {
+      return ColourPallette.salemgreen;
+    } else {
+      return ColourPallette.error;
+    }
   }
 
   @override

@@ -370,7 +370,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       width: 20,
                     ),
                     title: const Text(
-                      'Sync Data',
+                      'Sync Devices',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,

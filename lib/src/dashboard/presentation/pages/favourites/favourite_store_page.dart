@@ -148,7 +148,7 @@ class _FavouriteFolderCollectionPageState
         return Scaffold(
           backgroundColor: ColourPallette.white,
           // drawer: _getDrawer(),
-          appBar: _getAppBar(title: collection.name),
+          // appBar: _getAppBar(title: collection.name),
           bottomNavigationBar: Container(
             padding: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(

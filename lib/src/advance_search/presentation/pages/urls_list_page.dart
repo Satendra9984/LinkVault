@@ -27,6 +27,8 @@ class SearchedUrlsListWidget extends StatefulWidget {
 class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
     with AutomaticKeepAliveClientMixin {
   late final ScrollController _scrollController;
+  final _showAppBar = ValueNotifier(true);
+  var _previousOffset = 0.0;
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
   final _ztoaFilter = ValueNotifier(false);
@@ -44,6 +46,15 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
   }
 
   void _onScroll() {
+      if (_scrollController.offset > _previousOffset) {
+      _showAppBar.value = false;
+      // widget.showBottomBar.value = false;
+    } else if (_scrollController.offset < _previousOffset) {
+      _showAppBar.value = true;
+      // widget.showBottomBar.value = true;
+    }
+    _previousOffset = _scrollController.offset;
+
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
       _fetchMoreUrls();
@@ -134,29 +145,8 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
     super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      appBar: AppBar(
-        surfaceTintColor: ColourPallette.white,
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              MediaRes.searchSVG,
-              height: 18,
-              width: 18,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Advance Search',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          _filterOptions(),
-        ],
-      ),
+            appBar: _getAppBar(),
+
       
       body: Container(
         margin: const EdgeInsets.only(top: 16),
@@ -180,7 +170,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
                   );
                 }
                 return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(
+                  physics: const AlwaysScrollableScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
                   controller: _scrollController,
@@ -247,7 +237,33 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
       ),
     );
   }
-
+  PreferredSize _getAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _showAppBar,
+        builder: (context, isVisible, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isVisible ? kToolbarHeight + 16 : 24.0,
+            child: AppBar(
+              surfaceTintColor: ColourPallette.mystic,
+              title: const Text(
+                'Advance Search',
+                style:  TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              actions: [
+                _filterOptions(),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
