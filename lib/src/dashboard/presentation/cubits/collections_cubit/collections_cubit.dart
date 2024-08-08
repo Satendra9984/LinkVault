@@ -151,9 +151,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
 
-    Logger.printLog(
-      'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
-    );
+    // Logger.printLog(
+    //   'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
+    // );
 
     final moreCollections = <String, CollectionFetchModel>{};
     for (final subCollId in moreSubcollectionIds) {
@@ -296,7 +296,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  // <--------------------------- URLS --------------------------------->
+  // <--------------------------------- URLS ---------------------------------->
 
   Future<void> fetchMoreUrls({
     required String collectionId,
@@ -508,25 +508,4 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  // void updateUrlsList({
-  //   required String collectionId,
-  //   required List<UrlFetchStateModel> urlsList,
-  // }) {
-  //   final prevCollection = state.collectionUrls[collectionId]!;
-
-  //   final updatedCollectionfetch = prevCollection.copyWith(
-  //     collection: updatedCollection,
-  //     subCollectionFetchedIndex:
-  //         prevCollection.subCollectionFetchedIndex + fetchSubCollIndexAdded,
-  //   );
-
-  //   final newState = {...state.collections};
-  //   newState[updatedCollection.id] = updatedCollectionfetch;
-
-  //   emit(
-  //     state.copyWith(
-  //       collections: newState,
-  //     ),
-  //   );
-  // }
 }

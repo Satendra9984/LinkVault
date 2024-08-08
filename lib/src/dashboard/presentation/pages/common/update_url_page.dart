@@ -455,9 +455,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                                 border: Border.all(
                                   color: isSelected
                                       ? ColourPallette.mountainMeadow
-                                      : Colors.black,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
+                                      : ColourPallette.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 category,

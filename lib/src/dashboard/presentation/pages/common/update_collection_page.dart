@@ -256,9 +256,9 @@ class _UpdateCollectionPageState extends State<UpdateCollectionPage> {
                             border: Border.all(
                               color: isSelected
                                   ? ColourPallette.mountainMeadow
-                                  : Colors.black,
+                                  : ColourPallette.grey,
                             ),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             category,

@@ -8,6 +8,7 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/common/add_url_page.dart';
@@ -33,21 +34,34 @@ class UrlsListWidget extends StatefulWidget {
 }
 
 class _UrlsListWidgetState extends State<UrlsListWidget> {
-  // final _urlPreviewType = ValueNotifier(UrlPreviewType.icons);
   late final ScrollController _scrollController;
+  final _showAppBar = ValueNotifier(true);
+  var _previousOffset = 0.0;
+  // ADDITIONAL VIEW-HELPER FILTERS
+  final _atozFilter = ValueNotifier(false);
+  final _ztoaFilter = ValueNotifier(false);
+  final _createdAtLatestFilter = ValueNotifier(false);
+  final _createdAtOldestFilter = ValueNotifier(false);
+  final _updatedAtLatestFilter = ValueNotifier(false);
+  final _updatedAtOldestFilter = ValueNotifier(false);
+  final _list = ValueNotifier<List<UrlFetchStateModel>>(<UrlFetchStateModel>[]);
 
   @override
   void initState() {
     _scrollController = ScrollController()..addListener(_onScroll);
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // _scrollController;
-    // _fetchMoreUrls();
-    // });
     super.initState();
   }
 
   void _onScroll() {
+      if (_scrollController.offset > _previousOffset) {
+      _showAppBar.value = false;
+      // widget.showBottomBar.value = false;
+    } else if (_scrollController.offset < _previousOffset) {
+      _showAppBar.value = true;
+      // widget.showBottomBar.value = true;
+    }
+    _previousOffset = _scrollController.offset;
+
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
       // Logger.printLog('[scroll] Called on scroll in urlslist');
@@ -64,9 +78,103 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
         );
   }
 
+  void _filterList() {
+    // FILTER BY TITLE
+    if (_atozFilter.value) {
+      _filterAtoZ();
+    } else if (_ztoaFilter.value) {
+      _filterZtoA();
+    }
+
+    // FILTER BY CREATED AT
+    if (_createdAtLatestFilter.value) {
+      _filterCreateLatest();
+    } else if (_createdAtOldestFilter.value) {
+      _filterCreateOldest();
+    }
+
+    // FILTER BY UPDATED AT
+    if (_updatedAtLatestFilter.value) {
+      _filterUpdatedLatest();
+    } else if (_updatedAtOldestFilter.value) {
+      _filterUpdateOldest();
+    }
+  }
+
+  void _filterAtoZ() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return a.urlModel!.title.toLowerCase().compareTo(
+                b.urlModel!.title.toLowerCase(),
+              );
+        },
+      );
+  }
+
+  void _filterZtoA() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return b.urlModel!.title.toLowerCase().compareTo(
+                a.urlModel!.title.toLowerCase(),
+              );
+        },
+      );
+  }
+
+  void _filterCreateLatest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return b.urlModel!.createdAt.compareTo(a.urlModel!.createdAt);
+        },
+      );
+  }
+
+  void _filterCreateOldest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return a.urlModel!.createdAt.compareTo(b.urlModel!.createdAt);
+        },
+      );
+  }
+
+  void _filterUpdatedLatest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return b.urlModel!.updatedAt.compareTo(a.urlModel!.updatedAt);
+        },
+      );
+  }
+
+  void _filterUpdateOldest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          if (a.urlModel == null || b.urlModel == null) {
+            return -1;
+          }
+          return a.urlModel!.updatedAt.compareTo(b.urlModel!.updatedAt);
+        },
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: _getAppBar(),
       floatingActionButton: widget.showAddCollectionButton == false
           ? null
           : BlocBuilder<SharedInputsCubit, SharedInputsState>(
@@ -118,95 +226,246 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
             final availableUrls = state
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
 
-            if (availableUrls == null) {
+            if (availableUrls == null || availableUrls.isEmpty) {
               _fetchMoreUrls();
+              return Center(
+                child: SvgPicture.asset(
+                  MediaRes.webSurf1SVG,
+                ),
+              );
             }
+            _list.value = availableUrls;
 
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              controller: _scrollController,
-              child: Column(
-                children: [
-                  if (availableUrls == null || availableUrls.isEmpty)
-                    Center(
-                      child: SvgPicture.asset(
-                        MediaRes.webSurf1SVG,
-                      ),
-                    )
-                  else
-                    AlignedGridView.extent(
-                      // controller: _scrollController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: availableUrls.length,
-                      maxCrossAxisExtent: 80,
-                      mainAxisSpacing: 24,
-                      crossAxisSpacing: 20,
-                      itemBuilder: (context, index) {
-                        final url = availableUrls[index];
+            _filterList();
+            return ValueListenableBuilder(
+              valueListenable: _list,
+              builder: (context, availableUrls, _) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      AlignedGridView.extent(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: availableUrls.length,
+                        maxCrossAxisExtent: 80,
+                        mainAxisSpacing: 24,
+                        crossAxisSpacing: 20,
+                        itemBuilder: (context, index) {
+                          final url = availableUrls[index];
 
-                        if (url.loadingStates == LoadingStates.loading) {
-                          return Center(
-                            child: Container(
-                              height: 72,
-                              width: 72,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                          );
-                        } else if (url.loadingStates ==
-                            LoadingStates.errorLoading) {
-                          return SizedBox(
-                            height: 56,
-                            width: 56,
-                            child: IconButton(
-                              onPressed: _fetchMoreUrls,
-                              icon: const Icon(
-                                Icons.restore,
-                                color: ColourPallette.black,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return UrlFaviconLogoWidget(
-                          onPress: () async {
-                            final uri = Uri.parse(url.urlModel!.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri);
-                            }
-                          },
-                          onDoubleTap: (urlMetaData) {
-                            final urlc = url.urlModel!.copyWith(
-                              metaData: urlMetaData,
-                            );
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => UpdateUrlPage(
-                                  urlModel: urlc,
+                          if (url.loadingStates == LoadingStates.loading) {
+                            return Center(
+                              child: Container(
+                                height: 72,
+                                width: 72,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.grey.shade300,
                                 ),
                               ),
                             );
-                          },
-                          urlModelData: url.urlModel!,
-                        );
-                      },
-                    ),
+                          } else if (url.loadingStates ==
+                              LoadingStates.errorLoading) {
+                            return SizedBox(
+                              height: 56,
+                              width: 56,
+                              child: IconButton(
+                                onPressed: _fetchMoreUrls,
+                                icon: const Icon(
+                                  Icons.restore,
+                                  color: ColourPallette.black,
+                                ),
+                              ),
+                            );
+                          }
 
-                  // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                  const SizedBox(height: 120),
-                ],
-              ),
+                          return UrlFaviconLogoWidget(
+                            onPress: () async {
+                              final uri = Uri.parse(url.urlModel!.url);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              }
+                            },
+                            onDoubleTap: (urlMetaData) {
+                              final urlc = url.urlModel!.copyWith(
+                                metaData: urlMetaData,
+                              );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => UpdateUrlPage(
+                                    urlModel: urlc,
+                                  ),
+                                ),
+                              );
+                            },
+                            urlModelData: url.urlModel!,
+                          );
+                        },
+                      ),
+
+                      // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
+                      const SizedBox(height: 120),
+                    ],
+                  ),
+                );
+              },
             );
           },
         ),
       ),
     );
   }
+
+  PreferredSize _getAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _showAppBar,
+        builder: (context, isVisible, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: isVisible ? kToolbarHeight + 16 : 24.0,
+            child: AppBar(
+              surfaceTintColor: ColourPallette.mystic,
+              title: Text(
+                '${widget.collectionFetchModel.collection?.name}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              actions: [
+                _filterOptions(),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _filterOptions() {
+    return PopupMenuButton(
+      color: ColourPallette.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      icon: const Icon(
+        Icons.filter_list,
+      ),
+      itemBuilder: (ctx) {
+        return [
+          _listFilterPopUpMenyItem(
+            title: 'A to Z',
+            notifier: _atozFilter,
+            onPress: () {
+              if (_atozFilter.value) {
+                _ztoaFilter.value = false;
+              }
+              _filterAtoZ();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Z to A',
+            notifier: _ztoaFilter,
+            onPress: () {
+              if (_ztoaFilter.value) {
+                _atozFilter.value = false;
+              }
+              _filterZtoA();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Latest Created First',
+            notifier: _createdAtLatestFilter,
+            onPress: () {
+              if (_createdAtLatestFilter.value) {
+                _createdAtOldestFilter.value = false;
+              }
+              _filterCreateLatest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Oldest Created First',
+            notifier: _createdAtOldestFilter,
+            onPress: () {
+              if (_createdAtOldestFilter.value) {
+                _createdAtLatestFilter.value = false;
+              }
+              _filterCreateOldest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Latest Updated First',
+            notifier: _updatedAtLatestFilter,
+            onPress: () {
+              if (_updatedAtLatestFilter.value) {
+                _updatedAtOldestFilter.value = false;
+              }
+
+              _filterUpdatedLatest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Oldest Updated First',
+            notifier: _updatedAtOldestFilter,
+            onPress: () {
+              if (_updatedAtOldestFilter.value) {
+                _updatedAtLatestFilter.value = false;
+              }
+              _filterUpdateOldest();
+            },
+          ),
+        ];
+      },
+    );
+  }
+
+  PopupMenuItem<bool> _listFilterPopUpMenyItem({
+    required String title,
+    required ValueNotifier<bool> notifier,
+    required void Function() onPress,
+  }) {
+    return PopupMenuItem(
+      value: notifier.value,
+      onTap: () {},
+      enabled: false,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColourPallette.black,
+            ),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: notifier,
+            builder: (context, isFavorite, child) {
+              return Checkbox.adaptive(
+                value: isFavorite,
+                onChanged: (_) {
+                  notifier.value = !notifier.value;
+                  onPress();
+                },
+                activeColor: ColourPallette.salemgreen,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
 }

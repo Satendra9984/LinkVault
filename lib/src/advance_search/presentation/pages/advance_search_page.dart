@@ -1,9 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/collections_list_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/search_filters_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/urls_list_page.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/urls_preview_page.dart';
 
 class AdvanceSearchPage extends StatefulWidget {
   const AdvanceSearchPage({super.key});
@@ -31,25 +38,7 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              MediaRes.searchSVG,
-              height: 18,
-              width: 18,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Advance Search',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
+      
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 8),
         decoration: BoxDecoration(
@@ -128,20 +117,11 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
         onPageChanged: (page) {
           _currentPage.value = page;
         },
-        children: [
+        children: const [
           AdvanceSearchFiltersPage(),
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
-          SearchedUrlsListWidget(
-            title: 'Urls',
-            showAddCollectionButton: false,
-          ),
+          SearchedUrlsListWidget(),
+          SearchedCollectionsListWidget(),
+          SearchedUrlsPreviewListWidget(),
         ],
       ),
     );

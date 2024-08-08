@@ -235,7 +235,7 @@ class SearchLocalDataSourcesImpl {
           _isar!.collection<UrlModelOffline>();
 
       // await _isar!.collectionModelOfflines;
-      Logger.printLog('nameSearch: $nameSearch');
+      // Logger.printLog('nameSearch: $nameSearch');
       var queryBuilder = collectionModelOfflineCollection
           .filter()
           .group(
