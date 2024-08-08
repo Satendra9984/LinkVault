@@ -9,6 +9,7 @@ import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/common/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/common/update_collection_page.dart';
@@ -25,13 +26,21 @@ class SearchedCollectionsListWidget extends StatefulWidget {
 }
 
 class _SearchedCollectionsListWidgetState
-    extends State<SearchedCollectionsListWidget> {
+    extends State<SearchedCollectionsListWidget>
+    with AutomaticKeepAliveClientMixin {
   late final ScrollController _scrollController;
+  // ADDITIONAL VIEW-HELPER FILTERS
+  final _atozFilter = ValueNotifier(false);
+  final _ztoaFilter = ValueNotifier(false);
+  final _createdAtLatestFilter = ValueNotifier(false);
+  final _createdAtOldestFilter = ValueNotifier(false);
+  final _updatedAtLatestFilter = ValueNotifier(false);
+  final _updatedAtOldestFilter = ValueNotifier(false);
+  final _list = ValueNotifier<List<CollectionModel>>(<CollectionModel>[]);
 
   @override
   void initState() {
     _scrollController = ScrollController()..addListener(_onScroll);
-
     super.initState();
   }
 
@@ -46,11 +55,88 @@ class _SearchedCollectionsListWidgetState
     context.read<AdvanceSearchCubit>().searchLocalDatabaseCollections();
   }
 
+  void _filterList() {
+    // FILTER BY TITLE
+    if (_atozFilter.value) {
+      _filterAtoZ();
+    } else if (_ztoaFilter.value) {
+      _filterZtoA();
+    }
+
+    // FILTER BY CREATED AT
+    if (_createdAtLatestFilter.value) {
+      _filterCreateLatest();
+    } else if (_createdAtOldestFilter.value) {
+      _filterCreateOldest();
+    }
+
+    // FILTER BY UPDATED AT
+    if (_updatedAtLatestFilter.value) {
+      _filterUpdatedLatest();
+    } else if (_updatedAtOldestFilter.value) {
+      _filterUpdateOldest();
+    }
+  }
+
+  void _filterAtoZ() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return a.name.toLowerCase().compareTo(
+                b.name.toLowerCase(),
+              );
+        },
+      );
+  }
+
+  void _filterZtoA() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return b.name.toLowerCase().compareTo(
+                a.name.toLowerCase(),
+              );
+        },
+      );
+  }
+
+  void _filterCreateLatest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return b.createdAt.compareTo(a.createdAt);
+        },
+      );
+  }
+
+  void _filterCreateOldest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return a.createdAt.compareTo(b.createdAt);
+        },
+      );
+  }
+
+  void _filterUpdatedLatest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return b.updatedAt.compareTo(a.updatedAt);
+        },
+      );
+  }
+
+  void _filterUpdateOldest() {
+    _list.value = [..._list.value]..sort(
+        (a, b) {
+          return a.updatedAt.compareTo(b.updatedAt);
+        },
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
+    super.build(context);
     return Scaffold(
+      backgroundColor: ColourPallette.white,
       appBar: AppBar(
+        surfaceTintColor: ColourPallette.white,
         title: Row(
           children: [
             SvgPicture.asset(
@@ -69,14 +155,7 @@ class _SearchedCollectionsListWidgetState
           ],
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              context.read<AdvanceSearchCubit>().searchDB();
-            },
-            icon: const Icon(
-              Icons.filter_list,
-            ),
-          ),
+          _filterOptions(),
         ],
       ),
       body: Container(
@@ -89,110 +168,93 @@ class _SearchedCollectionsListWidgetState
         child: BlocConsumer<AdvanceSearchCubit, AdvanceSearchState>(
           listener: (context, state) {},
           builder: (context, state) {
-            // final fetchCollection = state.collections;
+            final searchCubit = context.read<AdvanceSearchCubit>();
 
-            // if (fetchCollection == null) {
-            //   // _fetchMoreCollections();
+            _list.value = state.collections;
 
-            //   return Center(
-            //     child: SvgPicture.asset(
-            //       MediaRes.collectionSVG,
-            //     ),
-            //   );
-            // }
-
-            final availableSubCollections = state.collections;
+            _filterList();
+            if (_list.value .isEmpty) {
+             return Center(
+                child: SvgPicture.asset(
+                  MediaRes.collectionSVG,
+                ),
+              );
+            }
             const collectionIconWidth = 96.0;
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              controller: _scrollController,
-              child: Column(
-                children: [
-                  if (availableSubCollections.isEmpty)
-                    Center(
-                      child: SvgPicture.asset(
-                        MediaRes.collectionSVG,
-                      ),
-                    )
-                  else
-                    AlignedGridView.extent(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: availableSubCollections.length,
-                      maxCrossAxisExtent: 80,
-                      mainAxisSpacing: 24,
-                      crossAxisSpacing: 20,
-                      itemBuilder: (context, index) {
-                        // final fetchCollectionCubit = context.read<CollectionsCubit>();
-                        final subCollection = availableSubCollections[index];
-
-                        // if (subCollection.collectionFetchingState ==
-                        //     LoadingStates.loading) {
-                        //   return Column(
-                        //     children: [
-                        //       Container(
-                        //         width: 72,
-                        //         height: 72,
-                        //         decoration: BoxDecoration(
-                        //           borderRadius: BorderRadius.circular(12),
-                        //           color: Colors.grey.shade200,
-                        //         ),
-                        //       ),
-                        //       Container(
-                        //         margin: const EdgeInsets.symmetric(
-                        //           horizontal: 8,
-                        //           vertical: 8,
-                        //         ),
-                        //         width: 72,
-                        //         height: 8,
-                        //         decoration: BoxDecoration(
-                        //           borderRadius: BorderRadius.circular(16),
-                        //           color: Colors.grey.shade300,
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   );
-                        // } else if (subCollection.collectionFetchingState ==
-                        //     LoadingStates.errorLoading) {
-                        //   return const Icon(
-                        //     Icons.error,
-                        //     color: Colors.red,
-                        //   );
-                        // }
-
-                        return FolderIconButton(
-                          collection: subCollection,
-                          onDoubleTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => UpdateCollectionPage(
-                                  collection: subCollection,
-                                ),
-                              ),
-                            );
-                          },
-                          onPress: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => FolderCollectionPage(
-                                  collectionId: subCollection.id,
-                                  isRootCollection: false,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+            return ValueListenableBuilder(
+              valueListenable: _list,
+              builder: (context, availableSubCollections, _) {
+                if (availableSubCollections.isEmpty) {
+                  Center(
+                    child: SvgPicture.asset(
+                      MediaRes.collectionSVG,
                     ),
+                  );
+                }
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      if (availableSubCollections.isEmpty)
+                        Center(
+                          child: SvgPicture.asset(
+                            MediaRes.collectionSVG,
+                          ),
+                        )
+                      else
+                        AlignedGridView.extent(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: availableSubCollections.length,
+                          maxCrossAxisExtent: 80,
+                          mainAxisSpacing: 24,
+                          crossAxisSpacing: 20,
+                          itemBuilder: (context, index) {
+                            // final fetchCollectionCubit = context.read<CollectionsCubit>();
+                            final subCollection =
+                                availableSubCollections[index];
 
-                  // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                  const SizedBox(height: 120),
-                ],
-              ),
+                            return FolderIconButton(
+                              collection: subCollection,
+                              onDoubleTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (ctx) => UpdateCollectionPage(
+                                      collection: subCollection,
+                                    ),
+                                  ),
+                                );
+                              },
+                              onPress: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (ctx) => FolderCollectionPage(
+                                      collectionId: subCollection.id,
+                                      isRootCollection: false,
+                                    ),
+                                  ),
+                                ).then(
+                                  (value) {
+                                    searchCubit.searchDB();
+                                  },
+                                );
+                                ;
+                              },
+                            );
+                          },
+                        ),
+
+                      // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
+                      const SizedBox(height: 120),
+                    ],
+                  ),
+                );
+              },
             );
           },
         ),
@@ -200,6 +262,122 @@ class _SearchedCollectionsListWidgetState
     );
   }
 
-  // @override
-  // bool get wantKeepAlive => true;
+  Widget _filterOptions() {
+    return PopupMenuButton(
+      color: ColourPallette.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      icon: const Icon(
+        Icons.filter_list,
+      ),
+      itemBuilder: (ctx) {
+        return [
+          _listFilterPopUpMenyItem(
+            title: 'A to Z',
+            notifier: _atozFilter,
+            onPress: () {
+              if (_atozFilter.value) {
+                _ztoaFilter.value = false;
+              }
+              _filterAtoZ();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Z to A',
+            notifier: _ztoaFilter,
+            onPress: () {
+              if (_ztoaFilter.value) {
+                _atozFilter.value = false;
+              }
+              _filterZtoA();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Latest Created First',
+            notifier: _createdAtLatestFilter,
+            onPress: () {
+              if (_createdAtLatestFilter.value) {
+                _createdAtOldestFilter.value = false;
+              }
+              _filterCreateLatest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Oldest Created First',
+            notifier: _createdAtOldestFilter,
+            onPress: () {
+              if (_createdAtOldestFilter.value) {
+                _createdAtLatestFilter.value = false;
+              }
+              _filterCreateOldest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Latest Updated First',
+            notifier: _updatedAtLatestFilter,
+            onPress: () {
+              if (_updatedAtLatestFilter.value) {
+                _updatedAtOldestFilter.value = false;
+              }
+
+              _filterUpdatedLatest();
+            },
+          ),
+          _listFilterPopUpMenyItem(
+            title: 'Oldest Updated First',
+            notifier: _updatedAtOldestFilter,
+            onPress: () {
+              if (_updatedAtOldestFilter.value) {
+                _updatedAtLatestFilter.value = false;
+              }
+              _filterUpdateOldest();
+            },
+          ),
+        ];
+      },
+    );
+  }
+
+  PopupMenuItem<bool> _listFilterPopUpMenyItem({
+    required String title,
+    required ValueNotifier<bool> notifier,
+    required void Function() onPress,
+  }) {
+    return PopupMenuItem(
+      value: notifier.value,
+      onTap: () {},
+      enabled: false,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ColourPallette.black,
+            ),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: notifier,
+            builder: (context, isFavorite, child) {
+              return Checkbox.adaptive(
+                value: isFavorite,
+                onChanged: (_) {
+                  notifier.value = !notifier.value;
+                  onPress();
+                },
+                activeColor: ColourPallette.salemgreen,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }
