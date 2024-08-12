@@ -10,7 +10,10 @@ import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/services/router.dart';
-import 'package:link_vault/firebase_options.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/firebase_options.dart' as prod;
+import 'package:link_vault/firebase_options_test.dart' as dev;
+
 import 'package:link_vault/src/advance_search/data/local_data_source.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
@@ -45,7 +48,22 @@ void main() async {
 
   await MobileAds.instance.initialize();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  const isProduction = bool.fromEnvironment('dart.vm.product');
+
+  // Logger.printLog('isProd: $isProduction');
+
+  // Check if Firebase is already initialized
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      name: 'LinkVault Singleton',
+      options: isProduction
+          ? prod.DefaultFirebaseOptions.currentPlatform
+          : dev.DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  // await FirebaseApp.initializeApp();
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
     cacheSizeBytes: 5 * 1024 * 1024,
@@ -73,6 +91,23 @@ void main() async {
       child: MyApp(),
     ),
   );
+}
+
+class FirebaseApp {
+  static FirebaseApp? _instance;
+  static FirebaseApp? get instance => _instance;
+
+  static Future<void> initializeApp() async {
+    if (_instance == null) {
+      const isProduction = bool.fromEnvironment('dart.vm.product');
+
+      _instance = (await Firebase.initializeApp(
+        options: isProduction
+            ? prod.DefaultFirebaseOptions.currentPlatform
+            : dev.DefaultFirebaseOptions.currentPlatform,
+      )) as FirebaseApp?;
+    }
+  }
 }
 
 class MyApp extends StatefulWidget {
