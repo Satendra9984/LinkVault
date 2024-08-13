@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/common/res/app_tutorials.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
@@ -53,7 +55,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   }
 
   void _onScroll() {
-      if (_scrollController.offset > _previousOffset) {
+    if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
       // widget.showBottomBar.value = false;
     } else if (_scrollController.offset < _previousOffset) {
@@ -229,8 +231,50 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
             if (availableUrls == null || availableUrls.isEmpty) {
               _fetchMoreUrls();
               return Center(
-                child: SvgPicture.asset(
-                  MediaRes.webSurf1SVG,
+                child: Column(
+                  children: [
+                    SvgPicture.asset(
+                      MediaRes.webSurf1SVG,
+                      // MediaRes.pageUnderConstructionSVG,
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        const howToAddlink =
+                            AppLinks.howToAddURLVideoTutorialLink;
+                        final uri = Uri.parse(howToAddlink);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: ColourPallette.error,
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: ColourPallette.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Watch How to Add URL',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -465,7 +509,4 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
       ),
     );
   }
-
-
-
 }
