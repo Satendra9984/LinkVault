@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/common/res/app_tutorials.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
@@ -46,7 +47,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
   }
 
   void _onScroll() {
-      if (_scrollController.offset > _previousOffset) {
+    if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
       // widget.showBottomBar.value = false;
     } else if (_scrollController.offset < _previousOffset) {
@@ -145,9 +146,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
     super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
-            appBar: _getAppBar(),
-
-      
+      appBar: _getAppBar(),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -163,9 +162,50 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
               builder: (context, availableUrls, _) {
                 if (availableUrls.isEmpty) {
                   return Center(
-                    child: SvgPicture.asset(
-                      MediaRes.webSurf1SVG,
-                      // MediaRes.pageUnderConstructionSVG,
+                    child: Column(
+                      children: [
+                        SvgPicture.asset(
+                          MediaRes.webSurf1SVG,
+                          // MediaRes.pageUnderConstructionSVG,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            const howToAddlink =
+                                AppLinks.howToAddURLVideoTutorialLink;
+                            final uri = Uri.parse(howToAddlink);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            }
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: ColourPallette.error,
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: ColourPallette.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Watch How to Add URL',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -237,6 +277,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
       ),
     );
   }
+
   PreferredSize _getAppBar() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -250,7 +291,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
               surfaceTintColor: ColourPallette.mystic,
               title: const Text(
                 'Advance Search',
-                style:  TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -264,6 +305,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
       ),
     );
   }
+
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
@@ -347,7 +389,6 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
     required ValueNotifier<bool> notifier,
     required void Function() onPress,
   }) {
-    
     return PopupMenuItem(
       value: notifier.value,
       onTap: () {},

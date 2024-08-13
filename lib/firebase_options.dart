@@ -50,20 +50,23 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBY7mwdNlhMOOWJUPskg90J3gOk93cRmZ0',
-    appId: '1:843415826323:android:faadd32fcbf02a1a854266',
-    messagingSenderId: '843415826323',
-    projectId: 'linkvault-bcbfe',
-    storageBucket: 'linkvault-bcbfe.appspot.com',
+    apiKey: 'AIzaSyBnV0v3X5KSAosMXg3sE2XSNxKmWFe0_-E',
+    appId: '1:1061335700026:android:e1d5ae71e233fcf7e19b03',
+    messagingSenderId: '1061335700026',
+    projectId: 'linkvault-prod',
+    databaseURL: 'https://linkvault-prod-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'linkvault-prod.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCmxpn8VN40ruwBATFiRCd6OOcqB0X9ris',
-    appId: '1:843415826323:ios:9b271155b9fda642854266',
-    messagingSenderId: '843415826323',
-    projectId: 'linkvault-bcbfe',
-    storageBucket: 'linkvault-bcbfe.appspot.com',
-    iosClientId: '843415826323-9qlpdap2o0t3d4ciqnjungboe56ham1a.apps.googleusercontent.com',
-    iosBundleId: 'com.example.linkVault',
+    apiKey: 'AIzaSyBPmZvUoxxomrDGP5OqLSw4kh-RIK_oFP4',
+    appId: '1:1061335700026:ios:19b32fb8214eab8de19b03',
+    messagingSenderId: '1061335700026',
+    projectId: 'linkvault-prod',
+    databaseURL: 'https://linkvault-prod-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'linkvault-prod.appspot.com',
+    iosClientId: '1061335700026-6rommaluvf21hd1kfv1sgg0pv8oh5sp0.apps.googleusercontent.com',
+    iosBundleId: 'com.vicharshala.linkvault',
   );
+
 }
