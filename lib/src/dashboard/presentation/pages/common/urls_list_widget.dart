@@ -9,6 +9,8 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
@@ -326,6 +328,12 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                               ),
                             );
                           }
+
+                          // Logger.printLog(
+                          //   StringUtils.getJsonFormat(
+                          //     url.urlModel!.metaData?.toJson(),
+                          //   ),
+                          // );
 
                           return UrlFaviconLogoWidget(
                             onPress: () async {

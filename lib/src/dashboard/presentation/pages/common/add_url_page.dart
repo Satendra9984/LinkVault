@@ -6,6 +6,7 @@ import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -15,10 +16,7 @@ import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart'
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
 
-
-
 // https://youtu.be/jMi-VwEBJ70
-
 
 class AddUrlPage extends StatefulWidget {
   const AddUrlPage({
@@ -84,6 +82,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
         updatedAt: createdAt,
         metaData: urlMetaData,
       );
+
+      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
       await urlCrudCubit.addUrl(urlData: urlModelData);
     }
@@ -191,7 +191,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
               if (widget.url != null) {
                 context.read<SharedInputsCubit>().removeUrlInput(widget.url);
               }
-              Navigator.of(context).pop();
+              // Navigator.of(context).pop();
             }
           },
           builder: (context, state) {
@@ -393,7 +393,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
                                 MaterialStateProperty.resolveWith<Color?>(
                               (Set<MaterialState> states) => Colors.transparent,
                             ),
-                            thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                            thumbColor:
+                                MaterialStateProperty.resolveWith<Color?>(
                               (Set<MaterialState> states) => Colors.transparent,
                             ),
                             activeTrackColor: ColourPallette.mountainMeadow,
@@ -464,9 +465,6 @@ class _AddUrlPageState extends State<AddUrlPage> {
                       );
                     },
                   ),
-                
-                
-                
                 ],
               ),
             ),
