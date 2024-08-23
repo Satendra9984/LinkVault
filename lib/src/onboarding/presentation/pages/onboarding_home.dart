@@ -125,48 +125,46 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
       //         .contains('does not contain appropriate runtime stage data')) {
       Logger.printLog('Impeller error occurred: $e');
       Logger.printLog('Switching to Skia renderer');
-      await _switchToSkia();
-      _restartApp();
+      // await _switchToSkia();
+      // _restartApp();
     }
   }
 
-  Future<void> _renderTestWidget() async {
-    // Render a simple widget to test shader compilation
-    runApp(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue, Colors.green],
-                ),
-              ),
-              child: const Text('Test'),
-            ),
-          ),
-        ),
-      ),
-    );
-    await Future.delayed(const Duration(milliseconds: 100));
-  }
-
-  Future<void> _switchToSkia() async {
-    try {
-      // Communicate with the native platform to disable Impeller
-      await const MethodChannel('flutter/settings').invokeMethod(
-        'setString',
-        {'key': 'FLUTTER_IMPELLER_ENABLED', 'value': 'false'},
-      );
-    } catch (e) {
-      Logger.printLog('Failed to switch to Skia: $e');
-    }
-  }
-
-  void _restartApp() {
-    // Logic to restart the app
-    SystemNavigator.pop();
-  }
+  // Future<void> _renderTestWidget() async {
+  //   // Render a simple widget to test shader compilation
+  //   runApp(
+  //     MaterialApp(
+  //       home: Scaffold(
+  //         body: Center(
+  //           child: Container(
+  //             decoration: const BoxDecoration(
+  //               gradient: LinearGradient(
+  //                 colors: [Colors.blue, Colors.green],
+  //               ),
+  //             ),
+  //             child: const Text('Test'),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  //   await Future.delayed(const Duration(milliseconds: 100));
+  // }
+  // Future<void> _switchToSkia() async {
+  //   try {
+  //     // Communicate with the native platform to disable Impeller
+  //     await const MethodChannel('flutter/settings').invokeMethod(
+  //       'setString',
+  //       {'key': 'FLUTTER_IMPELLER_ENABLED', 'value': 'false'},
+  //     );
+  //   } catch (e) {
+  //     Logger.printLog('Failed to switch to Skia: $e');
+  //   }
+  // }
+  // void _restartApp() {
+  //   // Logic to restart the app
+  //   SystemNavigator.pop();
+  // }
 
   @override
   Widget build(BuildContext context) {

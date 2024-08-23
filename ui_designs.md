@@ -11,3 +11,7 @@ https://dribbble.com/shots/16519810-Xigman-Reset-Password
 
 
 https://dribbble.com/search/flash-messages-ui
+
+
+
+//https://www.youtube.com/watch?v=j_ilbyXwIzI&list=PLCnCACYJw4v2gebm7kiQ-WIJLDuJgmfUS&index=1
