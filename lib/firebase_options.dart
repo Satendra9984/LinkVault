@@ -68,5 +68,4 @@ class DefaultFirebaseOptions {
     iosClientId: '1061335700026-6rommaluvf21hd1kfv1sgg0pv8oh5sp0.apps.googleusercontent.com',
     iosBundleId: 'com.vicharshala.linkvault',
   );
-
 }

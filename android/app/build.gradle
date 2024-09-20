@@ -65,12 +65,14 @@ android {
     flavorDimensions "env"
     productFlavors {
         production {
-           dimension "env"
-        //    applicationIdSuffix ".production"
+            dimension "env"
+            // applicationIdSuffix ".prod"
+            // versionNameSuffix "-prod"
         }
         dev {
             dimension "env"
             applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
         }
     }
 
@@ -106,26 +108,33 @@ flutter {
 
 
 // Add this at the end of the file
+// android.applicationVariants.all { variant ->
+//     def googleServicesFile = variant.productFlavors.contains('dev') 
+//         ? file("src/dev/google-services.json") 
+//         : file("google-services.json")
+
+//     if (googleServicesFile.exists()) {
+//         apply plugin: 'com.google.gms.google-services'
+//     }
+// }
+
 android.applicationVariants.all { variant ->
-    def googleServicesFile = variant.productFlavors.contains('dev') 
+    def googleServicesFile = variant.productFlavors.get(0).name == "dev"
         ? file("src/dev/google-services.json") 
         : file("google-services.json")
 
     if (googleServicesFile.exists()) {
+        println "Applying google-services.json for ${variant.productFlavors.get(0).name}"
         apply plugin: 'com.google.gms.google-services'
+    } else {
+        throw new FileNotFoundException("google-services.json not found for ${variant.productFlavors.get(0).name}")
     }
 }
 
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    // implementation(name: 'appcompat-1.2.0', ext: 'aar')
-    // implementation 'com.google.android.gms:play-services-ads:21.3.0'
     implementation("com.google.ads.mediation:facebook:6.17.0.0")
     implementation("com.google.ads.mediation:vungle:7.4.0.1")
-    // implementation("com.google.ads.mediation:applovin:12.6.1.0")
-    // implementation("com.applovin:applovin-sdk:+")
-
-    // implementation("com.google.ads.mediation:inmobi:10.7.5.0")
 }
 

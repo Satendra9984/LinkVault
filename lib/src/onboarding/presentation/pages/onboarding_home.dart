@@ -123,8 +123,8 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
       //     e
       //         .toString()
       //         .contains('does not contain appropriate runtime stage data')) {
-      Logger.printLog('Impeller error occurred: $e');
-      Logger.printLog('Switching to Skia renderer');
+      // Logger.printLog('Impeller error occurred: $e');
+      // Logger.printLog('Switching to Skia renderer');
       // await _switchToSkia();
       // _restartApp();
     }
@@ -169,6 +169,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: ValueListenableBuilder<bool>(
           valueListenable: _isRendererChecked,

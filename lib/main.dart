@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gma_mediation_meta/gma_mediation_meta.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
