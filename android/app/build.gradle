@@ -65,8 +65,8 @@ android {
     flavorDimensions "env"
     productFlavors {
         production {
-            dimension "env"
-           // applicationIdSuffix ".production"
+           dimension "env"
+        //    applicationIdSuffix ".production"
         }
         dev {
             dimension "env"
@@ -121,5 +121,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     // implementation(name: 'appcompat-1.2.0', ext: 'aar')
     // implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation("com.google.ads.mediation:facebook:6.17.0.0")
+    implementation("com.google.ads.mediation:vungle:7.4.0.1")
+    // implementation("com.google.ads.mediation:applovin:12.6.1.0")
+    // implementation("com.applovin:applovin-sdk:+")
+
+    // implementation("com.google.ads.mediation:inmobi:10.7.5.0")
 }
 

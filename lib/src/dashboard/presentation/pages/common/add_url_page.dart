@@ -191,7 +191,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
               if (widget.url != null) {
                 context.read<SharedInputsCubit>().removeUrlInput(widget.url);
               }
-              // Navigator.of(context).pop();
+              Navigator.of(context).pop();
             }
           },
           builder: (context, state) {

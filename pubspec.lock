@@ -480,6 +480,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  gma_mediation_meta:
+    dependency: "direct main"
+    description:
+      name: gma_mediation_meta
+      sha256: fdaee3eca75ec0257a214787a14a0c0b111976c94684c9aacbe9444734867d2b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  gma_mediation_unity:
+    dependency: "direct main"
+    description:
+      name: gma_mediation_unity
+      sha256: "53989b6fffc4e424f83b5a9d521ca546e612d9fce24767f321676376e48dbe5b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   google_mobile_ads:
     dependency: "direct main"
     description:

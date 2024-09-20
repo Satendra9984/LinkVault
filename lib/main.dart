@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gma_mediation_meta/gma_mediation_meta.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -45,67 +46,8 @@ import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_im
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:path_provider/path_provider.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // await MobileAds.instance.initialize();
-
-//   const isProduction = bool.fromEnvironment('dart.vm.product');
-
-//   // Logger.printLog('isProd: $isProduction');
-
-//   // Check if Firebase is already initialized
-//   if (Firebase.apps.isEmpty) {
-//     await Firebase.initializeApp(
-//       name: 'LinkVault Singleton',
-//       options: isProduction
-//           ? prod.DefaultFirebaseOptions.currentPlatform
-//           : dev.DefaultFirebaseOptions.currentPlatform,
-//     );
-//   }
-
-//   // await FirebaseApp.initializeApp();
-//   // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-//   FirebaseFirestore.instance.settings = const Settings(
-//     persistenceEnabled: false,
-//     cacheSizeBytes: 5 * 1024 * 1024,
-//   );
-
-//   await FirebaseFirestore.instance.enableNetwork();
-
-//   if (Isar.instanceNames.isEmpty) {
-//     final dir = await getApplicationDocumentsDirectory();
-
-//     await Isar.open(
-//       [
-//         CollectionModelOfflineSchema,
-//         UrlImageSchema,
-//         ImagesByteDataSchema,
-//         UrlModelOfflineSchema,
-//       ],
-//       directory: dir.path,
-//     );
-//   }
-
-//   /// running the app
-//   runApp(
-//     const ProviderScope(
-//       child: MyApp(),
-//     ),
-//   );
-// }
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // const isProduction = bool.fromEnvironment('dart.vm.product');
-
-  // // Start Firebase initialization
-  // final firebaseInit = await Firebase.initializeApp(
-  //   name: 'LinkVault Singleton',
-  //   options: isProduction
-  //       ? prod.DefaultFirebaseOptions.currentPlatform
-  //       : dev.DefaultFirebaseOptions.currentPlatform,
-  // );
 
   // Run the app immediately, do other inits in the background
   runApp(
@@ -160,8 +102,10 @@ Future<void> _initializeFirebase() async {
     name: 'LinkVault Singleton',
     options: isProduction
         ? prod.DefaultFirebaseOptions.currentPlatform
-        : dev.DefaultFirebaseOptions.currentPlatform,
+        : prod.DefaultFirebaseOptions.currentPlatform,
   );
+
+  debugPrint('IsProduction: ${isProduction}');
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,

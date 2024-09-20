@@ -2,7 +2,7 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+11
+version: 1.0.0+15
 
 
 environment:
@@ -18,8 +18,6 @@ dependencies:
   path: ^1.8.0
   path_provider: ^2.1.3
   permission_handler: ^11.3.1
-
-  # flutter_layout_grid: ^2.0.1
   flutter_riverpod: ^2.5.1
   flutter_staggered_grid_view: ^0.7.0
   receive_sharing_intent: ^1.4.5
@@ -43,6 +41,8 @@ dependencies:
   flutter_image_compress: ^2.3.0
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
+  gma_mediation_meta: ^1.0.1
+  gma_mediation_unity: ^1.0.0
   # archive: ^3.6.1
 
 dev_dependencies:
