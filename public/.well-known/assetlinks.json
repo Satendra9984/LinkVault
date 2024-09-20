@@ -1,11 +1,26 @@
 [
-    {
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.example.link_vault",
-        "sha256_cert_fingerprints": ["7D:CF:EA:EC:67:E9:E7:06:59:1B:02:FB:F3:99:A5:D5:BF:B5:E7:57:B9:5F:EA:5F:65:C3:86:82:90:59:0D:8C"]
-      }
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.link_vault",
+      "sha256_cert_fingerprints": [
+        "7D:CF:EA:EC:67:E9:E7:06:59:1B:02:FB:F3:99:A5:D5:BF:B5:E7:57:B9:5F:EA:5F:65:C3:86:82:90:59:0D:8C"
+      ]
     }
-  ]
-  
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vicharshala.link_vault",
+      "sha256_cert_fingerprints": [
+        "A3:27:1C:2B:8E:B6:EF:9B:8F:50:F9:EE:99:EE:64:FD:0A:7E:A5:1E:BA:E8:81:66:C3:01:0D:77:37:CE:D4:D2"
+      ]
+    }
+  }
+]

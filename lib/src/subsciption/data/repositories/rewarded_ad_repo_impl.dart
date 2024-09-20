@@ -34,14 +34,13 @@ class RewardedAdRepoImpl {
   // : 'ca-app-pub-3940256099942544/1712485313';
   Future<Either<ServerFailure, Unit>> loadAd() async {
     final completer = Completer<Either<ServerFailure, Unit>>();
-    // Exception? serverException;
 
     await RewardedAd.load(
       adUnitId: _adUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) async {
-          Logger.printLog('$ad loaded.');
+          // Logger.printLog('$ad loaded.');
           _rewardedAd = ad;
           if (!completer.isCompleted) {
             completer.complete(const Right(unit));
@@ -51,10 +50,6 @@ class RewardedAdRepoImpl {
           debugPrint(
             '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
           );
-          // serverException = ServerException(
-          //   message: 'Video Not loaded',
-          //   statusCode: 400,
-          // );
           if (!completer.isCompleted) {
             completer.complete(
               Left(
@@ -68,73 +63,25 @@ class RewardedAdRepoImpl {
           }
         },
       ),
-    ).catchError((e) {
-      Logger.printLog('[ads] : $e');
-      if (!completer.isCompleted) {
-        completer.complete(
-          Left(
-            ServerFailure(
-              message:
-                  'Video Not Loaded. Check Internet Connection and try again.',
-              statusCode: 400,
+    ).catchError(
+      (e) {
+        Logger.printLog('[ads] : $e');
+        if (!completer.isCompleted) {
+          completer.complete(
+            Left(
+              ServerFailure(
+                message:
+                    'Video Not Loaded. Check Internet Connection and try again.',
+                statusCode: 400,
+              ),
             ),
-          ),
-        );
-      }
-    });
+          );
+        }
+      },
+    );
 
     return completer.future;
   }
-  // Future<Either<Failure, Unit>> loadAd() async {
-  //   try {
-  //     Exception? serverException;
-
-  //     await RewardedAd.load(
-  //       adUnitId: _adUnitId,
-  //       request: const AdRequest(),
-  //       rewardedAdLoadCallback: RewardedAdLoadCallback(
-  //         // Called when an ad is successfully received.
-  //         onAdLoaded: (ad) async {
-  //           debugPrint('$ad loaded.');
-  //           // Keep a reference to the ad so you can show it later.
-
-  //           _rewardedAd = ad;
-  //         },
-  //         // Called when an ad request failed.
-  //         onAdFailedToLoad: (onAdFailedToLoad) {
-  //           debugPrint(
-  //             '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
-  //           );
-  //           serverException = ServerException(
-  //             message: 'Video Not loaded',
-  //             statusCode: 400,
-  //           );
-  //         },
-  //       ),
-  //     ).catchError((e) {
-  //       debugPrint('[log][ads] : $e');
-  //     });
-
-  //     if (serverException != null) {
-  //       throw serverException!;
-  //     }
-
-  //     if (_rewardedAd == null) {
-  //       throw serverException!;
-  //     }
-
-  //     return const Right(unit);
-  //   } catch (e) {
-  //     debugPrint('[log] : ad video not loaded');
-
-  //     return Left(
-  //       ServerFailure(
-  //         message: 'Video Not Loaded. Check Internet Connection and try again.',
-  //         statusCode: 400,
-  //       ),
-  //     );
-  //   }
-  // }
 
   Future<Either<Failure, GlobalUser>> showRewardedAd({
     required GlobalUser globalUser,
@@ -143,7 +90,7 @@ class RewardedAdRepoImpl {
       num rewardAmount = 0;
 
       if (_rewardedAd == null) {
-        debugPrint('[log] : ad is null');
+        // debugPrint('[log] : ad is null');
         throw ServerException(
           message:
               'Something Went Wrong. Video not Loaded. Check Internet Connection!!!',

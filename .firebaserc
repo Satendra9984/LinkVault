@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "linkvault-prod"
-  }
+  },
+  "targets": {},
+  "etags": {
+    "linkvault-prod": {
+      "extensionInstances": {}
+    }
+  },
+  "dataconnectEmulatorConfig": {}
 }

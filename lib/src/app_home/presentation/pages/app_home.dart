@@ -58,6 +58,7 @@ class _AppHomePageState extends State<AppHomePage> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      color: ColourPallette.white,
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(

@@ -8,6 +8,7 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/services/queue_manager.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
@@ -224,6 +225,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   CollectionFetchModel? getCollection({
     required String collectionId,
   }) {
+    // Logger.printLog('getCollection : ${collectionId}');
+    // Logger.printLog(StringUtils.getJsonFormat(state.collections));
+
     return state.collections[collectionId];
   }
 
@@ -507,5 +511,4 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
   }
-
 }

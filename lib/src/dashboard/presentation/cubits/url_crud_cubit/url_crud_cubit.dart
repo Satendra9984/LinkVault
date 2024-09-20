@@ -125,8 +125,12 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.deleting));
 
+    Logger.printLog('Deleting URL in urlcrudcubit : ${urlData.firestoreId}');
+
     final collection =
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
+
+
 
     await _urlRepoImpl
         .deleteUrlData(

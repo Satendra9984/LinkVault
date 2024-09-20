@@ -47,4 +47,3 @@ app.*.map.json
 /venv/
 /node_modules/
 /migrate_users/
-
