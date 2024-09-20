@@ -2,7 +2,7 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:link_vault/core/common/constants/database_constants.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
@@ -59,7 +59,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    addedCollection.fold(
+    await addedCollection.fold(
       (failed) {
         emit(
           state.copyWith(
@@ -68,7 +68,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           ),
         );
       },
-      (result) {
+      (result) async {
         final (collection, updatedParentCollection) = result;
 
         _collectionsCubit.addCollection(collection: collection);
@@ -87,7 +87,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           ),
         );
 
-        addCollectionToFavourites(collection: collection);
+        await addCollectionToFavourites(collection: collection);
       },
     );
   }
@@ -95,19 +95,39 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
   Future<void> deleteCollection({
     required CollectionModel collection,
   }) async {
-    // [TODO] : delete subcollection in db it will be cascade delete
-    // Logger.printLog(
-    //   'deleting collection ${collection.id}',
-    // );
+    // delete subcollection in db it will be cascade delete
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.deleting,
       ),
     );
 
-    final parentCollection = _collectionsCubit.getCollection(
+    var parentCollection = _collectionsCubit.getCollection(
       collectionId: collection.parentCollection,
     );
+
+    if (parentCollection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: collection.parentCollection,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: false,
+      );
+    }
+
+    parentCollection = _collectionsCubit.getCollection(
+      collectionId: collection.parentCollection,
+    );
+
+    if (parentCollection == null) {
+      emit(
+        state.copyWith(
+          collectionCrudLoadingStates:
+              CollectionCrudLoadingStates.errordeleting,
+        ),
+      );
+
+      return;
+    }
 
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
@@ -158,7 +178,6 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
   Future<void> updateCollection({
     required CollectionModel collection,
   }) async {
-    // [TODO] : update subcollection in db
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.updating,
@@ -170,7 +189,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    addedCollection.fold(
+    await addedCollection.fold(
       (failed) {
         emit(
           state.copyWith(
@@ -179,7 +198,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           ),
         );
       },
-      (updatedCollection) {
+      (updatedCollection) async {
         _collectionsCubit.updateCollection(
           updatedCollection: updatedCollection,
           fetchSubCollIndexAdded: 0,
@@ -191,6 +210,8 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
                 CollectionCrudLoadingStates.updatedSuccessfully,
           ),
         );
+
+        await updateCollectionToFavourites(collection: collection);
       },
     );
   }
@@ -207,7 +228,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -232,7 +253,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         },
       );
     }
-    
+
     // CHECK AGAIN IF NOT PRESENT THEN SOME ERROR OCCURED
     favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
@@ -266,11 +287,11 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     final status = collection.status ?? {};
     final isFav = status['is_favourite'] as bool? ?? false;
 
-    if (isFav == false) return;
+    // if (isFav == false) return;
 
     // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -302,14 +323,14 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     if (favouriteCollection == null) return;
 
-    final isCollectionAlreadyPresent =
+    final isCollectionAlreadyPresentInList =
         favouriteCollection.collection!.subcollections.contains(
       collection.id,
     );
 
-    if (isCollectionAlreadyPresent && isFav == false) {
+    if (isCollectionAlreadyPresentInList && isFav == false) {
       await deleteCollectionToFavourites(collection: collection);
-    } else if (isCollectionAlreadyPresent == false && isFav) {
+    } else if (isCollectionAlreadyPresentInList == false && isFav) {
       await addCollectionToFavourites(collection: collection);
     }
   }
@@ -320,11 +341,11 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     final status = collection.status ?? {};
     final isFav = status['is_favourite'] ?? false;
 
-    if (isFav == false) return;
+    // if (isFav == false) return;
 
     // [TODO] : CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
-        '${_globalUserCubit.getGlobalUser()!.id}/$favourites';
+        '${_globalUserCubit.getGlobalUser()!.id}$favourites';
     var favouriteCollection = _collectionsCubit.getCollection(
       collectionId: favouriteCollectionId,
     );
@@ -369,9 +390,32 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    _collectionsCubit.updateCollection(
-      updatedCollection: updatedFavouriteCollection,
-      fetchSubCollIndexAdded: 1,
-    );
+    // [TODO] : HANDLE UPDATION LOGIC
+    final alreadyFetchedFavouriteIndexes =
+        favouriteCollection.subCollectionFetchedIndex;
+
+    if (alreadyFetchedFavouriteIndexes < 0) {
+      _collectionsCubit.updateCollection(
+        updatedCollection: updatedFavouriteCollection,
+        fetchSubCollIndexAdded: 0,
+      );
+    } else {
+      final sublist = favouriteCollection.collection!.subcollections.sublist(
+        0,
+        alreadyFetchedFavouriteIndexes + 1,
+      );
+
+      if (sublist.contains(collection.id)) {
+        _collectionsCubit.updateCollection(
+          updatedCollection: updatedFavouriteCollection,
+          fetchSubCollIndexAdded: -1,
+        );
+      } else {
+        _collectionsCubit.updateCollection(
+          updatedCollection: updatedFavouriteCollection,
+          fetchSubCollIndexAdded: 0,
+        );
+      }
+    }
   }
 }

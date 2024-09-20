@@ -41,10 +41,13 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required bool isRootCollection,
     String? collectionName,
   }) async {
-    // [TODO] : Fetch Subcollection
     if (state.collections.containsKey(collectionId)) {
-      // Logger.printLog('collectionId $collectionId already exists');
-      return;
+      final fetch = state.collections[collectionId]!;
+
+      if (fetch.collectionFetchingState == LoadingStates.loaded ||
+          fetch.collectionFetchingState == LoadingStates.loading) {
+        return;
+      }
     }
 
     const fetchCollectionModel = CollectionFetchModel(
@@ -126,8 +129,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String userId,
     required bool isRootCollection,
   }) async {
-    // assuming not collections in the state
-
+    // Assuming Not Collections In The State
     final fetchedCollection = state.collections[collectionId];
 
     if (fetchedCollection == null ||
@@ -149,9 +151,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
 
-    Logger.printLog(
-      'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
-    );
+    // Logger.printLog(
+    //   'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
+    // );
 
     final moreCollections = <String, CollectionFetchModel>{};
     for (final subCollId in moreSubcollectionIds) {
@@ -228,7 +230,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   void addCollection({
     required CollectionModel collection,
   }) {
-    // [TODO] : Add subcollection in db
+    // Add subcollection in db
     final fetchCollectionModel = CollectionFetchModel(
       collection: collection,
       collectionFetchingState: LoadingStates.loaded,
@@ -294,7 +296,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  // <--------------------------- URLS --------------------------------->
+  // <--------------------------------- URLS ---------------------------------->
 
   Future<void> fetchMoreUrls({
     required String collectionId,
@@ -409,20 +411,20 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       urlModel: url,
     );
 
-    final urlCollection = state.collectionUrls[url.collectionId];
+    final urlCollection = state.collectionUrls[collection.id];
 
     if (urlCollection == null) {
       addCollection(collection: collection);
     }
 
     final updatedUrlsState = {...state.collectionUrls};
-    // [TODO] : NULL CHECK ERROR
+    // [TODO] : [important] changed url.collectionId to collection.id
     final updatedUrlsList = [
       fetchedUrl,
-      ...updatedUrlsState[url.collectionId]!,
+      ...updatedUrlsState[collection.id]!,
     ];
 
-    updatedUrlsState[url.collectionId] = updatedUrlsList;
+    updatedUrlsState[collection.id] = updatedUrlsList;
 
     emit(
       state.copyWith(
@@ -469,13 +471,20 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   void deleteUrl({
     required UrlModel url,
-    required CollectionModel? collectionModel,
+    required CollectionModel collectionModel,
   }) {
-    final fetchedUrlList = state.collectionUrls[url.collectionId];
+    Logger.printLog(
+      'deleting in state: ${url.collectionId}, ',
+    );
+    final fetchedUrlList = state.collectionUrls[collectionModel.id];
 
     if (fetchedUrlList == null) {
       return;
     }
+
+    Logger.printLog(
+      'deleting in state: ${url.collectionId}, ${fetchedUrlList}',
+    );
 
     final updatedList = [...fetchedUrlList]..removeWhere(
         (element) {
@@ -488,8 +497,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       );
 
     final updatedUrlsState = {...state.collectionUrls};
+    Logger.printLog('deleting in state: ${collectionModel.id}, ${updatedList}');
 
-    updatedUrlsState[url.collectionId] = updatedList;
+    updatedUrlsState[collectionModel.id] = updatedList;
 
     emit(
       state.copyWith(
@@ -497,4 +507,5 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
   }
+
 }

@@ -17,11 +17,17 @@ class MediaRes {
   static const String linkVaultLogoSVG = 'assets/images/link_vault_logo.svg';
   static const String favouriteSVG = 'assets/images/favourite.svg';
   static const String recentSVG = 'assets/images/recent.svg';
-  static const String searchSVG= 'assets/images/search.svg';
-  static const String collaborateSVG= 'assets/images/collaborate.svg';
+  static const String searchSVG = 'assets/images/search.svg';
+  static const String collaborateSVG = 'assets/images/collaborate.svg';
+  static const String websiteSVG = 'assets/images/website.svg';
+  static const String pageUnderConstructionSVG =
+      'assets/images/page_under_construction.svg';
+  static const String compassSVG = 'assets/images/compass.svg';
+  static const String newsletterSVG = 'assets/images/newsletter.svg';
+  static const String comingSoonSVG = 'assets/images/coming_soon.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
-
+  // static const String SVG= 'assets/images/.svg';
 
   /// ---------------------------- ANIMATIONS ----------------------------------
   static const String loadingANIMATION = 'assets/animations/loading.json';

@@ -62,6 +62,18 @@ android {
         versionName flutterVersionName
     }
 
+    flavorDimensions "env"
+    productFlavors {
+        production {
+            dimension "env"
+           // applicationIdSuffix ".production"
+        }
+        dev {
+            dimension "env"
+            applicationIdSuffix ".dev"
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -90,6 +102,18 @@ android {
 
 flutter {
     source '../..'
+}
+
+
+// Add this at the end of the file
+android.applicationVariants.all { variant ->
+    def googleServicesFile = variant.productFlavors.contains('dev') 
+        ? file("src/dev/google-services.json") 
+        : file("google-services.json")
+
+    if (googleServicesFile.exists()) {
+        apply plugin: 'com.google.gms.google-services'
+    }
 }
 
 

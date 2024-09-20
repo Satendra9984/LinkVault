@@ -2,7 +2,8 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+4
+version: 1.0.0+11
+
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -67,7 +68,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
      - assets/images/
-     - assets/fonts/
+    #  - assets/fonts/
      - assets/logo/
      - assets/animations/
 
@@ -76,25 +77,12 @@ flutter:
   #   - family: Ubuntu
   #     fonts:
   #       - asset: assets/fonts/ubuntu/Ubuntu-Bold.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-BoldItalic.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-Italic.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-Light.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-LightItalic.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-Medium.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-MediumItalic.ttf
-  #       - asset: assets/fonts/ubuntu/Ubuntu-Regular.ttf
 
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  # image_path: "assets/logo/3d_link.png"
-  # image_path: "assets/logo/infinite_loop.jpg"
-  # image_path: "assets/logo/neon-link.png"
   image_path: "assets/logo/abstract-link_512.png"
-
-
-  # image_path: "assets/logo/green_spiral_with_background.jpg"
 
   remove_alpha_ios: true
   min_sdk_android: 21 # android min sdk min:16, default 21

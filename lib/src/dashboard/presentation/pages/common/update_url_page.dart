@@ -386,38 +386,38 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     const Text(
-                //       'Favourite',
-                //       style: TextStyle(
-                //         fontSize: 16,
-                //         fontWeight: FontWeight.w500,
-                //       ),
-                //     ),
-                //     ValueListenableBuilder<bool>(
-                //       valueListenable: _isFavorite,
-                //       builder: (context, isFavorite, child) {
-                //         return Switch.adaptive(
-                //           value: isFavorite,
-                //           onChanged: (value) => _isFavorite.value = value,
-                //           trackOutlineColor:
-                //               MaterialStateProperty.resolveWith<Color?>(
-                //             (Set<MaterialState> states) => Colors.transparent,
-                //           ),
-                //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                //             (Set<MaterialState> states) => Colors.transparent,
-                //           ),
-                //           activeTrackColor: ColourPallette.mountainMeadow,
-                //           inactiveTrackColor: ColourPallette.error,
-                //         );
-                //       },
-                //     ),
-                //   ],
-                // ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Favourite',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _isFavorite,
+                      builder: (context, isFavorite, child) {
+                        return Switch.adaptive(
+                          value: isFavorite,
+                          onChanged: (value) => _isFavorite.value = value,
+                          trackOutlineColor:
+                              MaterialStateProperty.resolveWith<Color?>(
+                            (Set<MaterialState> states) => Colors.transparent,
+                          ),
+                          thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                            (Set<MaterialState> states) => Colors.transparent,
+                          ),
+                          activeTrackColor: ColourPallette.mountainMeadow,
+                          inactiveTrackColor: ColourPallette.error,
+                        );
+                      },
+                    ),
+                  ],
+                ),
 
-                // const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(
@@ -455,9 +455,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                                 border: Border.all(
                                   color: isSelected
                                       ? ColourPallette.mountainMeadow
-                                      : Colors.black,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
+                                      : ColourPallette.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 category,

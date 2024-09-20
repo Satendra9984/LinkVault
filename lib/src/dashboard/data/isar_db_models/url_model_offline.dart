@@ -11,6 +11,14 @@ class UrlModelOffline {
   UrlModelOffline({
     required this.firestoreId,
     required this.jsonData,
+    //v2
+    required this.title,
+    required this.url,
+    required this.tag,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isFavourite,
+    //
     this.id,
   });
 
@@ -18,6 +26,12 @@ class UrlModelOffline {
     return UrlModelOffline(
       firestoreId: urlModel.firestoreId,
       jsonData: jsonEncode(urlModel.toJson()),
+      url: urlModel.url,
+      title: urlModel.title,
+      tag: urlModel.tag,
+      createdAt: urlModel.createdAt,
+      updatedAt: urlModel.updatedAt,
+      isFavourite: urlModel.isFavourite,
     );
   }
 
@@ -29,6 +43,24 @@ class UrlModelOffline {
   // urlmodel json data
   final String jsonData;
 
+  @Index()
+  final String? url;
+
+  @Index()
+  final String? title; // Indexed field
+
+  @Index()
+  final String? tag; // Indexed field
+
+  @Index()
+  final DateTime? createdAt; // Indexed field
+
+  @Index()
+  final DateTime? updatedAt; // Indexed field
+
+  @Index()
+  final bool? isFavourite;
+
   UrlModelOffline copyWith({
     String? firestoreId,
     UrlModel? urlModel,
@@ -37,6 +69,12 @@ class UrlModelOffline {
       id: id,
       firestoreId: firestoreId ?? this.firestoreId,
       jsonData: urlModel != null ? jsonEncode(urlModel.toJson()) : jsonData,
+      title: urlModel?.title ?? title,
+      url: urlModel?.url ?? url,
+      tag: urlModel?.tag ?? tag,
+      createdAt: urlModel?.createdAt ?? createdAt,
+      updatedAt: urlModel?.updatedAt ?? updatedAt,
+      isFavourite: urlModel?.isFavourite ?? isFavourite,
     );
   }
 

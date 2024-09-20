@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Run Dev Flavor",
+        "type": "shell",
+        "command": "flutter",
+        "args": [
+          "run",
+          "--flavor",
+          "dev",
+          "--dart-define=dart.vm.product=false"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Production Flavor",
+        "type": "shell",
+        "command": "flutter",
+        "args": [
+          "run",
+          "--flavor",
+          "production",
+          "--dart-define=dart.vm.product=true"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": false
+        },
+        "problemMatcher": []
+      }
+    ]
+  }
+  

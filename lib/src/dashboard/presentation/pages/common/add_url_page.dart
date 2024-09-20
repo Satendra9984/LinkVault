@@ -6,6 +6,7 @@ import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -14,6 +15,8 @@ import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/dashboard/services/url_parsing_service.dart';
+
+// https://youtu.be/jMi-VwEBJ70
 
 class AddUrlPage extends StatefulWidget {
   const AddUrlPage({
@@ -79,6 +82,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
         updatedAt: createdAt,
         metaData: urlMetaData,
       );
+
+      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
       await urlCrudCubit.addUrl(urlData: urlModelData);
     }
@@ -186,7 +191,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
               if (widget.url != null) {
                 context.read<SharedInputsCubit>().removeUrlInput(widget.url);
               }
-              Navigator.of(context).pop();
+              // Navigator.of(context).pop();
             }
           },
           builder: (context, state) {
@@ -368,38 +373,39 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   const SizedBox(height: 20),
 
                   // IS fAVOURITE
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     const Text(
-                  //       'Favourite',
-                  //       style: TextStyle(
-                  //         fontSize: 16,
-                  //         fontWeight: FontWeight.w500,
-                  //       ),
-                  //     ),
-                  //     ValueListenableBuilder<bool>(
-                  //       valueListenable: _isFavorite,
-                  //       builder: (context, isFavorite, child) {
-                  //         return Switch.adaptive(
-                  //           value: isFavorite,
-                  //           onChanged: (value) => _isFavorite.value = value,
-                  //           trackOutlineColor:
-                  //               MaterialStateProperty.resolveWith<Color?>(
-                  //             (Set<MaterialState> states) => Colors.transparent,
-                  //           ),
-                  //           thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                  //             (Set<MaterialState> states) => Colors.transparent,
-                  //           ),
-                  //           activeTrackColor: ColourPallette.mountainMeadow,
-                  //           inactiveTrackColor: ColourPallette.error,
-                  //         );
-                  //       },
-                  //     ),
-                  //   ],
-                  // ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Favourite',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isFavorite,
+                        builder: (context, isFavorite, child) {
+                          return Switch.adaptive(
+                            value: isFavorite,
+                            onChanged: (value) => _isFavorite.value = value,
+                            trackOutlineColor:
+                                MaterialStateProperty.resolveWith<Color?>(
+                              (Set<MaterialState> states) => Colors.transparent,
+                            ),
+                            thumbColor:
+                                MaterialStateProperty.resolveWith<Color?>(
+                              (Set<MaterialState> states) => Colors.transparent,
+                            ),
+                            activeTrackColor: ColourPallette.mountainMeadow,
+                            inactiveTrackColor: ColourPallette.error,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
 
-                  // const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // Selected Category
                   const Text(
@@ -437,9 +443,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
                                   border: Border.all(
                                     color: isSelected
                                         ? ColourPallette.mountainMeadow
-                                        : Colors.black,
+                                        : ColourPallette.grey,
                                   ),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
                                   category,

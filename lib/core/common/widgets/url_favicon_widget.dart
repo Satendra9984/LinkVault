@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
+import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_image_painter.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
@@ -48,8 +48,8 @@ class UrlFaviconLogoWidget extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 56,
-            width: 56,
+            height: 60,
+            width: 60,
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
@@ -84,25 +84,15 @@ class UrlFaviconLogoWidget extends StatelessWidget {
     required UrlMetaData urlMetaData,
   }) {
     if (urlMetaData.favicon != null) {
-      // Logger.printLog(
-      //   '[favicon]: ${urlMetaData.faviconUrl}, size: ${urlMetaData.favicon?.length}',
-      // );
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.memory(
           urlMetaData.favicon!,
-          fit: BoxFit.cover,
-          
+          fit: BoxFit.contain,
           errorBuilder: (ctx, _, __) {
-            // try {
-            //   final svgImage = SvgPicture.memory(
-            //     urlMetaData.favicon!,
-            //   );
-
-            //   return svgImage;
-            // } catch (e) {
-            return const Icon(Icons.web);
-            // }
+            return SvgPicture.asset(
+              MediaRes.websiteSVG,
+            );
           },
         ),
       );
@@ -121,25 +111,18 @@ class UrlFaviconLogoWidget extends StatelessWidget {
                           urlMetaData.faviconUrl!,
                           compressImage: false,
                         ),
-                icon: const Icon(Icons.circle),
+                icon: SvgPicture.asset(
+                  MediaRes.websiteSVG,
+                ),
                 color: ColourPallette.black,
               );
             },
             successWidgetBuilder: (imageData) {
-              if (imageData.uiImage != null) {
-                return CustomPaint(
-                  size: const Size(56, 56),
-                  painter: ImagePainter(
-                    imageData.uiImage!,
-                    fit: BoxFit.cover,
-                  ),
-                );
-              }
               return ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: Image.memory(
                   imageData.imageBytesData!,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   errorBuilder: (ctx, _, __) {
                     try {
                       final svgImage = SvgPicture.memory(

@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
 import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
@@ -81,6 +82,13 @@ class UrlRepoImpl {
       // But storing addedurldata in local for firestore id
       await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
+      Logger.printLog('[isar] : added url data in local');
+      Logger.printLog(
+        StringUtils.getJsonFormat(
+          addedUrlData.toJson(),
+        ),
+      );
+
       final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
@@ -98,6 +106,7 @@ class UrlRepoImpl {
 
       await _collectionLocalDataSourcesImpl
           .updateCollection(updatedCollectionWithUrls);
+
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
     } on ServerException catch (e) {
       Logger.printLog('addUrlrepo : $e');
@@ -153,7 +162,7 @@ class UrlRepoImpl {
   }
 
   Future<Either<Failure, (UrlModel, CollectionModel?)>> deleteUrlData({
-    required CollectionModel? collection,
+    required CollectionModel collection,
     required UrlModel urlData,
     required String userId,
   }) async {

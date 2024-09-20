@@ -93,6 +93,8 @@ class LocalImageDataSource {
       final urlImage =
           await urlImages.filter().imageUrlEqualTo(url).findFirst();
 
+      Logger.printLog('[isar] getImageData $url ${urlImage == null}');
+
       if (urlImage == null) return null;
 
       final bytes = Uint8List.fromList(urlImage.imageBytes);
@@ -122,6 +124,8 @@ class LocalImageDataSource {
             bytes: imageBytes,
           ),
         );
+      }).then((_) {
+        Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
       });
     } catch (e) {
       Logger.printLog('[isar] addImageData $e');
