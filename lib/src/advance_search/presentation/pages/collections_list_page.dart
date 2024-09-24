@@ -2,16 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
-import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/add_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/common/update_collection_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
 
@@ -233,7 +228,6 @@ class _SearchedCollectionsListWidgetState
                                     searchCubit.searchDB();
                                   },
                                 );
-                                ;
                               },
                             );
                           },

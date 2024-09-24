@@ -1,12 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/collections_list_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/search_filters_page.dart';
 import 'package:link_vault/src/advance_search/presentation/pages/urls_list_page.dart';

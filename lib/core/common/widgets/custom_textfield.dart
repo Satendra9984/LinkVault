@@ -10,6 +10,7 @@ class CustomCollTextField extends StatefulWidget {
     this.onEditingCompleted,
     this.onSubmitted,
     this.onTapOutside,
+    this.errorText,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.maxLength,
@@ -21,6 +22,7 @@ class CustomCollTextField extends StatefulWidget {
   final void Function()? onEditingCompleted;
   final void Function(PointerDownEvent)? onTapOutside;
 
+  final String? errorText;
   final String labelText;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -66,6 +68,7 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
           onFieldSubmitted: widget.onSubmitted,
           onTapOutside: widget.onTapOutside,
           autovalidateMode: AutovalidateMode.onUserInteraction,
+        
           obscureText: _isObscure,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
@@ -77,6 +80,7 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
           decoration: InputDecoration(
             isDense: true,
             hintText: widget.hintText,
+            errorText: widget.errorText,
             hintStyle: TextStyle(
               color: Colors.grey.shade500,
             ),

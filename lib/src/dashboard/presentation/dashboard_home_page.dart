@@ -14,32 +14,6 @@ class DashboardHomePage extends StatefulWidget {
 
 class _DashboardHomePageState extends State<DashboardHomePage> {
   @override
-  void initState() {
-    super.initState();
-
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (timeStamp) {
-    //     ReceiveSharingIntent.instance.getMediaStream().listen(
-    //       context.read<SharedInputsCubit>().addInputFiles,
-    //       onError: (err) {
-    //         debugPrint('getMediaStream error: $err');
-    //       },
-    //     );
-
-    //     // For sharing images coming from outside the app while the app is closed
-    //     ReceiveSharingIntent.instance.getInitialMedia().then(
-    //           context.read<SharedInputsCubit>().addInputFiles,
-    //         );
-    //   },
-    // );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
 

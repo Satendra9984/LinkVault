@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
@@ -160,7 +159,7 @@ class SearchLocalDataSourcesImpl {
               .or()
               .nameIsEmpty()
               .or()
-              .nameContains(nameSearch, caseSensitive: false))
+              .nameContains(nameSearch, caseSensitive: false),)
           .createdAtBetween(createdAtStart, createdAtEnd)
           .updatedAtBetween(
             updatedAtStart,

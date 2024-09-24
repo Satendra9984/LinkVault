@@ -116,6 +116,7 @@ class UrlMetaData {
     required this.title,
     required this.description,
     required this.websiteName,
+    required this.rssFeedUrl, // Added rssFeedUrl
   });
 
   factory UrlMetaData.isEmpty({
@@ -126,6 +127,7 @@ class UrlMetaData {
     String? faviconUrl,
     Uint8List? bannerImage,
     String? bannerImageUrl,
+    String? rssFeedUrl, // Added rssFeedUrl
   }) {
     return UrlMetaData(
       favicon: favicon,
@@ -135,6 +137,7 @@ class UrlMetaData {
       title: title,
       description: description,
       websiteName: websiteName,
+      rssFeedUrl: rssFeedUrl, // Added rssFeedUrl
     );
   }
 
@@ -148,6 +151,7 @@ class UrlMetaData {
       title: json['title'] as String?,
       description: json['description'] as String?,
       websiteName: json['websiteName'] as String?,
+      rssFeedUrl: json['rss_feed_url'] as String?, // Added rssFeedUrl
     );
   }
 
@@ -158,6 +162,7 @@ class UrlMetaData {
   final String? title;
   final String? description;
   final String? websiteName;
+  final String? rssFeedUrl; // Added rssFeedUrl
 
   Map<String, dynamic> toJson() {
     return {
@@ -168,6 +173,7 @@ class UrlMetaData {
       'title': title,
       'description': description,
       'websiteName': websiteName,
+      'rss_feed_url': rssFeedUrl, // Added rssFeedUrl
     };
   }
 
@@ -179,6 +185,7 @@ class UrlMetaData {
     String? title,
     String? description,
     String? websiteName,
+    String? rssFeedUrl, // Added rssFeedUrl
   }) {
     return UrlMetaData(
       favicon: favicon ?? this.favicon,
@@ -188,6 +195,8 @@ class UrlMetaData {
       title: title ?? this.title,
       description: description ?? this.description,
       websiteName: websiteName ?? this.websiteName,
+      rssFeedUrl: rssFeedUrl ?? this.rssFeedUrl, // Added rssFeedUrl
     );
   }
 }
+

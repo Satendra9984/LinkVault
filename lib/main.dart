@@ -12,9 +12,8 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/services/router.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
-import 'package:link_vault/firebase_options_test.dart' as dev;
+import 'package:link_vault/firebase_options_test.dart' as development;
 
 import 'package:link_vault/src/advance_search/data/local_data_source.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
@@ -94,17 +93,30 @@ Future<void> _initializeApp() async {
 }
 
 Future<void> _initializeFirebase() async {
-  const isProduction = bool.fromEnvironment('dart.vm.product');
+  // const isProduction = bool.fromEnvironment('dart.vm.product');
+
+  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+
+  var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
+
+  // if (flavor == 'prod') {
+  //   firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
+  // }
+  if (flavor == 'development') {
+    firebaseOptions = development.DefaultFirebaseOptions.currentPlatform;
+  }
+
+  debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
+  // else {
+  //   firebaseOptions = dev.DefaultFirebaseOptions.currentPlatform;
+  // }
 
   // Start Firebase initialization
   await Firebase.initializeApp(
     name: 'LinkVault Singleton',
-    options: isProduction
-        ? prod.DefaultFirebaseOptions.currentPlatform
-        : prod.DefaultFirebaseOptions.currentPlatform,
+    options: firebaseOptions,
   );
 
-  debugPrint('IsProduction: ${isProduction}');
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,

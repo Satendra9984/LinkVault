@@ -2,8 +2,8 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/src/dashboard/data/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
@@ -133,7 +133,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     // query time and less points of server errors
     final deletedCollection = await _collectionRepoImpl.deleteCollection(
       collectionId: collection.id,
-      parentCollectionId: parentCollection!.collection!.id,
+      parentCollectionId: parentCollection.collection!.id,
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 

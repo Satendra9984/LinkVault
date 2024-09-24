@@ -25,6 +25,11 @@ class MediaRes {
   static const String compassSVG = 'assets/images/compass.svg';
   static const String newsletterSVG = 'assets/images/newsletter.svg';
   static const String comingSoonSVG = 'assets/images/coming_soon.svg';
+  static const String rssFeedSVG = 'assets/images/rss_feed.svg';
+  static const String feedListSVG = 'assets/images/feed_list.svg';
+  static const String newsBroSVG = 'assets/images/News-bro.svg';
+  // static const String SVG= 'assets/images/.svg';
+  // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';

@@ -1,43 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
-import 'package:link_vault/core/common/res/app_tutorials.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
-import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/add_url_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/add_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/update_collection_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
 
-class UrlsListWidget extends StatefulWidget {
-  const UrlsListWidget({
-    required this.title,
+class CollectionsListWidget extends StatefulWidget {
+  const CollectionsListWidget({
     required this.collectionFetchModel,
     required this.showAddCollectionButton,
     super.key,
   });
 
-  final String title;
-  final bool showAddCollectionButton;
-
-  // final ScrollController scrollController;
   final CollectionFetchModel collectionFetchModel;
-
+  final bool showAddCollectionButton;
   @override
-  State<UrlsListWidget> createState() => _UrlsListWidgetState();
+  State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
 }
 
-class _UrlsListWidgetState extends State<UrlsListWidget> {
+class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
+
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
   final _ztoaFilter = ValueNotifier(false);
@@ -45,15 +38,17 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   final _createdAtOldestFilter = ValueNotifier(false);
   final _updatedAtLatestFilter = ValueNotifier(false);
   final _updatedAtOldestFilter = ValueNotifier(false);
-  final _list = ValueNotifier<List<UrlFetchStateModel>>(<UrlFetchStateModel>[]);
+  final _list =
+      ValueNotifier<List<CollectionFetchModel>>(<CollectionFetchModel>[]);
 
   @override
   void initState() {
     _scrollController = ScrollController()..addListener(_onScroll);
+    _fetchMoreCollections();
     super.initState();
   }
 
-  void _onScroll() {
+  Future<void> _onScroll() async {
     if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
       // widget.showBottomBar.value = false;
@@ -65,17 +60,17 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // Logger.printLog('[scroll] Called on scroll in urlslist');
-      _fetchMoreUrls();
+      await _fetchMoreCollections();
     }
   }
 
-  void _fetchMoreUrls() {
+  Future<void> _fetchMoreCollections() async {
     final fetchCollection = widget.collectionFetchModel;
 
-    context.read<CollectionsCubit>().fetchMoreUrls(
+    await context.read<CollectionsCubit>().fetchMoreSubCollections(
           collectionId: fetchCollection.collection!.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+          isRootCollection: false,
         );
   }
 
@@ -105,11 +100,11 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return a.urlModel!.title.toLowerCase().compareTo(
-                b.urlModel!.title.toLowerCase(),
+          return a.collection!.name.toLowerCase().compareTo(
+                b.collection!.name.toLowerCase(),
               );
         },
       );
@@ -118,11 +113,11 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterZtoA() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return b.urlModel!.title.toLowerCase().compareTo(
-                a.urlModel!.title.toLowerCase(),
+          return b.collection!.name.toLowerCase().compareTo(
+                a.collection!.name.toLowerCase(),
               );
         },
       );
@@ -131,10 +126,10 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterCreateLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return b.urlModel!.createdAt.compareTo(a.urlModel!.createdAt);
+          return b.collection!.createdAt.compareTo(a.collection!.createdAt);
         },
       );
   }
@@ -142,10 +137,11 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterCreateOldest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return a.urlModel!.createdAt.compareTo(b.urlModel!.createdAt);
+
+          return a.collection!.createdAt.compareTo(b.collection!.createdAt);
         },
       );
   }
@@ -153,10 +149,10 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterUpdatedLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return b.urlModel!.updatedAt.compareTo(a.urlModel!.updatedAt);
+          return b.collection!.updatedAt.compareTo(a.collection!.updatedAt);
         },
       );
   }
@@ -164,125 +160,100 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   void _filterUpdateOldest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
+          if (a.collection == null || b.collection == null) {
             return -1;
           }
-          return a.urlModel!.updatedAt.compareTo(b.urlModel!.updatedAt);
+          return a.collection!.updatedAt.compareTo(b.collection!.updatedAt);
         },
       );
   }
 
   @override
   Widget build(BuildContext context) {
+    // super.build(context);
     return Scaffold(
       appBar: _getAppBar(),
       floatingActionButton: widget.showAddCollectionButton == false
           ? null
-          : BlocBuilder<SharedInputsCubit, SharedInputsState>(
-              builder: (context, state) {
-                if (widget.showAddCollectionButton == false) return Container();
-
-                final urls = context.read<SharedInputsCubit>().getUrlsList();
-
-                final url = urls.isNotEmpty ? urls[0] : null;
-
-                return FloatingActionButton.extended(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  backgroundColor: ColourPallette.salemgreen,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => AddUrlPage(
-                          parentCollection:
-                              widget.collectionFetchModel.collection!,
-                          url: url,
-                        ),
-                      ),
-                    );
-                  },
-                  label: const Text(
-                    'Add URL',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: ColourPallette.white,
+          : FloatingActionButton.extended(
+              heroTag: '${widget.collectionFetchModel.hashCode}',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              backgroundColor: ColourPallette.salemgreen,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => AddCollectionPage(
+                      parentCollection: widget.collectionFetchModel.collection!,
                     ),
-                  ),
-                  icon: const Icon(
-                    Icons.add_link_rounded,
-                    color: ColourPallette.white,
                   ),
                 );
               },
+              label: const Text(
+                'Add Collection',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: ColourPallette.white,
+                ),
+              ),
+              icon: const Icon(
+                Icons.create_new_folder_rounded,
+                color: ColourPallette.white,
+              ),
             ),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.topLeft,
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
-            final availableUrls = state
-                .collectionUrls[widget.collectionFetchModel.collection!.id];
+            final fetchCollection =
+                state.collections[widget.collectionFetchModel.collection!.id];
 
-            if (availableUrls == null || availableUrls.isEmpty) {
-              _fetchMoreUrls();
+            if (fetchCollection == null) {
               return Center(
-                child: Column(
-                  children: [
-                    SvgPicture.asset(
-                      MediaRes.webSurf1SVG,
-                      // MediaRes.pageUnderConstructionSVG,
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        const howToAddlink =
-                            AppLinks.howToAddURLVideoTutorialLink;
-                        final uri = Uri.parse(howToAddlink);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri);
-                        }
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: ColourPallette.error,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: ColourPallette.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Watch How to Add URL',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: SvgPicture.asset(
+                  MediaRes.collectionSVG,
                 ),
               );
             }
-            _list.value = availableUrls;
+
+            final availableSubCollections = <CollectionFetchModel>[];
+
+            for (var i = 0;
+                i <= fetchCollection.subCollectionFetchedIndex;
+                i++,) {
+              final subCollId = fetchCollection.collection!.subcollections[i];
+              final subCollection = state.collections[subCollId];
+
+              if (subCollection == null) continue;
+
+              availableSubCollections.add(subCollection);
+            }
+
+            if (availableSubCollections.isEmpty) {
+              return Center(
+                child: SvgPicture.asset(
+                  MediaRes.collectionSVG,
+                ),
+              );
+            }
+            _list.value = availableSubCollections;
 
             _filterList();
+
+            // const collectionIconWidth = 96.0;
+
             return ValueListenableBuilder(
               valueListenable: _list,
-              builder: (context, availableUrls, _) {
+              builder: (context, availableSubCollections, _) {
                 return SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
@@ -291,69 +262,73 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                   child: Column(
                     children: [
                       AlignedGridView.extent(
-                        physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: availableUrls.length,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: availableSubCollections.length,
                         maxCrossAxisExtent: 80,
                         mainAxisSpacing: 24,
                         crossAxisSpacing: 20,
                         itemBuilder: (context, index) {
-                          final url = availableUrls[index];
+                          // final fetchCollectionCubit = context.read<CollectionsCubit>();
+                          final subCollection = availableSubCollections[index];
 
-                          if (url.loadingStates == LoadingStates.loading) {
-                            return Center(
-                              child: Container(
-                                height: 72,
-                                width: 72,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  color: Colors.grey.shade300,
+                          if (subCollection.collectionFetchingState ==
+                              LoadingStates.loading) {
+                            return Column(
+                              children: [
+                                Container(
+                                  width: 72,
+                                  height: 72,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade200,
+                                  ),
                                 ),
-                              ),
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
+                                  width: 72,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              ],
                             );
-                          } else if (url.loadingStates ==
+                          } else if (subCollection.collectionFetchingState ==
                               LoadingStates.errorLoading) {
-                            return SizedBox(
-                              height: 56,
-                              width: 56,
-                              child: IconButton(
-                                onPressed: _fetchMoreUrls,
-                                icon: const Icon(
-                                  Icons.restore,
-                                  color: ColourPallette.black,
-                                ),
-                              ),
+                            return const Icon(
+                              Icons.error,
+                              color: Colors.red,
                             );
                           }
 
-                          // Logger.printLog(
-                          //   StringUtils.getJsonFormat(
-                          //     url.urlModel!.metaData?.toJson(),
-                          //   ),
-                          // );
-
-                          return UrlFaviconLogoWidget(
-                            onPress: () async {
-                              final uri = Uri.parse(url.urlModel!.url);
-                              if (await canLaunchUrl(uri)) {
-                                await launchUrl(uri);
-                              }
-                            },
-                            onDoubleTap: (urlMetaData) {
-                              final urlc = url.urlModel!.copyWith(
-                                metaData: urlMetaData,
-                              );
-
+                          return FolderIconButton(
+                            collection: subCollection.collection!,
+                            onDoubleTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (ctx) => UpdateUrlPage(
-                                    urlModel: urlc,
+                                  builder: (ctx) => UpdateCollectionPage(
+                                    collection: subCollection.collection!,
                                   ),
                                 ),
                               );
                             },
-                            urlModelData: url.urlModel!,
+                            onPress: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (ctx) => FolderCollectionPage(
+                                    collectionId: subCollection.collection!.id,
+                                    isRootCollection: false,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -382,12 +357,23 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
             height: isVisible ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
               surfaceTintColor: ColourPallette.mystic,
-              title: Text(
-                '${widget.collectionFetchModel.collection?.name}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              title: Row(
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SvgPicture.asset(
+                    MediaRes.compassSVG,
+                    height: 18,
+                    width: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Feeds',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 _filterOptions(),
@@ -514,4 +500,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
       ),
     );
   }
+
+  // @override
+  // bool get wantKeepAlive => true;
 }

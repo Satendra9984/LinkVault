@@ -299,6 +299,37 @@ class UrlParsingService {
     }
   }
 
+  // Function to fetch RSS feed link
+  static String? extractRssFeedUrl(Document document, String baseUrl) {
+    try {
+      // List of possible RSS feed selectors
+      final rssSelectors = [
+        'link[type="application/rss+xml"]',
+        'link[type="application/atom+xml"]',
+        'link[rel="alternate"][type="application/rss+xml"]',
+        'link[rel="alternate"][type="application/atom+xml"]',
+      ];
+
+      // Loop through the selectors to find the RSS feed link
+      for (final selector in rssSelectors) {
+        final rssElement = document.head?.querySelector(selector);
+        if (rssElement != null) {
+          final rssUrl = rssElement.attributes['href'];
+          if (rssUrl != null) {
+            return rssUrl.startsWith('http')
+                ? rssUrl
+                : handleRelativeUrl(rssUrl, baseUrl); // Handle relative URLs
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      Logger.printLog('error in "extractRssFeedUrl" $e');
+      return null;
+    }
+  }
+
+
 // Main parsing function
   static Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
     final htmlContent = await fetchWebpageContent(url);
@@ -319,6 +350,10 @@ class UrlParsingService {
     metaData['websiteName'] =
         extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
+    // Fetch the RSS feed URL
+    // metaData['rss_feed_url'] = extractRssFeedUrl(document, url);
+    
+    
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
     websiteLogoUrl ??= getWebsiteLogoUrl(url);
     websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
@@ -330,9 +365,7 @@ class UrlParsingService {
       quality: 80,
       autofillPng: true,
     );
-    // Logger.printLog(
-    //   '[parsing][favicon][80] : $websiteLogoUrl, ${faviconUint?.length}',
-    // );
+
     if (faviconUint != null) {
       metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
     }

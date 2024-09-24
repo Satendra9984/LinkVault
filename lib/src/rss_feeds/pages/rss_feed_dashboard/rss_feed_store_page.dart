@@ -7,13 +7,13 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/collections_list_widget.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/urls_list_widget.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/urls_preview_list.dart';
+import 'package:link_vault/src/rss_feeds/pages/common/collections_list_widget.dart';
+import 'package:link_vault/src/rss_feeds/pages/common/urls_list_widget.dart';
+import 'package:link_vault/src/rss_feeds/pages/common/urls_preview_list.dart';
 import 'package:lottie/lottie.dart';
 
-class FavouriteFolderCollectionPage extends StatefulWidget {
-  const FavouriteFolderCollectionPage({
+class RssFeedFolderCollectionPage extends StatefulWidget {
+  const RssFeedFolderCollectionPage({
     required this.collectionId,
     required this.isRootCollection,
     super.key,
@@ -22,12 +22,12 @@ class FavouriteFolderCollectionPage extends StatefulWidget {
   final bool isRootCollection;
 
   @override
-  State<FavouriteFolderCollectionPage> createState() =>
-      _FavouriteFolderCollectionPageState();
+  State<RssFeedFolderCollectionPage> createState() =>
+      _RssFeedFolderCollectionPageState();
 }
 
-class _FavouriteFolderCollectionPageState
-    extends State<FavouriteFolderCollectionPage>
+class _RssFeedFolderCollectionPageState
+    extends State<RssFeedFolderCollectionPage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
@@ -67,7 +67,7 @@ class _FavouriteFolderCollectionPageState
                 collectionId: widget.collectionId,
                 userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                 isRootCollection: widget.isRootCollection,
-                collectionName: 'Favourites',
+                collectionName: 'RssFeeds',
               );
         }
 
@@ -148,8 +148,6 @@ class _FavouriteFolderCollectionPageState
 
         return Scaffold(
           backgroundColor: ColourPallette.white,
-          // drawer: _getDrawer(),
-          // appBar: _getAppBar(title: collection.name),
           bottomNavigationBar: Container(
             padding: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
@@ -202,16 +200,16 @@ class _FavouriteFolderCollectionPageState
                             index: 0,
                           ),
                           _bottomNavBarWidget(
+                            unSelectedIcon: Icons.list_outlined,
+                            selectedIcon: Icons.list_alt,
+                            index: 1,
+                            label: 'Feeds',
+                          ),
+                          _bottomNavBarWidget(
                             label: 'Collections',
                             unSelectedIcon: Icons.collections_bookmark_outlined,
                             selectedIcon: Icons.collections_bookmark_rounded,
-                            index: 1,
-                          ),
-                          _bottomNavBarWidget(
-                            unSelectedIcon: Icons.preview_outlined,
-                            selectedIcon: Icons.preview_rounded,
                             index: 2,
-                            label: 'Previews',
                           ),
                         ],
                       );
@@ -230,22 +228,21 @@ class _FavouriteFolderCollectionPageState
               UrlsListWidget(
                 title: 'Urls',
                 collectionFetchModel: fetchCollection,
-                showAddCollectionButton: false,
-              ),
-              CollectionsListWidget(
-                collectionFetchModel: fetchCollection,
-                showAddCollectionButton: false,
+                showAddCollectionButton: true,
               ),
               UrlsPreviewListWidget(
                 showBottomBar: _showBottomNavBar,
-                title: 'Urls',
+                title: 'Feeds',
                 collectionFetchModel: fetchCollection,
+              ),
+              CollectionsListWidget(
+                collectionFetchModel: fetchCollection,
+                showAddCollectionButton: true,
               ),
             ],
           ),
         );
       },
-      // ),
     );
   }
 
@@ -294,7 +291,7 @@ class _FavouriteFolderCollectionPageState
               title: Row(
                 children: [
                   SvgPicture.asset(
-                    MediaRes.favouriteSVG,
+                    MediaRes.newsletterSVG,
                     height: 18,
                     width: 18,
                   ),
@@ -314,127 +311,4 @@ class _FavouriteFolderCollectionPageState
       ),
     );
   }
-
-  // Drawer _getDrawer() {
-  //   return Drawer(
-  //     backgroundColor: ColourPallette.white,
-  //     child: Column(
-  //       // shrinkWrap: true,
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         Column(
-  //           children: [
-  //             DrawerHeader(
-  //               child: BlocBuilder<GlobalUserCubit, GlobalUserState>(
-  //                 builder: (context, state) {
-  //                   return Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     children: [
-  //                       CircleAvatar(
-  //                         radius: 32,
-  //                         backgroundColor:
-  //                             ColourPallette.mountainMeadow.withOpacity(0.5),
-  //                         child: SvgPicture.asset(
-  //                           MediaRes.personSVG,
-  //                         ),
-  //                       ),
-  //                       const SizedBox(height: 16),
-  //                       Text(
-  //                         '${state.globalUser?.name}',
-  //                         style: const TextStyle(
-  //                           fontSize: 18,
-  //                           fontWeight: FontWeight.w500,
-  //                         ),
-  //                       ),
-  //                       Text(
-  //                         '@${state.globalUser?.email}',
-  //                         style: const TextStyle(
-  //                           fontSize: 14,
-  //                           fontWeight: FontWeight.w500,
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //             ListTile(
-  //               onTap: () {
-  //                 if (mounted) {
-  //                   Navigator.of(context).pop();
-  //                   Navigator.of(context).popUntil(
-  //                     (route) => route.isFirst,
-  //                   );
-  //                 }
-  //               },
-  //               leading: const Icon(
-  //                 Icons.home_rounded,
-  //               ),
-  //               title: const Text(
-  //                 'Home',
-  //                 style: TextStyle(
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.w500,
-  //                 ),
-  //               ),
-  //               trailing: const Icon(
-  //                 Icons.arrow_forward_ios_rounded,
-  //               ),
-  //             ),
-  //             ListTile(
-  //               onTap: () {
-  //                 Navigator.of(context).push(
-  //                   MaterialPageRoute(
-  //                     builder: (ctx) => const SubscriptionPage(),
-  //                   ),
-  //                 );
-  //               },
-  //               leading: const Icon(
-  //                 Icons.support,
-  //               ),
-  //               title: const Text(
-  //                 'Support Us',
-  //                 style: TextStyle(
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.w500,
-  //                 ),
-  //               ),
-  //               trailing: const Icon(
-  //                 Icons.arrow_forward_ios_rounded,
-  //               ),
-  //             ),
-
-  //           ],
-  //         ),
-  //         ListTile(
-  //           onTap: () async {
-  //             await context.read<AuthenticationCubit>().signOut().then(
-  //               (value) {
-  //                 Navigator.of(context).pushAndRemoveUntil(
-  //                   MaterialPageRoute(
-  //                     builder: (ctx) => const LoginPage(),
-  //                   ),
-  //                   (route) => false,
-  //                 );
-  //               },
-  //             );
-  //           },
-  //           leading: const Icon(
-  //             Icons.logout_rounded,
-  //           ),
-  //           title: const Text(
-  //             'Log Out',
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               fontWeight: FontWeight.w500,
-  //             ),
-  //           ),
-  //           trailing: const Icon(
-  //             Icons.arrow_forward_ios_rounded,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

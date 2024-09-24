@@ -112,6 +112,86 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843415826323:android:aa3285dfeeae9005854266",
+        "android_client_info": {
+          "package_name": "com.vicharshala.link_vault.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "843415826323-upiseli0s3g21og1kafdohk41p7ragpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBY7mwdNlhMOOWJUPskg90J3gOk93cRmZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "843415826323-1it1cggg0ckgbpdc9aae2f5fsvvonft9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "843415826323-9qlpdap2o0t3d4ciqnjungboe56ham1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.linkVault"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843415826323:android:bf808a043d09bfee854266",
+        "android_client_info": {
+          "package_name": "com.vicharshala.link_vault.development"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "843415826323-eiucb26evo8jc8evtpbb96eit5rih60v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vicharshala.link_vault.development",
+            "certificate_hash": "8d6ff3a393f7ae7b9b5d5374e9ded3d063210a5f"
+          }
+        },
+        {
+          "client_id": "843415826323-upiseli0s3g21og1kafdohk41p7ragpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBY7mwdNlhMOOWJUPskg90J3gOk93cRmZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "843415826323-1it1cggg0ckgbpdc9aae2f5fsvvonft9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "843415826323-9qlpdap2o0t3d4ciqnjungboe56ham1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.linkVault"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

@@ -1,43 +1,43 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
-import 'package:link_vault/core/common/res/app_tutorials.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/add_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class UrlsListWidget extends StatefulWidget {
-  const UrlsListWidget({
+class UrlsPreviewListWidget extends StatefulWidget {
+  const UrlsPreviewListWidget({
     required this.title,
     required this.collectionFetchModel,
-    required this.showAddCollectionButton,
+    required this.showBottomBar,
     super.key,
   });
 
   final String title;
-  final bool showAddCollectionButton;
-
-  // final ScrollController scrollController;
+  final ValueNotifier<bool> showBottomBar;
   final CollectionFetchModel collectionFetchModel;
 
   @override
-  State<UrlsListWidget> createState() => _UrlsListWidgetState();
+  State<UrlsPreviewListWidget> createState() => _UrlsPreviewListWidgetState();
 }
 
-class _UrlsListWidgetState extends State<UrlsListWidget> {
-  late final ScrollController _scrollController;
+class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
+  final ScrollController _scrollController = ScrollController();
+
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
   final _ztoaFilter = ValueNotifier(false);
@@ -49,23 +49,22 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
 
   @override
   void initState() {
-    _scrollController = ScrollController()..addListener(_onScroll);
+    _scrollController.addListener(_onScroll);
     super.initState();
   }
 
   void _onScroll() {
     if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
-      // widget.showBottomBar.value = false;
+      widget.showBottomBar.value = false;
     } else if (_scrollController.offset < _previousOffset) {
       _showAppBar.value = true;
-      // widget.showBottomBar.value = true;
+      widget.showBottomBar.value = true;
     }
     _previousOffset = _scrollController.offset;
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
   }
@@ -173,54 +172,20 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    _showAppBar.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: _getAppBar(),
-      floatingActionButton: widget.showAddCollectionButton == false
-          ? null
-          : BlocBuilder<SharedInputsCubit, SharedInputsState>(
-              builder: (context, state) {
-                if (widget.showAddCollectionButton == false) return Container();
-
-                final urls = context.read<SharedInputsCubit>().getUrlsList();
-
-                final url = urls.isNotEmpty ? urls[0] : null;
-
-                return FloatingActionButton.extended(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  backgroundColor: ColourPallette.salemgreen,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => AddUrlPage(
-                          parentCollection:
-                              widget.collectionFetchModel.collection!,
-                          url: url,
-                        ),
-                      ),
-                    );
-                  },
-                  label: const Text(
-                    'Add URL',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: ColourPallette.white,
-                    ),
-                  ),
-                  icon: const Icon(
-                    Icons.add_link_rounded,
-                    color: ColourPallette.white,
-                  ),
-                );
-              },
-            ),
       body: Container(
-        margin: const EdgeInsets.only(top: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
@@ -231,46 +196,21 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
               _fetchMoreUrls();
               return Center(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
-                      MediaRes.webSurf1SVG,
-                      // MediaRes.pageUnderConstructionSVG,
+                      // MediaRes.feedListSVG ,
+                      MediaRes.rssFeedSVG,
+                      // MediaRes.newsBroSVG,
+                      width: size.width,
+                      fit: BoxFit.cover,
                     ),
-                    GestureDetector(
-                      onTap: () async {
-                        const howToAddlink =
-                            AppLinks.howToAddURLVideoTutorialLink;
-                        final uri = Uri.parse(howToAddlink);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri);
-                        }
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: ColourPallette.error,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: ColourPallette.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Watch How to Add URL',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 24),
+                    const Text(
+                      '“ The Feed Curated for You, by You. ”',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -284,82 +224,102 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
               valueListenable: _list,
               builder: (context, availableUrls, _) {
                 return SingleChildScrollView(
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  controller: _scrollController,
                   child: Column(
                     children: [
-                      AlignedGridView.extent(
-                        physics: const NeverScrollableScrollPhysics(),
+                      ListView.builder(
                         shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: availableUrls.length,
-                        maxCrossAxisExtent: 80,
-                        mainAxisSpacing: 24,
-                        crossAxisSpacing: 20,
-                        itemBuilder: (context, index) {
+                        itemBuilder: (ctx, index) {
                           final url = availableUrls[index];
 
                           if (url.loadingStates == LoadingStates.loading) {
-                            return Center(
-                              child: Container(
-                                height: 72,
-                                width: 72,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  color: Colors.grey.shade300,
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: double.maxFinite,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade200,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: size.width * 0.75,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(32),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                // const SizedBox(height: 8),
+                                const Divider(),
+                                // const SizedBox(height: 8),
+                              ],
                             );
                           } else if (url.loadingStates ==
                               LoadingStates.errorLoading) {
-                            return SizedBox(
-                              height: 56,
-                              width: 56,
-                              child: IconButton(
-                                onPressed: _fetchMoreUrls,
-                                icon: const Icon(
-                                  Icons.restore,
-                                  color: ColourPallette.black,
-                                ),
+                            return IconButton(
+                              onPressed: _fetchMoreUrls,
+                              icon: const Icon(
+                                Icons.restore,
+                                color: ColourPallette.black,
                               ),
                             );
                           }
-
-                          // Logger.printLog(
-                          //   StringUtils.getJsonFormat(
-                          //     url.urlModel!.metaData?.toJson(),
-                          //   ),
-                          // );
-
-                          return UrlFaviconLogoWidget(
-                            onPress: () async {
-                              final uri = Uri.parse(url.urlModel!.url);
-                              if (await canLaunchUrl(uri)) {
-                                await launchUrl(uri);
-                              }
-                            },
-                            onDoubleTap: (urlMetaData) {
-                              final urlc = url.urlModel!.copyWith(
-                                metaData: urlMetaData,
+                          final urlMetaData = url.urlModel!.metaData ??
+                              UrlMetaData.isEmpty(
+                                title: url.urlModel!.title,
                               );
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => UpdateUrlPage(
-                                    urlModel: urlc,
-                                  ),
+                          return Column(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                child: UrlPreviewWidget(
+                                  urlMetaData: urlMetaData,
+                                  onTap: () async {
+                                    final uri = Uri.parse(url.urlModel!.url);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri);
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (ctx) => UpdateUrlPage(
+                                          urlModel: url.urlModel!,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onShareButtonTap: () {
+                                    Share.share(
+                                      '${url.urlModel?.url}\n${urlMetaData.title}\n${urlMetaData.description}',
+                                    );
+                                  },
+                                  onMoreVertButtontap: () {},
                                 ),
-                              );
-                            },
-                            urlModelData: url.urlModel!,
+                              ),
+                              // const SizedBox(height: 4),
+                              Divider(
+                                color: Colors.grey.shade200,
+                              ),
+                              // const SizedBox(height: 4),
+                            ],
                           );
                         },
                       ),
 
                       // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                      const SizedBox(height: 120),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 );
@@ -382,12 +342,23 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
             height: isVisible ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
               surfaceTintColor: ColourPallette.mystic,
-              title: Text(
-                '${widget.collectionFetchModel.collection?.name}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              title: Row(
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SvgPicture.asset(
+                    MediaRes.compassSVG,
+                    height: 18,
+                    width: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Feeds',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 _filterOptions(),
@@ -514,4 +485,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

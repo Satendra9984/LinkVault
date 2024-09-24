@@ -175,9 +175,6 @@ class UrlRepoImpl {
       );
 
       await _urlLocalDataSourcesImpl.deleteUrl(urlData.firestoreId);
-      if (collection == null) {
-        return Right((urlData, null));
-      }
       final urlList = collection.urls
         ..removeWhere(
           (url) => url == urlData.firestoreId,

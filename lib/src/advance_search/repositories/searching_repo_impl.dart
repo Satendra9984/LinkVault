@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:isar/isar.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';

@@ -12,8 +12,8 @@ import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/add_url_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
+import 'package:link_vault/src/rss_feeds/pages/common/add_url_page.dart';
+import 'package:link_vault/src/rss_feeds/pages/common/update_url_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UrlsListWidget extends StatefulWidget {
@@ -174,6 +174,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: _getAppBar(),
       floatingActionButton: widget.showAddCollectionButton == false
@@ -233,41 +234,101 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                 child: Column(
                   children: [
                     SvgPicture.asset(
-                      MediaRes.webSurf1SVG,
-                      // MediaRes.pageUnderConstructionSVG,
+                      MediaRes.rssFeedSVG,
+                      width: size.width,
                     ),
-                    GestureDetector(
-                      onTap: () async {
-                        const howToAddlink =
-                            AppLinks.howToAddURLVideoTutorialLink;
-                        final uri = Uri.parse(howToAddlink);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri);
-                        }
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 24),
+                    const Text(
+                      '“ The Feed Curated for You, by You. ”',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: ColourPallette.error,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: ColourPallette.white,
+                          GestureDetector(
+                            onTap: () async {
+                              const howToAddlink = AppLinks.whatIsRSSFeed;
+                              final uri = Uri.parse(howToAddlink);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              }
+                            },
+                            child: Row(
+                              // mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(6),
+                                    color: ColourPallette.error,
+                                  ),
+                                  child: const Icon(
+                                    Icons.play_arrow_rounded,
+                                    color: ColourPallette.white,
+                                    size: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                    'What is a RSS Feed.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Watch How to Add URL',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () async {
+                              const howToAddlink =
+                                  AppLinks.howToAddRSSFeedLinkOfWebsite;
+                              final uri = Uri.parse(howToAddlink);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              }
+                            },
+                            child: Row(
+                              // mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(6),
+                                    color: ColourPallette.error,
+                                  ),
+                                  child: const Icon(
+                                    Icons.play_arrow_rounded,
+                                    color: ColourPallette.white,
+                                    size: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                    'How to use it.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -382,12 +443,23 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
             height: isVisible ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
               surfaceTintColor: ColourPallette.mystic,
-              title: Text(
-                '${widget.collectionFetchModel.collection?.name}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              title: Row(
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SvgPicture.asset(
+                    MediaRes.compassSVG,
+                    height: 18,
+                    width: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Feeds',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 _filterOptions(),

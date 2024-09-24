@@ -68,11 +68,13 @@ android {
             dimension "env"
             // applicationIdSuffix ".prod"
             // versionNameSuffix "-prod"
+            buildConfigField "String", "FLAVOR", "\"prod\""
         }
-        dev {
+        development {
             dimension "env"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
+            buildConfigField "String", "FLAVOR", "\"dev\""
         }
     }
 
@@ -107,20 +109,9 @@ flutter {
 }
 
 
-// Add this at the end of the file
-// android.applicationVariants.all { variant ->
-//     def googleServicesFile = variant.productFlavors.contains('dev') 
-//         ? file("src/dev/google-services.json") 
-//         : file("google-services.json")
-
-//     if (googleServicesFile.exists()) {
-//         apply plugin: 'com.google.gms.google-services'
-//     }
-// }
-
 android.applicationVariants.all { variant ->
-    def googleServicesFile = variant.productFlavors.get(0).name == "dev"
-        ? file("src/dev/google-services.json") 
+    def googleServicesFile = variant.productFlavors.get(0).name == "development"
+        ? file("src/development/google-services.json") 
         : file("google-services.json")
 
     if (googleServicesFile.exists()) {
@@ -134,7 +125,7 @@ android.applicationVariants.all { variant ->
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation("com.google.ads.mediation:facebook:6.17.0.0")
+    // implementation("com.google.ads.mediation:facebook:6.17.0.0")
     implementation("com.google.ads.mediation:vungle:7.4.0.1")
 }
 
