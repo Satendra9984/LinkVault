@@ -11,7 +11,7 @@ import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.d
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_page.dart';
-import 'package:link_vault/src/rss_feeds/pages/rss_feed_dashboard/rss_feed_store_page.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_dashboard/rss_feed_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 

@@ -19,8 +19,8 @@ import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 
 // https://youtu.be/jMi-VwEBJ70
 
-class AddUrlPage extends StatefulWidget {
-  const AddUrlPage({
+class AddRssFeedUrlPage extends StatefulWidget {
+  const AddRssFeedUrlPage({
     required this.parentCollection,
     this.url,
     super.key,
@@ -29,10 +29,10 @@ class AddUrlPage extends StatefulWidget {
   final String? url;
 
   @override
-  State<AddUrlPage> createState() => _AddUrlPageState();
+  State<AddRssFeedUrlPage> createState() => _AddRssFeedUrlPageState();
 }
 
-class _AddUrlPageState extends State<AddUrlPage> {
+class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
   final _formKey = GlobalKey<FormState>();
   final _rssFeedUrlAddressController = TextEditingController();
   final _rssFeedUrlErrorNotifier = ValueNotifier<String?>(null);
@@ -54,10 +54,10 @@ class _AddUrlPageState extends State<AddUrlPage> {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       // Check if RSS Feed Url is valid
-      Logger.printLog('Calling isRssUrlValid');
-      final isRssUrlValid =
-          await RssService.isURLRssFeed(_rssFeedUrlAddressController.text);
-      Logger.printLog('[validrss] : ${isRssUrlValid}');
+      // Logger.printLog('Calling isRssUrlValid');
+      final isRssUrlValid = await RssXmlParsingService.isURLRssFeed(
+          _rssFeedUrlAddressController.text);
+      // Logger.printLog('[validrss] : ${isRssUrlValid}');
 
       if (isRssUrlValid == false) {
         _rssFeedUrlErrorNotifier.value = 'Invalid RSS Feed URL';
@@ -87,7 +87,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
       final urlModelData = UrlModel(
         firestoreId: '',
         collectionId: widget.parentCollection.id,
-        url: RssService.getBaseUrlFromRssFeedURL(_rssFeedUrlAddressController.text),
+        url: RssXmlParsingService.getBaseUrlFromRssFeedURL(
+          _rssFeedUrlAddressController.text,
+        ),
         title: _urlNameController.text,
         description: _descEditingController.text,
         isFavourite: _isFavorite.value,
@@ -98,7 +100,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
         metaData: urlMetaData,
       );
 
-      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+      // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
       await urlCrudCubit.addUrl(urlData: urlModelData);
     }
@@ -117,8 +119,8 @@ class _AddUrlPageState extends State<AddUrlPage> {
     _previewLoadingStates.value = LoadingStates.loading;
 
     // We need to extract Base URL
-    final baseUrl =
-        RssService.getBaseUrlFromRssFeedURL(_rssFeedUrlAddressController.text);
+    final baseUrl = RssXmlParsingService.getBaseUrlFromRssFeedURL(
+        _rssFeedUrlAddressController.text);
 
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(baseUrl);
@@ -250,8 +252,9 @@ class _AddUrlPageState extends State<AddUrlPage> {
                     builder: (context, errorText, _) {
                       return CustomCollTextField(
                         controller: _rssFeedUrlAddressController,
-                        labelText: 'RSS Feed Url Address',
-                        hintText: ' eg. https://www.youtube.com ',
+                        labelText: 'RSS Feed URL',
+                        hintText:
+                            ' eg. https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml ',
                         errorText: errorText,
                         onTapOutside: (pointer) async {
                           if (_previewMetaData.value == null &&
@@ -372,7 +375,7 @@ class _AddUrlPageState extends State<AddUrlPage> {
                   CustomCollTextField(
                     controller: _urlNameController,
                     labelText: 'Title',
-                    hintText: ' eg. google ',
+                    hintText: ' eg. The Hindustan Times ',
                     keyboardType: TextInputType.name,
                     maxLength: 30,
                     validator: (value) {

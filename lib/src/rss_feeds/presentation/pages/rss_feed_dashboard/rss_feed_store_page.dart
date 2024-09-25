@@ -7,9 +7,9 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/rss_feeds/pages/common/collections_list_widget.dart';
-import 'package:link_vault/src/rss_feeds/pages/common/urls_list_widget.dart';
-import 'package:link_vault/src/rss_feeds/pages/common/urls_preview_list.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/common/collections_list_widget.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/common/rss_urls_list_widget.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/common/rss_feed_preview_list.dart';
 import 'package:lottie/lottie.dart';
 
 class RssFeedFolderCollectionPage extends StatefulWidget {
@@ -74,7 +74,7 @@ class _RssFeedFolderCollectionPageState
         if (fetchCollection == null ||
             fetchCollection.collectionFetchingState == LoadingStates.loading) {
           return Scaffold(
-            appBar: _getAppBar(title: ''),
+            // appBar: _getAppBar(title: ''),
             body: Center(
               child: Column(
                 children: [
@@ -97,7 +97,7 @@ class _RssFeedFolderCollectionPageState
         if (fetchCollection.collectionFetchingState ==
             LoadingStates.errorLoading) {
           return Scaffold(
-            appBar: _getAppBar(title: ''),
+            // appBar: _getAppBar(title: ''),
             body: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
@@ -173,7 +173,6 @@ class _RssFeedFolderCollectionPageState
                         currentIndex: _currentPage.value,
                         onTap: (currentIndex) {
                           _currentPage.value = currentIndex;
-                          // _pageController.jumpToPage(currentIndex);
                           _pageController.jumpToPage(currentIndex);
                         },
                         type: BottomNavigationBarType.fixed,
@@ -225,7 +224,7 @@ class _RssFeedFolderCollectionPageState
               _currentPage.value = page;
             },
             children: [
-              UrlsListWidget(
+              RssFeedUrlsListWidget(
                 title: 'Urls',
                 collectionFetchModel: fetchCollection,
                 showAddCollectionButton: true,

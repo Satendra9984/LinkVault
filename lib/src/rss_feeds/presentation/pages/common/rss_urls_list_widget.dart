@@ -12,12 +12,12 @@ import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/rss_feeds/pages/common/add_url_page.dart';
-import 'package:link_vault/src/rss_feeds/pages/common/update_url_page.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/common/add_rss_feed_url_page.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/common/update_rss_url_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class UrlsListWidget extends StatefulWidget {
-  const UrlsListWidget({
+class RssFeedUrlsListWidget extends StatefulWidget {
+  const RssFeedUrlsListWidget({
     required this.title,
     required this.collectionFetchModel,
     required this.showAddCollectionButton,
@@ -31,10 +31,10 @@ class UrlsListWidget extends StatefulWidget {
   final CollectionFetchModel collectionFetchModel;
 
   @override
-  State<UrlsListWidget> createState() => _UrlsListWidgetState();
+  State<RssFeedUrlsListWidget> createState() => _RssFeedUrlsListWidgetState();
 }
 
-class _UrlsListWidgetState extends State<UrlsListWidget> {
+class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget> {
   late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
@@ -196,7 +196,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (ctx) => AddUrlPage(
+                        builder: (ctx) => AddRssFeedUrlPage(
                           parentCollection:
                               widget.collectionFetchModel.collection!,
                           url: url,
@@ -408,7 +408,7 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (ctx) => UpdateUrlPage(
+                                  builder: (ctx) => UpdateRssFeedUrlPage(
                                     urlModel: urlc,
                                   ),
                                 ),
@@ -474,12 +474,12 @@ class _UrlsListWidgetState extends State<UrlsListWidget> {
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.only(right: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       icon: const Icon(
-        Icons.filter_list,
+        Icons.filter_alt_rounded,
       ),
       itemBuilder: (ctx) {
         return [

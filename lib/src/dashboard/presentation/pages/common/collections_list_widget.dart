@@ -377,12 +377,12 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.only(right: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       icon: const Icon(
-        Icons.filter_list,
+        Icons.filter_alt_rounded,
       ),
       itemBuilder: (ctx) {
         return [

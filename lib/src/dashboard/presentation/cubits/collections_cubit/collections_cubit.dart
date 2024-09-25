@@ -335,7 +335,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     }
 
     final start = alreadyFetchedUrls.length;
-    final end = min(urlsList.length, start + 20);
+    final end = min(urlsList.length, start + 24);
 
     final urlIds = urlsList.sublist(start, end);
 

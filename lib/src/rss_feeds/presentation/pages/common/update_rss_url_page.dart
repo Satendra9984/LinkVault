@@ -6,6 +6,7 @@ import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/app_home/services/rss_service.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
@@ -14,20 +15,22 @@ import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget
 import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:share_plus/share_plus.dart';
 
-class UpdateUrlPage extends StatefulWidget {
-  const UpdateUrlPage({
+class UpdateRssFeedUrlPage extends StatefulWidget {
+  const UpdateRssFeedUrlPage({
     required this.urlModel,
     super.key,
   });
   final UrlModel urlModel;
 
   @override
-  State<UpdateUrlPage> createState() => _UpdateUrlPageState();
+  State<UpdateRssFeedUrlPage> createState() => _UpdateRssFeedUrlPageState();
 }
 
-class _UpdateUrlPageState extends State<UpdateUrlPage> {
+class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
   final _formKey = GlobalKey<FormState>();
-  final _urlAddressController = TextEditingController();
+  final _rssFeedUrlAddressController = TextEditingController();
+  final _rssFeedUrlErrorNotifier = ValueNotifier<String?>(null);
+
   final _urlTitleController = TextEditingController();
   final _urlDescriptionController = TextEditingController();
   final _isFavorite = ValueNotifier<bool>(false);
@@ -44,6 +47,17 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
   Future<void> _updateUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
+      final isRssUrlValid = await RssXmlParsingService.isURLRssFeed(
+          _rssFeedUrlAddressController.text);
+      // Logger.printLog('[validrss] : ${isRssUrlValid}');
+
+      if (isRssUrlValid == false) {
+        _rssFeedUrlErrorNotifier.value = 'Invalid RSS Feed URL';
+        return;
+      } else {
+        _rssFeedUrlErrorNotifier.value = null;
+      }
+
       final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
@@ -60,7 +74,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       final urlModelData = UrlModel(
         firestoreId: widget.urlModel.firestoreId,
         collectionId: widget.urlModel.collectionId,
-        url: _urlAddressController.text,
+        url: RssXmlParsingService.getBaseUrlFromRssFeedURL(
+          _rssFeedUrlAddressController.text,
+        ),
         title: _urlTitleController.text,
         tag: _selectedCategory.value,
         description: _urlDescriptionController.text,
@@ -78,8 +94,8 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
   }
 
   Future<void> _loadPreview() async {
-    if (_urlAddressController.text.isEmpty) {
-      Logger.printLog('url address is empty');
+    if (_rssFeedUrlAddressController.text.isEmpty) {
+      // Logger.printLog('url address is empty');
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value =
           GeneralFailure(message: 'Url Address is empty', statusCode: '400');
@@ -89,8 +105,12 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
     // Fetching all details
     _previewLoadingStates.value = LoadingStates.loading;
 
+    // We need to extract Base URL
+    final baseUrl = RssXmlParsingService.getBaseUrlFromRssFeedURL(
+        _rssFeedUrlAddressController.text);
+
     final (websiteHtmlContent, metaData) =
-        await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
+        await UrlParsingService.getWebsiteMetaData(baseUrl);
 
     // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
@@ -128,9 +148,9 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
       return;
     }
     // }
-    Logger.printLog(
-      'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
-    );
+    // Logger.printLog(
+    //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
+    // );
     _previewLoadingStates.value = LoadingStates.loaded;
     await _showPreviewBottomSheet(context);
   }
@@ -139,7 +159,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
   void initState() {
     context.read<UrlCrudCubit>().cleanUp();
 
-    _urlAddressController.text = widget.urlModel.url;
+    _rssFeedUrlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
     _isFavorite.value = widget.urlModel.isFavourite;
@@ -151,7 +171,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
 
   @override
   void dispose() {
-    _urlAddressController.dispose();
+    _rssFeedUrlAddressController.dispose();
     _urlTitleController.dispose();
     _urlDescriptionController.dispose();
     _isFavorite.dispose();
@@ -169,7 +189,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
-          'Update Url',
+          'Update RSS Feed Url',
           style: TextStyle(
             color: Colors.grey.shade800,
             fontWeight: FontWeight.w500,
@@ -186,7 +206,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
           ),
           IconButton(
             onPressed: () {
-              final urlAddress = _urlAddressController.text;
+              final urlAddress = _rssFeedUrlAddressController.text;
               final urlTitle = _urlTitleController.text;
               final urlDescription = _urlDescriptionController.text;
 
@@ -257,16 +277,23 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomCollTextField(
-                  controller: _urlAddressController,
-                  labelText: 'Url Address',
-                  hintText: ' eg. https://www.youtube.com ',
-                  keyboardType: TextInputType.name,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter title';
-                    }
-                    return null;
+                ValueListenableBuilder<String?>(
+                  valueListenable: _rssFeedUrlErrorNotifier,
+                  builder: (context, errorText, _) {
+                    return CustomCollTextField(
+                      controller: _rssFeedUrlAddressController,
+                      labelText: 'RSS Feed URL',
+                      hintText:
+                          ' eg. https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml ',
+                      errorText: errorText,
+                      keyboardType: TextInputType.name,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter title';
+                        }
+                        return null;
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 16),
@@ -361,7 +388,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 CustomCollTextField(
                   controller: _urlTitleController,
                   labelText: 'Title',
-                  hintText: ' eg. google ',
+                  hintText: ' eg. The Hindustan Times ',
                   keyboardType: TextInputType.name,
                   maxLength: 30,
                   validator: (value) {
@@ -375,7 +402,7 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 CustomCollTextField(
                   controller: _urlDescriptionController,
                   labelText: 'Notes',
-                  hintText: ' Add your important detail here. ',
+                  hintText: ' Add your important detailS here. ',
                   maxLength: 1000,
                   maxLines: 5,
                   validator: (value) {
@@ -386,36 +413,36 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Favourite',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isFavorite,
-                      builder: (context, isFavorite, child) {
-                        return Switch.adaptive(
-                          value: isFavorite,
-                          onChanged: (value) => _isFavorite.value = value,
-                          trackOutlineColor:
-                              WidgetStateProperty.resolveWith<Color?>(
-                            (Set<WidgetState> states) => Colors.transparent,
-                          ),
-                          thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                            (Set<WidgetState> states) => Colors.transparent,
-                          ),
-                          activeTrackColor: ColourPallette.mountainMeadow,
-                          inactiveTrackColor: ColourPallette.error,
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     const Text(
+                //       'Favourite',
+                //       style: TextStyle(
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                //     ),
+                //     ValueListenableBuilder<bool>(
+                //       valueListenable: _isFavorite,
+                //       builder: (context, isFavorite, child) {
+                //         return Switch.adaptive(
+                //           value: isFavorite,
+                //           onChanged: (value) => _isFavorite.value = value,
+                //           trackOutlineColor:
+                //               WidgetStateProperty.resolveWith<Color?>(
+                //             (Set<WidgetState> states) => Colors.transparent,
+                //           ),
+                //           thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                //             (Set<WidgetState> states) => Colors.transparent,
+                //           ),
+                //           activeTrackColor: ColourPallette.mountainMeadow,
+                //           inactiveTrackColor: ColourPallette.error,
+                //         );
+                //       },
+                //     ),
+                //   ],
+                // ),
 
                 const SizedBox(height: 20),
 
@@ -456,8 +483,8 @@ class _UpdateUrlPageState extends State<UpdateUrlPage> {
                                   color: isSelected
                                       ? ColourPallette.mountainMeadow
                                       : ColourPallette.grey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 category,

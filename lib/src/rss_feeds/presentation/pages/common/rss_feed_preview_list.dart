@@ -1,35 +1,42 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/add_collection_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/update_collection_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
+import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class CollectionsListWidget extends StatefulWidget {
-  const CollectionsListWidget({
+class UrlsPreviewListWidget extends StatefulWidget {
+  const UrlsPreviewListWidget({
+    required this.title,
     required this.collectionFetchModel,
-    required this.showAddCollectionButton,
+    required this.showBottomBar,
     super.key,
   });
 
+  final String title;
+  final ValueNotifier<bool> showBottomBar;
   final CollectionFetchModel collectionFetchModel;
-  final bool showAddCollectionButton;
+
   @override
-  State<CollectionsListWidget> createState() => _CollectionsListWidgetState();
+  State<UrlsPreviewListWidget> createState() => _UrlsPreviewListWidgetState();
 }
 
-class _CollectionsListWidgetState extends State<CollectionsListWidget> {
-  late final ScrollController _scrollController;
+class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   var _previousOffset = 0.0;
+  final ScrollController _scrollController = ScrollController();
 
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
@@ -38,39 +45,36 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   final _createdAtOldestFilter = ValueNotifier(false);
   final _updatedAtLatestFilter = ValueNotifier(false);
   final _updatedAtOldestFilter = ValueNotifier(false);
-  final _list =
-      ValueNotifier<List<CollectionFetchModel>>(<CollectionFetchModel>[]);
+  final _list = ValueNotifier<List<UrlFetchStateModel>>(<UrlFetchStateModel>[]);
 
   @override
   void initState() {
-    _scrollController = ScrollController()..addListener(_onScroll);
-    _fetchMoreCollections();
+    _scrollController.addListener(_onScroll);
     super.initState();
   }
 
-  Future<void> _onScroll() async {
+  void _onScroll() {
     if (_scrollController.offset > _previousOffset) {
       _showAppBar.value = false;
-      // widget.showBottomBar.value = false;
+      widget.showBottomBar.value = false;
     } else if (_scrollController.offset < _previousOffset) {
       _showAppBar.value = true;
-      // widget.showBottomBar.value = true;
+      widget.showBottomBar.value = true;
     }
     _previousOffset = _scrollController.offset;
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      await _fetchMoreCollections();
+      _fetchMoreUrls();
     }
   }
 
-  Future<void> _fetchMoreCollections() async {
+  void _fetchMoreUrls() {
     final fetchCollection = widget.collectionFetchModel;
 
-    await context.read<CollectionsCubit>().fetchMoreSubCollections(
+    context.read<CollectionsCubit>().fetchMoreUrls(
           collectionId: fetchCollection.collection!.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
-          isRootCollection: false,
         );
   }
 
@@ -100,11 +104,11 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-          return a.collection!.name.toLowerCase().compareTo(
-                b.collection!.name.toLowerCase(),
+          return a.urlModel!.title.toLowerCase().compareTo(
+                b.urlModel!.title.toLowerCase(),
               );
         },
       );
@@ -113,11 +117,11 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterZtoA() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-          return b.collection!.name.toLowerCase().compareTo(
-                a.collection!.name.toLowerCase(),
+          return b.urlModel!.title.toLowerCase().compareTo(
+                a.urlModel!.title.toLowerCase(),
               );
         },
       );
@@ -126,10 +130,10 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterCreateLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-          return b.collection!.createdAt.compareTo(a.collection!.createdAt);
+          return b.urlModel!.createdAt.compareTo(a.urlModel!.createdAt);
         },
       );
   }
@@ -137,11 +141,10 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterCreateOldest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-
-          return a.collection!.createdAt.compareTo(b.collection!.createdAt);
+          return a.urlModel!.createdAt.compareTo(b.urlModel!.createdAt);
         },
       );
   }
@@ -149,10 +152,10 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterUpdatedLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-          return b.collection!.updatedAt.compareTo(a.collection!.updatedAt);
+          return b.urlModel!.updatedAt.compareTo(a.urlModel!.updatedAt);
         },
       );
   }
@@ -160,181 +163,161 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
   void _filterUpdateOldest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
-          if (a.collection == null || b.collection == null) {
+          if (a.urlModel == null || b.urlModel == null) {
             return -1;
           }
-          return a.collection!.updatedAt.compareTo(b.collection!.updatedAt);
+          return a.urlModel!.updatedAt.compareTo(b.urlModel!.updatedAt);
         },
       );
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    _showAppBar.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // super.build(context);
+    super.build(context);
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: _getAppBar(),
-      floatingActionButton: widget.showAddCollectionButton == false
-          ? null
-          : FloatingActionButton.extended(
-              heroTag: '${widget.collectionFetchModel.hashCode}',
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
-              ),
-              backgroundColor: ColourPallette.salemgreen,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => AddCollectionPage(
-                      parentCollection: widget.collectionFetchModel.collection!,
-                    ),
-                  ),
-                );
-              },
-              label: const Text(
-                'Add Collection',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ColourPallette.white,
-                ),
-              ),
-              icon: const Icon(
-                Icons.create_new_folder_rounded,
-                color: ColourPallette.white,
-              ),
-            ),
       body: Container(
-        margin: const EdgeInsets.only(top: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        alignment: Alignment.topLeft,
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
-            final fetchCollection =
-                state.collections[widget.collectionFetchModel.collection!.id];
+            final availableUrls = state
+                .collectionUrls[widget.collectionFetchModel.collection!.id];
 
-            if (fetchCollection == null) {
+            if (availableUrls == null || availableUrls.isEmpty) {
+              _fetchMoreUrls();
               return Center(
-                child: SvgPicture.asset(
-                  MediaRes.collectionSVG,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      MediaRes.rssFeedSVG,
+                      width: size.width,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '“ The Feed Curated for You, by You. ”',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
-
-            final availableSubCollections = <CollectionFetchModel>[];
-
-            for (var i = 0;
-                i <= fetchCollection.subCollectionFetchedIndex;
-                i++,) {
-              final subCollId = fetchCollection.collection!.subcollections[i];
-              final subCollection = state.collections[subCollId];
-
-              if (subCollection == null) continue;
-
-              availableSubCollections.add(subCollection);
-            }
-
-            if (availableSubCollections.isEmpty) {
-              return Center(
-                child: SvgPicture.asset(
-                  MediaRes.collectionSVG,
-                ),
-              );
-            }
-            _list.value = availableSubCollections;
+            _list.value = availableUrls;
 
             _filterList();
-
-            // const collectionIconWidth = 96.0;
-
             return ValueListenableBuilder(
               valueListenable: _list,
-              builder: (context, availableSubCollections, _) {
+              builder: (context, availableUrls, _) {
                 return SingleChildScrollView(
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  controller: _scrollController,
                   child: Column(
                     children: [
-                      AlignedGridView.extent(
+                      ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: availableSubCollections.length,
-                        maxCrossAxisExtent: 80,
-                        mainAxisSpacing: 24,
-                        crossAxisSpacing: 20,
-                        itemBuilder: (context, index) {
-                          // final fetchCollectionCubit = context.read<CollectionsCubit>();
-                          final subCollection = availableSubCollections[index];
+                        itemCount: availableUrls.length,
+                        itemBuilder: (ctx, index) {
+                          final url = availableUrls[index];
 
-                          if (subCollection.collectionFetchingState ==
-                              LoadingStates.loading) {
+                          if (url.loadingStates == LoadingStates.loading) {
                             return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  width: 72,
-                                  height: 72,
+                                  width: double.maxFinite,
+                                  height: 120,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
                                     color: Colors.grey.shade200,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
                                 Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 8,
-                                  ),
-                                  width: 72,
-                                  height: 8,
+                                  width: size.width * 0.75,
+                                  height: 20,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(32),
                                     color: Colors.grey.shade300,
                                   ),
                                 ),
+                                // const SizedBox(height: 8),
+                                const Divider(),
+                                // const SizedBox(height: 8),
                               ],
                             );
-                          } else if (subCollection.collectionFetchingState ==
+                          } else if (url.loadingStates ==
                               LoadingStates.errorLoading) {
-                            return const Icon(
-                              Icons.error,
-                              color: Colors.red,
+                            return IconButton(
+                              onPressed: _fetchMoreUrls,
+                              icon: const Icon(
+                                Icons.restore,
+                                color: ColourPallette.black,
+                              ),
                             );
                           }
+                          final urlMetaData = url.urlModel!.metaData ??
+                              UrlMetaData.isEmpty(
+                                title: url.urlModel!.title,
+                              );
 
-                          return FolderIconButton(
-                            collection: subCollection.collection!,
-                            onDoubleTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => UpdateCollectionPage(
-                                    collection: subCollection.collection!,
-                                  ),
+                          return Column(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                child: UrlPreviewWidget(
+                                  urlMetaData: urlMetaData,
+                                  onTap: () async {
+                                    final uri = Uri.parse(url.urlModel!.url);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri);
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (ctx) => UpdateUrlPage(
+                                          urlModel: url.urlModel!,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onShareButtonTap: () {
+                                    Share.share(
+                                      '${url.urlModel?.url}\n${urlMetaData.title}\n${urlMetaData.description}',
+                                    );
+                                  },
+                                  onMoreVertButtontap: () {},
                                 ),
-                              );
-                            },
-                            onPress: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => FolderCollectionPage(
-                                    collectionId: subCollection.collection!.id,
-                                    isRootCollection: false,
-                                  ),
-                                ),
-                              );
-                            },
+                              ),
+                              // const SizedBox(height: 4),
+                              Divider(
+                                color: Colors.grey.shade200,
+                              ),
+                              // const SizedBox(height: 4),
+                            ],
                           );
                         },
                       ),
 
                       // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                      const SizedBox(height: 120),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 );
@@ -376,6 +359,7 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
                 ],
               ),
               actions: [
+                _refreshFeedButton(),
                 _filterOptions(),
               ],
             ),
@@ -385,15 +369,22 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
     );
   }
 
+  Widget _refreshFeedButton() {
+    return IconButton(
+      onPressed: () {},
+      icon: Icon(Icons.refresh_rounded),
+    );
+  }
+
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.only(right: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       icon: const Icon(
-        Icons.filter_list,
+        Icons.filter_alt_rounded,
       ),
       itemBuilder: (ctx) {
         return [
@@ -501,6 +492,6 @@ class _CollectionsListWidgetState extends State<CollectionsListWidget> {
     );
   }
 
-  // @override
-  // bool get wantKeepAlive => true;
+  @override
+  bool get wantKeepAlive => true;
 }
