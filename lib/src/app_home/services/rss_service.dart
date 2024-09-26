@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'package:intl/intl.dart'; // Required for date parsing
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // Required for date parsing
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:xml/xml.dart';
 
@@ -11,42 +9,15 @@ import 'package:xml/xml.dart';
 class RssXmlParsingService {
   RssXmlParsingService._();
 
-  // Fetch RSS feed content from URL
-  static Future<String?> fetchRssFeed(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      final request = await HttpClient().getUrl(uri);
-      final response = await request.close();
-
-      // Check response status
-      if (response.isRedirect || response.statusCode ~/ 100 != 2) {
-        return null;
-      }
-
-      // Read the content
-      final content = await response.transform(const Utf8Decoder()).join();
-      if (response.statusCode == 200) {
-        return content;
-      } else {
-        Logger.printLog('error in "fetchRssFeed" status code error');
-        return null;
-      }
-    } catch (e) {
-      Logger.printLog('error in "fetchRssFeed" $e');
-      return null;
-    }
-  }
-
   // Parse RSS feed XML and return a list of UrlMetaData
   static List<UrlModel> parseRssFeed(
-    String xmlString,
-    //   {
-    //   required CollectionModel collection,
-    // }
-  ) {
+    String xmlString, {
+    required String collectionId,
+    required String firestoreId,
+  }) {
+    final feedItems = <UrlModel>[];
     try {
       final document = XmlDocument.parse(xmlString);
-      final feedItems = <UrlModel>[];
 
       // Extract common metadata from channel (faviconUrl, title, etc.)
       final channel = document.findAllElements('channel').first;
@@ -58,10 +29,6 @@ class RssXmlParsingService {
       final websiteUrl = _extractText(channel, 'link');
       final websiteName = extractWebsiteNameFromUrlString(websiteUrl ?? '');
       final faviconUrl = _extractFaviconUrl(channel);
-
-      // Logger.printLog(
-      //   'title: ${title}\t description: ${description}\t websiteUrl: ${websiteUrl}\t websiteName: ${websiteName}\t faviconUrl: ${faviconUrl}\t',
-      // );
 
       // Extract individual feed items
       for (final item in document.findAllElements('item')) {
@@ -83,8 +50,8 @@ class RssXmlParsingService {
         );
 
         final urlModel = UrlModel(
-          firestoreId: 'firestoreId',
-          collectionId: 'collection.id',
+          firestoreId: firestoreId,
+          collectionId: collectionId,
           url: itemLink ?? websiteUrl ?? '',
           title: title ?? '',
           description: description,
@@ -102,7 +69,7 @@ class RssXmlParsingService {
       return feedItems;
     } catch (e) {
       Logger.printLog('error in "parseRssFeed" $e');
-      return [];
+      return feedItems;
     }
   }
 
@@ -134,7 +101,7 @@ class RssXmlParsingService {
   static String? _extractText(XmlElement element, String tagName) {
     try {
       final tag = element.findElements(tagName).first;
-      return tag.text;
+      return tag.text.trim();
     } catch (e) {
       return null;
     }
@@ -151,44 +118,49 @@ class RssXmlParsingService {
     }
   }
 
-  // Extract banner image URL from the item (e.g., from media:content, enclosure, or other tags)
-  static String? _extractBannerImageUrl(XmlElement item) {
-    try {
-      // Check for media:content (used by many RSS feeds for images)
-      final mediaContent = item.findElements('media:content').firstWhere(
-            (element) => element.getAttribute('url') != null,
-            orElse: () => XmlElement(XmlName('')),
-          );
-      if (mediaContent.getAttribute('url') != null) {
-        return mediaContent.getAttribute('url');
-      }
+  // Helper function to check if a URL is likely an image
+  static bool _isImageUrl(String url) {
+    return url.endsWith('.jpg') ||
+        url.endsWith('.jpeg') ||
+        url.endsWith('.png') ||
+        url.endsWith('.gif');
+  }
 
-      // Check for enclosure tag with type="image/*"
-      final enclosure = item.findElements('enclosure').firstWhere(
-            (element) =>
-                element.getAttribute('type')?.startsWith('image/') ?? false,
-            orElse: () => XmlElement(XmlName('')),
-          );
-      if (enclosure.getAttribute('url') != null) {
-        return enclosure.getAttribute('url');
-      }
+  static String _extractBannerImageUrl(XmlElement itemElement) {
+    // List of elements to exclude from the search for media URLs
+    final excludedElements = [
+      'title',
+      'description',
+      'pubDate',
+      'link',
+      'guid',
+      'category domain',
+      'dc:creator',
+    ];
 
-      // Add more checks if needed for other potential custom tags
-      // Try to get image from item description
-      final description = item.findElements('description').firstOrNull;
-      if (description != null) {
-        final descriptionText = description.value ?? '';
-        final imgSrcMatch =
-            RegExp('<img.*?src="(.*?)"').firstMatch(descriptionText);
-        if (imgSrcMatch != null && imgSrcMatch.groupCount >= 1) {
-          return imgSrcMatch.group(1);
+    // Remove the excluded elements from the itemElement
+    itemElement.children.removeWhere((node) {
+      if (node is XmlElement) {
+        return excludedElements.contains(node.name.local);
+      }
+      return false; // Keep non-XmlElement nodes (like text nodes)
+    });
+
+    // Logger.printLog('Cleaned xml:');
+    // Logger.printLog(itemElement.toXmlString());
+
+    // Search through all attributes that might have an image URL
+    for (final element in itemElement.descendants.whereType<XmlElement>()) {
+      for (final attribute in element.attributes) {
+        final url = attribute.value;
+        if (_isImageUrl(url)) {
+          return url;
         }
       }
-      // If no image found, return null
-      return null;
-    } catch (e) {
-      return null;
     }
+
+    // Return empty string or fallback if no image URL is found
+    return ''; // You can replace this with a fallback URL if necessary
   }
 
   // Extract publication date from the item and convert it to DateTime format

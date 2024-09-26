@@ -49,25 +49,35 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
 
   @override
   void initState() {
-    _scrollController.addListener(_onScroll);
+    // _scrollController.addListener(_onScroll);
+    _getAllUrlsForFeeds();
     super.initState();
   }
 
-  void _onScroll() {
-    if (_scrollController.offset > _previousOffset) {
-      _showAppBar.value = false;
-      widget.showBottomBar.value = false;
-    } else if (_scrollController.offset < _previousOffset) {
-      _showAppBar.value = true;
-      widget.showBottomBar.value = true;
-    }
-    _previousOffset = _scrollController.offset;
+  void _getAllUrlsForFeeds() {
+    final urls = widget.collectionFetchModel.collection!.urls;
 
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent) {
+    final callTimes = urls.length ~/ 23;
+
+    for (int i = 1; i <= callTimes; i++) {
       _fetchMoreUrls();
     }
   }
+
+  // void _onScroll() {
+  // if (_scrollController.offset > _previousOffset) {
+  //   _showAppBar.value = false;
+  //   widget.showBottomBar.value = false;
+  // } else if (_scrollController.offset < _previousOffset) {
+  //   _showAppBar.value = true;
+  //   widget.showBottomBar.value = true;
+  // }
+  // _previousOffset = _scrollController.offset;
+  // if (_scrollController.position.pixels >=
+  //     _scrollController.position.maxScrollExtent) {
+  //   _fetchMoreUrls();
+  // }
+  // }
 
   void _fetchMoreUrls() {
     final fetchCollection = widget.collectionFetchModel;
@@ -193,7 +203,7 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
 
             if (availableUrls == null || availableUrls.isEmpty) {
-              _fetchMoreUrls();
+              // _fetchMoreUrls();
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -215,6 +225,35 @@ class _UrlsPreviewListWidgetState extends State<UrlsPreviewListWidget>
                 ),
               );
             }
+
+            bool isAllUrlsNotFetched = availableUrls.length !=
+                    widget.collectionFetchModel.collection!.urls.length ||
+                availableUrls[availableUrls.length - 1].loadingStates ==
+                    LoadingStates.loading;
+
+            if (isAllUrlsNotFetched) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      MediaRes.loadingANIMATION,
+                      width: size.width,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '“Loading The Latest Feed Curated for You, by You. ”',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
             _list.value = availableUrls;
 
             _filterList();

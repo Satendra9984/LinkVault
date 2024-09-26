@@ -3,10 +3,10 @@ import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class UrlFetchStateModel extends Equatable {
-
   const UrlFetchStateModel({
     required this.collectionId,
-    required this.loadingStates, this.urlModel,
+    required this.loadingStates,
+    this.urlModel,
   });
   final String collectionId;
   final UrlModel? urlModel;

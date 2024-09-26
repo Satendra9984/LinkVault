@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:math';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
@@ -224,9 +223,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   CollectionFetchModel? getCollection({
     required String collectionId,
   }) {
-    // Logger.printLog('getCollection : ${collectionId}');
-    // Logger.printLog(StringUtils.getJsonFormat(state.collections));
-
     return state.collections[collectionId];
   }
 
