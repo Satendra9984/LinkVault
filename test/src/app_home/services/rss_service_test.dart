@@ -32,10 +32,10 @@ void main() {
       final rssFeedUrl = testFeedUrls[4];
 
       // Parse the RSS feed
-      final urlMetaDataList = await RssXmlParsingService.parseRssFeed(
+      final urlMetaDataList = RssXmlParsingService.parseRssFeed(
         rssFeedUrl,
         collectionId: 'collectionId',
-        firestoreId: 'firestoreId'
+        firestoreId: 'firestoreId',
       );
       expect(urlMetaDataList, isNotEmpty);
       Logger.printLog(urlMetaDataList.length.toString());

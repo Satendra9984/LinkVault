@@ -26,6 +26,15 @@ class RssFeedModel extends Equatable {
     required this.loadingMoreStates,
   });
 
+  // Initial state constructor for convenience
+  factory RssFeedModel.initial() {
+    return const RssFeedModel(
+      allFeeds: [],
+      loadingStates: LoadingStates.initial,
+      loadingMoreStates: LoadingStates.initial,
+    );
+  }
+
   final List<UrlModel> allFeeds;
   final LoadingStates loadingStates;
   final LoadingStates loadingMoreStates;
@@ -46,15 +55,6 @@ class RssFeedModel extends Equatable {
   @override
   String toString() {
     return 'RssFeedState(allFeeds: $allFeeds, loadingStates: $loadingStates, loadingMoreStates: $loadingMoreStates)';
-  }
-
-  // Initial state constructor for convenience
-  factory RssFeedModel.initial() {
-    return const RssFeedModel(
-      allFeeds: [],
-      loadingStates: LoadingStates.initial,
-      loadingMoreStates: LoadingStates.initial,
-    );
   }
 
   @override

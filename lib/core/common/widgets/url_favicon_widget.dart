@@ -10,13 +10,13 @@ import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_build
 class UrlFaviconLogoWidget extends StatelessWidget {
   const UrlFaviconLogoWidget({
     required this.onDoubleTap,
-    required this.onPress,
+    required this.onTap,
     required this.urlModelData,
     super.key,
   });
   final UrlModel urlModelData;
   final void Function(UrlMetaData) onDoubleTap;
-  final void Function() onPress;
+  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
         urlModelData.metaData ?? UrlMetaData.isEmpty(title: urlModelData.title);
 
     return GestureDetector(
-      onTap: onPress,
+      onTap: onTap,
       onLongPress: () {
         if (urlMetaData.faviconUrl != null) {
           final favicon = context

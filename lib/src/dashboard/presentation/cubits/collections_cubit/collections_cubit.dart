@@ -400,6 +400,12 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
+  List<UrlFetchStateModel>? urlsFetchModelList({
+    required String collectionId,
+  }) {
+    return state.collectionUrls[collectionId];
+  }
+
   void addUrl({
     required UrlModel url,
     required CollectionModel collection,

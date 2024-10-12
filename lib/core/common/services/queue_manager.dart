@@ -1,23 +1,26 @@
 import 'dart:collection';
 
 class AsyncQueueManager {
-  final Queue<Function> _taskQueue = Queue();
-  bool _isProcessing = false;
 
-  void addTask(Function task) {
+  AsyncQueueManager({this.maxConcurrentTasks = 5});
+  final int maxConcurrentTasks;
+  final Queue<Future<void> Function()> _taskQueue = Queue();
+  int _activeTasks = 0;
+
+  void addTask(Future<void> Function() task) {
     _taskQueue.add(task);
-    _processNext();
+    _runNextTask();
   }
 
-  Future<void> _processNext() async {
-    if (_isProcessing || _taskQueue.isEmpty) return;
-
-    _isProcessing = true;
-
-    final task = _taskQueue.removeFirst();
-    await task();
-
-    _isProcessing = false;
-    await _processNext();
+  void _runNextTask() {
+    if (_activeTasks < maxConcurrentTasks && _taskQueue.isNotEmpty) {
+      _activeTasks++;
+      final task = _taskQueue.removeFirst();
+      task().whenComplete(() {
+        _activeTasks--;
+        _runNextTask();
+      });
+    }
   }
 }
+

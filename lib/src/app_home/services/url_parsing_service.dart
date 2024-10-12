@@ -4,13 +4,14 @@ import 'dart:typed_data';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
+
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 
 class UrlParsingService {
-// Function to fetch webpage content
+  // Function to fetch webpage content
   static Future<String?> fetchWebpageContent(String url) async {
     try {
       final response = await http.get(Uri.parse(url));
@@ -72,11 +73,7 @@ class UrlParsingService {
           // final aspectRatio = width ~/ height;
 
           if (area >= minBannerArea &&
-                  (width >= minBannerWidth || height >= minBannerHeight)
-              // &&
-              // (aspectRatio >= 1.5 && aspectRatio <= 6)
-
-              ) {
+              (width >= minBannerWidth || height >= minBannerHeight)) {
             final containesLogoAlt =
                 (img.attributes['alt'] ?? '').toLowerCase().contains('logo');
 
@@ -91,16 +88,11 @@ class UrlParsingService {
                 .toLowerCase()
                 .contains('author');
             if (containesAuthorAlt || containesAuthorClass) continue;
-
-            // Logger.printLog('img: ${img.attributes}, area: $area');
-            // Logger.printLog('this img selected as banner');
             largestImageElement = img;
             break;
           }
         }
 
-        // Logger.printLog(
-        //     'after loop: ${largestImageElement?.attributes['src']}');
         if (largestImageElement != null) {
           final src = largestImageElement.attributes['src'];
           if (src != null) {
@@ -109,7 +101,7 @@ class UrlParsingService {
         }
       }
 
-      Logger.printLog('now will check metatags');
+      // Logger.printLog('now will check metatags');
 
       // List of possible meta tag attributes for images
       final metaTags = [
@@ -121,7 +113,7 @@ class UrlParsingService {
       // Try to find the image URL from meta tags
       for (final metaTag in metaTags) {
         final element = document.head?.querySelector(metaTag);
-        Logger.printLog('img: ${element?.attributes['content']}');
+        // Logger.printLog('img: ${element?.attributes['content']}');
         if (element != null && element.attributes['content'] != null) {
           final image = element.attributes['content']!.toLowerCase();
           if (image.contains('favicon') || image.contains('logo')) {
@@ -257,7 +249,7 @@ class UrlParsingService {
       }
       return null;
     } catch (e) {
-      Logger.printLog('error in "fetchImageAsUint8List" $e');
+      Logger.printLog('[urlParser] : error in "fetchImageAsUint8List" $e');
       return null;
     }
   }
@@ -329,7 +321,6 @@ class UrlParsingService {
     }
   }
 
-
 // Main parsing function
   static Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
     final htmlContent = await fetchWebpageContent(url);
@@ -345,6 +336,8 @@ class UrlParsingService {
 
     final document = html_parser.parse(htmlContent);
 
+    // Logger.printLog('[doc] : ${document.toString()}');
+
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
     metaData['websiteName'] =
@@ -352,8 +345,7 @@ class UrlParsingService {
 
     // Fetch the RSS feed URL
     // metaData['rss_feed_url'] = extractRssFeedUrl(document, url);
-    
-    
+
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
     websiteLogoUrl ??= getWebsiteLogoUrl(url);
     websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
@@ -371,8 +363,8 @@ class UrlParsingService {
     }
 
     var imageUrl = extractImageUrl(document);
-    Logger.printLog('imageUrl : $imageUrl');
-    if (imageUrl != null) {
+    // Logger.printLog('imageUrl : $imageUrl');
+    if (imageUrl != null && imageUrl != websiteLogoUrl) {
       imageUrl = handleRelativeUrl(imageUrl, url);
       metaData['banner_image_url'] = imageUrl;
       final bannerImage = await fetchImageAsUint8List(
@@ -382,9 +374,6 @@ class UrlParsingService {
         quality: 75,
         autofillPng: false,
       );
-      // Logger.printLog(
-      //   '[parsing][banner][75] : $imageUrl, ${bannerImage?.length}',
-      // );
       if (bannerImage != null) {
         metaData['banner_image'] =
             StringUtils.convertUint8ListToBase64(bannerImage);
@@ -396,5 +385,25 @@ class UrlParsingService {
     // Logger.printLog(StringUtils.getJsonFormat(metaDataObject.toJson()));
 
     return (htmlContent, metaDataObject);
+  }
+
+  // MORE ABSTRACT FUNCTIONS
+  // Step 1: Global function to perform all operations
+  static Future<String?> fetchParseAndExtractBanner(String rssFeedUrl) async {
+    try {
+      // Fetch webpage content
+      // Fetch webpage content
+      final webPageData =
+          await UrlParsingService.fetchWebpageContent(rssFeedUrl);
+
+      // Parse the HTML content
+      final htmlContent = html_parser.parse(webPageData);
+
+      // Extract the banner image URL
+      return UrlParsingService.extractImageUrl(htmlContent);
+    } catch (e) {
+      Logger.printLog('File error $e');
+      return null;
+    }
   }
 }

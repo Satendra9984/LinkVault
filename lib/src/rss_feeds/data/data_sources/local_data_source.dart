@@ -43,16 +43,15 @@ class LocalDataSource {
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
 
-      final urlModelOffline = await urlModelOfflineCollection.getAllByIndex(
-        'firestoreId',
-        [
-          [firestoreId],
-        ],
-      );
+      final urlModelOffline = await urlModelOfflineCollection
+          .filter()
+          .firestoreIdEqualTo(firestoreId)
+          .findAll();
 
       final feeds = urlModelOffline
-          .map((feed) => feed?.toUrlModel())
-          .whereType<UrlModel>()
+          .map(
+            (feed) => feed.toUrlModel(),
+          ) // No need for nullable check if results are guaranteed
           .toList();
 
       return feeds;
@@ -69,12 +68,21 @@ class LocalDataSource {
 
     final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
 
-    await urlModelOfflineCollection.deleteAllByIndex(
-      'firestoreId',
-      [
-        [firestoreId],
-      ],
+    // Filter by firestoreId and retrieve the records
+    final feedsToDelete = await urlModelOfflineCollection
+        .filter()
+        .firestoreIdEqualTo(firestoreId) // Filter by the firestoreId
+        .findAll();
+
+    await _isar?.writeTxn(
+      () async {
+        await urlModelOfflineCollection.deleteAll(
+          feedsToDelete.map((e) => e.id!).toList(),
+        );
+      },
     );
+
+    // Logger.printLog('Deleted ${feedsToDelete.length} entries.');
 
     return true;
   }
@@ -98,5 +106,42 @@ class LocalDataSource {
     }
 
     return false;
+  }
+
+  Future<bool> updateRssFeed({required UrlModel urlModel}) async {
+    await _initializeIsar();
+    if (_isar == null) return false;
+
+    final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
+
+    if (urlModel.metaData == null || urlModel.metaData!.rssFeedUrl == null) {
+      return false;
+    }
+
+    // Filter by rssFeedUrl in the jsonData and retrieve the record
+    final feedInDb = await urlModelOfflineCollection
+        .filter()
+        .jsonDataContains(urlModel.metaData!.rssFeedUrl!)
+        .findFirst();
+
+    // Logger.printLog('[rss][local] : ${feedInDb?.toUrlModel().toJson()}');
+
+    // If the feed exists in the database, update it; otherwise, create a new entry
+    final feedToUpdate = feedInDb != null
+        ? feedInDb.copyWith(urlModel: urlModel) // Update the existing record
+        : UrlModelOffline.fromUrlModel(urlModel); // Create a new entry
+
+    try {
+      // Transaction to write data to the database
+      await _isar?.writeTxn(() async {
+        await urlModelOfflineCollection.put(feedToUpdate);
+      });
+
+      // Logger.printLog('Feed updated successfully.');
+      return true;
+    } catch (e) {
+      Logger.printLog('Error updating feed: $e');
+      return false;
+    }
   }
 }

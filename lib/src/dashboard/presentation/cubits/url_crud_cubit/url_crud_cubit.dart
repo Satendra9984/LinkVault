@@ -122,19 +122,42 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
   Future<void> deleteUrl({
     required UrlModel urlData,
+    bool isRootCollection = false,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.deleting));
 
     Logger.printLog('Deleting URL in urlcrudcubit : ${urlData.firestoreId}');
 
-    final collection =
+    var collection =
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
 
+    if (collection == null || collection.collection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: urlData.collectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: isRootCollection,
+      );
+    }
 
+    collection =
+        _collectionsCubit.getCollection(collectionId: urlData.collectionId);
+
+    if (collection == null || collection.collection == null) {
+      emit(
+        state.copyWith(
+          urlCrudLoadingStates: UrlCrudLoadingStates.errordeleting,
+        ),
+      );
+
+      Logger.printLog(
+        '[deleting url]: collection ${collection == null}, cc: ${collection?.collection == null}',
+      );
+      return;
+    }
 
     await _urlRepoImpl
         .deleteUrlData(
-      collection: collection!.collection!,
+      collection: collection.collection!,
       urlData: urlData,
       userId: _globalUserCubit.state.globalUser!.id,
     )
@@ -153,7 +176,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
             _collectionsCubit.deleteUrl(
               url: urlData,
-              collectionModel: collection.collection!,
+              collectionModel: collection!.collection!,
             );
 
             emit(

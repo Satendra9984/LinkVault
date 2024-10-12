@@ -10,19 +10,19 @@ class FolderIconButton extends StatelessWidget {
   const FolderIconButton({
     required this.collection,
     required this.onPress,
-    required this.onDoubleTap,
+    required this.onLongPress,
     super.key,
   });
   final CollectionModel collection;
   final void Function() onPress;
-  final void Function() onDoubleTap;
+  final void Function() onLongPress;
 
   @override
   Widget build(BuildContext context) {
     const folderColor = ColourPallette.freepikLoginImage;
     return GestureDetector(
       onTap: onPress,
-      onLongPress: onDoubleTap,
+      onLongPress: onLongPress,
       child: Column(
         children: [
           ShaderMask(

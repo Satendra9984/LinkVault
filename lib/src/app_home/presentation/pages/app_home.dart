@@ -5,13 +5,13 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/src/advance_search/presentation/pages/advance_search_page.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_page.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_dashboard/rss_feed_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_screen.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -143,9 +143,14 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => FolderCollectionPage(
+                          builder: (ctx) => CollectionStorePage(
                             collectionId: globalUser,
                             isRootCollection: true,
+                            appBarLeadingIcon: const Icon(
+                              Icons.dashboard_rounded,
+                              color: ColourPallette.mountainMeadow,
+                              size: 16,
+                            ),
                           ),
                         ),
                       );
@@ -176,14 +181,15 @@ class _AppHomePageState extends State<AppHomePage> {
                           builder: (ctx) => FavouriteFolderCollectionPage(
                             collectionId: '$globalUser$favourites',
                             isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.favouriteSVG,
+                              height: 16,
+                              width: 16,
+                            ),
                           ),
                         ),
                       );
                     },
-                    // leading: const Icon(
-                    //   Icons.bookmark_rounded,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
                     leading: SvgPicture.asset(
                       MediaRes.favouriteSVG,
                       height: 20,
@@ -201,31 +207,6 @@ class _AppHomePageState extends State<AppHomePage> {
                       color: ColourPallette.salemgreen,
                     ),
                   ),
-
-                  // RECENT COLLECTIONS STORE
-                  // ListTile(
-                  //   onTap: () {},
-                  //   // leading: const Icon(
-                  //   //   Icons.restore_rounded,
-                  //   //   color: ColourPallette.mountainMeadow,
-                  //   // ),
-                  //   leading: SvgPicture.asset(
-                  //     MediaRes.recentSVG,
-                  //     height: 20,
-                  //     width: 20,
-                  //   ),
-                  //   title: const Text(
-                  //     'Recent',
-                  //     style: TextStyle(
-                  //       fontSize: 18,
-                  //       fontWeight: FontWeight.w500,
-                  //     ),
-                  //   ),
-                  //   trailing: const Icon(
-                  //     Icons.arrow_forward_ios_rounded,
-                  //     color: ColourPallette.salemgreen,
-                  //   ),
-                  // ),
 
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(
@@ -259,7 +240,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => RssFeedFolderCollectionPage(
+                          builder: (ctx) => RssFeedCollectionStorePage(
                             collectionId: '$globalUser$RssFeed',
                             isRootCollection: true,
                           ),
@@ -272,7 +253,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       width: 20,
                     ),
                     title: const Text(
-                      'Your Feeds',
+                      'My Feeds',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -360,10 +341,10 @@ class _AppHomePageState extends State<AppHomePage> {
                       //   ),
                       // );
                     },
-                    leading: SvgPicture.asset(
-                      MediaRes.newsletterSVG,
-                      height: 20,
-                      width: 20,
+                    leading: const Icon(
+                      Icons.change_circle ,
+                      color: ColourPallette.salemgreen,
+                      size: 24,
                     ),
                     title: const Text(
                       'Sync Devices',

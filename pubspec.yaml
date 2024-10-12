@@ -2,7 +2,7 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.1+17
+version: 2.0.0+19
 
 
 environment:
@@ -45,6 +45,9 @@ dependencies:
   gma_mediation_unity: ^1.0.0
   xml: ^6.5.0
   intl: ^0.19.0
+  cached_network_image: ^3.4.0
+  flutter_cache_manager: ^3.4.1
+  visibility_detector: ^0.4.0+2
   # archive: ^3.6.1
 
 dev_dependencies:
@@ -76,6 +79,25 @@ flutter:
      - assets/logo/
      - assets/animations/
 
+
+  # flavorizr:
+  #   app:
+  #     android:
+  #       flavorDimensions: "env"
+  #     ios: null
+  #   flavors:
+  #     production:
+  #       app:
+  #         name: "Link Vault"
+  #       android:
+  #         applicationId: "com.vicharshala.link_vault"
+  #     development:
+  #       app:
+  #         name: "Link Vault (Dev)"
+  #       android:
+  #         applicationId: "com.vicharshala.link_vault.dev"
+
+   # ...rest of your pubspec.yaml content...
 
   # fonts:
   #   - family: Ubuntu

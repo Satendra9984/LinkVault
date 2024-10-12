@@ -79,7 +79,7 @@ void main() {
         ),
       );
 
-      final List<UrlModel> mockUrlModels = [urlModel1, urlModel2];
+      final mockUrlModels = <UrlModel>[urlModel1, urlModel2];
 
       // Call getAllFeeds()
       final feedStream = repository.getAllFeeds(urlModels: mockUrlModels);

@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_image_painter.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
@@ -81,6 +82,9 @@ class UrlPreviewWidget extends StatelessWidget {
                         },
                         successWidgetBuilder: (imageData) {
                           final imageBytes = imageData.imageBytesData!;
+                          Logger.printLog(
+                            '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
+                          );
 
                           if (imageData.uiImage != null) {
                             return CustomPaint(
@@ -178,7 +182,9 @@ class UrlPreviewWidget extends StatelessWidget {
                             },
                             successWidgetBuilder: (imageData) {
                               final imageBytes = imageData.imageBytesData!;
-
+                              Logger.printLog(
+                                '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
+                              );
                               if (imageData.uiImage != null) {
                                 return CustomPaint(
                                   size: const Size(16, 16),
@@ -232,20 +238,28 @@ class UrlPreviewWidget extends StatelessWidget {
             ),
             Row(
               children: [
+                ValueListenableBuilder(
+                  valueListenable: _showFullDescription,
+                  builder: (context, showFullDescription, _) {
+                    return IconButton(
+                      onPressed: () => _showFullDescription.value =
+                          !_showFullDescription.value,
+                      icon: Icon(
+                        showFullDescription
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                        size: 20,
+                      ),
+                    );
+                  },
+                ),
                 IconButton(
                   onPressed: onShareButtonTap,
                   icon: const Icon(
                     Icons.share_rounded,
-                    size: 20,
+                    size: 16,
                   ),
                 ),
-                // const SizedBox(width: 8),
-                // IconButton(
-                //   onPressed: onMoreVertButtontap,
-                //   icon: const Icon(
-                //     Icons.more_vert_rounded,
-                //   ),
-                // ),
               ],
             ),
           ],
@@ -499,10 +513,11 @@ class UrlPreviewWidget extends StatelessWidget {
                         },
                       ),
               ),
-              if (urlMetaData.title != null) Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: _getTitle(),
-              ),
+              if (urlMetaData.title != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _getTitle(),
+                ),
             ],
           );
         }
@@ -517,31 +532,14 @@ class UrlPreviewWidget extends StatelessWidget {
       child: ValueListenableBuilder(
         valueListenable: _showFullDescription,
         builder: (context, showFullDescription, _) {
-          return RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${urlMetaData.title}',
-                  style: titleTextStyle ??
-                      TextStyle(
-                        color: Colors.grey.shade800,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                      ),
+          return Text(
+            '${urlMetaData.title}',
+            style: titleTextStyle ??
+                TextStyle(
+                  color: Colors.grey.shade800,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
-                TextSpan(
-                  text: !showFullDescription ? '  more' : '  less',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      _showFullDescription.value = !_showFullDescription.value;
-                    },
-                ),
-              ],
-            ),
           );
         },
       ),

@@ -15,23 +15,50 @@ class LocalImageDataSource {
   Isar? _isar;
 
   Future<void> _initializeIsar() async {
-    try {
-      final currentInstance = Isar.getInstance();
-      _isar = currentInstance;
-      if (_isar == null) {
-        final dir = await getApplicationDocumentsDirectory();
+    if (_isar != null) return; // Already initialized
 
+    try {
+      // Try to get an existing instance first
+      _isar = Isar.getInstance();
+
+      if (_isar == null) {
+        // If no instance exists, create a new one
+        final dir = await getApplicationDocumentsDirectory();
         _isar = await Isar.open(
-          [
-            UrlImageSchema,
-            ImagesByteDataSchema,
-            UrlModelOfflineSchema,
-          ],
+          [UrlImageSchema, ImagesByteDataSchema, UrlModelOfflineSchema],
           directory: dir.path,
         );
       }
+
+      Logger.printLog('Isar initialized successfully');
     } catch (e) {
-      return;
+      Logger.printLog('Error initializing Isar: $e');
+      // You might want to rethrow the error or handle it in a way that's appropriate for your app
+    }
+  }
+
+  Future<void> addImageData({
+    required String imageUrl,
+    required Uint8List imageBytes,
+  }) async {
+    try {
+      await _initializeIsar(); // Ensure Isar is initialized
+      if (_isar == null) {
+        Logger.printLog('Isar is not initialized');
+        return;
+      }
+
+      await _isar!.writeTxn(() async {
+        final urlImages = _isar!.collection<UrlImage>();
+        await urlImages.put(
+          UrlImage.fromBytes(
+            imageUrl: imageUrl,
+            bytes: imageBytes,
+          ),
+        );
+      });
+    } catch (e) {
+      Logger.printLog('[isar] addImageData error: $e');
     }
   }
 
@@ -58,28 +85,24 @@ class LocalImageDataSource {
     }
   }
 
-  Future<void> addImageData({
+  Future<void> deleteImageData({
     required String imageUrl,
-    required Uint8List imageBytes,
   }) async {
     try {
       await _initializeIsar();
-      if (_isar == null) return;
-
-      final urlImages = _isar!.collection<UrlImage>();
+      if (_isar == null) {
+        Logger.printLog('[isar] Isar not initialized');
+        return;
+      }
 
       await _isar!.writeTxn(() async {
-        await urlImages.put(
-          UrlImage.fromBytes(
-            imageUrl: imageUrl,
-            bytes: imageBytes,
-          ),
-        );
+        final urlImages = _isar!.collection<UrlImage>();
+
+        final deleted = await urlImages.deleteAllByImageUrl([imageUrl]);
+        Logger.printLog('[deletedImages] : $deleted $imageUrl');
       });
     } catch (e) {
-      Logger.printLog('[isar] addImageData $e');
-
-      return;
+      Logger.printLog('[isar] deleteImageData error: $e');
     }
   }
 
@@ -115,9 +138,8 @@ class LocalImageDataSource {
       await _initializeIsar();
       if (_isar == null) return;
 
-      final urlImages = _isar!.collection<ImagesByteData>();
-
       await _isar!.writeTxn(() async {
+        final urlImages = _isar!.collection<ImagesByteData>();
         await urlImages.put(
           ImagesByteData.fromBytes(
             imageUrl: imageUrl,
@@ -125,10 +147,10 @@ class LocalImageDataSource {
           ),
         );
       }).then((_) {
-        Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
+        // Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
       });
     } catch (e) {
-      Logger.printLog('[isar] addImageData $e');
+      Logger.printLog('[isar] addImageDataByBytes $e');
 
       return;
     }
