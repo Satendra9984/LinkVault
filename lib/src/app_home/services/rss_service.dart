@@ -3,40 +3,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as html_parser;
+
 import 'package:intl/intl.dart'; // Required for date parsing
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/services/html_parsing_service.dart';
+import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:xml/xml.dart';
 
 class RssXmlParsingService {
   RssXmlParsingService._();
-
-// static Future<XmlDocument?> fetchRssFeed(String url) async {
-//   try {
-//     final uri = Uri.parse(url);
-//     final client = HttpClient()
-//       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-
-//     final request = await client.getUrl(uri);
-//     final response = await request.close();
-
-//     if (response.isRedirect || response.statusCode ~/ 100 != 2) {
-//       return null;
-//     }
-
-//     final content = await response.transform(const Utf8Decoder()).join();
-//     if (response.statusCode == 200) {
-//       return XmlDocument.parse(content);
-//     } else {
-//       Logger.printLog('error in "fetchRssFeed" status code error');
-//       return null;
-//     }
-//   } catch (e) {
-//     Logger.printLog('Error fetching rss page: $e');
-//     return null;
-//   }
-// }
 
   static Future<XmlDocument?> fetchRssFeed(String url) async {
     final client = http.Client();
@@ -164,7 +141,12 @@ class RssXmlParsingService {
 
       // Extract common metadata (faviconUrl, title, etc.) from the channel
       final title = extractText(channel, 'title');
-      final description = extractText(channel, 'description');
+      var description = extractText(channel, 'description');
+
+      if (description != null) {
+        description = HtmlParsingService.extractTextFromHtml(description);
+      }
+
       final websiteUrl = extractText(channel, 'link');
 
       final websiteName = extractWebsiteNameFromUrlString(websiteUrl ?? '');
@@ -181,11 +163,23 @@ class RssXmlParsingService {
         // printXmlContent(item);
 
         final itemTitle = extractText(item, 'title');
-        final itemDescription = extractText(item, 'description');
+        var itemDescription = extractText(item, 'description');
+        // Logger.printLog('[rss] : BannerImg from desc $itemDescription');
+
+        final bannerImageUrl = _extractBannerImageUrl(item.copy()) ??
+            getBannerImageUrlFromHtml(itemDescription ?? '');
+
+        // var itemDescription = extractText(, 'description');
+
+        if (itemDescription != null) {
+          itemDescription =
+              HtmlParsingService.extractTextFromHtml(itemDescription);
+        }
+
         final itemLink = extractText(item, 'link');
         final pubDate = _extractDate(item);
         // this function removes some elements so keep in mind
-        final bannerImageUrl = _extractBannerImageUrl(item);
+
         // Logger.printLog(
         //   'pubDate: ${pubDate?.toIso8601String()}\n'
         //   'title: ${itemTitle}\n'
@@ -242,6 +236,25 @@ class RssXmlParsingService {
     }
   }
 
+  static String? getBannerImageUrlFromHtml(String htmlString) {
+    try {
+      final isHtml = htmlString.contains(
+        RegExp('<[^>]+>', multiLine: true),
+      );
+      if (!isHtml) {
+        return null;
+      }
+      final document = html_parser.parse(htmlString);
+
+      final bannerImageUrl = UrlParsingService.extractImageUrl(document);
+      // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
+      return bannerImageUrl;
+    } catch (e) {
+      Logger.printLog('[rss] : BannerImgError from html $e');
+      return null;
+    }
+  }
+
   static String extractWebsiteNameFromUrlString(String url) {
     try {
       final uri = Uri.parse(url);
@@ -272,7 +285,8 @@ class RssXmlParsingService {
       final tag = element.findElements(tagName).first;
       final text = tag.text.trim();
 
-      return HtmlParsingService.extractTextFromHtml(text);
+      // return HtmlParsingService.extractTextFromHtml(text);
+      return text;
     } catch (e) {
       return null;
     }
@@ -319,6 +333,8 @@ class RssXmlParsingService {
     for (final mediaElement in mediaElements) {
       final url = mediaElement.getAttribute('url') ?? '';
       if (_isImageUrl(url)) {
+        Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
+
         return url;
       }
     }
@@ -328,6 +344,8 @@ class RssXmlParsingService {
       for (final attribute in element.attributes) {
         final url = attribute.value;
         if (_isImageUrl(url)) {
+          Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
+
           return url;
         }
       }

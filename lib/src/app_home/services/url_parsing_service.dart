@@ -55,81 +55,187 @@ class UrlParsingService {
     }
   }
 
+  // static String? extractImageUrl(Document document) {
+  //   try {
+  //     // Try to find the first image element on the page in body
+  //     final imageElements = document.body?.querySelectorAll('img');
+  //     if (imageElements != null && imageElements.isNotEmpty) {
+  //       // Filter out small images or irrelevant ones
+  //       const minBannerArea = 90000;
+  //       const minBannerWidth = 600;
+  //       const minBannerHeight = 150;
+
+  //       Element? largestImageElement;
+  //       for (final img in imageElements) {
+  //         final width = int.tryParse(img.attributes['width'] ?? '1') ?? 1;
+  //         final height = int.tryParse(img.attributes['height'] ?? '1') ?? 1;
+  //         final area = width * height;
+  //         // final aspectRatio = width ~/ height;
+
+  //         if (area >= minBannerArea &&
+  //             (width >= minBannerWidth || height >= minBannerHeight)) {
+  //           final containesLogoAlt =
+  //               (img.attributes['alt'] ?? '').toLowerCase().contains('logo');
+
+  //           final containesLogoClass =
+  //               (img.attributes['class'] ?? '').toLowerCase().contains('logo');
+
+  //           if (containesLogoAlt || containesLogoClass) continue;
+  //           final containesAuthorAlt =
+  //               (img.attributes['alt'] ?? '').toLowerCase().contains('author');
+
+  //           final containesAuthorClass = (img.attributes['class'] ?? '')
+  //               .toLowerCase()
+  //               .contains('author');
+  //           if (containesAuthorAlt || containesAuthorClass) continue;
+  //           largestImageElement = img;
+  //           break;
+  //         }
+  //       }
+
+  //       if (largestImageElement != null) {
+  //         final src = largestImageElement.attributes['src'];
+  //         if (src != null) {
+  //           return src;
+  //         }
+  //       }
+  //     }
+
+  //     // Logger.printLog('now will check metatags');
+
+  //     // List of possible meta tag attributes for images
+  //     final metaTags = [
+  //       'meta[itemprop="image"]',
+  //       'meta[property="og:image"]',
+  //       'meta[name="twitter:image"]',
+  //     ];
+
+  //     // Try to find the image URL from meta tags
+  //     for (final metaTag in metaTags) {
+  //       final element = document.head?.querySelector(metaTag);
+  //       // Logger.printLog('img: ${element?.attributes['content']}');
+  //       if (element != null && element.attributes['content'] != null) {
+  //         final image = element.attributes['content']!.toLowerCase();
+  //         if (image.contains('favicon') || image.contains('logo')) {
+  //           continue;
+  //         }
+  //         return element.attributes['content'];
+  //       }
+  //     }
+  //     // Logger.printLog('nothing found on metatags');
+
+  //     return null;
+  //   } catch (e) {
+  //     // Improved error logging
+  //     Logger.printLog('error in "extractImageUrl" $e');
+  //     return null;
+  //   }
+  // }
+
   static String? extractImageUrl(Document document) {
     try {
-      // Try to find the first image element on the page in body
-      final imageElements = document.body?.querySelectorAll('img');
-      if (imageElements != null && imageElements.isNotEmpty) {
-        // Filter out small images or irrelevant ones
-        const minBannerArea = 90000;
-        const minBannerWidth = 600;
-        const minBannerHeight = 150;
-
-        Element? largestImageElement;
-        for (final img in imageElements) {
-          final width = int.tryParse(img.attributes['width'] ?? '1') ?? 1;
-          final height = int.tryParse(img.attributes['height'] ?? '1') ?? 1;
-          final area = width * height;
-          // final aspectRatio = width ~/ height;
-
-          if (area >= minBannerArea &&
-              (width >= minBannerWidth || height >= minBannerHeight)) {
-            final containesLogoAlt =
-                (img.attributes['alt'] ?? '').toLowerCase().contains('logo');
-
-            final containesLogoClass =
-                (img.attributes['class'] ?? '').toLowerCase().contains('logo');
-
-            if (containesLogoAlt || containesLogoClass) continue;
-            final containesAuthorAlt =
-                (img.attributes['alt'] ?? '').toLowerCase().contains('author');
-
-            final containesAuthorClass = (img.attributes['class'] ?? '')
-                .toLowerCase()
-                .contains('author');
-            if (containesAuthorAlt || containesAuthorClass) continue;
-            largestImageElement = img;
-            break;
-          }
-        }
-
-        if (largestImageElement != null) {
-          final src = largestImageElement.attributes['src'];
-          if (src != null) {
-            return src;
-          }
-        }
+      // First, try to find banner image from meta tags
+      final metaImageUrl = _extractMetaImageUrl(document);
+      if (metaImageUrl != null) {
+        return metaImageUrl;
       }
 
-      // Logger.printLog('now will check metatags');
+      // If meta tags don't provide a suitable image, search in the body
+      return _extractBodyImageUrl(document);
+    } catch (e) {
+      Logger.printLog('Error in "extractImageUrl": $e');
+      return null;
+    }
+  }
 
-      // List of possible meta tag attributes for images
-      final metaTags = [
-        'meta[itemprop="image"]',
-        'meta[property="og:image"]',
-        'meta[name="twitter:image"]',
-      ];
+  static String? _extractMetaImageUrl(Document document) {
+    final metaTags = [
+      'meta[property="og:image"]',
+      'meta[name="twitter:image"]',
+      'meta[itemprop="image"]',
+    ];
 
-      // Try to find the image URL from meta tags
-      for (final metaTag in metaTags) {
-        final element = document.head?.querySelector(metaTag);
-        // Logger.printLog('img: ${element?.attributes['content']}');
-        if (element != null && element.attributes['content'] != null) {
-          final image = element.attributes['content']!.toLowerCase();
-          if (image.contains('favicon') || image.contains('logo')) {
-            continue;
-          }
+    for (final metaTag in metaTags) {
+      final element = document.head?.querySelector(metaTag);
+      if (element != null && element.attributes['content'] != null) {
+        final imageUrl = element.attributes['content']!.toLowerCase();
+        if (!_isLikelyFaviconOrLogo(imageUrl)) {
           return element.attributes['content'];
         }
       }
-      // Logger.printLog('nothing found on metatags');
+    }
 
-      return null;
-    } catch (e) {
-      // Improved error logging
-      Logger.printLog('error in "extractImageUrl" $e');
+    return null;
+  }
+
+  static String? _extractBodyImageUrl(Document document) {
+    final imageElements = document.body?.querySelectorAll('img');
+    if (imageElements == null || imageElements.isEmpty) {
       return null;
     }
+
+    const minBannerArea = 90000;
+    const minBannerWidth = 600;
+    const minBannerHeight = 150;
+
+    Element? bestCandidate;
+    var maxArea = 0;
+
+    for (final img in imageElements) {
+      final width = int.tryParse(img.attributes['width'] ?? '') ?? 0;
+      final height = int.tryParse(img.attributes['height'] ?? '') ?? 0;
+      final src = img.attributes['src'];
+
+      if (src == null || _isLikelyFaviconOrLogo(src)) {
+        continue;
+      }
+
+      // If width and height are not specified in attributes, try to get from style
+      final computedWidth = width > 0
+          ? width
+          : _extractDimensionFromStyle(img.attributes['style'], 'width');
+      final computedHeight = height > 0
+          ? height
+          : _extractDimensionFromStyle(img.attributes['style'], 'height');
+
+      final area = computedWidth * computedHeight;
+
+      if (area >= minBannerArea &&
+          (computedWidth >= minBannerWidth ||
+              computedHeight >= minBannerHeight) &&
+          !_containsUnwantedKeywords(img) &&
+          area > maxArea) {
+        bestCandidate = img;
+        maxArea = area;
+      }
+    }
+
+    return bestCandidate?.attributes['src'];
+  }
+
+  static bool _isLikelyFaviconOrLogo(String url) {
+    final lowercaseUrl = url.toLowerCase();
+    return lowercaseUrl.contains('favicon') ||
+        lowercaseUrl.contains('logo') ||
+        lowercaseUrl.endsWith('.ico') ||
+        lowercaseUrl.contains('icon');
+  }
+
+  static bool _containsUnwantedKeywords(Element img) {
+    final alt = (img.attributes['alt'] ?? '').toLowerCase();
+    final className = (img.attributes['class'] ?? '').toLowerCase();
+
+    return alt.contains('logo') ||
+        className.contains('logo') ||
+        alt.contains('author') ||
+        className.contains('author');
+  }
+
+  static int _extractDimensionFromStyle(String? style, String dimension) {
+    if (style == null) return 0;
+    final regex = RegExp('$dimension:\\s*(\\d+)px');
+    final match = regex.firstMatch(style);
+    return match != null ? int.tryParse(match.group(1) ?? '') ?? 0 : 0;
   }
 
 // Function to extract website name
