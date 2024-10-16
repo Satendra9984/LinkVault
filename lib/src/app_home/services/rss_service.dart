@@ -140,13 +140,13 @@ class RssXmlParsingService {
 
       // Extract common metadata (faviconUrl, title, etc.) from the channel
       final title = extractText(channel, 'title');
-      var description = extractText(channel, 'description');
+      var description = extractDescription(channel);
 
       if (description != null) {
         description = HtmlParsingService.extractTextFromHtml(description);
       }
 
-      final websiteUrl = extractText(channel, 'link');
+      final websiteUrl = getBaseUrlFromRssData(channel);
 
       final websiteName = extractWebsiteNameFromUrlString(websiteUrl ?? '');
       final faviconUrl = _extractFaviconUrl(channel);
@@ -162,7 +162,7 @@ class RssXmlParsingService {
         // printXmlContent(item);
 
         final itemTitle = extractText(item, 'title');
-        var itemDescription = extractText(item, 'description');
+        var itemDescription = extractDescription(item);
         // Logger.printLog('[rss] : BannerImg from desc $itemDescription');
 
         final bannerImageUrl = _extractBannerImageUrl(item.copy()) ??
@@ -175,18 +175,9 @@ class RssXmlParsingService {
               HtmlParsingService.extractTextFromHtml(itemDescription);
         }
 
-        final itemLink = extractText(item, 'link');
+        final itemLink = extractFeedItemLink(item);
         final pubDate = _extractDate(item);
         // this function removes some elements so keep in mind
-
-        // Logger.printLog(
-        //   'pubDate: ${pubDate?.toIso8601String()}\n'
-        //   'title: ${itemTitle}\n'
-        //   'desc: $itemDescription\n'
-        //   'link: $itemLink\n'
-        //   'bannerUrl: $bannerImageUrl',
-        // );
-        // Logger.printLog('\n\n');
 
         final urlMetaData = UrlMetaData(
           title: itemTitle,
@@ -233,6 +224,36 @@ class RssXmlParsingService {
     } catch (e) {
       return null;
     }
+  }
+
+  static String? extractDescription(XmlElement itemElement) {
+    // Possible description tags for RSS and Atom
+    final descriptionTags = [
+      'description',
+      'summary',
+      'content',
+      'media:description'
+    ];
+
+    // Loop through the description tags to find the first non-empty description
+    for (final tag in descriptionTags) {
+      final descriptionElement = itemElement.findElements(tag).firstWhere(
+          (element) =>
+              element.children.isNotEmpty && element.text.trim().isNotEmpty,
+          orElse: () => XmlElement(XmlName('')));
+
+      if (descriptionElement.name.local.isNotEmpty &&
+          descriptionElement.text.trim().isNotEmpty) {
+        // Extract the raw HTML description text
+        final rawDescription = descriptionElement.text.trim();
+
+        // Return the raw HTML as description, to be further processed later
+        return rawDescription;
+      }
+    }
+
+    // If no description is found, return null
+    return null;
   }
 
   static String? getBannerImageUrlFromHtml(String htmlString) {
@@ -291,6 +312,65 @@ class RssXmlParsingService {
     }
   }
 
+// Helper to extract the best link from RSS/Atom feeds
+  static String? extractFeedItemLink(XmlElement element) {
+    // Logger.printLog('[link] : ${element.toString()}');
+
+    try {
+      // Case 1: Standard <link> element (without attributes)
+      final linkTag = element.findElements('link').firstOrNull;
+      if (linkTag != null && linkTag.text.isNotEmpty) {
+        return linkTag.text.trim();
+      }
+      // Logger.printLog('[link] : now searching atom:link');
+
+      // Case 2: <atom:link> element with href attribute
+      final atomLinkTag = element.findElements('atom:link').firstOrNull;
+      if (atomLinkTag != null) {
+        final href = atomLinkTag.getAttribute('href');
+        if (href != null && href.isNotEmpty) {
+          return href.trim();
+        }
+      }
+
+      // Logger.printLog('[link] : now searching ispermalink');
+
+      // Case 3: <guid isPermaLink="true"> element
+      final guidTag = element.findElements('guid').firstOrNull;
+      if (guidTag != null && guidTag.getAttribute('isPermaLink') == 'true') {
+        return guidTag.text.trim();
+      }
+      // Logger.printLog('[link] : now searching link');
+
+      // Case 4: <link rel="alternate" href="..."> element
+      final alternateLinkTag = element.findElements('link').firstOrNull;
+      if (alternateLinkTag != null) {
+        final href = alternateLinkTag.getAttribute('href');
+        if (href != null && href.isNotEmpty) {
+          return href.trim();
+        }
+      }
+
+      // Case 4: <link rel="alternate" href="..."> element
+      final alternateLinkTagWithAl = element.findElements('link').where((link) {
+        return link.getAttribute('rel') == 'alternate';
+      }).firstOrNull;
+      if (alternateLinkTagWithAl != null) {
+        final href = alternateLinkTagWithAl.getAttribute('href');
+        if (href != null && href.isNotEmpty) {
+          return href.trim();
+        }
+      }
+      // Logger.printLog('[link] : returning null');
+
+      // If no suitable link is found, return null
+      return null;
+    } catch (e) {
+      // Logger.printLog('[link] : could not find link: $e');
+      return null;
+    }
+  }
+
   // Extract favicon URL from channel or image tag
   static String? _extractFaviconUrl(XmlElement channel) {
     try {
@@ -332,8 +412,7 @@ class RssXmlParsingService {
     for (final mediaElement in mediaElements) {
       final url = mediaElement.getAttribute('url') ?? '';
       if (_isImageUrl(url)) {
-        Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
-
+        // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
         return url;
       }
     }
@@ -343,8 +422,7 @@ class RssXmlParsingService {
       for (final attribute in element.attributes) {
         final url = attribute.value;
         if (_isImageUrl(url)) {
-          Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
-
+          // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
           return url;
         }
       }
@@ -416,7 +494,7 @@ class RssXmlParsingService {
 
       // If not found, check for Atom <link> elements with href attribute
       final atomLinkElements = channel.findAllElements('link');
-      Logger.printLog('links: $atomLinkElements');
+      // Logger.printLog('links: $atomLinkElements');
       if (atomLinkElements.isEmpty) {
         return null;
       }
@@ -434,28 +512,6 @@ class RssXmlParsingService {
       return null;
     }
   }
-
-  // static String? getBaseUrlFromRssData(XmlElement channel) {
-  //   try {
-  //     // If no <channel>/<link>, check for Atom <feed> structure
-  //     final atomLinkElements = channel.findAllElements('link');
-  //     Logger.printLog('links: ${atomLinkElements.toString()}');
-  //     if (atomLinkElements.isEmpty) {
-  //       return null;
-  //     }
-
-  //     final alternateLinkElement = atomLinkElements.firstWhere(
-  //       (element) => element.getAttribute('rel') == 'alternate',
-  //     );
-  //     // Atom case (where rel="alternate" points to the actual website)
-  //     final baseUrl = alternateLinkElement.getAttribute('href')?.trim();
-  //     return _validateAndFixUrl(baseUrl);
-
-  //   } catch (e) {
-  //     Logger.printLog('Error in getBaseUrlFromRssData $e');
-  //     return null;
-  //   }
-  // }
 
   // Helper function to handle relative URLs and invalid cases
   static String? _validateAndFixUrl(String? url) {
