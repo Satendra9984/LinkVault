@@ -49,12 +49,14 @@ class _UrlFaviconListTemplateScreenState
     extends State<UrlFaviconListTemplateScreen> {
   late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
+  final _showFullAddUrlButton = ValueNotifier(true);
+
   var _previousOffset = 0.0;
   // ADDITIONAL VIEW-HELPER FILTERS
   final _atozFilter = ValueNotifier(false);
   final _ztoaFilter = ValueNotifier(false);
-  final _createdAtLatestFilter = ValueNotifier(false);
-  final _createdAtOldestFilter = ValueNotifier(false);
+  // final _createdAtLatestFilter = ValueNotifier(false);
+  // final _createdAtOldestFilter = ValueNotifier(false);
   final _updatedAtLatestFilter = ValueNotifier(false);
   final _updatedAtOldestFilter = ValueNotifier(false);
   final _list = ValueNotifier<List<UrlFetchStateModel>>(<UrlFetchStateModel>[]);
@@ -67,11 +69,11 @@ class _UrlFaviconListTemplateScreenState
 
   void _onScroll() {
     if (_scrollController.offset > _previousOffset) {
-      _showAppBar.value = false;
-      // widget.showBottomBar.value = false;
+      // _showAppBar.value = false;
+      _showFullAddUrlButton.value = false;
     } else if (_scrollController.offset < _previousOffset) {
-      _showAppBar.value = true;
-      // widget.showBottomBar.value = true;
+      // _showAppBar.value = true;
+      _showFullAddUrlButton.value = true;
     }
     _previousOffset = _scrollController.offset;
 
@@ -97,13 +99,6 @@ class _UrlFaviconListTemplateScreenState
       _filterAtoZ();
     } else if (_ztoaFilter.value) {
       _filterZtoA();
-    }
-
-    // FILTER BY CREATED AT
-    if (_createdAtLatestFilter.value) {
-      _filterCreateLatest();
-    } else if (_createdAtOldestFilter.value) {
-      _filterCreateOldest();
     }
 
     // FILTER BY UPDATED AT
@@ -136,28 +131,6 @@ class _UrlFaviconListTemplateScreenState
           return b.urlModel!.title.toLowerCase().compareTo(
                 a.urlModel!.title.toLowerCase(),
               );
-        },
-      );
-  }
-
-  void _filterCreateLatest() {
-    _list.value = [..._list.value]..sort(
-        (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
-            return -1;
-          }
-          return b.urlModel!.createdAt.compareTo(a.urlModel!.createdAt);
-        },
-      );
-  }
-
-  void _filterCreateOldest() {
-    _list.value = [..._list.value]..sort(
-        (a, b) {
-          if (a.urlModel == null || b.urlModel == null) {
-            return -1;
-          }
-          return a.urlModel!.createdAt.compareTo(b.urlModel!.createdAt);
         },
       );
   }
@@ -198,25 +171,33 @@ class _UrlFaviconListTemplateScreenState
 
                 final url = urls.isNotEmpty ? urls[0] : null;
 
-                return FloatingActionButton.extended(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  backgroundColor: ColourPallette.salemgreen,
-                  // [TODO] : THIS IS DYNAMIC FIELD
-                  onPressed: () => widget.onAddUrlPressed(url: url),
-                  label: const Text(
-                    'Add URL',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: ColourPallette.white,
-                    ),
-                  ),
-                  icon: const Icon(
-                    Icons.add_link_rounded,
-                    color: ColourPallette.white,
-                  ),
+                return ValueListenableBuilder(
+                  valueListenable: _showFullAddUrlButton,
+                  builder: (context, showFullAddUrlButton, _) {
+                    return FloatingActionButton.extended(
+                      key: const ValueKey('extended'),
+                      isExtended: showFullAddUrlButton,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      backgroundColor: ColourPallette.salemgreen,
+                      onPressed: () => widget.onAddUrlPressed(url: url),
+                      label: showFullAddUrlButton
+                          ? const Text(
+                              'URL',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: ColourPallette.white,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      icon: const Icon(
+                        Icons.add_link_rounded,
+                        color: ColourPallette.white,
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -241,13 +222,14 @@ class _UrlFaviconListTemplateScreenState
               valueListenable: _list,
               builder: (context, availableUrls, _) {
                 return AlignedGridView.extent(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: _scrollController,
+                  // physics: const AlwaysScrollableScrollPhysics(),
                   shrinkWrap: true,
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: availableUrls.length,
                   maxCrossAxisExtent: 80,
                   mainAxisSpacing: 24,
-                  crossAxisSpacing: 20,
+                  crossAxisSpacing: 24,
                   itemBuilder: (context, index) {
                     final url = availableUrls[index];
 
@@ -350,30 +332,30 @@ class _UrlFaviconListTemplateScreenState
               }
             },
           ),
+          // ListFilterPopupMenuItem(
+          //   title: 'Latest Created First',
+          //   notifier: _createdAtLatestFilter,
+          //   onPress: () {
+          //     _createdAtLatestFilter.value = !_createdAtLatestFilter.value;
+          //     if (_createdAtLatestFilter.value) {
+          //       _createdAtOldestFilter.value = false;
+          //       _filterCreateLatest();
+          //     }
+          //   },
+          // ),
+          // ListFilterPopupMenuItem(
+          //   title: 'Oldest Created First',
+          //   notifier: _createdAtOldestFilter,
+          //   onPress: () {
+          //     _createdAtOldestFilter.value = !_createdAtOldestFilter.value;
+          //     if (_createdAtOldestFilter.value) {
+          //       _createdAtLatestFilter.value = false;
+          //       _filterCreateOldest();
+          //     }
+          //   },
+          // ),
           ListFilterPopupMenuItem(
-            title: 'Latest Created First',
-            notifier: _createdAtLatestFilter,
-            onPress: () {
-              _createdAtLatestFilter.value = !_createdAtLatestFilter.value;
-              if (_createdAtLatestFilter.value) {
-                _createdAtOldestFilter.value = false;
-                _filterCreateLatest();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Oldest Created First',
-            notifier: _createdAtOldestFilter,
-            onPress: () {
-              _createdAtOldestFilter.value = !_createdAtOldestFilter.value;
-              if (_createdAtOldestFilter.value) {
-                _createdAtLatestFilter.value = false;
-                _filterCreateOldest();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Latest Updated First',
+            title: 'Latest First',
             notifier: _updatedAtLatestFilter,
             onPress: () {
               _updatedAtLatestFilter.value = !_updatedAtLatestFilter.value;
@@ -384,7 +366,7 @@ class _UrlFaviconListTemplateScreenState
             },
           ),
           ListFilterPopupMenuItem(
-            title: 'Oldest Updated First',
+            title: 'Oldest First',
             notifier: _updatedAtOldestFilter,
             onPress: () {
               _updatedAtOldestFilter.value = !_updatedAtOldestFilter.value;

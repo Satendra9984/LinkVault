@@ -9,7 +9,7 @@ class FilterPopupMenuButton extends StatelessWidget {
     this.elevation = 8,
   });
   final List<PopupMenuItem<dynamic>> menuItems;
-  final IconData icon;
+  final Widget icon;
   final Color color;
   final double elevation;
 
@@ -21,10 +21,7 @@ class FilterPopupMenuButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: elevation,
-      icon: Icon(
-        icon,
-        size: 20,
-      ),
+      icon: icon,
       itemBuilder: (ctx) => menuItems,
     );
   }

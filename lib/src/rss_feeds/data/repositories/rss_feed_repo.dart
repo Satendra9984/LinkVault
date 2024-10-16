@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/app_home/services/rss_service.dart';
 import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';

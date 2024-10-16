@@ -2,17 +2,15 @@
 
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/app_home/presentation/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/src/app_home/services/custom_image_cache_manager.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
-import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -47,10 +45,6 @@ class RssFeedPreviewWidget extends StatefulWidget {
 }
 
 class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
-  //   with AutomaticKeepAliveClientMixin {
-  // @override
-  // bool get wantKeepAlive => true; // Set to true to keep the state alive
-
   String initials = '';
 
   // keys for widgets like Title, Image that changes on Filter
@@ -69,6 +63,10 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
   final _isSideWayLayout = ValueNotifier(false);
   final _upperDescriptionIndex = ValueNotifier(0);
 
+//   final desc =
+//       '''It would be impossible to overestimate the importance of photosynthesis in the maintenance of life on Earth. If photosynthesis ceased, there would soon be little food or other organic matter on Earth. Most organisms would disappear, and in time Earth’s atmosphere would become nearly devoid of gaseous oxygen. The only organisms able to exist under such conditions would be the chemosynthetic bacteria, which can utilize the chemical energy of certain inorganic compounds and thus are not dependent on the conversion of light energy.
+// How are plant cells different from animal cells?''';
+
   final upperDescTextStyle = TextStyle(
     color: Colors.grey.shade800,
     fontSize: 14,
@@ -84,7 +82,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
     _showFullDescription.value = widget.showDescription;
     _isSideWayLayout.value = widget.isSidewaysLayout;
     _showBannerImage.value = widget.showBannerImage;
-    final description = widget.urlModel.metaData?.websiteName ?? '';
+    final description = widget.urlModel.metaData?.title ?? '';
 
     initials = description.length > 7
         ? description.substring(0, 8)
@@ -96,7 +94,11 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
   @override
   void didUpdateWidget(covariant RssFeedPreviewWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.showBannerImage != oldWidget.showBannerImage) {
+      _showBannerImage.value = widget.showBannerImage;
+    }
 
+    // Logger.printLog('$initials didUpdateWidget');
     if (widget.isSidewaysLayout != oldWidget.isSidewaysLayout ||
         widget.showDescription != oldWidget.showDescription) {
       // Detach the widgets to mark them for layout
@@ -169,6 +171,11 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
 
     final remainingWidthForDescription = _urlTitleSize.value!.width;
 
+    if (_bannerImageSize.value!.height > _bannerImageSize.value!.width * 1.01) {
+      _isSideWayLayout.value = true;
+    }
+
+    // Logger.printLog('[size] ${_bannerImageSize.value}');
     _splitDescription(
       description: widget.urlModel.metaData?.description?.trim() ?? '',
       containerWidth: remainingWidthForDescription,
@@ -278,7 +285,9 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
     } else if (difference.inMinutes > 0) {
       return '${difference.inMinutes} min';
     } else if (difference.inSeconds > 0) {
-      return '${difference.inSeconds} min';
+      return '${difference.inSeconds} sec';
+    }else if (difference.inMilliseconds > 0) {
+      return '${0} sec';
     }
 
     // If it's less than a minute
@@ -349,23 +358,26 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
 
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: ImageFileWidget(
-                      initials: initials,
-                      child: child,
-                      postFrameCallback: () {
-                        if (_bannerImageSize.value == null) {
-                          WidgetsBinding.instance.addPostFrameCallback(
-                            (_) {
-                              // Logger.printLog('$initials calling imager');
-                              _getDescriptionContainerSize(
-                                context: context,
-                                textStyle: upperDescTextStyle,
-                                titleTextStyle: titleTextStyle,
-                              );
-                            },
-                          );
-                        }
-                      },
+                    child: ColoredBox(
+                      color: ColourPallette.mystic.withOpacity(0.2),
+                      child: ImageFileWidget(
+                        initials: initials,
+                        child: child,
+                        postFrameCallback: () {
+                          if (_bannerImageSize.value == null) {
+                            WidgetsBinding.instance.addPostFrameCallback(
+                              (_) {
+                                // Logger.printLog('$initials calling imager');
+                                _getDescriptionContainerSize(
+                                  context: context,
+                                  textStyle: upperDescTextStyle,
+                                  titleTextStyle: titleTextStyle,
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ); // Return the loaded image
                 },
@@ -412,13 +424,38 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                   onTap: widget.onTap,
                   onLongPress: widget.onLongPress,
                   child: ValueListenableBuilder(
-                    valueListenable: _showBannerImage,
-                    builder: (context, showBannerImage, _) {
-                      if (!showBannerImage) return const SizedBox.shrink();
-                      return SizedBox(
-                        key: _bannerImageKey,
-                        width: size.width,
-                        child: imageBuilder,
+                    valueListenable: _bannerImageSize,
+                    builder: (context, bannerImageSize, _) {
+                      final bannerImageHeight =
+                          bannerImageSize?.height != null &&
+                                  bannerImageSize!.height > 1.0
+                              ? min(
+                                  bannerImageSize.height,
+                                  size.width,
+                                )
+                              : null;
+
+                      return ValueListenableBuilder(
+                        valueListenable: _showBannerImage,
+                        builder: (context, showBannerImage, _) {
+                          if (!showBannerImage) return const SizedBox.shrink();
+
+                          // Logger.printLog(
+                          //   '$initials ${_bannerImageSize.value}',
+                          // );
+                          return bannerImageHeight == null
+                              ? SizedBox(
+                                  key: _bannerImageKey,
+                                  width: size.width,
+                                  child: imageBuilder,
+                                )
+                              : SizedBox(
+                                  key: _bannerImageKey,
+                                  width: size.width,
+                                  height: bannerImageHeight,
+                                  child: imageBuilder,
+                                );
+                        },
                       );
                     },
                   ),
@@ -426,6 +463,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
               if (imageBuilder != null && !isSideWays)
                 const SizedBox(height: 8),
 
+              // TITLE, SIDEWAY UPPER DESCRIPTION, BANNERIMAGE
               GestureDetector(
                 onTap: widget.onTap,
                 onLongPress: widget.onLongPress,
@@ -466,9 +504,13 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                                     _urlTitleSize.value != null) {
                                   upperDescWidth = _urlTitleSize.value!.width;
 
-                                  upperDescHeigthht =
-                                      _bannerImageSize.value!.height -
-                                          _urlTitleSize.value!.height;
+                                  final bannerImageHeight = min(
+                                    _bannerImageSize.value!.height,
+                                    size.width * 0.35,
+                                  );
+
+                                  upperDescHeigthht = bannerImageHeight -
+                                      _urlTitleSize.value!.height;
                                 }
 
                                 final descTextStyle = TextStyle(
@@ -511,19 +553,42 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                     // SIDEWAYS BANNERIMAGE
                     if (imageBuilder != null && isSideWays)
                       ValueListenableBuilder(
-                        valueListenable: _showBannerImage,
-                        builder: (context, showBannerImage, _) {
-                          if (!showBannerImage) return const SizedBox.shrink();
-                          return SizedBox(
-                            key: _bannerImageKey,
-                            width: size.width * 0.35,
-                            child: imageBuilder,
+                        valueListenable: _bannerImageSize,
+                        builder: (context, bannerImageSize, _) {
+                          final bannerImageHeight =
+                              bannerImageSize?.height != null &&
+                                      bannerImageSize!.height > 1.0
+                                  ? min(
+                                      bannerImageSize.height,
+                                      size.width * 0.35,
+                                    )
+                                  : null;
+                          return ValueListenableBuilder(
+                            valueListenable: _showBannerImage,
+                            builder: (context, showBannerImage, _) {
+                              if (!showBannerImage) {
+                                return const SizedBox.shrink();
+                              }
+                              return bannerImageHeight == null
+                                  ? SizedBox(
+                                      key: _bannerImageKey,
+                                      width: size.width * 0.35,
+                                      child: imageBuilder,
+                                    )
+                                  : SizedBox(
+                                      key: _bannerImageKey,
+                                      width: size.width * 0.35,
+                                      height: bannerImageHeight,
+                                      child: imageBuilder,
+                                    );
+                            },
                           );
                         },
                       ),
                   ],
                 ),
               ),
+
               if (descriptionAvailable)
                 ValueListenableBuilder(
                   valueListenable: _showFullDescription,
@@ -543,10 +608,6 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                           description.length,
                         );
                         final endIndex = description.length;
-
-                        // Logger.printLog(
-                        //   '$initials lowerDescr: start $start, end: $endIndex',
-                        // );
 
                         description = description
                             .substring(
@@ -648,7 +709,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${_getTimeDifferenceOfFeed()} ago',
+                          _getTimeDifferenceOfFeed(),
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.grey.shade600,
@@ -660,35 +721,13 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                   ),
                   Row(
                     children: [
-                      if (widget.urlModel.metaData?.description != null &&
-                          widget.urlModel.metaData!.description!.isNotEmpty)
-                        ValueListenableBuilder(
-                          valueListenable: _showFullDescription,
-                          builder: (ctx, showFullDescription, _) {
-                            return IconButton(
-                              icon: Icon(
-                                showFullDescription
-                                    ? Icons.expand_less
-                                    : Icons.expand_more,
-                                // color: Colors.blue,
-                              ),
-                              onPressed: () {
-                                _getDescriptionContainerSize(
-                                  context: context,
-                                  textStyle: upperDescTextStyle,
-                                  titleTextStyle: titleTextStyle,
-                                );
-                                _showFullDescription.value =
-                                    !_showFullDescription.value;
-                              },
-                            );
-                          },
-                        ),
+                      _layoutFilterOptions(),
                       IconButton(
                         onPressed: widget.onShareButtonTap,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.share_rounded,
                           size: 16,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -699,6 +738,35 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
           );
         },
       ),
+    );
+  }
+
+  Widget _layoutFilterOptions() {
+    return FilterPopupMenuButton(
+      icon: Icon(
+        // Icons.format_shapes_rounded,
+        Icons.more_vert_rounded,
+        color: Colors.grey.shade800,
+        size: 16,
+      ),
+      menuItems: [
+        // ListFilterPopupMenuItem(
+        //   title: 'SideWay Layout',
+        //   notifier: _isSideWayLayout,
+        //   onPress: () => _isSideWayLayout.value = !_isSideWayLayout.value,
+        // ),
+        ListFilterPopupMenuItem(
+          title: 'Full Description',
+          notifier: _showFullDescription,
+          onPress: () =>
+              _showFullDescription.value = !_showFullDescription.value,
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Show Images',
+          notifier: _showBannerImage,
+          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+        ),
+      ],
     );
   }
 }

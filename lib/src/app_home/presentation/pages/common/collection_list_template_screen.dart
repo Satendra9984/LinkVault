@@ -51,6 +51,8 @@ class _CollectionsListScreenTemplateState
     extends State<CollectionsListScreenTemplate> {
   late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
+  final _showFullAddUrlButton = ValueNotifier(true);
+
   var _previousOffset = 0.0;
 
   // ADDITIONAL FILTERS
@@ -74,11 +76,11 @@ class _CollectionsListScreenTemplateState
 
   Future<void> _onScroll() async {
     if (_scrollController.offset > _previousOffset) {
-      _showAppBar.value = false;
-      // widget.showBottomBar.value = false;
+      // _showAppBar.value = false;
+      _showFullAddUrlButton.value = false;
     } else if (_scrollController.offset < _previousOffset) {
-      _showAppBar.value = true;
-      // widget.showBottomBar.value = true;
+      // _showAppBar.value = true;
+      _showFullAddUrlButton.value = true;
     }
     _previousOffset = _scrollController.offset;
 
@@ -142,8 +144,6 @@ class _CollectionsListScreenTemplateState
       );
   }
 
-
-
   void _filterUpdatedLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -174,27 +174,35 @@ class _CollectionsListScreenTemplateState
       floatingActionButton: widget.collectionFetchModel == null ||
               widget.showAddCollectionButton == false
           ? null
-          : FloatingActionButton.extended(
-              heroTag: '${widget.collectionFetchModel!.hashCode}',
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
-              ),
-              backgroundColor: ColourPallette.salemgreen,
-              // [DYNAMIC] : THIS IS A DYNAMIC PART
-              onPressed: () => widget.onAddCollectionPressed(),
+          : ValueListenableBuilder(
+              valueListenable: _showFullAddUrlButton,
+              builder: (context, showFullAddUrlButton, _) {
+                return FloatingActionButton.extended(
+                  heroTag: '${widget.collectionFetchModel!.hashCode}',
+                  isExtended: showFullAddUrlButton,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  backgroundColor: ColourPallette.salemgreen,
+                  // [DYNAMIC] : THIS IS A DYNAMIC PART
+                  onPressed: () => widget.onAddCollectionPressed(),
 
-              label: const Text(
-                'Add Collection',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ColourPallette.white,
-                ),
-              ),
-              icon: const Icon(
-                Icons.create_new_folder_rounded,
-                color: ColourPallette.white,
-              ),
+                  label: showFullAddUrlButton
+                      ? const Text(
+                          'Collection',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: ColourPallette.white,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                  icon: const Icon(
+                    Icons.create_new_folder_rounded,
+                    color: ColourPallette.white,
+                  ),
+                );
+              },
             ),
       body: Container(
         margin: const EdgeInsets.only(top: 16),
@@ -254,77 +262,59 @@ class _CollectionsListScreenTemplateState
                   return ValueListenableBuilder(
                     valueListenable: _list,
                     builder: (context, availableSubCollections, _) {
-                      return SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
-                        ),
-                        controller: _scrollController,
-                        child: Column(
-                          children: [
-                            AlignedGridView.extent(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: availableSubCollections.length,
-                              maxCrossAxisExtent: 80,
-                              mainAxisSpacing: 24,
-                              crossAxisSpacing: 20,
-                              itemBuilder: (context, index) {
-                              
-                                final subCollection =
-                                    availableSubCollections[index];
+                      return AlignedGridView.extent(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: availableSubCollections.length,
+                        padding: const EdgeInsets.only(bottom: 120),
+                        maxCrossAxisExtent: 80,
+                        mainAxisSpacing: 24,
+                        crossAxisSpacing: 20,
+                        itemBuilder: (context, index) {
+                          final subCollection = availableSubCollections[index];
 
-                                if (subCollection.collectionFetchingState ==
-                                    LoadingStates.loading) {
-                                  return Column(
-                                    children: [
-                                      Container(
-                                        width: 72,
-                                        height: 72,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          color: Colors.grey.shade200,
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 8,
-                                        ),
-                                        width: 72,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          color: Colors.grey.shade300,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                } else if (subCollection
-                                        .collectionFetchingState ==
-                                    LoadingStates.errorLoading) {
-                                  return const Icon(
-                                    Icons.error,
-                                    color: Colors.red,
-                                  );
-                                }
+                          if (subCollection.collectionFetchingState ==
+                              LoadingStates.loading) {
+                            return Column(
+                              children: [
+                                Container(
+                                  width: 72,
+                                  height: 72,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade200,
+                                  ),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
+                                  width: 72,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else if (subCollection.collectionFetchingState ==
+                              LoadingStates.errorLoading) {
+                            return const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            );
+                          }
 
-                                if (widget.onCollectionItemFetchedWidget ==
-                                    null) {
-                                  return Container();
-                                }
-                                return widget.onCollectionItemFetchedWidget!(
-                                  index: index,
-                                  list: _list,
-                                );
-                              },
-                            ),
-
-                            // BOTTOM HEIGHT SO THAT ALL CONTENT IS VISIBLE
-                            const SizedBox(height: 120),
-                          ],
-                        ),
+                          if (widget.onCollectionItemFetchedWidget == null) {
+                            return Container();
+                          }
+                          return widget.onCollectionItemFetchedWidget!(
+                            index: index,
+                            list: _list,
+                          );
+                        },
                       );
                     },
                   );
@@ -389,7 +379,6 @@ class _CollectionsListScreenTemplateState
               }
             },
           ),
-
           ListFilterPopupMenuItem(
             title: 'Latest First',
             notifier: _updatedAtLatestFilter,

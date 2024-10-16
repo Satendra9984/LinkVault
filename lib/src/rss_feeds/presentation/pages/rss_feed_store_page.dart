@@ -50,9 +50,6 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
     _pageController.dispose();
     _showBottomNavBar.dispose();
     _currentPage.dispose();
-    // context.read<RssFeedCubit>().clearCollectionFeed(
-    //       collectionId: widget.collectionId,
-    //     );
     super.dispose();
   }
 
@@ -60,77 +57,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      bottomNavigationBar: ValueListenableBuilder(
-        valueListenable: _showBottomNavBar,
-        builder: (context, showBottomBar, _) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            // padding: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: ColourPallette.mystic.withOpacity(0.5),
-                  spreadRadius: 4,
-                  blurRadius: 16,
-                  offset: const Offset(0, -1), // changes position of shadow
-                ),
-              ],
-            ),
-            height: showBottomBar ? null : 0,
-            child: ValueListenableBuilder(
-              valueListenable: _currentPage,
-              builder: (context, currentPage, _) {
-                return BottomNavigationBar(
-                  currentIndex: _currentPage.value,
-                  onTap: (currentIndex) {
-                    _currentPage.value = currentIndex;
-                    _pageController.jumpToPage(currentIndex);
-                  },
-                  type: BottomNavigationBarType.fixed,
-                  enableFeedback: false,
-                  backgroundColor: ColourPallette.white,
-                  elevation: 0,
-                  selectedItemColor: ColourPallette.black,
-                  selectedLabelStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                  ),
-                  unselectedItemColor: ColourPallette.black,
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: ColourPallette.black,
-                  ),
-                  items: [
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      label: 'Urls',
-                      unSelectedIcon: Icons.link_outlined,
-                      selectedIcon: Icons.link_rounded,
-                      index: 0,
-                    ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      unSelectedIcon: Icons.dynamic_feed,
-                      selectedIcon: Icons.dynamic_feed_rounded,
-                      index: 1,
-                      label: 'Feed',
-                    ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      label: 'Collections',
-                      unSelectedIcon: Icons.collections_bookmark_outlined,
-                      selectedIcon: Icons.collections_bookmark_rounded,
-                      index: 2,
-                    ),
-                  ],
-                );
-              },
-            ),
-          );
-        },
-      ),
+      bottomNavigationBar: _getBottomNavBar(),
       body: BlocBuilder<CollectionsCubit, CollectionsState>(
         builder: (context, state) {
           // final size = MediaQuery.of(context).size;
@@ -197,6 +124,81 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
           );
         },
       ),
+    );
+  }
+
+  Widget _getBottomNavBar() {
+    return ValueListenableBuilder(
+      valueListenable: _showBottomNavBar,
+      builder: (context, showBottomBar, _) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: showBottomBar ? null : 0,
+
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: ColourPallette.mystic.withOpacity(0.5),
+                spreadRadius: 4,
+                blurRadius: 10,
+                offset: const Offset(0, -1), // changes position of shadow
+              ),
+            ],
+          ),
+          // height: showBottomBar ? null : 0,
+          child: ValueListenableBuilder(
+            valueListenable: _currentPage,
+            builder: (context, currentPage, _) {
+              return BottomNavigationBar(
+                currentIndex: _currentPage.value,
+                onTap: (currentIndex) {
+                  _currentPage.value = currentIndex;
+                  _pageController.jumpToPage(currentIndex);
+                },
+                type: BottomNavigationBarType.fixed,
+                enableFeedback: false,
+                backgroundColor: ColourPallette.white,
+                elevation: 0,
+                selectedItemColor: ColourPallette.black,
+                selectedLabelStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black,
+                ),
+                unselectedItemColor: ColourPallette.black,
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ColourPallette.black,
+                ),
+                items: [
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    label: 'Urls',
+                    unSelectedIcon: Icons.link_outlined,
+                    selectedIcon: Icons.link_rounded,
+                    index: 0,
+                  ),
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    unSelectedIcon: Icons.dynamic_feed,
+                    selectedIcon: Icons.dynamic_feed_rounded,
+                    index: 1,
+                    label: 'Feed',
+                  ),
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    label: 'Collections',
+                    unSelectedIcon: Icons.collections_bookmark_outlined,
+                    selectedIcon: Icons.collections_bookmark_rounded,
+                    index: 2,
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

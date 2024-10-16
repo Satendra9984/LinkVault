@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
-import 'package:html/parser.dart' as html_parser;
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/app_home/services/custom_image_cache_manager.dart';
-import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
@@ -119,7 +115,12 @@ class RssFeedCubit extends Cubit<RssFeedState> {
 
     // Check when last fetched
     final lastUpdateDate = currentCollection.collection!.updatedAt;
-    if (lastUpdateDate.hour > 8) {
+    final currentDateTime = DateTime.now().toUtc();
+
+    final timeDifference = currentDateTime.difference(lastUpdateDate);
+
+    Logger.printLog('[rss] : timeDifference ${timeDifference.inHours}');
+    if (timeDifference.inHours > 8) {
       await Future.wait([
         // 1. Delete all feeds
         _rssFeedRepo.deleteAllFeeds(

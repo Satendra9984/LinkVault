@@ -5,7 +5,6 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/services/rss_service.dart';
 import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';

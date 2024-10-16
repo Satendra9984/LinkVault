@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_url_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
-import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
@@ -329,7 +326,6 @@ class _UrlPreviewListTemplateScreenState
                     builder: (context, allLocalFeedsList, _) {
                       return ListView.builder(
                         controller: _scrollController,
-                        shrinkWrap: false,
                         itemCount: allLocalFeedsList.length + 2,
                         cacheExtent: size.height * 3,
                         itemBuilder: (ctx, index) {
@@ -762,7 +758,10 @@ class _UrlPreviewListTemplateScreenState
 
   Widget _layoutFilterOptions() {
     return FilterPopupMenuButton(
-      icon: Icons.format_shapes_rounded,
+      icon: const Icon(
+        Icons.format_shapes_rounded,
+        size: 20,
+      ),
       menuItems: [
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',

@@ -21,6 +21,7 @@ import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart'
 import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class RssFeedUrlsPreviewListWidget extends StatefulWidget {
   const RssFeedUrlsPreviewListWidget({
@@ -44,7 +45,6 @@ class RssFeedUrlsPreviewListWidget extends StatefulWidget {
 class _RssFeedUrlsPreviewListWidgetState
     extends State<RssFeedUrlsPreviewListWidget>
     with AutomaticKeepAliveClientMixin {
-  late RssFeedCubit _rssFeedCubit;
   final _showAppBar = ValueNotifier(true);
   final _showSearchFilterBottomSheet = ValueNotifier(false);
   final _searchTextEditingController = TextEditingController();
@@ -66,7 +66,7 @@ class _RssFeedUrlsPreviewListWidgetState
 
   @override
   void initState() {
-    _rssFeedCubit = context.read<RssFeedCubit>();
+    // _rssFeedCubit = context.read<RssFeedCubit>();
 
     context.read<RssFeedCubit>().initializeNewFeed(
           collectionId: widget.collectionFetchModel.collection!.id,
@@ -167,13 +167,13 @@ class _RssFeedUrlsPreviewListWidgetState
   void dispose() {
     _scrollController.dispose();
     _showAppBar.dispose();
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: [
-        SystemUiOverlay.bottom,
-        SystemUiOverlay.top,
-      ],
-    );
+    // SystemChrome.setEnabledSystemUIMode(
+    //   SystemUiMode.manual,
+    //   overlays: [
+    //     SystemUiOverlay.bottom,
+    //     SystemUiOverlay.top,
+    //   ],
+    // );
 
     // _rssFeedCubit.clearCollectionFeed(
     //   collectionId: widget.collectionFetchModel.collection!.id,
@@ -221,7 +221,7 @@ class _RssFeedUrlsPreviewListWidgetState
           builder: (context, state) {
             final availableUrls = state
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
-
+    
             final rssFeedNewsWidget = Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -240,16 +240,16 @@ class _RssFeedUrlsPreviewListWidgetState
                 ),
               ],
             );
-
+    
             if (availableUrls == null || availableUrls.isEmpty) {
               return Center(child: rssFeedNewsWidget);
             }
-
+    
             final isAllUrlsNotFetched = availableUrls.length !=
                     widget.collectionFetchModel.collection!.urls.length ||
                 availableUrls[availableUrls.length - 1].loadingStates ==
                     LoadingStates.loading;
-
+    
             if (isAllUrlsNotFetched) {
               return Center(
                 child: Column(
@@ -264,12 +264,12 @@ class _RssFeedUrlsPreviewListWidgetState
                 ),
               );
             }
-
+    
             return BlocBuilder<RssFeedCubit, RssFeedState>(
               builder: (context, state) {
                 final feeds = state.feedCollections[
                     widget.collectionFetchModel.collection!.id];
-
+    
                 if (feeds == null || feeds.allFeeds.isEmpty) {
                   return Center(
                     child: Column(
@@ -284,9 +284,9 @@ class _RssFeedUrlsPreviewListWidgetState
                     ),
                   );
                 }
-
+    
                 _list.value = feeds.allFeeds.map(ValueNotifier.new).toList();
-
+    
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (_scrollController.hasClients) {
                     _scrollController
@@ -294,9 +294,9 @@ class _RssFeedUrlsPreviewListWidgetState
                       ..jumpTo(kToolbarHeight);
                   }
                 });
-
+    
                 // Logger.printLog('cacheExtent: ${size.height * 2}');
-
+    
                 return ValueListenableBuilder(
                   valueListenable: _list,
                   builder: (context, allLocalFeedsList, _) {
@@ -310,12 +310,12 @@ class _RssFeedUrlsPreviewListWidgetState
                         } else if (index > allLocalFeedsList.length) {
                           return const SizedBox(height: 200);
                         }
-
+    
                         return ValueListenableBuilder(
                           valueListenable: allLocalFeedsList[index - 1],
                           builder: (context, feed, _) {
                             final url = feed;
-
+    
                             final urlMetaData = url.metaData ??
                                 UrlMetaData.isEmpty(title: url.title);
                             return ValueListenableBuilder(
@@ -326,7 +326,8 @@ class _RssFeedUrlsPreviewListWidgetState
                                   builder: (context, showBannerImages, _) {
                                     return ValueListenableBuilder(
                                       valueListenable: _showDescriptions,
-                                      builder: (context, showDescriptions, _) {
+                                      builder:
+                                          (context, showDescriptions, _) {
                                         return Container(
                                           margin: const EdgeInsets.symmetric(
                                             vertical: 8,
@@ -357,22 +358,22 @@ class _RssFeedUrlsPreviewListWidgetState
                                               // [TODO] : SHOW MORE OPTIONS
                                             },
                                             updateBannerImage: () async {
-                                              // Logger.printLog(
-                                              //     '[rss] : inlistview updateBannerImage');
                                               final urlModel = await context
                                                   .read<RssFeedCubit>()
                                                   .updateBannerImagefromRssFeedUrl(
                                                     urlModel: url,
                                                     index: index,
                                                   );
-
+    
                                               _list.value[index - 1].value =
                                                   urlModel;
                                             },
                                             onShareButtonTap: () {
-                                              Logger.printLog(
-                                                  StringUtils.getJsonFormat(
-                                                      url.metaData?.toJson()));
+                                              // Logger.printLog(
+                                              //   StringUtils.getJsonFormat(
+                                              //     url.metaData?.toJson(),
+                                              //   ),
+                                              // );
                                               Share.share(
                                                 '${url.metaData?.rssFeedUrl ?? url.url}\n${urlMetaData.title}\n${urlMetaData.description}',
                                               );
@@ -588,7 +589,7 @@ class _RssFeedUrlsPreviewListWidgetState
           valueListenable: _showAppBar,
           builder: (context, isVisible, child) {
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 300),
               height: isVisible ? kToolbarHeight + 24 : 0,
               child: AppBar(
                 surfaceTintColor: ColourPallette.mystic,
@@ -664,7 +665,10 @@ class _RssFeedUrlsPreviewListWidgetState
 
   Widget _filterOptions() {
     return FilterPopupMenuButton(
-      icon: Icons.filter_alt_rounded,
+      icon: const Icon(
+        Icons.filter_alt_rounded,
+        size: 20,
+      ),
       menuItems: [
         ListFilterPopupMenuItem(
           title: 'Latest First',
@@ -709,7 +713,10 @@ class _RssFeedUrlsPreviewListWidgetState
 
   Widget _layoutFilterOptions() {
     return FilterPopupMenuButton(
-      icon: Icons.format_shapes_rounded,
+      icon: const Icon(
+        Icons.format_shapes_rounded,
+        size: 20,
+      ),
       menuItems: [
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',

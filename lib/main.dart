@@ -11,6 +11,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/services/router.dart';
 import 'package:link_vault/core/utils/logger.dart';
@@ -61,6 +62,7 @@ void main() async {
             return MaterialApp(
               title: 'link_vault',
               debugShowCheckedModeBanner: false,
+              color: ColourPallette.white,
               theme: ThemeData(
                 scaffoldBackgroundColor: Colors.white,
                 appBarTheme: const AppBarTheme(

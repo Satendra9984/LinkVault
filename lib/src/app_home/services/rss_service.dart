@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
-
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Required for date parsing
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/services/html_parsing_service.dart';
