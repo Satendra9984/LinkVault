@@ -22,11 +22,13 @@ import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget
 class AddUrlTemplateScreen extends StatefulWidget {
   const AddUrlTemplateScreen({
     required this.parentCollection,
+    required this.isRootCollection,
     this.url,
     super.key,
   });
   final CollectionModel parentCollection;
   final String? url;
+  final bool isRootCollection;
 
   @override
   State<AddUrlTemplateScreen> createState() => _AddUrlTemplateScreenState();
@@ -84,15 +86,18 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
         metaData: urlMetaData,
       );
 
-      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+      // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
-      await urlCrudCubit.addUrl(urlData: urlModelData);
+      await urlCrudCubit.addUrl(
+        urlData: urlModelData,
+        isRootCollection: widget.isRootCollection,
+      );
     }
   }
 
   Future<void> _loadPreview() async {
     if (_urlAddressController.text.isEmpty) {
-      // Logger.printLog('url address is empty');
+      // // Logger.printLog('url address is empty');
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value =
           GeneralFailure(message: 'Url Address is empty', statusCode: '400');
@@ -105,10 +110,10 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
 
-    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+    // // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
-      // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+      // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
       _previewMetaData.value = metaData;
       _previewLoadingStates.value = LoadingStates.loaded;
       _previewError.value = null;
@@ -131,7 +136,7 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
       return;
     }
     // }
-    // Logger.printLog(
+    // // Logger.printLog(
     //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
     // );
     _previewLoadingStates.value = LoadingStates.loaded;

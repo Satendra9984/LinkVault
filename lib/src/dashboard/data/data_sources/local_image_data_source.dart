@@ -30,9 +30,9 @@ class LocalImageDataSource {
         );
       }
 
-      Logger.printLog('Isar initialized successfully');
+      // Logger.printLog('Isar initialized successfully');
     } catch (e) {
-      Logger.printLog('Error initializing Isar: $e');
+      // Logger.printLog('Error initializing Isar: $e');
       // You might want to rethrow the error or handle it in a way that's appropriate for your app
     }
   }
@@ -44,7 +44,7 @@ class LocalImageDataSource {
     try {
       await _initializeIsar(); // Ensure Isar is initialized
       if (_isar == null) {
-        Logger.printLog('Isar is not initialized');
+        // Logger.printLog('Isar is not initialized');
         return;
       }
 
@@ -58,7 +58,7 @@ class LocalImageDataSource {
         );
       });
     } catch (e) {
-      Logger.printLog('[isar] addImageData error: $e');
+      // Logger.printLog('[isar] addImageData error: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class LocalImageDataSource {
 
       return bytes;
     } catch (e) {
-      Logger.printLog('[isar] getImageData $e');
+      // Logger.printLog('[isar] getImageData $e');
 
       return null;
     }
@@ -91,7 +91,7 @@ class LocalImageDataSource {
     try {
       await _initializeIsar();
       if (_isar == null) {
-        Logger.printLog('[isar] Isar not initialized');
+        // Logger.printLog('[isar] Isar not initialized');
         return;
       }
 
@@ -99,10 +99,10 @@ class LocalImageDataSource {
         final urlImages = _isar!.collection<UrlImage>();
 
         final deleted = await urlImages.deleteAllByImageUrl([imageUrl]);
-        Logger.printLog('[deletedImages] : $deleted $imageUrl');
+        // Logger.printLog('[deletedImages] : $deleted $imageUrl');
       });
     } catch (e) {
-      Logger.printLog('[isar] deleteImageData error: $e');
+      // Logger.printLog('[isar] deleteImageData error: $e');
     }
   }
 
@@ -116,7 +116,7 @@ class LocalImageDataSource {
       final urlImage =
           await urlImages.filter().imageUrlEqualTo(url).findFirst();
 
-      Logger.printLog('[isar] getImageData $url ${urlImage == null}');
+      // Logger.printLog('[isar] getImageData $url ${urlImage == null}');
 
       if (urlImage == null) return null;
 
@@ -124,7 +124,7 @@ class LocalImageDataSource {
 
       return bytes;
     } catch (e) {
-      Logger.printLog('[isar] getImageData $e');
+      // Logger.printLog('[isar] getImageData $e');
 
       return null;
     }
@@ -147,10 +147,10 @@ class LocalImageDataSource {
           ),
         );
       }).then((_) {
-        // Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
+        // // Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
       });
     } catch (e) {
-      Logger.printLog('[isar] addImageDataByBytes $e');
+      // Logger.printLog('[isar] addImageDataByBytes $e');
 
       return;
     }

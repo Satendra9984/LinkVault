@@ -41,8 +41,8 @@ void main() {
         description: 'Sample description for example 1',
         tag: 'Tech',
         isOffline: false,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
         isFavourite: true,
         metaData: UrlMetaData(
           favicon: null,
@@ -64,8 +64,8 @@ void main() {
         description: 'Sample description for example 2',
         tag: 'News',
         isOffline: true,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
         isFavourite: false,
         metaData: UrlMetaData(
           favicon: null,

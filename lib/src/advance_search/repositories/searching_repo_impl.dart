@@ -18,9 +18,9 @@ class SearchingRepoImpl {
       await _searchLocalDataSourcesImpl.migrateCollections();
 
       await _searchLocalDataSourcesImpl.migrateURLs();
-      Logger.printLog('Migration successful');
+      // // Logger.printLog('Migration successful');
     } on ServerException catch (e) {
-      Logger.printLog('Migration exception: ${e.message}');
+      // // Logger.printLog('Migration exception: ${e.message}');
     }
   }
 

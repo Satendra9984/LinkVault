@@ -9,11 +9,12 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
   const CollectionsListScreenTemplate({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.showAddCollectionButton,
     required this.onCollectionItemFetchedWidget,
     required this.onAddCollectionPressed,
@@ -22,7 +23,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
     super.key,
   });
 
-  final CollectionFetchModel? collectionFetchModel;
+  final CollectionModel collectionModel;
   final bool showAddCollectionButton;
 
   final void Function() onAddCollectionPressed;
@@ -91,12 +92,12 @@ class _CollectionsListScreenTemplateState
   }
 
   Future<void> _fetchMoreCollections() async {
-    if (widget.collectionFetchModel == null) return;
+    // if (widget.collectionModel == null) return;
 
-    final fetchCollection = widget.collectionFetchModel!;
+    final fetchCollection = widget.collectionModel;
 
     await context.read<CollectionsCubit>().fetchMoreSubCollections(
-          collectionId: fetchCollection.collection!.id,
+          collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: false,
         );
@@ -171,14 +172,13 @@ class _CollectionsListScreenTemplateState
     // super.build(context);
     return Scaffold(
       appBar: _getAppBar(),
-      floatingActionButton: widget.collectionFetchModel == null ||
-              widget.showAddCollectionButton == false
+      floatingActionButton: widget.showAddCollectionButton == false
           ? null
           : ValueListenableBuilder(
               valueListenable: _showFullAddUrlButton,
               builder: (context, showFullAddUrlButton, _) {
                 return FloatingActionButton.extended(
-                  heroTag: '${widget.collectionFetchModel!.hashCode}',
+                  heroTag: '${widget.collectionModel.hashCode}',
                   isExtended: showFullAddUrlButton,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
@@ -219,12 +219,12 @@ class _CollectionsListScreenTemplateState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  if (widget.collectionFetchModel == null) {
-                    return Container();
-                  }
+                  // if (widget.collectionModel == null) {
+                  //   return Container();
+                  // }
 
-                  final fetchCollection = state
-                      .collections[widget.collectionFetchModel!.collection!.id];
+                  final fetchCollection =
+                      state.collections[widget.collectionModel.id];
 
                   if (fetchCollection == null) {
                     return Center(

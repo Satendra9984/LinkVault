@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
@@ -18,11 +19,11 @@ class UrlParsingService {
       if (response.statusCode == 200) {
         return response.body;
       } else {
-        Logger.printLog('error in "fetchWebpageContent" statuscode error');
+        // // Logger.printLog('error in "fetchWebpageContent" statuscode error');
         return null;
       }
     } catch (e) {
-      Logger.printLog('error in "fetchWebpageContent" $e');
+      // // Logger.printLog('error in "fetchWebpageContent" $e');
       return null;
     }
   }
@@ -33,7 +34,7 @@ class UrlParsingService {
 
     if (title == null) return null;
 
-    Logger.printLog('title: $title');
+    // // Logger.printLog('title: $title');
     return StringUtils.getUnicodeString(title);
   }
 
@@ -50,87 +51,10 @@ class UrlParsingService {
       if (description == null) return null;
       return StringUtils.getUnicodeString(description);
     } catch (e) {
-      Logger.printLog('error in "extractDescription" $e');
+      // // Logger.printLog('error in "extractDescription" $e');
       return null;
     }
   }
-
-  // static String? extractImageUrl(Document document) {
-  //   try {
-  //     // Try to find the first image element on the page in body
-  //     final imageElements = document.body?.querySelectorAll('img');
-  //     if (imageElements != null && imageElements.isNotEmpty) {
-  //       // Filter out small images or irrelevant ones
-  //       const minBannerArea = 90000;
-  //       const minBannerWidth = 600;
-  //       const minBannerHeight = 150;
-
-  //       Element? largestImageElement;
-  //       for (final img in imageElements) {
-  //         final width = int.tryParse(img.attributes['width'] ?? '1') ?? 1;
-  //         final height = int.tryParse(img.attributes['height'] ?? '1') ?? 1;
-  //         final area = width * height;
-  //         // final aspectRatio = width ~/ height;
-
-  //         if (area >= minBannerArea &&
-  //             (width >= minBannerWidth || height >= minBannerHeight)) {
-  //           final containesLogoAlt =
-  //               (img.attributes['alt'] ?? '').toLowerCase().contains('logo');
-
-  //           final containesLogoClass =
-  //               (img.attributes['class'] ?? '').toLowerCase().contains('logo');
-
-  //           if (containesLogoAlt || containesLogoClass) continue;
-  //           final containesAuthorAlt =
-  //               (img.attributes['alt'] ?? '').toLowerCase().contains('author');
-
-  //           final containesAuthorClass = (img.attributes['class'] ?? '')
-  //               .toLowerCase()
-  //               .contains('author');
-  //           if (containesAuthorAlt || containesAuthorClass) continue;
-  //           largestImageElement = img;
-  //           break;
-  //         }
-  //       }
-
-  //       if (largestImageElement != null) {
-  //         final src = largestImageElement.attributes['src'];
-  //         if (src != null) {
-  //           return src;
-  //         }
-  //       }
-  //     }
-
-  //     // Logger.printLog('now will check metatags');
-
-  //     // List of possible meta tag attributes for images
-  //     final metaTags = [
-  //       'meta[itemprop="image"]',
-  //       'meta[property="og:image"]',
-  //       'meta[name="twitter:image"]',
-  //     ];
-
-  //     // Try to find the image URL from meta tags
-  //     for (final metaTag in metaTags) {
-  //       final element = document.head?.querySelector(metaTag);
-  //       // Logger.printLog('img: ${element?.attributes['content']}');
-  //       if (element != null && element.attributes['content'] != null) {
-  //         final image = element.attributes['content']!.toLowerCase();
-  //         if (image.contains('favicon') || image.contains('logo')) {
-  //           continue;
-  //         }
-  //         return element.attributes['content'];
-  //       }
-  //     }
-  //     // Logger.printLog('nothing found on metatags');
-
-  //     return null;
-  //   } catch (e) {
-  //     // Improved error logging
-  //     Logger.printLog('error in "extractImageUrl" $e');
-  //     return null;
-  //   }
-  // }
 
   static String? extractImageUrl(Document document) {
     try {
@@ -143,7 +67,7 @@ class UrlParsingService {
       // If meta tags don't provide a suitable image, search in the body
       return _extractBodyImageUrl(document);
     } catch (e) {
-      Logger.printLog('Error in "extractImageUrl": $e');
+      // // Logger.printLog('Error in "extractImageUrl": $e');
       return null;
     }
   }
@@ -247,7 +171,7 @@ class UrlParsingService {
 
       return websiteName;
     } catch (e) {
-      Logger.printLog('error in "extractWebsiteName" $e');
+      // Logger.printLog('error in "extractWebsiteName" $e');
 
       return null;
     }
@@ -286,7 +210,7 @@ class UrlParsingService {
 
       return null;
     } catch (e) {
-      Logger.printLog('error in "extractWebsiteLogoUrl" $e');
+      // Logger.printLog('error in "extractWebsiteLogoUrl" $e');
       return null;
     }
   }
@@ -321,7 +245,7 @@ class UrlParsingService {
     }
   }
 
-// Function to fetch image as Uint8List
+  // Function to fetch image as Uint8List
   static Future<Uint8List?> fetchImageAsUint8List(
     String imageUrl, {
     required int maxSize,
@@ -331,15 +255,10 @@ class UrlParsingService {
     (int r, int g, int b)? autofillColor,
   }) async {
     try {
-      // Logger.printLog('websiteImageUrl: $imageUrl');
       if (imageUrl.isEmpty) return null;
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode == 200) {
         final originalImageBytes = response.bodyBytes;
-        // return originalImageBytes;
-        // Logger.printLog(
-        //   '[parsing][original] : $imageUrl, ${originalImageBytes.length}',
-        // );
         if (!compressImage) return originalImageBytes;
         final compressedImage = await compressImageAsUint8List(
           originalImageBytes,
@@ -348,14 +267,11 @@ class UrlParsingService {
           autofillPng: autofillPng,
           autofillColor: autofillColor,
         );
-        // Logger.printLog(
-        //   '[parsing][compressed] : $imageUrl, ${compressedImage?.length}',
-        // );
         return compressedImage;
       }
       return null;
     } catch (e) {
-      Logger.printLog('[urlParser] : error in "fetchImageAsUint8List" $e');
+      // Logger.printLog('[urlParser] : error in "fetchImageAsUint8List" $e');
       return null;
     }
   }
@@ -368,7 +284,7 @@ class UrlParsingService {
     (int r, int g, int b)? autofillColor,
   }) async {
     try {
-      // Logger.printLog('websiteImageUrl: $imageUrl');
+      // // Logger.printLog('websiteImageUrl: $imageUrl');
       final compressedImage = await ImageUtils.compressImage(
         originalImageBytes,
         quality: quality,
@@ -378,7 +294,7 @@ class UrlParsingService {
 
       return compressedImage;
     } catch (e) {
-      Logger.printLog('error in "fetchImageAsUint8List" $e');
+      // Logger.printLog('error in "fetchImageAsUint8List" $e');
       return null;
     }
   }
@@ -389,10 +305,10 @@ class UrlParsingService {
       if (url.startsWith('http')) {
         return url;
       }
-      // Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url');
+      // // Logger.printLog('handleRelativeUrl: baseUrl+url: $baseUrl + $url');
       return Uri.parse(baseUrl).resolve(url).toString();
     } catch (e) {
-      Logger.printLog('handleRelativeUrl: $e');
+      // Logger.printLog('handleRelativeUrl: $e');
       return baseUrl + url;
     }
   }
@@ -422,13 +338,17 @@ class UrlParsingService {
       }
       return null;
     } catch (e) {
-      Logger.printLog('error in "extractRssFeedUrl" $e');
+      // Logger.printLog('error in "extractRssFeedUrl" $e');
       return null;
     }
   }
 
-// Main parsing function
-  static Future<(String?, UrlMetaData?)> getWebsiteMetaData(String url) async {
+  // Main parsing function
+  static Future<(String?, UrlMetaData?)> getWebsiteMetaData(
+    String url, {
+    bool fetchBannerImageUintData = false,
+    bool fetchFaviconImageUintData = false,
+  }) async {
     final htmlContent = await fetchWebpageContent(url);
     final metaData = <String, dynamic>{};
 
@@ -442,44 +362,47 @@ class UrlParsingService {
 
     final document = html_parser.parse(htmlContent);
 
-    // Logger.printLog('[doc] : ${document.toString()}');
+    // // Logger.printLog('[doc] : ${document.toString()}');
 
     metaData['title'] = extractTitle(document);
     metaData['description'] = extractDescription(document);
     metaData['websiteName'] =
         extractWebsiteName(document) ?? extractWebsiteNameFromUrlString(url);
 
-    // Fetch the RSS feed URL
-    // metaData['rss_feed_url'] = extractRssFeedUrl(document, url);
-
     var websiteLogoUrl = extractWebsiteLogoUrl(document);
     websiteLogoUrl ??= getWebsiteLogoUrl(url);
     websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
     metaData['favicon_url'] = websiteLogoUrl;
-    final faviconUint = await fetchImageAsUint8List(
-      websiteLogoUrl,
-      maxSize: 100000,
-      compressImage: true,
-      quality: 80,
-      autofillPng: true,
-    );
+
+    final faviconUint = fetchBannerImageUintData
+        ? await fetchImageAsUint8List(
+            websiteLogoUrl,
+            maxSize: 100000,
+            compressImage: true,
+            quality: 80,
+            autofillPng: true,
+          )
+        : null;
 
     if (faviconUint != null) {
       metaData['favicon'] = StringUtils.convertUint8ListToBase64(faviconUint);
     }
 
     var imageUrl = extractImageUrl(document);
-    // Logger.printLog('imageUrl : $imageUrl');
+    // // Logger.printLog('imageUrl : $imageUrl');
     if (imageUrl != null && imageUrl != websiteLogoUrl) {
       imageUrl = handleRelativeUrl(imageUrl, url);
       metaData['banner_image_url'] = imageUrl;
-      final bannerImage = await fetchImageAsUint8List(
-        imageUrl,
-        maxSize: 150000,
-        compressImage: true,
-        quality: 75,
-        autofillPng: false,
-      );
+
+      final bannerImage = fetchBannerImageUintData
+          ? await fetchImageAsUint8List(
+              imageUrl,
+              maxSize: 150000,
+              compressImage: true,
+              quality: 75,
+              autofillPng: false,
+            )
+          : null;
       if (bannerImage != null) {
         metaData['banner_image'] =
             StringUtils.convertUint8ListToBase64(bannerImage);
@@ -488,27 +411,59 @@ class UrlParsingService {
     // Fetch image as Uint8List
     final metaDataObject = UrlMetaData.fromJson(metaData);
 
-    // Logger.printLog(StringUtils.getJsonFormat(metaDataObject.toJson()));
+    // // Logger.printLog(StringUtils.getJsonFormat(metaDataObject.toJson()));
 
     return (htmlContent, metaDataObject);
   }
 
-  // MORE ABSTRACT FUNCTIONS
-  // Step 1: Global function to perform all operations
+  /// Fetches the HTML content from a given RSS feed URL, parses it, and attempts to extract the banner image URL.
+  ///
+  /// This function handles network errors, parsing issues, and unexpected exceptions. It returns `null` if any issue
+  /// occurs during the fetching or parsing process, but rethrows network-related exceptions to allow retry mechanisms.
+  ///
+  /// - [rssFeedUrl]: The URL of the RSS feed whose banner image is to be extracted.
+  ///
+  /// Returns the banner image URL if extraction is successful, otherwise returns `null`.
+  ///
+  /// Throws:
+  /// - `SocketException`: if there is a network-related issue (e.g., no internet, timeout).
+  /// - `HttpException`: if the HTTP request fails (e.g., invalid status code).
+  /// - `FormatException`: if the HTML parsing fails.
+  /// - Other exceptions are logged and handled gracefully, returning `null`.
   static Future<String?> fetchParseAndExtractBanner(String rssFeedUrl) async {
     try {
-      // Fetch webpage content
-      // Fetch webpage content
-      final webPageData =
-          await UrlParsingService.fetchWebpageContent(rssFeedUrl);
+      final response = await http.get(Uri.parse(rssFeedUrl));
 
-      // Parse the HTML content
-      final htmlContent = html_parser.parse(webPageData);
-
-      // Extract the banner image URL
-      return UrlParsingService.extractImageUrl(htmlContent);
+      if (response.statusCode == 200 || response.body.isNotEmpty) {
+        final webPageData = response.body;
+        final htmlContent = html_parser.parse(webPageData);
+        return UrlParsingService.extractImageUrl(htmlContent);
+      } else if (response.statusCode == 404 || response.statusCode == 410) {
+        // Permanent errors: return null as no further requests should be made
+        // // Logger.printLog(
+        //     'Resource not found or gone (404/410). No further attempts.');
+        return null;
+      } else if (response.statusCode == 500 || response.statusCode == 503) {
+        // Temporary errors: rethrow to allow retries
+        // // Logger.printLog('Server error (500/503). Retrying might be necessary.');
+        throw const HttpException('Temporary server issue. Retry recommended.');
+      } else {
+        // Other unhandled HTTP status codes: log and return null
+        // // Logger.printLog('Unhandled HTTP status code: ${response.statusCode}');
+        return null;
+      }
+    } on SocketException {
+      // // Logger.printLog('Network issue in fetchParseAndExtractBanner: $e');
+      rethrow; // Allowing retries
+    } on HttpException {
+      // // Logger.printLog('HTTP issue in fetchParseAndExtractBanner: $e');
+      rethrow; // Allowing handling based on HTTP status
+    } on FormatException {
+      // // Logger.printLog('Parsing issue in fetchParseAndExtractBanner: $e');
+      return null; // Parsing failure is final
     } catch (e) {
-      Logger.printLog('File error $e');
+      // // Logger.printLog(
+      // 'Unexpected error in fetchParseAndExtractBanner: $e (${e.runtimeType})');
       return null;
     }
   }

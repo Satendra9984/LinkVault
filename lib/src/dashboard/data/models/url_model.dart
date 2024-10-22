@@ -76,6 +76,9 @@ class UrlModel {
     };
   }
 
+  
+
+
   UrlModel copyWith({
     String? firestoreId,
     String? collectionId,
@@ -154,6 +157,7 @@ class UrlMetaData {
       rssFeedUrl: json['rss_feed_url'] as String?, // Added rssFeedUrl
     );
   }
+
 
   final Uint8List? favicon;
   final String? faviconUrl;

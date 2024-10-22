@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -43,11 +44,28 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
   Future<void> addUrl({
     required UrlModel urlData,
+    required bool isRootCollection,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.adding));
-    final collection = _collectionsCubit.getCollection(
+    var collection = _collectionsCubit.getCollection(
       collectionId: urlData.collectionId,
     );
+
+    if (collection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: urlData.collectionId,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: isRootCollection,
+      );
+    }
+
+    collection = _collectionsCubit.getCollection(
+      collectionId: urlData.collectionId,
+    );
+
+    if (collection?.collection == null) {
+      return;
+    }
 
     await _urlRepoImpl
         .addUrlData(
@@ -122,11 +140,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
   Future<void> deleteUrl({
     required UrlModel urlData,
-    bool isRootCollection = false,
+    required bool isRootCollection,
   }) async {
     emit(state.copyWith(urlCrudLoadingStates: UrlCrudLoadingStates.deleting));
 
-    Logger.printLog('Deleting URL in urlcrudcubit : ${urlData.firestoreId}');
+    // Logger.printLog('Deleting URL in urlcrudcubit : ${urlData.firestoreId}');
 
     var collection =
         _collectionsCubit.getCollection(collectionId: urlData.collectionId);
@@ -149,9 +167,9 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         ),
       );
 
-      Logger.printLog(
-        '[deleting url]: collection ${collection == null}, cc: ${collection?.collection == null}',
-      );
+      // Logger.printLog(
+      //   '[deleting url]: collection ${collection == null}, cc: ${collection?.collection == null}',
+      // );
       return;
     }
 
@@ -199,7 +217,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (isFav == false) return;
 
-    Logger.printLog('addingUrl: ${urlData.firestoreId}, to favourites');
+    // Logger.printLog('addingUrl: ${urlData.firestoreId}, to favourites');
 
     // CHECK IF FAVOURITES IS PRESENT IN STATE OR NOT
     final favouriteCollectionId =
@@ -295,7 +313,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       urlData.firestoreId,
     );
 
-    // Logger.printLog(
+    // // Logger.printLog(
     //   '${urlData.firestoreId}, alp: $isCollectionAlreadyPresentInList, $isFav',
     // );
 
@@ -347,16 +365,16 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (favouriteCollection == null) return;
 
-    Logger.printLog('urlslist: ${favouriteCollection.collection!.urls}');
+    // Logger.printLog('urlslist: ${favouriteCollection.collection!.urls}');
     final favouriteCollectionsList = [
       ...favouriteCollection.collection!.urls,
     ]..removeWhere(
         (element) => element == urlData.firestoreId,
       );
 
-    Logger.printLog(
-      'after removing ${urlData.firestoreId} urlslist: $favouriteCollectionsList',
-    );
+    // Logger.printLog(
+    //   'after removing ${urlData.firestoreId} urlslist: $favouriteCollectionsList',
+    // );
 
     final updatedFavouriteCollection = favouriteCollection.collection!.copyWith(
       urls: favouriteCollectionsList,
@@ -367,7 +385,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
-    Logger.printLog('calling url for cubits collections deleteurl');
+    // Logger.printLog('calling url for cubits collections deleteurl');
     _collectionsCubit
       ..deleteUrl(
         url: urlData,

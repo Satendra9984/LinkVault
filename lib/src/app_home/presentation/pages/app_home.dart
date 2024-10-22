@@ -11,7 +11,7 @@ import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.d
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_screen.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_page.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -243,6 +243,11 @@ class _AppHomePageState extends State<AppHomePage> {
                           builder: (ctx) => RssFeedCollectionStorePage(
                             collectionId: '$globalUser$RssFeed',
                             isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.compassSVG,
+                              height: 16,
+                              width: 16,
+                            ),
                           ),
                         ),
                       );
@@ -271,36 +276,36 @@ class _AppHomePageState extends State<AppHomePage> {
                   ),
 
                   // NEWSLETTERS
-                  ListTile(
-                    onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.newsletterSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Newsletters',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    // trailing: const Icon(
-                    //   Icons.arrow_forward_ios_rounded,
-                    //   color: ColourPallette.salemgreen,
-                    // ),
-                    trailing: SvgPicture.asset(
-                      MediaRes.comingSoonSVG,
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
+                  // ListTile(
+                  //   onTap: () {
+                  // Navigator.of(context).push(
+                  //   MaterialPageRoute(
+                  //     builder: (ctx) => const AdvanceSearchPage(),
+                  //   ),
+                  // );
+                  //   },
+                  //   leading: SvgPicture.asset(
+                  //     MediaRes.newsletterSVG,
+                  //     height: 20,
+                  //     width: 20,
+                  //   ),
+                  //   title: const Text(
+                  //     'Newsletters',
+                  //     style: TextStyle(
+                  //       fontSize: 18,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  //   // trailing: const Icon(
+                  //   //   Icons.arrow_forward_ios_rounded,
+                  //   //   color: ColourPallette.salemgreen,
+                  //   // ),
+                  //   trailing: SvgPicture.asset(
+                  //     MediaRes.comingSoonSVG,
+                  //     height: 24,
+                  //     width: 24,
+                  //   ),
+                  // ),
 
                   // SUPPORT US
                   ListTile(
@@ -342,7 +347,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       // );
                     },
                     leading: const Icon(
-                      Icons.change_circle ,
+                      Icons.change_circle,
                       color: ColourPallette.salemgreen,
                       size: 24,
                     ),

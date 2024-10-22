@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -103,7 +102,7 @@ Future<void> _initializeFirebase() async {
 
   const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
 
-  Logger.printLog('[FLAVOR]: $flavor');
+  // Logger.printLog('[FLAVOR]: $flavor');
 
   var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
 
@@ -146,11 +145,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.edgeToEdge,
-      overlays: [],
-    );
-
+    // SystemChrome.setEnabledSystemUIMode(
+    //   SystemUiMode.manual,
+    //   overlays: [
+    //     SystemUiOverlay.bottom,
+    //     SystemUiOverlay.top,
+    //   ],
+    // );
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -253,9 +254,18 @@ class MyApp extends StatelessWidget {
 
         BlocProvider(
           create: (context) => RssFeedCubit(
-              collectionCubit: context.read<CollectionsCubit>(),
-              collectionCrudCubit: context.read<CollectionCrudCubit>(),
-              globalUserCubit: context.read<GlobalUserCubit>(),),
+            collectionCubit: context.read<CollectionsCubit>(),
+            collectionCrudCubit: context.read<CollectionCrudCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
+            urlRepoImpl: UrlRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+            ),
+          ),
         ),
       ],
       child: MaterialApp(

@@ -30,7 +30,7 @@ class UrlLocalDataSourcesImpl {
         );
       }
     } catch (e) {
-      Logger.printLog('urloffline: initialize $e');
+      // Logger.printLog('urloffline: initialize $e');
 
       return;
     }
@@ -50,10 +50,10 @@ class UrlLocalDataSourcesImpl {
       if (urlModelOffline == null) {
         return null;
       }
-      // Logger.printLog('urloffline: fetchedUrl');
+      // // Logger.printLog('urloffline: fetchedUrl');
       return urlModelOffline.toUrlModel();
     } catch (e) {
-      Logger.printLog('fetchUrlLocal : $e');
+      // Logger.printLog('fetchUrlLocal : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -66,7 +66,7 @@ class UrlLocalDataSourcesImpl {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
-      // Logger.printLog(
+      // // Logger.printLog(
       //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
@@ -77,13 +77,13 @@ class UrlLocalDataSourcesImpl {
       if (urlModelOffline == null) {
         return null;
       }
-      // Logger.printLog(
+      // // Logger.printLog(
       //   'urloffline: fetchedUrlOfflineModel ${urlModelOffline.id}, ${urlModelOffline.firestoreId}',
       // );
 
       return urlModelOffline;
     } catch (e) {
-      Logger.printLog('fetchUrlOffline : $e');
+      // Logger.printLog('fetchUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -109,11 +109,11 @@ class UrlLocalDataSourcesImpl {
         },
       );
 
-      // Logger.printLog('urloffline: addedUrl');
+      // // Logger.printLog('urloffline: addedUrl');
 
       return urlModelOffline.toUrlModel();
     } catch (e) {
-      Logger.printLog('addUrlOffline : $e');
+      // Logger.printLog('addUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -126,7 +126,7 @@ class UrlLocalDataSourcesImpl {
   Future<void> updateUrl(UrlModel urlModel) async {
     try {
       await _initializeIsar();
-      // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
+      // // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
       if (_isar == null) return;
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
@@ -136,7 +136,7 @@ class UrlLocalDataSourcesImpl {
         (urlModelOffline) async {
           // if (urlModelOffline == null) return;
 
-          // Logger.printLog(
+          // // Logger.printLog(
           //   'fetchedUpdate: ${urlModelOffline != null}, ${urlModelOffline?.id}',
           // );
 
@@ -144,7 +144,7 @@ class UrlLocalDataSourcesImpl {
               urlModelOffline?.copyWith(urlModel: urlModel) ??
                   UrlModelOffline.fromUrlModel(urlModel);
 
-          // Logger.printLog('fetchedUpdate: updated ${updatedUrlOffline.id}');
+          // // Logger.printLog('fetchedUpdate: updated ${updatedUrlOffline.id}');
 
           await _isar!.writeTxn(
             () async {
@@ -153,11 +153,11 @@ class UrlLocalDataSourcesImpl {
           );
         },
       );
-      // Logger.printLog('urloffline: updatedUrl');
+      // // Logger.printLog('urloffline: updatedUrl');
 
       return;
     } catch (e) {
-      Logger.printLog('updateUrlOffline : $e');
+      // Logger.printLog('updateUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -184,9 +184,9 @@ class UrlLocalDataSourcesImpl {
           );
         },
       );
-      // Logger.printLog('urloffline: deletedUrl');
+      // // Logger.printLog('urloffline: deletedUrl');
     } catch (e) {
-      Logger.printLog('deleteUrlOffline : $e');
+      // Logger.printLog('deleteUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,

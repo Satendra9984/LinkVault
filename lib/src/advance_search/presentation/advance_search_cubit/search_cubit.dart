@@ -67,9 +67,9 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     final collectionsIndex = state.collections.length;
 
     createStartDate.value ??= DateTime(2024, 7);
-    createEndDate.value ??= DateTime.now();
+    createEndDate.value ??= DateTime.now().toUtc();
     updatedStartDate.value ??= DateTime(2024, 7);
-    updatedEndDate.value ??= DateTime.now();
+    updatedEndDate.value ??= DateTime.now().toUtc();
 
     await _searchingRepoImpl
         .searchLocalDatabase(
@@ -116,9 +116,9 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     final urlsIndex = state.urls.length;
 
     createStartDate.value ??= DateTime(2024, 7);
-    createEndDate.value ??= DateTime.now();
+    createEndDate.value ??= DateTime.now().toUtc();
     updatedStartDate.value ??= DateTime(2024, 7);
-    updatedEndDate.value ??= DateTime.now();
+    updatedEndDate.value ??= DateTime.now().toUtc();
 
     await _searchingRepoImpl
         .searchLocalURLs(
@@ -144,7 +144,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
                   return element.isFavourite != _isFavouriteNotifier.value;
                 },
               );
-            // Logger.printLog(
+            // // Logger.printLog(
             //   'urls length: ${urls.length}, isFav: ${isFavourite.value}',
             // );
             emit(

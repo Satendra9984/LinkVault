@@ -25,7 +25,7 @@ Future<Uint8List?> compressAndFetchImage(
   final compressImage = params['compressImage'] as bool;
   final maxSize = params['maxSize'] as int;
 
-  // Logger.printLog('[img] : computing $imageUrl');
+  // // Logger.printLog('[img] : computing $imageUrl');
   final result = await UrlParsingService.fetchImageAsUint8List(
     imageUrl,
     maxSize: maxSize,
@@ -33,7 +33,7 @@ Future<Uint8List?> compressAndFetchImage(
     quality: 75,
   );
 
-  // Logger.printLog('[img] : computed ${result != null}');
+  // // Logger.printLog('[img] : computed ${result != null}');
   return result;
 }
 
@@ -59,14 +59,14 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     imagesData[imageUrl] = ValueNotifier(networkImageCacheModel);
     emit(state.copyWith(imagesData: imagesData));
 
-    // Logger.printLog('[img] : $imageUrl addImage');
+    // // Logger.printLog('[img] : $imageUrl addImage');
     // Add the image loading task to the queue manager
     // _imageQueueManager.addTask(
     //   () async {
     final stopWatch = Stopwatch()..start();
     final localImageBytes = await _localImageDataSource.getImageData(imageUrl);
 
-    // Logger.printLog(
+    // // Logger.printLog(
     //   '[img] : ${stopWatch.elapsedMilliseconds}ms in local storage ${localImageBytes != null}',
     // );
 
@@ -122,14 +122,14 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
 
       // Cache image locally if not already cached
       if (localImageBytes == null) {
-        // Logger.printLog('[img] : ${imageUrl} storing in local storage');
+        // // Logger.printLog('[img] : ${imageUrl} storing in local storage');
         await _localImageDataSource.addImageData(
           imageUrl: imageUrl,
           imageBytes: imageBytes,
         );
       }
       stopWatch.stop();
-      // Logger.printLog(
+      // // Logger.printLog(
       //   '[img] : stop ${stopWatch.elapsedMilliseconds}ms storing in local storage',
       // );
     }
@@ -145,7 +145,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     final stopWatch = Stopwatch()..start();
     final localImageBytes = await _localImageDataSource.getImageData(imageUrl);
 
-    // Logger.printLog(
+    // // Logger.printLog(
     //   '[img] : ${stopWatch.elapsedMilliseconds}ms in local storage ${localImageBytes != null}',
     // );
 
@@ -199,14 +199,14 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
 
       // Cache image locally if not already cached
       if (localImageBytes == null) {
-        // Logger.printLog('[img] : ${imageUrl} storing in local storage');
+        // // Logger.printLog('[img] : ${imageUrl} storing in local storage');
         await _localImageDataSource.addImageData(
           imageUrl: imageUrl,
           imageBytes: imageBytes,
         );
       }
       stopWatch.stop();
-      // Logger.printLog(
+      // // Logger.printLog(
       //   '[img] : stop ${stopWatch.elapsedMilliseconds}ms storing in local storage',
       // );
     }
@@ -246,10 +246,10 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
             emit(state.copyWith(imagesData: imagesData));
             return;
           }
-          
+
           // fileInfo.file.le
           // final imageBytes = await fileInfo.file.readAsBytes();
-          // final fileSize = 
+          // final fileSize =
           // // ImageUtils.getImageDimFromUintData(imageBytes) ??
           //     const ui.Size(1, 1);
 
@@ -277,7 +277,8 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
   }
 
   void updateStateWithList(
-      Map<String, ValueNotifier<NetworkImageCacheModel>> images,) {
+    Map<String, ValueNotifier<NetworkImageCacheModel>> images,
+  ) {
     emit(
       state.copyWith(
         imagesData: {...state.imagesData, ...images},

@@ -7,20 +7,20 @@ import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/add_url_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_url_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/url_favicon_list_template_screen.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DashboardUrlFaviconListScreen extends StatefulWidget {
   const DashboardUrlFaviconListScreen({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.isRootCollection,
     required this.showAddUrlButton,
     required this.appBarLeadingIcon,
     super.key,
   });
 
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
   final bool isRootCollection;
   final bool showAddUrlButton;
   final Widget appBarLeadingIcon;
@@ -38,8 +38,9 @@ class _DashboardUrlFaviconListScreenState
       context,
       MaterialPageRoute(
         builder: (ctx) => AddUrlTemplateScreen(
-          parentCollection: widget.collectionFetchModel.collection!,
+          parentCollection: widget.collectionModel,
           url: url,
+          isRootCollection: widget.isRootCollection,
         ),
       ),
     );
@@ -49,7 +50,7 @@ class _DashboardUrlFaviconListScreenState
   Widget build(BuildContext context) {
     super.build(context);
     return UrlFaviconListTemplateScreen(
-      collectionFetchModel: widget.collectionFetchModel,
+      collectionModel: widget.collectionModel,
       showAddUrlButton: widget.showAddUrlButton,
       onAddUrlPressed: _onAddUrlPressed,
       appBar: _appBarBuilder,
@@ -73,13 +74,16 @@ class _DashboardUrlFaviconListScreenState
         }
       },
       // [TODO] : THIS IS DYNAMIC FIELD
-      onDoubleTap: (urlMetaData) {
+      onLongPress: (urlMetaData) {
         final urlc = url.copyWith(metaData: urlMetaData);
 
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (ctx) => UpdateUrlTemplateScreen(urlModel: urlc),
+            builder: (ctx) => UpdateUrlTemplateScreen(
+              urlModel: urlc,
+              isRootCollection: widget.isRootCollection,
+            ),
           ),
         );
       },
@@ -98,7 +102,7 @@ class _DashboardUrlFaviconListScreenState
           widget.appBarLeadingIcon,
           const SizedBox(width: 8),
           Text(
-            '${widget.isRootCollection ? 'LinkVault' : widget.collectionFetchModel.collection?.name}',
+            widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

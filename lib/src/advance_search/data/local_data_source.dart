@@ -1,4 +1,3 @@
-
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
@@ -34,7 +33,7 @@ class SearchLocalDataSourcesImpl {
         );
       }
     } catch (e) {
-      Logger.printLog('Collectionoffline: initialize $e');
+      // // Logger.printLog('Collectionoffline: initialize $e');
 
       return;
     }
@@ -55,12 +54,12 @@ class SearchLocalDataSourcesImpl {
       if (collectionModelOffline == null) {
         return null;
       }
-      // Logger.printLog('Collectionoffline: fetchedCollection');
+      // // Logger.printLog('Collectionoffline: fetchedCollection');
       final coll = collectionModelOffline.toCollectionModel();
 
       return coll;
     } catch (e) {
-      Logger.printLog('fetchCollectionLocal : $e');
+      // // Logger.printLog('fetchCollectionLocal : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -89,7 +88,7 @@ class SearchLocalDataSourcesImpl {
         });
       }
     } catch (e) {
-      Logger.printLog('Error migrating collections : $e');
+      // // Logger.printLog('Error migrating collections : $e');
       throw ServerException(
         message: 'Error migrating collections',
         statusCode: 500,
@@ -117,7 +116,7 @@ class SearchLocalDataSourcesImpl {
         });
       }
     } catch (e) {
-      Logger.printLog('Error migrating URLs : $e');
+      // // Logger.printLog('Error migrating URLs : $e');
       throw ServerException(
         message: 'Error migrating URLs',
         statusCode: 500,
@@ -151,15 +150,17 @@ class SearchLocalDataSourcesImpl {
           _isar!.collection<CollectionModelOffline>();
 
       // await _isar!.collectionModelOfflines;
-      Logger.printLog('nameSearch: $nameSearch');
+      // // Logger.printLog('nameSearch: $nameSearch');
       var queryBuilder = collectionModelOfflineCollection
           .filter()
-          .group((q) => q
-              .nameIsNull()
-              .or()
-              .nameIsEmpty()
-              .or()
-              .nameContains(nameSearch, caseSensitive: false),)
+          .group(
+            (q) => q
+                .nameIsNull()
+                .or()
+                .nameIsEmpty()
+                .or()
+                .nameContains(nameSearch, caseSensitive: false),
+          )
           .createdAtBetween(createdAtStart, createdAtEnd)
           .updatedAtBetween(
             updatedAtStart,
@@ -180,7 +181,7 @@ class SearchLocalDataSourcesImpl {
           },
         );
         // final combinedCategories = '|${categoryFilters.join('|')}|';
-        // Logger.printLog('combinedcat: $combinedCategories');
+        // // Logger.printLog('combinedcat: $combinedCategories');
         // queryBuilder = queryBuilder.and().categoryMatches(
         //       '.*\\|$combinedCategories.*',
         //       caseSensitive: false,
@@ -199,7 +200,7 @@ class SearchLocalDataSourcesImpl {
 
       return collections;
     } catch (e) {
-      Logger.printLog('Error searching collections : $e');
+      // // Logger.printLog('Error searching collections : $e');
       throw ServerException(
         message: 'Error Searching collections',
         statusCode: 500,
@@ -234,7 +235,7 @@ class SearchLocalDataSourcesImpl {
           _isar!.collection<UrlModelOffline>();
 
       // await _isar!.collectionModelOfflines;
-      // Logger.printLog('nameSearch: $nameSearch');
+      // // Logger.printLog('nameSearch: $nameSearch');
       var queryBuilder = collectionModelOfflineCollection
           .filter()
           .group(
@@ -273,7 +274,7 @@ class SearchLocalDataSourcesImpl {
           },
         );
         // final combinedCategories = '|${categoryFilters.join('|')}|';
-        // Logger.printLog('combinedcat: $combinedCategories');
+        // // Logger.printLog('combinedcat: $combinedCategories');
         // queryBuilder = queryBuilder.and().categoryMatches(
         //       '.*\\|$combinedCategories.*',
         //       caseSensitive: false,
@@ -292,7 +293,7 @@ class SearchLocalDataSourcesImpl {
 
       return collections;
     } catch (e) {
-      Logger.printLog('Error searching collections : $e');
+      // Logger.printLog('Error searching collections : $e');
       throw ServerException(
         message: 'Error Searching collections',
         statusCode: 500,

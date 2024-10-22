@@ -21,7 +21,7 @@ class RemoteDataSource {
     if (response.statusCode == 200) {
       return content;
     } else {
-      Logger.printLog('error in "fetchRssFeed" status code error');
+      // Logger.printLog('error in "fetchRssFeed" status code error');
       return null;
     }
   }

@@ -40,7 +40,7 @@ class RewardedAdRepoImpl {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) async {
-          // Logger.printLog('$ad loaded.');
+          // // Logger.printLog('$ad loaded.');
           _rewardedAd = ad;
           if (!completer.isCompleted) {
             completer.complete(const Right(unit));
@@ -65,7 +65,7 @@ class RewardedAdRepoImpl {
       ),
     ).catchError(
       (e) {
-        Logger.printLog('[ads] : $e');
+        // Logger.printLog('[ads] : $e');
         if (!completer.isCompleted) {
           completer.complete(
             Left(

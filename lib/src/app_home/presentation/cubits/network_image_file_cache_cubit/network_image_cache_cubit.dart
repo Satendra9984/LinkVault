@@ -19,7 +19,7 @@ part 'network_image_cache_state.dart';
 //   final compressImage = params['compressImage'] as bool;
 //   final maxSize = params['maxSize'] as int;
 
-//   Logger.printLog('[img] : computing $imageUrl');
+//   // Logger.printLog('[img] : computing $imageUrl');
 //   final result = await UrlParsingService.fetchImageAsUint8List(
 //     imageUrl,
 //     maxSize: maxSize,
@@ -27,7 +27,7 @@ part 'network_image_cache_state.dart';
 //     quality: 75,
 //   );
 
-//   Logger.printLog('[img] : computed ${result != null}');
+//   // Logger.printLog('[img] : computed ${result != null}');
 //   return result;
 // }
 
@@ -94,7 +94,8 @@ class NetworkImageFileCacheCubit extends Cubit<NetworkImageFileCacheState> {
   }
 
   void updateStateWithList(
-      Map<String, ValueNotifier<NetworkImageCacheModel>> images,) {
+    Map<String, ValueNotifier<NetworkImageCacheModel>> images,
+  ) {
     emit(
       state.copyWith(
         imagesData: {...state.imagesData, ...images},

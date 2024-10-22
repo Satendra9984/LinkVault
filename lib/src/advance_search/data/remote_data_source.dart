@@ -13,7 +13,6 @@ class RemoteDataSourcesImpl {
 
   final FirebaseFirestore _firestore;
 
-
   /// It will use `userId` to fetch root collection currently
   Future<CollectionModel?> fetchCollection({
     required String collectionId,
@@ -28,10 +27,10 @@ class RemoteDataSourcesImpl {
           .doc(collectionId)
           .get();
 
-      // Logger.printLog('path: ${response.reference.path}, ');
+      // // Logger.printLog('path: ${response.reference.path}, ');
 
       final data = response.data();
-      // Logger.printLog(
+      // // Logger.printLog(
       //     'path: ${response.reference.path}, data: ${data == null}');
 
       if (data == null) {
@@ -41,7 +40,7 @@ class RemoteDataSourcesImpl {
 
       // user is not using first time
       data['id'] = response.id;
-      // Logger.printLog(StringUtils.getJsonFormat(data));
+      // // Logger.printLog(StringUtils.getJsonFormat(data));
 
       final collectionModel = CollectionModel.fromJson(data);
 
@@ -85,7 +84,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('fetchUrl : urlId $urlId');
+      // // Logger.printLog('fetchUrl : urlId $urlId');
 
       final response = await _firestore
           .collection(userCollection)
@@ -95,7 +94,7 @@ class RemoteDataSourcesImpl {
           .get();
       final data = response.data();
       if (data == null) {
-        Logger.printLog('Url data is null');
+        // // Logger.printLog('Url data is null');
         throw ServerException(
           message: 'Something Went Wrong',
           statusCode: 400,
@@ -106,16 +105,11 @@ class RemoteDataSourcesImpl {
 
       return fetchedUrlData;
     } catch (e) {
-      Logger.printLog('fetchUrl : $e');
+      // // Logger.printLog('fetchUrl : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
       );
     }
   }
-
-
-
-
-
 }

@@ -44,9 +44,9 @@ class CustomImagesCacheManager {
   Future<FileInfo?> getImageFile(String imageUrl, String cacheKey) async {
     var cacheManager = _getCacheManager(cacheKey);
     if (cacheManager == null) {
-      Logger.printLog(
-        'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',
-      );
+      // Logger.printLog(
+      //   'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',
+      // );
 
       initCacheManager(
         cacheKey: cacheKey,

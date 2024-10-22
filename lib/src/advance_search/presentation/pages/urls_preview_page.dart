@@ -213,6 +213,7 @@ class _SearchedUrlsPreviewListWidgetState
                                           builder: (ctx) =>
                                               UpdateUrlTemplateScreen(
                                             urlModel: url,
+                                            isRootCollection: false,
                                           ),
                                         ),
                                       ).then(

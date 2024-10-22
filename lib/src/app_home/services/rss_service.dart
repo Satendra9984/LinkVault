@@ -19,7 +19,7 @@ class RssXmlParsingService {
     try {
       // First, try the original URL (HTTP or HTTPS)
       var response = await client.get(Uri.parse(url)).timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 10 * 2),
         onTimeout: () {
           throw TimeoutException('Connection timed out');
         },
@@ -28,16 +28,16 @@ class RssXmlParsingService {
       if (response.statusCode == 200) {
         return XmlDocument.parse(response.body);
       } else {
-        Logger.printLog(
-          'HTTP error ${response.statusCode}: ${response.reasonPhrase}',
-        );
+        // // Logger.printLog(
+        //   'HTTP error ${response.statusCode}: ${response.reasonPhrase}',
+        // );
       }
 
       // If the original URL failed and it was HTTP, try HTTPS
       if (url.startsWith('https://')) {
         final httpsUrl = url.replaceFirst('https://', 'http://');
         response = await client.get(Uri.parse(httpsUrl)).timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 10 * 2),
           onTimeout: () {
             throw TimeoutException('HTTPS connection timed out');
           },
@@ -46,14 +46,14 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          Logger.printLog(
-            'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
-          );
+          // // Logger.printLog(
+          //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
+          // );
         }
       } else if (url.startsWith('http://')) {
         final httpsUrl = url.replaceFirst('http://', 'https://');
         response = await client.get(Uri.parse(httpsUrl)).timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 10 * 2),
           onTimeout: () {
             throw TimeoutException('HTTPS connection timed out');
           },
@@ -62,27 +62,44 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          Logger.printLog(
-            'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
-          );
+          // // Logger.printLog(
+          //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
+          // );
         }
       }
 
-      Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
+      // // Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
       return null;
     } catch (e) {
       if (e is TimeoutException) {
-        Logger.printLog('Connection timed out: $e');
+        // // Logger.printLog(
+        //   'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
+        // );
+        throw const HttpException(
+          'Slow Internet.Try Using Wi-Fi if Using Mobile Internet.',
+        );
       } else if (e is SocketException) {
-        Logger.printLog('Socket error: $e');
+        // // Logger.printLog('Socket error: $e');
+        throw const HttpException(
+          'Slow Internet.Try Using Wi-Fi sometime mobile internet not work.',
+        );
       } else if (e is FormatException) {
-        Logger.printLog('Invalid URL format: $e');
+        // // Logger.printLog('Invalid URL format: $e');
+        throw const HttpException(
+          'Invalid RSS Feed Address.',
+        );
       } else if (e is XmlParserException) {
-        Logger.printLog('XML parsing error: $e');
+        // // Logger.printLog('XML parsing error: $e');
+        throw const HttpException(
+          'Invalid RSS Feed Address',
+        );
       } else {
-        Logger.printLog('Unexpected error in fetchRssFeed: $e');
+        // // Logger.printLog('Unexpected error in fetchRssFeed: $e');
+        throw const HttpException(
+          'Something Went Wrong.',
+        );
       }
-      return null;
+      // return null;
     } finally {
       client.close();
     }
@@ -163,7 +180,7 @@ class RssXmlParsingService {
 
         final itemTitle = extractText(item, 'title');
         var itemDescription = extractDescription(item);
-        // Logger.printLog('[rss] : BannerImg from desc $itemDescription');
+        // // Logger.printLog('[rss] : BannerImg from desc $itemDescription');
 
         final bannerImageUrl = _extractBannerImageUrl(item.copy()) ??
             getBannerImageUrlFromHtml(itemDescription ?? '');
@@ -209,7 +226,7 @@ class RssXmlParsingService {
 
       return feedItems;
     } catch (e) {
-      Logger.printLog('error in "parseRssFeed" $e');
+      // // Logger.printLog('error in "parseRssFeed" $e');
       return feedItems;
     }
   }
@@ -232,15 +249,16 @@ class RssXmlParsingService {
       'description',
       'summary',
       'content',
-      'media:description'
+      'media:description',
     ];
 
     // Loop through the description tags to find the first non-empty description
     for (final tag in descriptionTags) {
       final descriptionElement = itemElement.findElements(tag).firstWhere(
-          (element) =>
-              element.children.isNotEmpty && element.text.trim().isNotEmpty,
-          orElse: () => XmlElement(XmlName('')));
+            (element) =>
+                element.children.isNotEmpty && element.text.trim().isNotEmpty,
+            orElse: () => XmlElement(XmlName('')),
+          );
 
       if (descriptionElement.name.local.isNotEmpty &&
           descriptionElement.text.trim().isNotEmpty) {
@@ -267,10 +285,10 @@ class RssXmlParsingService {
       final document = html_parser.parse(htmlString);
 
       final bannerImageUrl = UrlParsingService.extractImageUrl(document);
-      // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
+      // // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
       return bannerImageUrl;
     } catch (e) {
-      Logger.printLog('[rss] : BannerImgError from html $e');
+      // // Logger.printLog('[rss] : BannerImgError from html $e');
       return null;
     }
   }
@@ -314,7 +332,7 @@ class RssXmlParsingService {
 
 // Helper to extract the best link from RSS/Atom feeds
   static String? extractFeedItemLink(XmlElement element) {
-    // Logger.printLog('[link] : ${element.toString()}');
+    // // Logger.printLog('[link] : ${element.toString()}');
 
     try {
       // Case 1: Standard <link> element (without attributes)
@@ -322,7 +340,7 @@ class RssXmlParsingService {
       if (linkTag != null && linkTag.text.isNotEmpty) {
         return linkTag.text.trim();
       }
-      // Logger.printLog('[link] : now searching atom:link');
+      // // Logger.printLog('[link] : now searching atom:link');
 
       // Case 2: <atom:link> element with href attribute
       final atomLinkTag = element.findElements('atom:link').firstOrNull;
@@ -333,14 +351,14 @@ class RssXmlParsingService {
         }
       }
 
-      // Logger.printLog('[link] : now searching ispermalink');
+      // // Logger.printLog('[link] : now searching ispermalink');
 
       // Case 3: <guid isPermaLink="true"> element
       final guidTag = element.findElements('guid').firstOrNull;
       if (guidTag != null && guidTag.getAttribute('isPermaLink') == 'true') {
         return guidTag.text.trim();
       }
-      // Logger.printLog('[link] : now searching link');
+      // // Logger.printLog('[link] : now searching link');
 
       // Case 4: <link rel="alternate" href="..."> element
       final alternateLinkTag = element.findElements('link').firstOrNull;
@@ -361,12 +379,12 @@ class RssXmlParsingService {
           return href.trim();
         }
       }
-      // Logger.printLog('[link] : returning null');
+      // // Logger.printLog('[link] : returning null');
 
       // If no suitable link is found, return null
       return null;
     } catch (e) {
-      // Logger.printLog('[link] : could not find link: $e');
+      // // Logger.printLog('[link] : could not find link: $e');
       return null;
     }
   }
@@ -412,7 +430,7 @@ class RssXmlParsingService {
     for (final mediaElement in mediaElements) {
       final url = mediaElement.getAttribute('url') ?? '';
       if (_isImageUrl(url)) {
-        // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
+        // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
         return url;
       }
     }
@@ -422,7 +440,7 @@ class RssXmlParsingService {
       for (final attribute in element.attributes) {
         final url = attribute.value;
         if (_isImageUrl(url)) {
-          // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
+          // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
           return url;
         }
       }
@@ -458,7 +476,7 @@ class RssXmlParsingService {
       }
       return null;
     } catch (e) {
-      // Logger.printLog('[rss]: pubdate _extractDate: $e');
+      // // Logger.printLog('[rss]: pubdate _extractDate: $e');
       return null;
     }
   }
@@ -468,11 +486,11 @@ class RssXmlParsingService {
     try {
       // Common RSS date formats (RFC822 for example)
       final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss Z', 'en_US');
-      // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
+      // // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
 
       return rfc822Format.parse(dateString);
     } catch (e) {
-      // Logger.printLog('[rss]: pubdate _parseDate: $e');
+      // // Logger.printLog('[rss]: pubdate _parseDate: $e');
 
       return null;
     }
@@ -494,7 +512,7 @@ class RssXmlParsingService {
 
       // If not found, check for Atom <link> elements with href attribute
       final atomLinkElements = channel.findAllElements('link');
-      // Logger.printLog('links: $atomLinkElements');
+      // // Logger.printLog('links: $atomLinkElements');
       if (atomLinkElements.isEmpty) {
         return null;
       }
@@ -508,7 +526,7 @@ class RssXmlParsingService {
       final baseUrl = alternateLinkElement.getAttribute('href')?.trim();
       return _validateAndFixUrl(baseUrl);
     } catch (e) {
-      Logger.printLog('Error in getBaseUrlFromRssData $e');
+      // // Logger.printLog('Error in getBaseUrlFromRssData $e');
       return null;
     }
   }

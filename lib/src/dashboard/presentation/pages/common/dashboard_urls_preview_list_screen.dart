@@ -5,22 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/src/app_home/presentation/pages/common/update_url_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/url_preview_list_template_screen.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 
 class UrlsPreviewListScreen extends StatefulWidget {
   const UrlsPreviewListScreen({
     required this.showBottomBar,
     required this.isRootCollection,
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.appBarLeadingIcon,
     super.key,
   });
 
   final ValueNotifier<bool> showBottomBar;
   final bool isRootCollection;
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
   final Widget appBarLeadingIcon;
 
   @override
@@ -34,9 +35,20 @@ class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
     super.build(context);
 
     return UrlPreviewListTemplateScreen(
-      collectionFetchModel: widget.collectionFetchModel,
+      collectionModel: widget.collectionModel,
       showAddUrlButton: false,
       onAddUrlPressed: ({String? url}) {},
+      onLongPress: (urlModel) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => UpdateUrlTemplateScreen(
+              urlModel: urlModel,
+              isRootCollection: widget.isRootCollection,
+            ),
+          ),
+        );
+      },
       urlsEmptyWidget: _urlsEmptyWidget(),
       showBottomNavBar: widget.showBottomBar,
       appBar: _appBarBuilder,
@@ -54,7 +66,7 @@ class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
           widget.appBarLeadingIcon,
           const SizedBox(width: 8),
           Text(
-            '${widget.isRootCollection ? 'LinkVault' : widget.collectionFetchModel.collection?.name}',
+            widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

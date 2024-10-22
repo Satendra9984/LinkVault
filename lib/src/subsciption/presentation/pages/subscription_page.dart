@@ -7,7 +7,6 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/container_button.dart';
-import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
@@ -184,8 +183,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             } else {
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                  // builder: (context) =>
-                                  //     const DashboardHomePage(),
                                   builder: (ctx) => const AppHomePage(),
                                 ),
                                 (route) => false,
@@ -197,7 +194,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             color: ColourPallette.mountainMeadow,
                           ),
                           icon: const Text(
-                            'Go To Dashboard',
+                            'Go To Home',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -252,38 +249,38 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         ],
       ),
       alignment: Alignment.center,
-      actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: ContainerButton(
-                text: 'Back',
-                onPressed: () => Navigator.pop(context),
-                // backgroundColor: Colors.green,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: CustomElevatedButton(
-                text: 'Dashboard',
-                onPressed: () {
-                  if (Navigator.canPop(context)) {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  } else {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        // builder: (context) => const DashboardHomePage(),
-                        builder: (ctx) => const AppHomePage(),
-                      ),
-                      (route) => false,
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
+      actions: const [
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     Expanded(
+        //       child: ContainerButton(
+        //         text: 'Back',
+        //         onPressed: () => Navigator.pop(context),
+        //         // backgroundColor: Colors.green,
+        //       ),
+        //     ),
+        //     const SizedBox(width: 8),
+        //     Expanded(
+        //       child: CustomElevatedButton(
+        //         text: 'Dashboard',
+        //         onPressed: () {
+        //           if (Navigator.canPop(context)) {
+        //             Navigator.of(context).popUntil((route) => route.isFirst);
+        //           } else {
+        //             Navigator.of(context).pushAndRemoveUntil(
+        //               MaterialPageRoute(
+        //                 // builder: (context) => const DashboardHomePage(),
+        //                 builder: (ctx) => const AppHomePage(),
+        //               ),
+        //               (route) => false,
+        //             );
+        //           }
+        //         },
+        //       ),
+        //     ),
+        //   ],
+        // ),
       ],
     );
   }

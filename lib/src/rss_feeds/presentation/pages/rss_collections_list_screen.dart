@@ -7,17 +7,20 @@ import 'package:link_vault/src/app_home/presentation/pages/common/add_collection
 import 'package:link_vault/src/app_home/presentation/pages/common/collection_list_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_collection_template_screen.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_page.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 
 class RssCollectionsListScreen extends StatefulWidget {
   const RssCollectionsListScreen({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.isRootCollection,
+    required this.appBarLeadingIcon,
     super.key,
   });
 
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
   final bool isRootCollection;
+  final Widget appBarLeadingIcon;
 
   @override
   State<RssCollectionsListScreen> createState() =>
@@ -31,7 +34,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
       context,
       MaterialPageRoute(
         builder: (ctx) => AddCollectionTemplateScreen(
-          parentCollection: widget.collectionFetchModel.collection!,
+          parentCollection: widget.collectionModel,
         ),
       ),
     );
@@ -42,7 +45,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
     super.build(context);
     return CollectionsListScreenTemplate(
       onAddCollectionPressed: _onAddCollectionPressed,
-      collectionFetchModel: widget.collectionFetchModel,
+      collectionModel: widget.collectionModel,
       showAddCollectionButton: true,
       onCollectionItemFetchedWidget: _collectionItemBuilder,
       appBar: _getAppBar,
@@ -73,6 +76,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
             builder: (ctx) => RssFeedCollectionStorePage(
               collectionId: subCollection.collection!.id,
               isRootCollection: false,
+              appBarLeadingIcon: widget.appBarLeadingIcon,
             ),
           ),
         );
@@ -96,7 +100,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
           ),
           const SizedBox(width: 8),
           Text(
-            '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}(Preview)',
+            widget.isRootCollection ? 'My Feeds' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

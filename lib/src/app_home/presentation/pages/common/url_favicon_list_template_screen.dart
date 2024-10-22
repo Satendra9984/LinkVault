@@ -5,7 +5,7 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
@@ -13,7 +13,7 @@ import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit
 class UrlFaviconListTemplateScreen extends StatefulWidget {
   const UrlFaviconListTemplateScreen({
     // required this.title,
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.showAddUrlButton,
     required this.onAddUrlPressed,
     required this.urlsEmptyWidget,
@@ -24,7 +24,7 @@ class UrlFaviconListTemplateScreen extends StatefulWidget {
 
   // final String title;
   final bool showAddUrlButton;
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
 
   // Dynamic Widgets
   final void Function({String? url}) onAddUrlPressed;
@@ -79,16 +79,16 @@ class _UrlFaviconListTemplateScreenState
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // Logger.printLog('[scroll] Called on scroll in urlslist');
+      // // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
   }
 
   void _fetchMoreUrls() {
-    final fetchCollection = widget.collectionFetchModel;
+    final fetchCollection = widget.collectionModel;
 
     context.read<CollectionsCubit>().fetchMoreUrls(
-          collectionId: fetchCollection.collection!.id,
+          collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
         );
   }
@@ -207,8 +207,8 @@ class _UrlFaviconListTemplateScreenState
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
-            final availableUrls = state
-                .collectionUrls[widget.collectionFetchModel.collection!.id];
+            final availableUrls =
+                state.collectionUrls[widget.collectionModel.id];
 
             if (availableUrls == null || availableUrls.isEmpty) {
               _fetchMoreUrls();

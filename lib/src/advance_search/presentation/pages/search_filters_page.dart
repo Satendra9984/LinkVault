@@ -35,9 +35,9 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
     final searchCubit = context.read<AdvanceSearchCubit>();
 
     searchCubit.createStartDate.value = DateTime(2024, 7);
-    searchCubit.createEndDate.value = DateTime.now();
+    searchCubit.createEndDate.value = DateTime.now().toUtc();
     searchCubit.updatedStartDate.value = DateTime(2024, 7);
-    searchCubit.updatedEndDate.value = DateTime.now();
+    searchCubit.updatedEndDate.value = DateTime.now().toUtc();
   }
 
   Future<void> _onScroll() async {
@@ -113,7 +113,9 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                           children: [
                             const Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 4,),
+                                horizontal: 4,
+                                vertical: 4,
+                              ),
                               child: Text(
                                 'Created Time Range',
                                 style: TextStyle(
@@ -170,7 +172,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                                           await showDatePicker(
                                             context: context,
                                             firstDate: DateTime(2024, 7),
-                                            lastDate: DateTime.now(),
+                                            lastDate: DateTime.now().toUtc(),
                                           ).then(
                                             (date) {
                                               if (date == null) return;
@@ -237,7 +239,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                                           await showDatePicker(
                                             context: context,
                                             firstDate: DateTime(2024, 7),
-                                            lastDate: DateTime.now(),
+                                            lastDate: DateTime.now().toUtc(),
                                           ).then(
                                             (date) {
                                               if (date == null) return;
@@ -287,7 +289,8 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                         }
 
                         if (searchCubit.updatedEndDate.value!.compareTo(
-                                searchCubit.updatedStartDate.value!,) <
+                              searchCubit.updatedStartDate.value!,
+                            ) <
                             0) {
                           return 'End Date Should be greater than Start Date';
                         }
@@ -299,7 +302,9 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                           children: [
                             const Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 4,),
+                                horizontal: 4,
+                                vertical: 4,
+                              ),
                               child: Text(
                                 'Updated Time Range',
                                 style: TextStyle(
@@ -356,7 +361,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                                           await showDatePicker(
                                             context: context,
                                             firstDate: DateTime(2024, 7),
-                                            lastDate: DateTime.now(),
+                                            lastDate: DateTime.now().toUtc(),
                                           ).then(
                                             (date) {
                                               if (date == null) return;
@@ -423,7 +428,7 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                                           await showDatePicker(
                                             context: context,
                                             firstDate: DateTime(2024, 7),
-                                            lastDate: DateTime.now(),
+                                            lastDate: DateTime.now().toUtc(),
                                           ).then(
                                             (date) {
                                               if (date == null) return;
@@ -473,7 +478,9 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                           children: [
                             const Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 4,),
+                                horizontal: 4,
+                                vertical: 4,
+                              ),
                               child: Text(
                                 'Categories',
                                 style: TextStyle(
@@ -707,13 +714,16 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2,),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
                             color:
                                 ColourPallette.mountainMeadow.withOpacity(0.25),
                             border: Border.all(
-                                color: ColourPallette.mountainMeadow,),
+                              color: ColourPallette.mountainMeadow,
+                            ),
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: const Row(

@@ -81,9 +81,9 @@ class UrlPreviewWidget extends StatelessWidget {
                         },
                         successWidgetBuilder: (imageData) {
                           final imageBytes = imageData.imageBytesData!;
-                          Logger.printLog(
-                            '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
-                          );
+                          // Logger.printLog(
+                          //   '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
+                          // );
 
                           if (imageData.uiImage != null) {
                             return CustomPaint(
@@ -181,9 +181,9 @@ class UrlPreviewWidget extends StatelessWidget {
                             },
                             successWidgetBuilder: (imageData) {
                               final imageBytes = imageData.imageBytesData!;
-                              Logger.printLog(
-                                '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
-                              );
+                              // Logger.printLog(
+                              //   '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
+                              // );
                               if (imageData.uiImage != null) {
                                 return CustomPaint(
                                   size: const Size(16, 16),
@@ -326,7 +326,7 @@ class UrlPreviewWidget extends StatelessWidget {
         var width = bannerImageDim.width;
         var height = bannerImageDim.height;
 
-        // Logger.printLog(
+        // // Logger.printLog(
         //   '[bannerimage] : ${imageData.imageUrl.substring(0, 32)}, ${bannerImageAspectRatio}, screen: $size, ui.Image: ${imageData.uiImage != null}',
         // );
 

@@ -3,7 +3,10 @@ import 'package:flutter/scheduler.dart';
 
 class ImageFileWidget extends StatefulWidget {
   const ImageFileWidget({
-    required this.child, required this.postFrameCallback, required this.initials, super.key,
+    required this.child,
+    required this.postFrameCallback,
+    required this.initials,
+    super.key,
   });
 
   final Widget child;
@@ -35,20 +38,20 @@ class _ImageFileWidgetState extends State<ImageFileWidget> {
             _childKey.currentContext?.findRenderObject() as RenderBox?;
 
         if (renderBox != null && renderBox.hasSize) {
-          // Logger.printLog(
+          // // Logger.printLog(
           //   '${widget.initials} child rendered: ${renderBox.size}',
           // );
           widget.postFrameCallback();
         } else if (_renderCount > 50) {
           widget.postFrameCallback();
-          // Logger.printLog(
+          // // Logger.printLog(
           //   '${widget.initials} child rendered: $_renderCount renderbox == null',
           // );
           return;
         } else {
           // If layout is not complete, call again in the next frame
           _renderCount++;
-          // Logger.printLog(
+          // // Logger.printLog(
           //   '${widget.initials} child rendered: $_renderCount renderbox == null',
           // );
           _ensureLayoutComplete();

@@ -2,3 +2,5 @@
 
 const rssFeedStalePeriodHours = 8;
 const maxNrOfCacheObjects = 1000;
+
+const savedFeeds = 'saved_feeds';

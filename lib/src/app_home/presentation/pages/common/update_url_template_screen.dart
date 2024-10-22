@@ -13,15 +13,21 @@ import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
+import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 
 class UpdateUrlTemplateScreen extends StatefulWidget {
   const UpdateUrlTemplateScreen({
     required this.urlModel,
+    required this.isRootCollection,
+    this.onDeleteURLCallback,
+    this.onUpdateURLCallback,
     super.key,
   });
   final UrlModel urlModel;
-
+  final bool isRootCollection;
+  final void Function(UrlModel)? onDeleteURLCallback;
+  final void Function(UrlModel)? onUpdateURLCallback;
   @override
   State<UpdateUrlTemplateScreen> createState() =>
       _UpdateUrlTemplateScreenState();
@@ -73,15 +79,22 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         metaData: urlMetaData,
       );
 
-      await urlCrudCubit.updateUrl(
+      await urlCrudCubit
+          .updateUrl(
         urlData: urlModelData,
+      )
+          .then(
+        (_) {
+          if (widget.onUpdateURLCallback == null) return;
+          widget.onUpdateURLCallback!(urlModelData);
+        },
       );
     }
   }
 
   Future<void> _loadPreview() async {
     if (_urlAddressController.text.isEmpty) {
-      Logger.printLog('url address is empty');
+      // // Logger.printLog('url address is empty');
       _previewLoadingStates.value = LoadingStates.errorLoading;
       _previewError.value =
           GeneralFailure(message: 'Url Address is empty', statusCode: '400');
@@ -94,10 +107,10 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
 
-    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+    // // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
-      // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+      // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
       _previewMetaData.value = metaData;
       _previewLoadingStates.value = LoadingStates.loaded;
       _previewError.value = null;
@@ -112,7 +125,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       /// AND TO SAVE DB SPACE
       // if (_urlDescriptionController.text.isEmpty &&
       //     metaData.description != null) {
-      //   Logger.printLog('desclen: ${metaData.description?.length}');
+      //   // Logger.printLog('desclen: ${metaData.description?.length}');
       //   if (metaData.description!.length > 1000) {
       //     _urlDescriptionController.text =
       //         metaData.description?.substring(0, 1000) ?? '';
@@ -130,9 +143,9 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       return;
     }
     // }
-    Logger.printLog(
-      'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
-    );
+    // // Logger.printLog(
+    //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
+    // );
     _previewLoadingStates.value = LoadingStates.loaded;
     await _showPreviewBottomSheet(context);
   }
@@ -190,9 +203,19 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () => context.read<UrlCrudCubit>().deleteUrl(
-                  urlData: widget.urlModel,
-                ),
+            onPressed: () async {
+              await context
+                  .read<UrlCrudCubit>()
+                  .deleteUrl(
+                    urlData: widget.urlModel,
+                    isRootCollection: widget.isRootCollection,
+                  )
+                  .then((_) {
+                if (widget.onDeleteURLCallback != null) {
+                  widget.onDeleteURLCallback!(widget.urlModel);
+                }
+              });
+            },
             icon: const Icon(
               Icons.delete_rounded,
             ),

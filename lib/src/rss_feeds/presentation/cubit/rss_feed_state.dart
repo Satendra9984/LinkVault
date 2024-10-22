@@ -23,7 +23,7 @@ class RssFeedModel extends Equatable {
   const RssFeedModel({
     required this.allFeeds,
     required this.loadingStates,
-    required this.loadingMoreStates,
+    required this.refreshState,
   });
 
   // Initial state constructor for convenience
@@ -31,36 +31,36 @@ class RssFeedModel extends Equatable {
     return const RssFeedModel(
       allFeeds: [],
       loadingStates: LoadingStates.initial,
-      loadingMoreStates: LoadingStates.initial,
+      refreshState: LoadingStates.initial,
     );
   }
 
   final List<UrlModel> allFeeds;
   final LoadingStates loadingStates;
-  final LoadingStates loadingMoreStates;
+  final LoadingStates refreshState;
 
   RssFeedModel copyWith({
     List<UrlModel>? allFeeds,
     LoadingStates? loadingStates,
-    LoadingStates? loadingMoreStates,
+    LoadingStates? refreshState,
   }) {
     return RssFeedModel(
       allFeeds: allFeeds ?? this.allFeeds,
       loadingStates: loadingStates ?? this.loadingStates,
-      loadingMoreStates: loadingMoreStates ?? this.loadingMoreStates,
+      refreshState: refreshState ?? this.refreshState,
     );
   }
 
   // toString method for easier debugging and logging
   @override
   String toString() {
-    return 'RssFeedState(allFeeds: $allFeeds, loadingStates: $loadingStates, loadingMoreStates: $loadingMoreStates)';
+    return 'RssFeedState(allFeeds: $allFeeds, loadingStates: $loadingStates, refreshState: ,)';
   }
 
   @override
   List<Object> get props => [
         allFeeds,
         loadingStates,
-        loadingMoreStates,
+        refreshState,
       ];
 }

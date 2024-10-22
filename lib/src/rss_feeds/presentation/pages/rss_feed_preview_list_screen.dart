@@ -3,7 +3,6 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
@@ -11,17 +10,17 @@ import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 class RssFeedUrlsPreviewListWidget extends StatefulWidget {
   const RssFeedUrlsPreviewListWidget({
@@ -120,7 +119,7 @@ class _RssFeedUrlsPreviewListWidgetState
             if (feed.metaData == null) return contains;
             final metaData = feed.metaData!;
             for (final field in _selectedCategory.value) {
-              // Logger.printLog('field: $field, contains: $contains');
+              // // Logger.printLog('field: $field, contains: $contains');
               switch (field) {
                 case 'Title':
                   {
@@ -178,7 +177,7 @@ class _RssFeedUrlsPreviewListWidgetState
     // _rssFeedCubit.clearCollectionFeed(
     //   collectionId: widget.collectionFetchModel.collection!.id,
     // );
-    // Logger.printLog('[rss] : rssfeed preview list disposed');
+    // // Logger.printLog('[rss] : rssfeed preview list disposed');
     super.dispose();
   }
 
@@ -221,7 +220,7 @@ class _RssFeedUrlsPreviewListWidgetState
           builder: (context, state) {
             final availableUrls = state
                 .collectionUrls[widget.collectionFetchModel.collection!.id];
-    
+
             final rssFeedNewsWidget = Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -240,16 +239,16 @@ class _RssFeedUrlsPreviewListWidgetState
                 ),
               ],
             );
-    
+
             if (availableUrls == null || availableUrls.isEmpty) {
               return Center(child: rssFeedNewsWidget);
             }
-    
+
             final isAllUrlsNotFetched = availableUrls.length !=
                     widget.collectionFetchModel.collection!.urls.length ||
                 availableUrls[availableUrls.length - 1].loadingStates ==
                     LoadingStates.loading;
-    
+
             if (isAllUrlsNotFetched) {
               return Center(
                 child: Column(
@@ -264,12 +263,12 @@ class _RssFeedUrlsPreviewListWidgetState
                 ),
               );
             }
-    
+
             return BlocBuilder<RssFeedCubit, RssFeedState>(
               builder: (context, state) {
                 final feeds = state.feedCollections[
                     widget.collectionFetchModel.collection!.id];
-    
+
                 if (feeds == null || feeds.allFeeds.isEmpty) {
                   return Center(
                     child: Column(
@@ -284,38 +283,39 @@ class _RssFeedUrlsPreviewListWidgetState
                     ),
                   );
                 }
-    
+
+                final rssFeedCubit = context.read<RssFeedCubit>();
+
                 _list.value = feeds.allFeeds.map(ValueNotifier.new).toList();
-    
+
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
+                  if (_scrollController.hasClients &&
+                      _previousOffset < kToolbarHeight) {
                     _scrollController
                       ..jumpTo(kToolbarHeight + 16)
                       ..jumpTo(kToolbarHeight);
                   }
                 });
-    
-                // Logger.printLog('cacheExtent: ${size.height * 2}');
-    
+
                 return ValueListenableBuilder(
                   valueListenable: _list,
                   builder: (context, allLocalFeedsList, _) {
                     return ListView.builder(
                       controller: _scrollController,
                       itemCount: allLocalFeedsList.length + 2,
-                      cacheExtent: size.height * 3,
+                      cacheExtent: size.height * 2,
                       itemBuilder: (ctx, index) {
                         if (index == 0) {
                           return const SizedBox(height: kToolbarHeight);
                         } else if (index > allLocalFeedsList.length) {
                           return const SizedBox(height: 200);
                         }
-    
+
                         return ValueListenableBuilder(
                           valueListenable: allLocalFeedsList[index - 1],
                           builder: (context, feed, _) {
                             final url = feed;
-    
+
                             final urlMetaData = url.metaData ??
                                 UrlMetaData.isEmpty(title: url.title);
                             return ValueListenableBuilder(
@@ -326,8 +326,7 @@ class _RssFeedUrlsPreviewListWidgetState
                                   builder: (context, showBannerImages, _) {
                                     return ValueListenableBuilder(
                                       valueListenable: _showDescriptions,
-                                      builder:
-                                          (context, showDescriptions, _) {
+                                      builder: (context, showDescriptions, _) {
                                         return Container(
                                           margin: const EdgeInsets.symmetric(
                                             vertical: 8,
@@ -335,7 +334,7 @@ class _RssFeedUrlsPreviewListWidgetState
                                           decoration: BoxDecoration(
                                             border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey.shade200,
+                                                color: Colors.grey.shade100,
                                               ),
                                             ),
                                           ),
@@ -345,6 +344,65 @@ class _RssFeedUrlsPreviewListWidgetState
                                             isSidewaysLayout: isSideWays,
                                             showDescription: showDescriptions,
                                             showBannerImage: showBannerImages,
+                                            onBookmarkButtonTap: () async {
+                                              final urlModelDataForBookmark =
+                                                  url.copyWith(
+                                                collectionId: widget
+                                                        .collectionFetchModel
+                                                        .collection!
+                                                        .id +
+                                                    savedFeeds,
+                                                isOffline: !url.isOffline,
+                                                url: url.metaData?.rssFeedUrl,
+                                              );
+
+                                              if (urlModelDataForBookmark
+                                                      .isOffline ==
+                                                  false) {
+                                                /// TOO COMPLEX DELETE FROM SAVED FEEDS
+                                                /// USERS WILL DIRECTLY DELETE FROM
+                                                /// SAVEDFEEDS
+
+                                                // await context
+                                                //     .read<UrlCrudCubit>()
+                                                //     .deleteUrl(
+                                                //       urlData:
+                                                //           urlModelDataForBookmark,
+                                                //           isRootCollection: widget.isRootCollection,
+                                                //     );
+                                                return;
+                                              } else {
+                                                await context
+                                                    .read<UrlCrudCubit>()
+                                                    .addUrl(
+                                                      urlData:
+                                                          urlModelDataForBookmark,
+                                                      isRootCollection: widget
+                                                          .isRootCollection,
+                                                    );
+                                              }
+
+                                              await rssFeedCubit.updateRSSFeed(
+                                                feedUrlModel:
+                                                    urlModelDataForBookmark
+                                                        .copyWith(
+                                                  collectionId: widget
+                                                      .collectionFetchModel
+                                                      .collection!
+                                                      .id,
+                                                ),
+                                              );
+
+                                              final indexB =
+                                                  _list.value.indexWhere(
+                                                (feed) => feed.value == url,
+                                              );
+
+                                              if (indexB < 0) return;
+
+                                              _list.value[indexB].value =
+                                                  urlModelDataForBookmark;
+                                            },
                                             onTap: () async {
                                               final uri = Uri.parse(
                                                 url.metaData?.rssFeedUrl ??
@@ -364,21 +422,23 @@ class _RssFeedUrlsPreviewListWidgetState
                                                     urlModel: url,
                                                     index: index,
                                                   );
-    
-                                              _list.value[index - 1].value =
+
+                                              final indexB =
+                                                  _list.value.indexWhere(
+                                                (feed) => feed.value == url,
+                                              );
+
+                                              if (indexB < 0) return;
+
+                                              _list.value[indexB].value =
                                                   urlModel;
                                             },
                                             onShareButtonTap: () {
-                                              // Logger.printLog(
-                                              //   StringUtils.getJsonFormat(
-                                              //     url.metaData?.toJson(),
-                                              //   ),
-                                              // );
                                               Share.share(
                                                 '${url.metaData?.rssFeedUrl ?? url.url}\n${urlMetaData.title}\n${urlMetaData.description}',
                                               );
                                             },
-                                            onMoreVertButtontap: () {},
+                                            onLayoutOptionsButtontap: () {},
                                           ),
                                         );
                                       },
@@ -604,7 +664,7 @@ class _RssFeedUrlsPreviewListWidgetState
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}(Preview)',
+                        '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -614,9 +674,10 @@ class _RssFeedUrlsPreviewListWidgetState
                   ),
                 ),
                 actions: [
-                  _refreshFeedButton(),
+                  // _refreshFeedButton(),
                   _searchFeedButton(),
                   _layoutFilterOptions(),
+                  // _feedSettingsButton(),
                   _filterOptions(),
                 ],
               ),
@@ -627,18 +688,62 @@ class _RssFeedUrlsPreviewListWidgetState
     );
   }
 
-  Widget _refreshFeedButton() {
-    return IconButton(
-      onPressed: () {
+  PopupMenuItem<String> _feedSettingsButton() {
+    return PopupMenuItem(
+      value: 'FeedSettings',
+      onTap: () {
+        // TODO : NAVIGATE TO FEED LAYOUT SETTINGS PAGE
+      },
+      child: BlocBuilder<RssFeedCubit, RssFeedState>(
+        builder: (context, state) {
+          const Widget loadingIcon = Icon(Icons.settings_rounded);
+          return const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Custom',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              loadingIcon,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _refreshFeedButton() {
+    return PopupMenuItem(
+      value: 'Refresh',
+      onTap: () {
         final collId = widget.collectionFetchModel.collection!.id;
         context
             .read<RssFeedCubit>()
             .refreshCollectionFeed(collectionId: collId);
-
-        // Navigator.of(context).pop();
       },
-      padding: const EdgeInsets.all(8),
-      icon: const Icon(Icons.refresh_rounded),
+      child: BlocBuilder<RssFeedCubit, RssFeedState>(
+        builder: (context, state) {
+          const Widget loadingIcon = Icon(Icons.refresh_rounded);
+          return const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Refresh',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              loadingIcon,
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -707,6 +812,7 @@ class _RssFeedUrlsPreviewListWidgetState
             ];
           },
         ),
+        _refreshFeedButton(),
       ],
     );
   }
@@ -733,6 +839,7 @@ class _RssFeedUrlsPreviewListWidgetState
           notifier: _showBannerImage,
           onPress: () => _showBannerImage.value = !_showBannerImage.value,
         ),
+        _feedSettingsButton(),
       ],
     );
   }

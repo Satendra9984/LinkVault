@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/app_home/services/rss_service.dart';
 import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
 import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
@@ -14,8 +16,8 @@ import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
-import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
+import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
 import 'package:xml/xml.dart';
 
 // https://youtu.be/jMi-VwEBJ70
@@ -23,11 +25,13 @@ import 'package:xml/xml.dart';
 class AddRssFeedUrlPage extends StatefulWidget {
   const AddRssFeedUrlPage({
     required this.parentCollection,
+    required this.isRootCollection,
     this.url,
     super.key,
   });
   final CollectionModel parentCollection;
   final String? url;
+  final bool isRootCollection;
 
   @override
   State<AddRssFeedUrlPage> createState() => _AddRssFeedUrlPageState();
@@ -35,8 +39,12 @@ class AddRssFeedUrlPage extends StatefulWidget {
 
 class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
   final _formKey = GlobalKey<FormState>();
+
+  // RSS FEED URL BASEURL FROM USER
   final _rssFeedUrlAddressController = TextEditingController();
   final _rssFeedUrlErrorNotifier = ValueNotifier<String?>(null);
+
+  // FOR WEBSITE BASEURL
   final _websiteUrlAddressController = TextEditingController();
 
   final _urlTitleController = TextEditingController();
@@ -47,37 +55,32 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
   final _selectedCategory = ValueNotifier<String>('');
 
   /// PREVIEW RELATED DATA
-  final _previewMetaData = ValueNotifier<UrlMetaData?>(null);
+  final _previewMetaData =
+      ValueNotifier<UrlMetaData?>(UrlMetaData.isEmpty(title: ''));
   final _previewLoadingStates =
       ValueNotifier<LoadingStates>(LoadingStates.initial);
-  final _previewError = ValueNotifier<Failure?>(null);
+  final _previewError = ValueNotifier<String?>(null);
 
   Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       // Check if RSS Feed Url is valid
       final rssFeedCubit = context.read<RssFeedCubit>();
-      final isRssUrlValid = await RssXmlParsingService.isURLRssFeed(
-        _rssFeedUrlAddressController.text,
-      );
-
-      if (isRssUrlValid == false) {
-        _rssFeedUrlErrorNotifier.value = 'Invalid RSS Feed URL';
-        return;
-      } else {
-        _rssFeedUrlErrorNotifier.value = null;
-      }
 
       while (_previewLoadingStates.value == LoadingStates.loading) {}
-
       if (_previewMetaData.value == null) {
         await _loadPreview();
+      }
+
+      if (_previewMetaData.value?.rssFeedUrl == null) {
+        // Logger.printLog('[addrss] : _rssFeedUrlErrorNotifier.value != null');
+        return;
       }
 
       final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
-              title: _urlTitleController.text,
+              title: _urlTitleController.text.trim(),
             );
 
       final createdAt = DateTime.now().toUtc();
@@ -85,9 +88,9 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
       final urlModelData = UrlModel(
         firestoreId: '',
         collectionId: widget.parentCollection.id,
-        url: _websiteUrlAddressController.text,
-        title: _urlTitleController.text,
-        description: _descEditingController.text,
+        url: _websiteUrlAddressController.text.trim(),
+        title: _urlTitleController.text.trim(),
+        description: _descEditingController.text.trim(),
         isFavourite: _isFavorite.value,
         tag: _selectedCategory.value,
         isOffline: false,
@@ -100,78 +103,108 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
 
       final collId = widget.parentCollection.id; // Capture ID before async call
 
-      await urlCrudCubit.addUrl(urlData: urlModelData).then((_) {
+      await urlCrudCubit
+          .addUrl(
+        urlData: urlModelData,
+        isRootCollection: widget.isRootCollection,
+      )
+          .then((_) {
         rssFeedCubit.refreshCollectionFeed(collectionId: collId);
       });
     }
   }
 
   Future<void> _loadPreview() async {
-    if (_rssFeedUrlAddressController.text.isEmpty) {
+    if (_rssFeedUrlAddressController.text.trim().isEmpty) {
+      _rssFeedUrlErrorNotifier.value = 'Please enter URL';
       _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value =
-          GeneralFailure(message: 'Url Address is empty', statusCode: '400');
+      _previewError.value = 'Url Address is empty';
       return;
     }
 
-    // Fetching all details
-    _previewLoadingStates.value = LoadingStates.loading;
-    final rssData = await RssXmlParsingService.fetchRssFeed(
-      _rssFeedUrlAddressController.text,
+    _websiteUrlAddressController.text =
+        _rssFeedUrlAddressController.text.trim();
+
+    _previewMetaData.value =
+        (_previewMetaData.value ?? UrlMetaData.isEmpty(title: '')).copyWith(
+      rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
     );
 
-    // We need to extract Base URL
-    if (rssData == null) {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      return;
-    }
-    // Extract the main channel/ feed element
-    final channel = rssData.findAllElements('rdf:RDF').firstOrNull ??
-        rssData.findAllElements('channel').firstOrNull ??
-        rssData.findAllElements('feed').firstOrNull;
-
-    Logger.printLog('channel is ${channel == null}');
-    if (channel == null) {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      return;
-    }
-
-    final baseUrl = RssXmlParsingService.getBaseUrlFromRssData(channel);
-    Logger.printLog('AddRSS: $baseUrl');
-
-    if (baseUrl == null || baseUrl.isEmpty) {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      return;
-    }
-
-    _websiteUrlAddressController.text = baseUrl;
-
-    final (_, metaData) = await UrlParsingService.getWebsiteMetaData(baseUrl);
-
-    if (metaData != null) {
-      _previewMetaData.value = metaData.copyWith(
-        rssFeedUrl: _rssFeedUrlAddressController.text,
-      );
-      _previewLoadingStates.value = LoadingStates.loaded;
+    try {
+      // FETCHING AND VERIFYING RSS LINK
+      _rssFeedUrlErrorNotifier.value = null;
+      _previewLoadingStates.value = LoadingStates.loading;
       _previewError.value = null;
-      // Initilializing default values
-      if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
-        if (metaData.websiteName!.length < 30) {
-          _urlTitleController.text = metaData.websiteName!;
-        } else {
-          _urlTitleController.text = metaData.websiteName!.substring(0, 30);
-        }
-      }
-    } else {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = GeneralFailure(
-        message: 'Something went wrong. Check your internet and try again.',
-        statusCode: '400',
+
+      final rssData = await RssXmlParsingService.fetchRssFeed(
+        _rssFeedUrlAddressController.text.trim(),
       );
 
-      return;
+      // EXTRACTING BASE-URL FROM RSS DATA
+      if (rssData == null) {
+        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+        return;
+      }
+
+      // Extract the main channel/ feed element
+      final channel = rssData.findAllElements('rdf:RDF').firstOrNull ??
+          rssData.findAllElements('channel').firstOrNull ??
+          rssData.findAllElements('feed').firstOrNull;
+
+      // IF THERE IS NO CHANNEL THEN IT IS NOT A RSS FEED LINK
+      if (channel == null) {
+        // // Logger.printLog('[addrss] : channel == null');
+        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+        return;
+      }
+
+      final baseUrl = RssXmlParsingService.getBaseUrlFromRssData(channel);
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+        return;
+      }
+
+      _websiteUrlAddressController.text = baseUrl;
+
+      final (_, metaData) = await UrlParsingService.getWebsiteMetaData(baseUrl);
+
+      if (metaData != null) {
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _previewError.value = null;
+
+        _previewMetaData.value = metaData.copyWith(
+          rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
+        );
+        // Initilializing default values
+        if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
+          _urlTitleController.text = metaData.websiteName!;
+        }
+
+        if (_descEditingController.text.isEmpty &&
+            metaData.description != null) {
+          _descEditingController.text = metaData.description!;
+        }
+      } else {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+      }
+    } on HttpException catch (e) {
+      _rssFeedUrlErrorNotifier.value = e.message;
+      _previewLoadingStates.value = LoadingStates.errorLoading;
+      _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+    } catch (e) {
+      _rssFeedUrlErrorNotifier.value = 'Something Went Wrong';
+      _previewLoadingStates.value = LoadingStates.errorLoading;
+      _previewError.value = 'Could Not Fetch Preview Data. Try Again';
     }
-    _previewLoadingStates.value = LoadingStates.loaded;
   }
 
   @override
@@ -351,7 +384,9 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                           ),
                         );
                       } else if (previewMetaDataLoadingState ==
-                          LoadingStates.loaded) {
+                              LoadingStates.loaded ||
+                          previewMetaDataLoadingState ==
+                              LoadingStates.errorLoading) {
                         trailingWidgetList.addAll(
                           [loadAgain, previewButton],
                         );
@@ -382,13 +417,21 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                           ),
                           if (previewMetaDataLoadingState ==
                               LoadingStates.errorLoading)
-                            Text(
-                              '${_previewError.value?.message}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: ColourPallette.error,
-                              ),
+                            ValueListenableBuilder<String?>(
+                              valueListenable: _previewError,
+                              builder: (context, previewError, _) {
+                                if (previewError == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Text(
+                                  previewError,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: ColourPallette.error,
+                                  ),
+                                );
+                              },
                             ),
                         ],
                       );
@@ -423,40 +466,6 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                   ),
 
                   const SizedBox(height: 20),
-
-                  // IS fAVOURITE
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     const Text(
-                  //       'Favourite',
-                  //       style: TextStyle(
-                  //         fontSize: 16,
-                  //         fontWeight: FontWeight.w500,
-                  //       ),
-                  //     ),
-                  //     ValueListenableBuilder<bool>(
-                  //       valueListenable: _isFavorite,
-                  //       builder: (context, isFavorite, child) {
-                  //         return Switch.adaptive(
-                  //           value: isFavorite,
-                  //           onChanged: (value) => _isFavorite.value = value,
-                  //           trackOutlineColor:
-                  //               WidgetStateProperty.resolveWith<Color?>(
-                  //             (Set<WidgetState> states) => Colors.transparent,
-                  //           ),
-                  //           thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                  //             (Set<WidgetState> states) => Colors.transparent,
-                  //           ),
-                  //           activeTrackColor: ColourPallette.mountainMeadow,
-                  //           inactiveTrackColor: ColourPallette.error,
-                  //         );
-                  //       },
-                  //     ),
-                  //   ],
-                  // ),
-
-                  // const SizedBox(height: 20),
 
                   // Selected Category
                   const Text(
@@ -531,6 +540,23 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
       backgroundColor: ColourPallette.mystic,
       isScrollControlled: true,
       builder: (ctx) {
+        final date = DateTime.now().toUtc();
+        final urlModelData = UrlModel(
+          firestoreId: '',
+          collectionId: widget.parentCollection.id,
+          url: _websiteUrlAddressController.text.trim(),
+          title: _urlTitleController.text.trim(),
+          description: _descEditingController.text.trim(),
+          isFavourite: _isFavorite.value,
+          tag: _selectedCategory.value,
+          isOffline: false,
+          createdAt: date,
+          updatedAt: date,
+          metaData: _previewMetaData.value,
+        );
+
+        // // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+
         return Container(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -541,12 +567,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
             builder: (context, scrollController) {
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: UrlPreviewWidget(
-                  urlMetaData: _previewMetaData.value!,
+                child: RssFeedPreviewWidget(
                   onTap: () {},
                   onLongPress: () {},
                   onShareButtonTap: () {},
-                  onMoreVertButtontap: () {},
+                  onLayoutOptionsButtontap: () {},
+                  urlModel: urlModelData,
+                  updateBannerImage: () {},
                 ),
               );
             },

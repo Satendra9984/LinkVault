@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_image.dart';
 import 'package:link_vault/src/dashboard/data/isar_db_models/url_model_offline.dart';
@@ -30,7 +31,7 @@ class LocalDataSource {
         );
       }
     } catch (e) {
-      Logger.printLog('urloffline: initialize $e');
+      // Logger.printLog('urloffline: initialize $e');
 
       return;
     }
@@ -56,7 +57,7 @@ class LocalDataSource {
 
       return feeds;
     } catch (e) {
-      Logger.printLog('could not fetch RSS feed');
+      // Logger.printLog('could not fetch RSS feed');
     }
 
     return null;
@@ -82,8 +83,6 @@ class LocalDataSource {
       },
     );
 
-    // Logger.printLog('Deleted ${feedsToDelete.length} entries.');
-
     return true;
   }
 
@@ -102,9 +101,8 @@ class LocalDataSource {
 
       return true;
     } catch (e) {
-      Logger.printLog('could not fetch RSS feed');
+      // Logger.printLog('could not fetch RSS feed');
     }
-
     return false;
   }
 
@@ -119,17 +117,35 @@ class LocalDataSource {
     }
 
     // Filter by rssFeedUrl in the jsonData and retrieve the record
-    final feedInDb = await urlModelOfflineCollection
+    final feedInDbAll = await urlModelOfflineCollection
         .filter()
+        .jsonDataContains(urlModel.collectionId)
         .jsonDataContains(urlModel.metaData!.rssFeedUrl!)
-        .findFirst();
+        .findAll();
 
-    // Logger.printLog('[rss][local] : ${feedInDb?.toUrlModel().toJson()}');
+    final feedInDb = feedInDbAll
+        .where(
+          (feed) => feed.toUrlModel().collectionId == urlModel.collectionId,
+        )
+        .firstOrNull;
 
-    // If the feed exists in the database, update it; otherwise, create a new entry
-    final feedToUpdate = feedInDb != null
-        ? feedInDb.copyWith(urlModel: urlModel) // Update the existing record
-        : UrlModelOffline.fromUrlModel(urlModel); // Create a new entry
+    if (feedInDb == null) return false;
+
+    final localUrlModel = feedInDb.toUrlModel();
+
+    final feedToUpdate = feedInDb.copyWith(
+      urlModel: localUrlModel.copyWith(
+        isOffline: urlModel.isOffline,
+        isFavourite: urlModel.isFavourite,
+        metaData: urlModel.metaData,
+        title: urlModel.title,
+        description: urlModel.description,
+        tag: urlModel.tag,
+        createdAt: urlModel.createdAt,
+        updatedAt: urlModel.updatedAt,
+        htmlContent: urlModel.htmlContent,
+      ),
+    ); // Create a new entry
 
     try {
       // Transaction to write data to the database
@@ -137,10 +153,9 @@ class LocalDataSource {
         await urlModelOfflineCollection.put(feedToUpdate);
       });
 
-      // Logger.printLog('Feed updated successfully.');
       return true;
     } catch (e) {
-      Logger.printLog('Error updating feed: $e');
+      // Logger.printLog('Error updating feed: $e');
       return false;
     }
   }

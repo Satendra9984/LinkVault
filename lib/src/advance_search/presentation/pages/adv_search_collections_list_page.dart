@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
@@ -10,6 +11,7 @@ import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/
 import 'package:link_vault/src/app_home/presentation/pages/common/collection_list_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_collection_template_screen.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
 
 class SearchedCollectionsListWidget extends StatefulWidget {
@@ -61,7 +63,17 @@ class _SearchedCollectionsListWidgetState
     super.build(context);
 
     return CollectionsListScreenTemplate(
-      collectionFetchModel: null,
+      collectionModel: CollectionModel.isEmpty(
+        userId: context.read<GlobalUserCubit>().getGlobalUser()?.id ?? 'user',
+        name: 'Advance Search',
+        parentCollection: 'Advance Search',
+        status: {
+          'status' : 'active',
+        },
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
+      ),
+
       showAddCollectionButton: false,
       onAddCollectionPressed: () {},
       onCollectionItemFetchedWidget: null,

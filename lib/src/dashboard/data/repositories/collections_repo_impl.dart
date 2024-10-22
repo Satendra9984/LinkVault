@@ -32,7 +32,7 @@ class CollectionsRepoImpl {
       final localCollection =
           await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
 
-      // Logger.printLog('fetchRootCollection : $collectionId');
+      // // Logger.printLog('fetchRootCollection : $collectionId');
 
       final collection = localCollection ??
           await _remoteDataSourcesImpl.fetchCollection(
@@ -45,7 +45,7 @@ class CollectionsRepoImpl {
       }
 
       if (collection == null) {
-        final todaydate = DateTime.now();
+        final todaydate = DateTime.now().toUtc();
         final status = {'status': 'active'};
 
         final rootCollection = CollectionModel.isEmpty(

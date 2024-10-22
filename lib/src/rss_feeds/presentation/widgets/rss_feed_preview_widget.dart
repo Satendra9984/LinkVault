@@ -3,10 +3,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/src/app_home/services/custom_image_cache_manager.dart';
@@ -22,8 +19,9 @@ class RssFeedPreviewWidget extends StatefulWidget {
     required this.onTap,
     required this.onLongPress,
     required this.onShareButtonTap,
-    required this.onMoreVertButtontap,
+    required this.onLayoutOptionsButtontap,
     required this.updateBannerImage,
+    this.onBookmarkButtonTap,
     this.showDescription = false,
     this.showBannerImage = true,
     this.isSidewaysLayout = false,
@@ -39,7 +37,8 @@ class RssFeedPreviewWidget extends StatefulWidget {
   final void Function() updateBannerImage;
   final void Function() onLongPress;
   final void Function() onShareButtonTap;
-  final void Function() onMoreVertButtontap;
+  final void Function()? onBookmarkButtonTap;
+  final void Function() onLayoutOptionsButtontap;
 
   @override
   State<RssFeedPreviewWidget> createState() => _RssFeedPreviewWidgetState();
@@ -99,7 +98,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
       _showBannerImage.value = widget.showBannerImage;
     }
 
-    // Logger.printLog('$initials didUpdateWidget');
+    // // Logger.printLog('$initials didUpdateWidget');
     if (widget.isSidewaysLayout != oldWidget.isSidewaysLayout ||
         widget.showDescription != oldWidget.showDescription) {
       // Detach the widgets to mark them for layout
@@ -133,14 +132,14 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
   }
 
   Future<void> _updateFeedBannerImageUrl() async {
-    // Logger.printLog(
+    // // Logger.printLog(
     //   '$initials ${StringUtils.getJsonFormat(widget.urlModel.metaData)}',
     // );
 
     if (widget.urlModel.metaData != null &&
         widget.urlModel.metaData!.rssFeedUrl != null &&
         widget.urlModel.metaData!.bannerImageUrl == null) {
-      // Logger.printLog('[rss] : _updateBannerImageUrl');
+      // // Logger.printLog('[rss] : _updateBannerImageUrl');
       widget.updateBannerImage();
     }
   }
@@ -172,11 +171,11 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
 
     final remainingWidthForDescription = _urlTitleSize.value!.width;
 
-    if (_bannerImageSize.value!.height > _bannerImageSize.value!.width * 1.01) {
+    if (_bannerImageSize.value!.height > _bannerImageSize.value!.width * 1.1) {
       _isSideWayLayout.value = true;
     }
 
-    // Logger.printLog('[size] ${_bannerImageSize.value}');
+    // // Logger.printLog('[size] ${_bannerImageSize.value}');
     _splitDescription(
       description: widget.urlModel.metaData?.description?.trim() ?? '',
       containerWidth: remainingWidthForDescription,
@@ -269,7 +268,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
       // renderBox.detach();
       renderBox.markNeedsLayout();
       // renderBox.reassemble();
-      // Logger.printLog('$initials detaching $key');
+      // // Logger.printLog('$initials detaching $key');
     }
   }
 
@@ -287,7 +286,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
       return '${difference.inMinutes} min';
     } else if (difference.inSeconds > 0) {
       return '${difference.inSeconds} sec';
-    }else if (difference.inMilliseconds > 0) {
+    } else if (difference.inMilliseconds > 0) {
       return '${0} sec';
     }
 
@@ -295,8 +294,9 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
     return '--';
   }
 
-  String _websiteName(String websiteName) {
-    if (websiteName.length < 15) {
+  String _websiteName(String websiteName, int allowedLength) {
+    // // Logger.printLog('WebsiteName: $websiteName');
+    if (websiteName.length < allowedLength) {
       return websiteName;
     }
 
@@ -304,7 +304,9 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
     final initials = StringBuffer();
 
     for (final ele in spaced) {
-      initials.write(ele[0]);
+      if (ele.isNotEmpty) {
+        initials.write(ele[0]);
+      }
     }
 
     return initials.toString();
@@ -312,9 +314,6 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
-    // Logger.printLog('$initials building this');
-
     final size = MediaQuery.of(context).size;
 
     final descriptionAvailable =
@@ -343,7 +342,8 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
               child: Image.file(
                 fileInfo.file,
                 width: size.width,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
+                // filterQuality: FilterQuality.low,
                 errorBuilder: (context, _, __) {
                   return Container(); // Fallback in case of error
                 },
@@ -358,9 +358,15 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                   }
 
                   return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: ColoredBox(
-                      color: ColourPallette.mystic.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ColourPallette.mystic.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey.shade100,
+                        ),
+                      ),
                       child: ImageFileWidget(
                         initials: initials,
                         child: child,
@@ -368,7 +374,6 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                           if (_bannerImageSize.value == null) {
                             WidgetsBinding.instance.addPostFrameCallback(
                               (_) {
-                                // Logger.printLog('$initials calling imager');
                                 _getDescriptionContainerSize(
                                   context: context,
                                   textStyle: upperDescTextStyle,
@@ -393,7 +398,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
     return VisibilityDetector(
       key: _mainWidgetKey,
       onVisibilityChanged: (VisibilityInfo info) {
-        // Logger.printLog('$initials ${info.visibleFraction}');
+        // // Logger.printLog('$initials ${info.visibleFraction}');
         if (info.visibleFraction > 0) {
           // Widget is at least partially visible
           if (_showBannerImage.value &&
@@ -410,7 +415,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
           }
         } else {
           // Widget is not visible
-          // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
+          // // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
         }
       },
       child: ValueListenableBuilder(
@@ -441,9 +446,6 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                         builder: (context, showBannerImage, _) {
                           if (!showBannerImage) return const SizedBox.shrink();
 
-                          // Logger.printLog(
-                          //   '$initials ${_bannerImageSize.value}',
-                          // );
                           return bannerImageHeight == null
                               ? SizedBox(
                                   key: _bannerImageKey,
@@ -482,66 +484,74 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                             child: Text(
                               '${widget.urlModel.metaData?.title?.trim()}',
                               style: TextStyle(
-                                color: Colors.grey.shade800,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                // fontWeight: FontWeight.w500,
+                                fontSize: isSideWays ? 16 : 18,
                               ),
                               key: _urlTitleKey,
                             ),
                           ),
                           if (descriptionAvailable && isSideWays)
                             ValueListenableBuilder(
-                              valueListenable: _upperDescriptionIndex,
-                              builder: (context, upperDescriptionIndex, _) {
-                                // final imageSize = _bannerImageSize.value;
-                                if (upperDescriptionIndex < 1) {
+                              valueListenable: _showFullDescription,
+                              builder: (context, showFullDescription, _) {
+                                if (!showFullDescription) {
                                   return Container();
                                 }
+                                return ValueListenableBuilder(
+                                  valueListenable: _upperDescriptionIndex,
+                                  builder: (context, upperDescriptionIndex, _) {
+                                    // final imageSize = _bannerImageSize.value;
+                                    if (upperDescriptionIndex < 1) {
+                                      return Container();
+                                    }
 
-                                var upperDescWidth = 0.0;
-                                var upperDescHeigthht = 0.0;
+                                    var upperDescWidth = 0.0;
+                                    var upperDescHeigthht = 0.0;
 
-                                if (_bannerImageSize.value != null &&
-                                    _urlTitleSize.value != null) {
-                                  upperDescWidth = _urlTitleSize.value!.width;
+                                    if (_bannerImageSize.value != null &&
+                                        _urlTitleSize.value != null) {
+                                      upperDescWidth =
+                                          _urlTitleSize.value!.width;
 
-                                  final bannerImageHeight = min(
-                                    _bannerImageSize.value!.height,
-                                    size.width * 0.35,
-                                  );
+                                      final bannerImageHeight = min(
+                                        _bannerImageSize.value!.height,
+                                        size.width * 0.35,
+                                      );
 
-                                  upperDescHeigthht = bannerImageHeight -
-                                      _urlTitleSize.value!.height;
-                                }
+                                      upperDescHeigthht = bannerImageHeight -
+                                          _urlTitleSize.value!.height;
+                                    }
 
-                                final descTextStyle = TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontSize: 14,
-                                );
+                                    final descTextStyle = TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 14,
+                                    );
 
-                                final textPainter = TextPainter(
-                                  textDirection: TextDirection.ltr,
-                                )
-                                  ..maxLines = 1
-                                  ..text = TextSpan(
-                                    text: 'M',
-                                    style: descTextStyle,
-                                  )
-                                  ..layout(maxWidth: upperDescWidth);
+                                    final textPainter = TextPainter(
+                                      textDirection: TextDirection.ltr,
+                                    )
+                                      ..maxLines = 1
+                                      ..text = TextSpan(
+                                        text: 'M',
+                                        style: descTextStyle,
+                                      )
+                                      ..layout(maxWidth: upperDescWidth);
 
-                                int? maxLines =
-                                    (upperDescHeigthht / textPainter.height)
-                                        .round();
-                                maxLines = maxLines > 0 ? maxLines : null;
+                                    int? maxLines =
+                                        (upperDescHeigthht / textPainter.height)
+                                            .round();
+                                    maxLines = maxLines > 0 ? maxLines : null;
 
-                                if (maxLines == null) {
-                                  return Container();
-                                }
+                                    if (maxLines == null) {
+                                      return Container();
+                                    }
 
-                                return Text(
-                                  widget.urlModel.metaData!.description!,
-                                  style: descTextStyle,
-                                  maxLines: maxLines,
+                                    return Text(
+                                      widget.urlModel.metaData!.description!,
+                                      style: descTextStyle,
+                                      maxLines: maxLines,
+                                    );
+                                  },
                                 );
                               },
                             ),
@@ -556,6 +566,17 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                       ValueListenableBuilder(
                         valueListenable: _bannerImageSize,
                         builder: (context, bannerImageSize, _) {
+                          var bannerWidth = size.width * 0.35;
+
+                          if (bannerImageSize?.width != null) {
+                            bannerWidth =
+                                min(bannerWidth, bannerImageSize!.width);
+                          }
+
+                          // // Logger.printLog(
+                          //   '$initials mgwidth: ${bannerImageSize?.width}, screenwidth: ${size.width * 0.35}, final $bannerWidth',
+                          // );
+
                           final bannerImageHeight =
                               bannerImageSize?.height != null &&
                                       bannerImageSize!.height > 1.0
@@ -573,12 +594,12 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                               return bannerImageHeight == null
                                   ? SizedBox(
                                       key: _bannerImageKey,
-                                      width: size.width * 0.35,
+                                      width: bannerWidth,
                                       child: imageBuilder,
                                     )
                                   : SizedBox(
                                       key: _bannerImageKey,
-                                      width: size.width * 0.35,
+                                      width: bannerWidth,
                                       height: bannerImageHeight,
                                       child: imageBuilder,
                                     );
@@ -646,58 +667,91 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                           onLongPress: widget.onLongPress,
                           child: Row(
                             children: [
-                              if (widget.urlModel.metaData?.faviconUrl != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: NetworkImageBuilderWidget(
-                                      imageUrl:
-                                          widget.urlModel.metaData!.faviconUrl!,
-                                      compressImage: false,
-                                      errorWidgetBuilder: () {
-                                        return IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(Icons.circle),
-                                          color: ColourPallette.black,
-                                        );
-                                      },
-                                      successWidgetBuilder: (imageData) {
-                                        final imageBytes =
-                                            imageData.imageBytesData!;
+                              Builder(
+                                builder: (context) {
+                                  final urlModelData = widget.urlModel;
+                                  final urlMetaData = widget.urlModel.metaData!;
 
-                                        return ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          child: Image.memory(
-                                            imageBytes,
-                                            fit: BoxFit.contain,
-                                            height: 16,
-                                            width: 16,
-                                            errorBuilder: (ctx, _, __) {
-                                              try {
-                                                final svgImage =
-                                                    SvgPicture.memory(
-                                                  widget.urlModel.metaData!
-                                                      .favicon!,
-                                                );
+                                  var name = '';
 
-                                                return svgImage;
-                                              } catch (e) {
-                                                return const Icon(Icons.web);
-                                              }
-                                            },
-                                          ),
-                                        );
-                                      },
+                                  if (urlModelData.title.isNotEmpty) {
+                                    name = urlModelData.title;
+                                  } else if (urlMetaData.title != null &&
+                                      urlMetaData.title!.isNotEmpty) {
+                                    name = urlMetaData.title!;
+                                  } else if (urlMetaData.websiteName != null &&
+                                      urlMetaData.websiteName!.isNotEmpty) {
+                                    name = urlMetaData.websiteName!;
+                                  }
+
+                                  final placeHolder = Container(
+                                    padding: const EdgeInsets.all(2),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: ColourPallette.black,
+                                      // color: Colors.deepPurple
                                     ),
-                                  ),
-                                ),
+                                    child: Text(
+                                      _websiteName(name, 5),
+                                      maxLines: 1,
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                      overflow: TextOverflow.fade,
+                                      style: const TextStyle(
+                                        color: ColourPallette.white,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 8,
+                                      ),
+                                    ),
+                                  );
+
+                                  if (widget.urlModel.metaData?.faviconUrl ==
+                                      null) {
+                                    return placeHolder;
+                                  }
+
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: NetworkImageBuilderWidget(
+                                        imageUrl: widget
+                                            .urlModel.metaData!.faviconUrl!,
+                                        compressImage: false,
+                                        errorWidgetBuilder: () {
+                                          return placeHolder;
+                                        },
+                                        successWidgetBuilder: (imageData) {
+                                          final imageBytes =
+                                              imageData.imageBytesData!;
+
+                                          return ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            child: Image.memory(
+                                              imageBytes,
+                                              fit: BoxFit.contain,
+                                              height: 14,
+                                              width: 14,
+                                              errorBuilder: (ctx, _, __) {
+                                                return placeHolder;
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _websiteName(
-                                  widget.urlModel.metaData?.websiteName ?? '',
+                                  widget.urlModel.metaData?.websiteName ??
+                                      widget.urlModel.title,
+                                  15,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -715,6 +769,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontWeight: FontWeight.w500,
+                            fontSize: 12,
                           ),
                         ),
                       ],
@@ -722,6 +777,19 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                   ),
                   Row(
                     children: [
+                      if (widget.onBookmarkButtonTap != null)
+                        IconButton(
+                          onPressed: widget.onBookmarkButtonTap,
+                          icon: Icon(
+                            widget.urlModel.isOffline
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            size: 20,
+                            color: widget.urlModel.isOffline
+                                ? ColourPallette.salemgreen
+                                : Colors.grey.shade700,
+                          ),
+                        ),
                       _layoutFilterOptions(),
                       IconButton(
                         onPressed: widget.onShareButtonTap,
@@ -745,9 +813,9 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
   Widget _layoutFilterOptions() {
     return FilterPopupMenuButton(
       icon: Icon(
-        // Icons.format_shapes_rounded,
-        Icons.more_vert_rounded,
-        color: Colors.grey.shade800,
+        Icons.format_shapes_rounded,
+        // Icons.more_vert_rounded,
+        color: Colors.grey.shade700,
         size: 16,
       ),
       menuItems: [
@@ -756,12 +824,13 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
         //   notifier: _isSideWayLayout,
         //   onPress: () => _isSideWayLayout.value = !_isSideWayLayout.value,
         // ),
-        ListFilterPopupMenuItem(
-          title: 'Full Description',
-          notifier: _showFullDescription,
-          onPress: () =>
-              _showFullDescription.value = !_showFullDescription.value,
-        ),
+        if (widget.urlModel.metaData?.description != null)
+          ListFilterPopupMenuItem(
+            title: 'Full Description',
+            notifier: _showFullDescription,
+            onPress: () =>
+                _showFullDescription.value = !_showFullDescription.value,
+          ),
         ListFilterPopupMenuItem(
           title: 'Show Images',
           notifier: _showBannerImage,

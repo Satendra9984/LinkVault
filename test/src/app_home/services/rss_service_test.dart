@@ -10,16 +10,16 @@ class MyHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;  // Accept all certificates
+          (X509Certificate cert, String host, int port) =>
+              true; // Accept all certificates
   }
 }
 
 void main() {
-    // Apply the custom HTTP overrides before running tests
+  // Apply the custom HTTP overrides before running tests
   HttpOverrides.global = MyHttpOverrides();
   group('RssXmlParsingService', () {
     test('should fetch and parse RSS feed', () async {
-     
       final testFeedUrls = [
         'http://rss.cnn.com/rss/money_latest.rss',
         'https://www.amarujala.com/rss/editors-pick.xml',
@@ -38,10 +38,10 @@ void main() {
         firestoreId: 'firestoreId',
       );
       expect(urlMetaDataList, isNotEmpty);
-      Logger.printLog(urlMetaDataList.length.toString());
+      // Logger.printLog(urlMetaDataList.length.toString());
       // Example assertions (customize as needed)
       for (final urlMetaData in urlMetaDataList) {
-        Logger.printLog(StringUtils.getJsonFormat(urlMetaData.toJson()));
+        // Logger.printLog(StringUtils.getJsonFormat(urlMetaData.toJson()));
       }
     });
   });

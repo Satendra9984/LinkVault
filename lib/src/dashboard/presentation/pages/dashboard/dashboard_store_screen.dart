@@ -78,13 +78,14 @@ class _CollectionStorePageState extends State<CollectionStorePage>
           }
 
           if (fetchCollection.collectionFetchingState ==
-              LoadingStates.errorLoading) {
+                  LoadingStates.errorLoading ||
+              fetchCollection.collection == null) {
             return _getErrorWidget(
               collectionCubit: collectionCubit,
               globalUserCubit: globalUserCubit,
             );
           }
-          // Logger.printLog('Updated collection store page');
+          // // Logger.printLog('Updated collection store page');
 
           final collection = fetchCollection.collection;
           if (collection == null) {
@@ -97,20 +98,20 @@ class _CollectionStorePageState extends State<CollectionStorePage>
             physics: const NeverScrollableScrollPhysics(),
             children: [
               DashboardUrlFaviconListScreen(
-                collectionFetchModel: fetchCollection,
+                collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
                 showAddUrlButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               DashboardCollectionsListScreen(
-                collectionFetchModel: fetchCollection,
+                collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               UrlsPreviewListScreen(
                 showBottomBar: _showBottomNavBar,
-                collectionFetchModel: fetchCollection,
+                collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),

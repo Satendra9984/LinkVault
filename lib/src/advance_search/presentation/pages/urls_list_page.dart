@@ -237,7 +237,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
                                   await launchUrl(uri);
                                 }
                               },
-                              onDoubleTap: (urlMetaData) {
+                              onLongPress: (urlMetaData) {
                                 final urlc = url.copyWith(
                                   metaData: urlMetaData,
                                 );
@@ -247,6 +247,7 @@ class _SearchedUrlsListWidgetState extends State<SearchedUrlsListWidget>
                                   MaterialPageRoute(
                                     builder: (ctx) => UpdateUrlTemplateScreen(
                                       urlModel: urlc,
+                                      isRootCollection: false,
                                     ),
                                   ),
                                 ).then(

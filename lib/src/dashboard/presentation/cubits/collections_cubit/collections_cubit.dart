@@ -150,7 +150,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
 
-    // Logger.printLog(
+    // // Logger.printLog(
     //   'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
     // );
 
@@ -217,7 +217,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
-    // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
+    // // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
   CollectionFetchModel? getCollection({
@@ -256,9 +256,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required CollectionModel collection,
   }) {
     // [TODO] : delete subcollection in db it will be cascade delete
-    Logger.printLog(
-      'collection before deletion ${state.collections.keys.length}',
-    );
+    // Logger.printLog(
+    //   'collection before deletion ${state.collections.keys.length}',
+    // );
     final newCollMap = {...state.collections}..removeWhere(
         (key, value) => key == collection.id,
       );
@@ -268,9 +268,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         collections: newCollMap,
       ),
     );
-    Logger.printLog(
-      'collection after  deletion ${state.collections.keys.length}',
-    );
+    // Logger.printLog(
+    //   'collection after  deletion ${state.collections.keys.length}',
+    // );
   }
 
   void updateCollection({
@@ -478,18 +478,18 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required UrlModel url,
     required CollectionModel collectionModel,
   }) {
-    Logger.printLog(
-      'deleting in state: ${url.collectionId}, ',
-    );
+    // Logger.printLog(
+    //   'deleting in state: ${url.collectionId}, ',
+    // );
     final fetchedUrlList = state.collectionUrls[collectionModel.id];
 
     if (fetchedUrlList == null) {
       return;
     }
 
-    Logger.printLog(
-      'deleting in state: ${url.collectionId}, $fetchedUrlList',
-    );
+    // Logger.printLog(
+    //   'deleting in state: ${url.collectionId}, $fetchedUrlList',
+    // );
 
     final updatedList = [...fetchedUrlList]..removeWhere(
         (element) {
@@ -502,7 +502,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       );
 
     final updatedUrlsState = {...state.collectionUrls};
-    Logger.printLog('deleting in state: ${collectionModel.id}, $updatedList');
+    // Logger.printLog('deleting in state: ${collectionModel.id}, $updatedList');
 
     updatedUrlsState[collectionModel.id] = updatedList;
 

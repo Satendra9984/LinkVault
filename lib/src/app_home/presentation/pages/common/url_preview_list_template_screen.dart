@@ -4,11 +4,13 @@ import 'package:link_vault/core/common/providers/global_user_provider/global_use
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/widgets/custom_textfield.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_url_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/src/app_home/presentation/widgets/list_filter_pop_up_menu_item.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/url_model.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
@@ -17,13 +19,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 class UrlPreviewListTemplateScreen extends StatefulWidget {
   const UrlPreviewListTemplateScreen({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.showAddUrlButton,
     required this.onAddUrlPressed,
     required this.urlsEmptyWidget,
     // required this.onUrlModelItemFetchedWidget,
     required this.showBottomNavBar,
     required this.appBar,
+    required this.onLongPress,
+    this.onBookmarkButtonTap,
     this.body,
     super.key,
   });
@@ -32,16 +36,19 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
   final bool showAddUrlButton;
   final ValueNotifier<bool> showBottomNavBar;
 
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
 
   // Dynamic Widgets
   final void Function({String? url}) onAddUrlPressed;
-  final Widget urlsEmptyWidget;
 
-  // final Widget Function({
-  //   required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
-  //   required int index,
-  // })? onUrlModelItemFetchedWidget;
+  final void Function(UrlModel) onLongPress;
+
+  final void Function({
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
+    required UrlModel url,
+  })? onBookmarkButtonTap;
+
+  final Widget urlsEmptyWidget;
 
   final Widget? Function({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
@@ -106,14 +113,19 @@ class _UrlPreviewListTemplateScreenState
       _showAppBar.value = true;
       widget.showBottomNavBar.value = true;
     }
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent) {
+      // // Logger.printLog('[scroll] Called on scroll in urlslist');
+      _fetchMoreUrls();
+    }
     _previousOffset = _scrollController.offset;
   }
 
   void _fetchMoreUrls() {
-    final fetchCollection = widget.collectionFetchModel;
+    final fetchCollection = widget.collectionModel;
 
     context.read<CollectionsCubit>().fetchMoreUrls(
-          collectionId: fetchCollection.collection!.id,
+          collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
         );
   }
@@ -123,7 +135,7 @@ class _UrlPreviewListTemplateScreenState
     final feeds = context
         .read<CollectionsCubit>()
         .state
-        .collectionUrls[widget.collectionFetchModel.collection!.id];
+        .collectionUrls[widget.collectionModel.id];
 
     if (feeds == null || feeds.isEmpty) return;
 
@@ -142,7 +154,7 @@ class _UrlPreviewListTemplateScreenState
             if (feed.metaData == null) return contains;
             // final metaData = feed.metaData!;
             for (final field in _selectedCategory.value) {
-              // Logger.printLog('field: $field, contains: $contains');
+              // // Logger.printLog('field: $field, contains: $contains');
               switch (field) {
                 case 'Title':
                   {
@@ -302,8 +314,8 @@ class _UrlPreviewListTemplateScreenState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  final availableUrls = state.collectionUrls[
-                      widget.collectionFetchModel.collection!.id];
+                  final availableUrls =
+                      state.collectionUrls[widget.collectionModel.id];
 
                   if (availableUrls == null || availableUrls.isEmpty) {
                     _fetchMoreUrls();
@@ -313,7 +325,8 @@ class _UrlPreviewListTemplateScreenState
                   _list.value = availableUrls.map(ValueNotifier.new).toList();
 
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
+                    if (_scrollController.hasClients&&
+                      _previousOffset < kToolbarHeight) {
                       _scrollController
                         ..jumpTo(kToolbarHeight + 16)
                         ..jumpTo(kToolbarHeight);
@@ -321,6 +334,7 @@ class _UrlPreviewListTemplateScreenState
                   });
 
                   _filterList();
+
                   return ValueListenableBuilder(
                     valueListenable: _list,
                     builder: (context, allLocalFeedsList, _) {
@@ -334,8 +348,6 @@ class _UrlPreviewListTemplateScreenState
                           } else if (index > allLocalFeedsList.length) {
                             return const SizedBox(height: 200);
                           }
-
-                          // Logger.printLog('Building index: $index');
 
                           return ValueListenableBuilder(
                             valueListenable: allLocalFeedsList[index - 1],
@@ -411,6 +423,17 @@ class _UrlPreviewListTemplateScreenState
                                               showDescription: showDescriptions,
                                               showBannerImage: showBannerImages,
                                               updateBannerImage: () {},
+                                              onBookmarkButtonTap:
+                                                  widget.onBookmarkButtonTap ==
+                                                          null
+                                                      ? null
+                                                      : () {
+                                                          widget
+                                                              .onBookmarkButtonTap!(
+                                                            list: _list,
+                                                            url: urlModel,
+                                                          );
+                                                        },
                                               onTap: () async {
                                                 final uri =
                                                     Uri.parse(urlModel.url);
@@ -418,23 +441,14 @@ class _UrlPreviewListTemplateScreenState
                                                   await launchUrl(uri);
                                                 }
                                               },
-                                              onLongPress: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (ctx) =>
-                                                        UpdateUrlTemplateScreen(
-                                                      urlModel: urlModel,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
+                                              onLongPress: () =>
+                                                  widget.onLongPress(urlModel),
                                               onShareButtonTap: () {
                                                 Share.share(
                                                   '${urlModel.url}\n${urlMetaData.title}\n${urlMetaData.description}',
                                                 );
                                               },
-                                              onMoreVertButtontap: () {},
+                                              onLayoutOptionsButtontap: () {},
                                             ),
                                           );
                                         },
@@ -738,8 +752,7 @@ class _UrlPreviewListTemplateScreenState
   Widget _searchFeedButton() {
     return BlocBuilder<CollectionsCubit, CollectionsState>(
       builder: (context, state) {
-        final feeds =
-            state.collectionUrls[widget.collectionFetchModel.collection!.id];
+        final feeds = state.collectionUrls[widget.collectionModel.id];
 
         if (feeds == null || feeds.isEmpty) {
           return const SizedBox.shrink();

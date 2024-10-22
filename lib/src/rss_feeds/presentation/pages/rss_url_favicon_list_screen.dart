@@ -5,7 +5,7 @@ import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/url_favicon_list_template_screen.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
@@ -13,14 +13,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 class RssFeedUrlsListWidget extends StatefulWidget {
   const RssFeedUrlsListWidget({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.isRootCollection,
     super.key,
   });
 
   // final String title;
   final bool isRootCollection;
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
 
   @override
   State<RssFeedUrlsListWidget> createState() => _RssFeedUrlsListWidgetState();
@@ -33,8 +33,9 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
       context,
       MaterialPageRoute(
         builder: (ctx) => AddRssFeedUrlPage(
-          parentCollection: widget.collectionFetchModel.collection!,
+          parentCollection: widget.collectionModel,
           url: url,
+          isRootCollection: widget.isRootCollection,
         ),
       ),
     );
@@ -45,7 +46,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     super.build(context);
 
     return UrlFaviconListTemplateScreen(
-      collectionFetchModel: widget.collectionFetchModel,
+      collectionModel: widget.collectionModel,
       showAddUrlButton: true,
       onAddUrlPressed: _onAddUrlPressed,
       appBar: _appBarBuilder,
@@ -69,13 +70,16 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
         }
       },
       // [TODO] : THIS IS DYNAMIC FIELD
-      onDoubleTap: (urlMetaData) {
+      onLongPress: (urlMetaData) {
         final urlc = url.copyWith(metaData: urlMetaData);
 
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (ctx) => UpdateRssFeedUrlPage(urlModel: urlc),
+            builder: (ctx) => UpdateRssFeedUrlPage(
+              urlModel: urlc,
+              isRootCollection: widget.isRootCollection,
+            ),
           ),
         );
       },
@@ -99,7 +103,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
           ),
           const SizedBox(width: 8),
           Text(
-            '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}(Preview)',
+            widget.isRootCollection ? 'My Feeds' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

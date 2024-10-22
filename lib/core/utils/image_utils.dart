@@ -11,9 +11,9 @@ class ImageUtils {
   ImageUtils._();
 
 // This must be a top-level or static function
-static  Future<Uint8List> loadUiImage(File file) async {
+  static Future<Uint8List> loadUiImage(File file) async {
     final data = await file.readAsBytes();
-   return data;
+    return data;
   }
 
   // New method to decode image in a separate isolate
@@ -60,7 +60,7 @@ static  Future<Uint8List> loadUiImage(File file) async {
 
       return ui.Size(width, height);
     } else {
-      Logger.printLog('Failed to decode image');
+      // Logger.printLog('Failed to decode image');
       // return Size(600, 150);
       return null;
     }

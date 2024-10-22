@@ -5,18 +5,19 @@ import 'package:link_vault/src/app_home/presentation/pages/common/add_collection
 import 'package:link_vault/src/app_home/presentation/pages/common/collection_list_template_screen.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/update_collection_template_screen.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
 
 class DashboardCollectionsListScreen extends StatefulWidget {
   const DashboardCollectionsListScreen({
-    required this.collectionFetchModel,
+    required this.collectionModel,
     required this.isRootCollection,
     required this.showAddCollectionButton,
     required this.appBarLeadingIcon,
     super.key,
   });
 
-  final CollectionFetchModel collectionFetchModel;
+  final CollectionModel collectionModel;
   final bool isRootCollection;
   final bool showAddCollectionButton;
   final Widget appBarLeadingIcon;
@@ -34,7 +35,7 @@ class _DashboardCollectionsListScreenState
       context,
       MaterialPageRoute(
         builder: (ctx) => AddCollectionTemplateScreen(
-          parentCollection: widget.collectionFetchModel.collection!,
+          parentCollection: widget.collectionModel,
         ),
       ),
     );
@@ -45,7 +46,7 @@ class _DashboardCollectionsListScreenState
     super.build(context);
     return CollectionsListScreenTemplate(
       onAddCollectionPressed: _onAddCollectionPressed,
-      collectionFetchModel: widget.collectionFetchModel,
+      collectionModel: widget.collectionModel,
       showAddCollectionButton: widget.showAddCollectionButton,
       onCollectionItemFetchedWidget: _collectionItemBuilder,
       appBar: _getAppBar,
@@ -96,7 +97,7 @@ class _DashboardCollectionsListScreenState
           widget.appBarLeadingIcon,
           const SizedBox(width: 8),
           Text(
-            '${widget.isRootCollection ? 'LinkVault' : widget.collectionFetchModel.collection?.name}',
+            widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

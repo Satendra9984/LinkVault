@@ -57,10 +57,10 @@ class RemoteDataSourcesImpl {
           .doc(collectionId)
           .get();
 
-      // Logger.printLog('path: ${response.reference.path}, ');
+      // // Logger.printLog('path: ${response.reference.path}, ');
 
       final data = response.data();
-      // Logger.printLog(
+      // // Logger.printLog(
       //     'path: ${response.reference.path}, data: ${data == null}');
 
       if (data == null) {
@@ -70,7 +70,7 @@ class RemoteDataSourcesImpl {
 
       // user is not using first time
       data['id'] = response.id;
-      // Logger.printLog(StringUtils.getJsonFormat(data));
+      // // Logger.printLog(StringUtils.getJsonFormat(data));
 
       final collectionModel = CollectionModel.fromJson(data);
 
@@ -210,7 +210,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('fetchUrl : urlId $urlId');
+      // // Logger.printLog('fetchUrl : urlId $urlId');
 
       final response = await _firestore
           .collection(userCollection)
@@ -220,7 +220,7 @@ class RemoteDataSourcesImpl {
           .get();
       final data = response.data();
       if (data == null) {
-        Logger.printLog('Url data is null');
+        // Logger.printLog('Url data is null');
         throw ServerException(
           message: 'Something Went Wrong',
           statusCode: 400,
@@ -231,7 +231,7 @@ class RemoteDataSourcesImpl {
 
       return fetchedUrlData;
     } catch (e) {
-      Logger.printLog('fetchUrl : $e');
+      // Logger.printLog('fetchUrl : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
@@ -244,8 +244,8 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('UrlModel length');
-      // Logger.printLog(urlModel.toJson().toString().length.toString());
+      // // Logger.printLog('UrlModel length');
+      // // Logger.printLog(urlModel.toJson().toString().length.toString());
       // await  _firestore.enableNetwork();
       final response = await _firestore
           .collection(userCollection)
@@ -257,7 +257,7 @@ class RemoteDataSourcesImpl {
 
       return addedUrlData;
     } catch (e) {
-      Logger.printLog('addUrlRemote : $e');
+      // Logger.printLog('addUrlRemote : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
@@ -282,7 +282,7 @@ class RemoteDataSourcesImpl {
 
       return urlModelUp;
     } catch (e) {
-      Logger.printLog('updateUrl : $e urlId: ${urlModel.firestoreId}');
+      // Logger.printLog('updateUrl : $e urlId: ${urlModel.firestoreId}');
 
       throw ServerException(
         message: 'Something Went Wrong',
@@ -296,8 +296,8 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('UrlModel length');
-      Logger.printLog(urlId);
+      // // Logger.printLog('UrlModel length');
+      // Logger.printLog(urlId);
 
       await _firestore
           .collection(userCollection)
@@ -308,7 +308,7 @@ class RemoteDataSourcesImpl {
 
       return urlId;
     } catch (e) {
-      Logger.printLog('deleteUrl : $e');
+      // Logger.printLog('deleteUrl : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
@@ -321,8 +321,8 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('UrlModel length');
-      // Logger.printLog(urlId);
+      // // Logger.printLog('UrlModel length');
+      // // Logger.printLog(urlId);
 
       await _firestore
           .collection(userCollection)
@@ -333,7 +333,7 @@ class RemoteDataSourcesImpl {
 
       return;
     } catch (e) {
-      Logger.printLog('deleteUrl : $e');
+      // Logger.printLog('deleteUrl : $e');
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,

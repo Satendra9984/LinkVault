@@ -8,20 +8,24 @@ import 'package:link_vault/core/common/widgets/custom_button.dart';
 import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/app_home/presentation/pages/functional_widgets_helper/custom_bottom_nav_bar.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_collections_list_screen.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_preview_list.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_url_favicon_list_widget.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_preview_list_screen.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_url_favicon_list_screen.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/saved_feeds_list_screen.dart';
 import 'package:lottie/lottie.dart';
 
 class RssFeedCollectionStorePage extends StatefulWidget {
   const RssFeedCollectionStorePage({
     required this.collectionId,
     required this.isRootCollection,
+    required this.appBarLeadingIcon,
     super.key,
   });
   final String collectionId;
   final bool isRootCollection;
+  final Widget appBarLeadingIcon;
 
   @override
   State<RssFeedCollectionStorePage> createState() =>
@@ -82,7 +86,8 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
           }
 
           if (fetchCollection.collectionFetchingState ==
-              LoadingStates.errorLoading) {
+                  LoadingStates.errorLoading ||
+              fetchCollection.collection == null) {
             return _showErrorLoadingWidget(
               () => collectionCubit.fetchCollection(
                 collectionId: widget.collectionId,
@@ -108,7 +113,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
             physics: const NeverScrollableScrollPhysics(),
             children: [
               RssFeedUrlsListWidget(
-                collectionFetchModel: fetchCollection,
+                collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
               ),
               RssFeedUrlsPreviewListWidget(
@@ -117,8 +122,15 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
                 isRootCollection: widget.isRootCollection,
               ),
               RssCollectionsListScreen(
-                collectionFetchModel: fetchCollection,
+                collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
+                appBarLeadingIcon: widget.appBarLeadingIcon,
+              ),
+              SavedFeedsPreviewListScreen(
+                showBottomBar: _showBottomNavBar,
+                isRootCollection: widget.isRootCollection,
+                collectionId: fetchCollection.collection!.id+savedFeeds,
+                appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
             ],
           );
@@ -193,6 +205,13 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
                     selectedIcon: Icons.collections_bookmark_rounded,
                     index: 2,
                   ),
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    label: 'Saved',
+                    unSelectedIcon: Icons.bookmark_outline,
+                    selectedIcon: Icons.bookmark_rounded,
+                    index: 3,
+                  ),
                 ],
               );
             },
@@ -260,4 +279,6 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       ),
     );
   }
+
+
 }
