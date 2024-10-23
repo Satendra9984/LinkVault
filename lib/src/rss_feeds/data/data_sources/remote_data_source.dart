@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:link_vault/core/utils/logger.dart';
 
 class RemoteDataSource {
   RemoteDataSource();

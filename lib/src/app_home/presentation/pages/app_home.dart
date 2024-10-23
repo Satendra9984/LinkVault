@@ -173,6 +173,41 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
+                  // DISCOVER
+                  ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => RssFeedCollectionStorePage(
+                            collectionId: '$globalUser$RssFeed',
+                            isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.compassSVG,
+                              height: 16,
+                              width: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.compassSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'My Feeds',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
+
                   // FAVOURITE COLLECTIONS STORE
                   ListTile(
                     onTap: () {
@@ -197,6 +232,33 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     title: const Text(
                       'Favourite',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
+
+                  // NEWSLETTERS
+                  ListTile(
+                    onTap: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => const AdvanceSearchPage(),
+                      //   ),
+                      // );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.recentSVG ,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'Recents',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -235,78 +297,6 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // DISCOVER
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => RssFeedCollectionStorePage(
-                            collectionId: '$globalUser$RssFeed',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.compassSVG,
-                              height: 16,
-                              width: 16,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.compassSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'My Feeds',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
-                    ),
-                    // trailing: SvgPicture.asset(
-                    //   MediaRes.comingSoonSVG,
-                    //   height: 24,
-                    //   width: 24,
-                    // ),
-                  ),
-
-                  // NEWSLETTERS
-                  // ListTile(
-                  //   onTap: () {
-                  // Navigator.of(context).push(
-                  //   MaterialPageRoute(
-                  //     builder: (ctx) => const AdvanceSearchPage(),
-                  //   ),
-                  // );
-                  //   },
-                  //   leading: SvgPicture.asset(
-                  //     MediaRes.newsletterSVG,
-                  //     height: 20,
-                  //     width: 20,
-                  //   ),
-                  //   title: const Text(
-                  //     'Newsletters',
-                  //     style: TextStyle(
-                  //       fontSize: 18,
-                  //       fontWeight: FontWeight.w500,
-                  //     ),
-                  //   ),
-                  //   // trailing: const Icon(
-                  //   //   Icons.arrow_forward_ios_rounded,
-                  //   //   color: ColourPallette.salemgreen,
-                  //   // ),
-                  //   trailing: SvgPicture.asset(
-                  //     MediaRes.comingSoonSVG,
-                  //     height: 24,
-                  //     width: 24,
-                  //   ),
-                  // ),
-
                   // SUPPORT US
                   ListTile(
                     onTap: () {
@@ -316,10 +306,6 @@ class _AppHomePageState extends State<AppHomePage> {
                         ),
                       );
                     },
-                    // leading: const Icon(
-                    //   Icons.support,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
                     leading: SvgPicture.asset(
                       MediaRes.collaborateSVG,
                       height: 20,

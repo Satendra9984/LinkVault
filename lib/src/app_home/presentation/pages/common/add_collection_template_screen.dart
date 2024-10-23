@@ -181,35 +181,35 @@ class _AddCollectionTemplateScreenState
                 const SizedBox(height: 20),
 
                 // IS fAVOURITE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Favourite',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Switch.adaptive(
-                      value: _favourite,
-                      onChanged: (value) => setState(() {
-                        _favourite = !_favourite;
-                      }),
-                      trackOutlineColor:
-                          WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
-                        (Set<WidgetState> states) => Colors.transparent,
-                      ),
-                      activeTrackColor: ColourPallette.mountainMeadow,
-                      inactiveTrackColor: ColourPallette.error,
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     const Text(
+                //       'Favourite',
+                //       style: TextStyle(
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                //     ),
+                //     Switch.adaptive(
+                //       value: _favourite,
+                //       onChanged: (value) => setState(() {
+                //         _favourite = !_favourite;
+                //       }),
+                //       trackOutlineColor:
+                //           WidgetStateProperty.resolveWith<Color?>(
+                //         (Set<WidgetState> states) => Colors.transparent,
+                //       ),
+                //       thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                //         (Set<WidgetState> states) => Colors.transparent,
+                //       ),
+                //       activeTrackColor: ColourPallette.mountainMeadow,
+                //       inactiveTrackColor: ColourPallette.error,
+                //     ),
+                //   ],
+                // ),
 
-                const SizedBox(height: 20),
+                // const SizedBox(height: 20),
 
                 // Selected Category
                 const Text(

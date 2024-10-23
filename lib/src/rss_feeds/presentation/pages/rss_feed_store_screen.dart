@@ -129,7 +129,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               SavedFeedsPreviewListScreen(
                 showBottomBar: _showBottomNavBar,
                 isRootCollection: widget.isRootCollection,
-                collectionId: fetchCollection.collection!.id+savedFeeds,
+                collectionId: fetchCollection.collection!.id + savedFeeds,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
             ],
@@ -173,36 +173,38 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
                 elevation: 0,
                 selectedItemColor: ColourPallette.black,
                 selectedLabelStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   color: Colors.black,
                 ),
                 unselectedItemColor: ColourPallette.black,
                 unselectedLabelStyle: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: ColourPallette.black,
                 ),
                 items: [
                   CustomBottomNavItem.create(
                     currentPage: _currentPage,
                     label: 'Urls',
-                    unSelectedIcon: Icons.link_outlined,
-                    selectedIcon: Icons.link_rounded,
+                    unSelectedIcon: Icons.webhook_outlined,
+                    selectedIcon: Icons.webhook_rounded,
                     index: 0,
                   ),
                   CustomBottomNavItem.create(
                     currentPage: _currentPage,
-                    unSelectedIcon: Icons.dynamic_feed,
-                    selectedIcon: Icons.dynamic_feed_rounded,
+                    unSelectedIcon: Icons.web_stories_outlined,
+                    selectedIcon: Icons.web_stories_rounded,
                     index: 1,
                     label: 'Feed',
                   ),
                   CustomBottomNavItem.create(
                     currentPage: _currentPage,
                     label: 'Collections',
-                    unSelectedIcon: Icons.collections_bookmark_outlined,
-                    selectedIcon: Icons.collections_bookmark_rounded,
+                    // unSelectedIcon: Icons.collections_bookmark_outlined,
+                    // selectedIcon: Icons.collections_bookmark_rounded,
+                    unSelectedIcon: Icons.folder_outlined,
+                    selectedIcon: Icons.folder_rounded,
                     index: 2,
                   ),
                   CustomBottomNavItem.create(
@@ -279,6 +281,4 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       ),
     );
   }
-
-
 }

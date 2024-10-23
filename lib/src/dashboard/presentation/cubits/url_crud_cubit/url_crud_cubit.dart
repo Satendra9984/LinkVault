@@ -93,7 +93,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
             ),
           );
 
-          addURLToFavourites(urlData: urlData);
+          // addURLToFavourites(urlData: urlData);
         },
       );
     });
@@ -131,7 +131,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
                 urlCrudLoadingStates: UrlCrudLoadingStates.updatedSuccessfully,
               ),
             );
-            await updateURLToFavourites(urlData: urlData);
+            // await updateURLToFavourites(urlData: urlData);
           },
         );
       },
@@ -203,7 +203,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
               ),
             );
 
-            await deleteURLToFavourites(urlData: urlData);
+            // await deleteURLToFavourites(urlData: urlData);
           },
         );
       },

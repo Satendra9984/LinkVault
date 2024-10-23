@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/app_tutorials.dart';
+import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
+    as customChromeTabs;
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/app_home/presentation/pages/common/url_favicon_list_template_screen.dart';
+import 'package:link_vault/src/app_home/services/custom_tabs_service.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
@@ -62,11 +68,34 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     final url = list.value[index].urlModel!;
 
     return UrlFaviconLogoWidget(
-      // [TODO] : THIS IS DYNAMIC FIELD
       onTap: () async {
+        final theme = Theme.of(context);
+
         final uri = Uri.parse(url.url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri);
+        try {
+          await Future.wait(
+            [
+              // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
+              // FOR FASTER WEBPAGE LOADING
+              CustomTabsService.launchUrl(
+                url: url.url,
+                theme: theme,
+              ),
+
+              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+              // JUST LIKE APPS IN BACKGROUND TYPE
+            ],
+          );
+        } catch (e) {
+          // If the URL launch fails, an exception will be thrown. (For example, if no browser app is installed on the Android device.)
+          debugPrint(e.toString());
+
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(
+              uri,
+              mode: LaunchMode.inAppBrowserView,
+            );
+          }
         }
       },
       // [TODO] : THIS IS DYNAMIC FIELD

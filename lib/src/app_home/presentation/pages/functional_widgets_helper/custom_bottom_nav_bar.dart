@@ -10,19 +10,20 @@ class CustomBottomNavItem {
     required String label,
   }) {
     final isSelected = currentPage.value == index;
-    
+
     return BottomNavigationBarItem(
       icon: Icon(unSelectedIcon),
       activeIcon: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isSelected ? ColourPallette.salemgreen.withOpacity(0.4) : null,
+          color: isSelected ? ColourPallette.salemgreen.withOpacity(0.2) : null,
         ),
         child: Icon(
           selectedIcon,
           size: 24,
-          color: ColourPallette.black,
+          color:
+              isSelected ? ColourPallette.mountainMeadow : ColourPallette.black,
         ),
       ),
       label: label,

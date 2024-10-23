@@ -108,13 +108,13 @@ class _FavouriteFolderCollectionPageState
               DashboardUrlFaviconListScreen(
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
-                showAddUrlButton: false,
+                showAddUrlButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               DashboardCollectionsListScreen(
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
-                showAddCollectionButton: false,
+                showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               UrlsPreviewListScreen(
@@ -179,21 +179,21 @@ class _FavouriteFolderCollectionPageState
                     CustomBottomNavItem.create(
                       currentPage: _currentPage,
                       label: 'Urls',
-                      unSelectedIcon: Icons.link_outlined,
-                      selectedIcon: Icons.link_rounded,
+                      unSelectedIcon: Icons.webhook_outlined,
+                      selectedIcon: Icons.webhook_rounded,
                       index: 0,
                     ),
                     CustomBottomNavItem.create(
                       currentPage: _currentPage,
                       label: 'Collections',
-                      unSelectedIcon: Icons.collections_bookmark_outlined,
-                      selectedIcon: Icons.collections_bookmark_rounded,
+                      unSelectedIcon: Icons.folder_outlined,
+                      selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
                     CustomBottomNavItem.create(
                       currentPage: _currentPage,
-                      unSelectedIcon: Icons.preview_outlined,
-                      selectedIcon: Icons.preview_rounded,
+                      unSelectedIcon: Icons.dynamic_feed_outlined,
+                      selectedIcon: Icons.dynamic_feed,
                       index: 2,
                       label: 'Previews',
                     ),
