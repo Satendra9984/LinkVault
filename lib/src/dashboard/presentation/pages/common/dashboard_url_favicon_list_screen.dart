@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
-    as customChromeTabs;
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/res/app_tutorials.dart';
 import 'package:link_vault/core/common/res/colours.dart';
@@ -75,37 +73,19 @@ class _DashboardUrlFaviconListScreenState
       // [TODO] : THIS IS DYNAMIC FIELD
       onTap: () async {
         final theme = Theme.of(context);
-        // final stopWatch = Stopwatch()..start();
-        // Logger.printLog(
-        //   '[url] : ${url.url} ${stopWatch.elapsedMilliseconds}',
-        // );
-        final uri = Uri.parse(url.url);
-        try {
-          await Future.wait(
-            [
-              // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-              // FOR FASTER WEBPAGE LOADING
-              CustomTabsService.launchUrl(
-                url: url.url,
-                theme: theme,
-              ),
-              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-              // JUST LIKE APPS IN BACKGROUND TYPE
-            ],
-          );
-        } catch (e) {
-          // If the URL launch fails, an exception will be thrown. (For example, if no browser app is installed on the Android device.)
-          // debugPrint(e.toString());
 
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(
-              uri,
-              mode: LaunchMode.inAppBrowserView,
-            );
-          }
-          // stopWatch.stop();
-          // Logger.printLog('[url] : stopped ${stopWatch.elapsedMilliseconds}');
-        }
+        await Future.wait(
+          [
+            // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
+            // FOR FASTER WEBPAGE LOADING
+            CustomTabsService.launchUrl(
+              url: url.url,
+              theme: theme,
+            ),
+            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+            // JUST LIKE APPS IN BACKGROUND TYPE
+          ],
+        );
       },
       // [TODO] : THIS IS DYNAMIC FIELD
       onLongPress: (urlMetaData) {
@@ -203,50 +183,50 @@ class _DashboardUrlFaviconListScreenState
 }
 
 /*
-Using inAppBrowserView with 
+Using Default settings with 
 if (await canLaunchUrl(uri)) {
             await launchUrl(
               uri,
             );
           }
-I/flutter (13713): [log] : [url] : https://coindcx.com/ 0
-I/flutter (13713): [log] : [url] : stopped 125
-I/flutter (13713): [log] : [url] : https://news.google.com/ 0
-I/flutter (13713): [log] : [url] : stopped 210
-I/flutter (13713): [log] : [url] : https://in.bookmyshow.com/explore/home/lucknow 0
-I/flutter (13713): [log] : [url] : stopped 43
-I/flutter (13713): [log] : [url] : https://www.myntra.com/ 0
-I/flutter (13713): [log] : [url] : stopped 37
-I/flutter (13713): [log] : [url] : https://nammayatri.in/ 0
-I/flutter (13713): [log] : [url] : stopped 45
-I/flutter (13713): [log] : [url] : http://www.ajio.com/shop/ajio 0
-I/flutter (13713): [log] : [url] : stopped 147
-I/flutter (13713): [log] : [url] : https://www.binance.com/en 0
-I/flutter (13713): [log] : [url] : stopped 63
-I/flutter (13713): [log] : [url] : https://groww.in/ 0
-I/flutter (13713): [log] : [url] : stopped 52
-I/flutter (13713): [log] : [url] : https://www.google.com/intl/en_in/drive/ 0
-I/flutter (13713): [log] : [url] : stopped 65
-I/flutter (13713): [log] : [url] : https://www.uber.com/in/en/ 0
-I/flutter (13713): [log] : [url] : stopped 61
-I/flutter (13713): [log] : [url] : https://www.olacabs.com/ 0
-I/flutter (13713): [log] : [url] : stopped 57
-I/flutter (22082): [log] : [url] : https://www.flipkart.com/ 0
-I/flutter (22082): [log] : [url] : stopped 82
-I/flutter (22082): [log] : [url] : https://www.amazon.in/ 0
-I/flutter (22082): [log] : [url] : stopped 57
-I/flutter (22082): [log] : [url] : https://www.swiggy.com/ 0
-I/flutter (22082): [log] : [url] : stopped 62
-I/flutter (22082): [log] : [url] : https://www.zomato.com 0
-I/flutter (22082): [log] : [url] : stopped 31
-I/flutter (22082): [log] : [url] : https://www.digilocker.gov.in/ 0
-I/flutter (22082): [log] : [url] : stopped 50
-I/flutter (22082): [log] : [url] : https://www.jio.com/selfcare/login/ 1
-I/flutter (22082): [log] : [url] : stopped 50
-I/flutter (22082): [log] : [url] : https://www.irctc.co.in/ 0
-I/flutter (22082): [log] : [url] : stopped 51
-I/flutter (22082): [log] : [url] : https://trackmytrain.co.in/ 0
-I/flutter (22082): [log] : [url] : stopped 69
+URL Opened https://coindcx.com/ 0
+Total Time Taken 125
+URL Opened https://news.google.com/ 0
+Total Time Taken 210
+URL Opened https://in.bookmyshow.com/explore/home/lucknow 0
+Total Time Taken 43
+URL Opened https://www.myntra.com/ 0
+Total Time Taken 37
+URL Opened https://nammayatri.in/ 0
+Total Time Taken 45
+URL Opened http://www.ajio.com/shop/ajio 0
+Total Time Taken 147
+URL Opened https://www.binance.com/en 0
+Total Time Taken 63
+URL Opened https://groww.in/ 0
+Total Time Taken 52
+URL Opened https://www.google.com/intl/en_in/drive/ 0
+Total Time Taken 65
+URL Opened https://www.uber.com/in/en/ 0
+Total Time Taken 61
+URL Opened https://www.olacabs.com/ 0
+Total Time Taken 57
+URL Opened https://www.flipkart.com/ 0
+Total Time Taken 82
+URL Opened https://www.amazon.in/ 0
+Total Time Taken 57
+URL Opened https://www.swiggy.com/ 0
+Total Time Taken 62
+URL Opened https://www.zomato.com 0
+Total Time Taken 31
+URL Opened https://www.digilocker.gov.in/ 0
+Total Time Taken 50
+URL Opened https://www.jio.com/selfcare/login/ 1
+Total Time Taken 50
+URL Opened https://www.irctc.co.in/ 0
+Total Time Taken 51
+URL Opened https://trackmytrain.co.in/ 0
+Total Time Taken 69
 
 
 
@@ -258,98 +238,98 @@ if (await canLaunchUrl(uri)) {
             );
           }
 
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 1
-I/flutter (  416): [log] : [url] : stopped 160
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 113
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 63
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 50
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 47
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 73
-I/flutter (  416): [log] : [url] : https://news.google.com/ 0
-I/flutter (  416): [log] : [url] : stopped 52
-I/flutter (  416): [log] : [url] : https://in.bookmyshow.com/explore/home/lucknow 0
-I/flutter (  416): [log] : [url] : stopped 63
-I/flutter (  416): [log] : [url] : https://www.myntra.com/ 0
-I/flutter (  416): [log] : [url] : stopped 69
-I/flutter (  416): [log] : [url] : https://nammayatri.in/ 0
-I/flutter (  416): [log] : [url] : stopped 56
-I/flutter (  416): [log] : [url] : http://www.ajio.com/shop/ajio 0
-I/flutter (  416): [log] : [url] : stopped 62
-I/flutter (  416): [log] : [url] : https://www.binance.com/en 0
-I/flutter (  416): [log] : [url] : stopped 45
-I/flutter (  416): [log] : [url] : https://groww.in/ 0
-I/flutter (  416): [log] : [url] : stopped 57
-I/flutter (  416): [log] : [url] : https://www.google.com/intl/en_in/drive/ 0
-I/flutter (  416): [log] : [url] : stopped 49
-I/flutter (  416): [log] : [url] : https://www.uber.com/in/en/ 0
-I/flutter (  416): [log] : [url] : stopped 72
-I/flutter (  416): [log] : [url] : https://www.olacabs.com/ 0
-I/flutter (  416): [log] : [url] : stopped 54
-I/flutter (13713): [log] : [url] : https://www.flipkart.com/ 0
-I/flutter (13713): [log] : [url] : stopped 85
-I/flutter (13713): [log] : [url] : https://www.amazon.in/ 0
-I/flutter (13713): [log] : [url] : stopped 63
-I/flutter (13713): [log] : [url] : https://www.swiggy.com/ 0
-I/flutter (13713): [log] : [url] : stopped 79
-I/flutter (13713): [log] : [url] : https://www.zomato.com 0
-I/flutter (13713): [log] : [url] : stopped 45
-I/flutter (13713): [log] : [url] : https://www.digilocker.gov.in/ 0
-I/flutter (13713): [log] : [url] : stopped 53
-I/flutter (13713): [log] : [url] : https://www.jio.com/selfcare/login/ 0
-I/flutter (13713): [log] : [url] : stopped 58
-I/flutter (13713): [log] : [url] : https://www.irctc.co.in/ 0
-I/flutter (13713): [log] : [url] : stopped 47
-I/flutter (13713): [log] : [url] : https://trackmytrain.co.in/ 0
-I/flutter (13713): [log] : [url] : stopped 66
+URL Opened https://coindcx.com/ 1
+Total Time Taken 160
+URL Opened https://coindcx.com/ 0
+Total Time Taken 113
+URL Opened https://coindcx.com/ 0
+Total Time Taken 63
+URL Opened https://coindcx.com/ 0
+Total Time Taken 50
+URL Opened https://coindcx.com/ 0
+Total Time Taken 47
+URL Opened https://coindcx.com/ 0
+Total Time Taken 73
+URL Opened https://news.google.com/ 0
+Total Time Taken 52
+URL Opened https://in.bookmyshow.com/explore/home/lucknow 0
+Total Time Taken 63
+URL Opened https://www.myntra.com/ 0
+Total Time Taken 69
+URL Opened https://nammayatri.in/ 0
+Total Time Taken 56
+URL Opened http://www.ajio.com/shop/ajio 0
+Total Time Taken 62
+URL Opened https://www.binance.com/en 0
+Total Time Taken 45
+URL Opened https://groww.in/ 0
+Total Time Taken 57
+URL Opened https://www.google.com/intl/en_in/drive/ 0
+Total Time Taken 49
+URL Opened https://www.uber.com/in/en/ 0
+Total Time Taken 72
+URL Opened https://www.olacabs.com/ 0
+Total Time Taken 54
+URL Opened https://www.flipkart.com/ 0
+Total Time Taken 85
+URL Opened https://www.amazon.in/ 0
+Total Time Taken 63
+URL Opened https://www.swiggy.com/ 0
+Total Time Taken 79
+URL Opened https://www.zomato.com 0
+Total Time Taken 45
+URL Opened https://www.digilocker.gov.in/ 0
+Total Time Taken 53
+URL Opened https://www.jio.com/selfcare/login/ 0
+Total Time Taken 58
+URL Opened https://www.irctc.co.in/ 0
+Total Time Taken 47
+URL Opened https://trackmytrain.co.in/ 0
+Total Time Taken 66
 
 
 
 After Using CustomTabs
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 168
-I/flutter (  416): [log] : [url] : https://coindcx.com/ 0
-I/flutter (  416): [log] : [url] : stopped 49
-I/flutter (  416): [log] : [url] : https://news.google.com/ 0
-I/flutter (  416): [log] : [url] : stopped 31
-I/flutter (  416): [log] : [url] : https://in.bookmyshow.com/explore/home/lucknow 0
-I/flutter (  416): [log] : [url] : stopped 32
-I/flutter (  416): [log] : [url] : https://www.myntra.com/ 0
-I/flutter (  416): [log] : [url] : stopped 52
-I/flutter (  416): [log] : [url] : https://nammayatri.in/ 0
-I/flutter (  416): [log] : [url] : stopped 34
-I/flutter (  416): [log] : [url] : http://www.ajio.com/shop/ajio 0
-I/flutter (  416): [log] : [url] : stopped 26
-I/flutter (  416): [log] : [url] : https://www.binance.com/en 0
-I/flutter (  416): [log] : [url] : stopped 49
-I/flutter (  416): [log] : [url] : https://groww.in/ 0
-I/flutter (  416): [log] : [url] : stopped 39
-I/flutter (  416): [log] : [url] : https://www.google.com/intl/en_in/drive/ 0
-I/flutter (  416): [log] : [url] : stopped 41
-I/flutter (  416): [log] : [url] : https://www.uber.com/in/en/ 0
-I/flutter (  416): [log] : [url] : stopped 28
-I/flutter (  416): [log] : [url] : https://www.olacabs.com/ 0
-I/flutter (  416): [log] : [url] : stopped 63
-I/flutter (  416): [log] : [url] : https://www.flipkart.com/ 0
-I/flutter (  416): [log] : [url] : stopped 34
-I/flutter (  416): [log] : [url] : https://www.amazon.in/ 0
-I/flutter (  416): [log] : [url] : stopped 31
-I/flutter (  416): [log] : [url] : https://www.swiggy.com/ 0
-I/flutter (  416): [log] : [url] : stopped 36
-I/flutter (  416): [log] : [url] : https://www.zomato.com 0
-I/flutter (  416): [log] : [url] : stopped 28
-I/flutter (  416): [log] : [url] : https://www.digilocker.gov.in/ 0
-I/flutter (  416): [log] : [url] : stopped 25
-I/flutter (  416): [log] : [url] : https://www.jio.com/selfcare/login/ 0
-I/flutter (  416): [log] : [url] : stopped 30
-I/flutter (  416): [log] : [url] : https://www.irctc.co.in/ 0
-I/flutter (  416): [log] : [url] : stopped 27
-I/flutter (  416): [log] : [url] : https://trackmytrain.co.in/ 0
-I/flutter (  416): [log] : [url] : stopped 108
+URL Opened https://coindcx.com/ 0
+Total Time Taken 168
+URL Opened https://coindcx.com/ 0
+Total Time Taken 49
+URL Opened https://news.google.com/ 0
+Total Time Taken 31
+URL Opened https://in.bookmyshow.com/explore/home/lucknow 0
+Total Time Taken 32
+URL Opened https://www.myntra.com/ 0
+Total Time Taken 52
+URL Opened https://nammayatri.in/ 0
+Total Time Taken 34
+URL Opened http://www.ajio.com/shop/ajio 0
+Total Time Taken 26
+URL Opened https://www.binance.com/en 0
+Total Time Taken 49
+URL Opened https://groww.in/ 0
+Total Time Taken 39
+URL Opened https://www.google.com/intl/en_in/drive/ 0
+Total Time Taken 41
+URL Opened https://www.uber.com/in/en/ 0
+Total Time Taken 28
+URL Opened https://www.olacabs.com/ 0
+Total Time Taken 63
+URL Opened https://www.flipkart.com/ 0
+Total Time Taken 34
+URL Opened https://www.amazon.in/ 0
+Total Time Taken 31
+URL Opened https://www.swiggy.com/ 0
+Total Time Taken 36
+URL Opened https://www.zomato.com 0
+Total Time Taken 28
+URL Opened https://www.digilocker.gov.in/ 0
+Total Time Taken 25
+URL Opened https://www.jio.com/selfcare/login/ 0
+Total Time Taken 30
+URL Opened https://www.irctc.co.in/ 0
+Total Time Taken 27
+URL Opened https://trackmytrain.co.in/ 0
+Total Time Taken 108
 
 
 */

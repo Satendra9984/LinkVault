@@ -71,32 +71,18 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
       onTap: () async {
         final theme = Theme.of(context);
 
-        final uri = Uri.parse(url.url);
-        try {
-          await Future.wait(
-            [
-              // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-              // FOR FASTER WEBPAGE LOADING
-              CustomTabsService.launchUrl(
-                url: url.url,
-                theme: theme,
-              ),
-
-              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-              // JUST LIKE APPS IN BACKGROUND TYPE
-            ],
-          );
-        } catch (e) {
-          // If the URL launch fails, an exception will be thrown. (For example, if no browser app is installed on the Android device.)
-          debugPrint(e.toString());
-
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(
-              uri,
-              mode: LaunchMode.inAppBrowserView,
-            );
-          }
-        }
+        await Future.wait(
+          [
+            // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
+            // FOR FASTER WEBPAGE LOADING
+            CustomTabsService.launchUrl(
+              url: url.url,
+              theme: theme,
+            ),
+            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+            // JUST LIKE APPS IN BACKGROUND TYPE
+          ],
+        );
       },
       // [TODO] : THIS IS DYNAMIC FIELD
       onLongPress: (urlMetaData) {
