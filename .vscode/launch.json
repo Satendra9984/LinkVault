@@ -1,26 +1,76 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        // Development Flavor Configurations
         {
-            "name": "web_link_store",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "web_link_store (profile mode)",
+            "name": "web_link_store (development - debug mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--flavor", "development",
+                "--dart-define=FLAVOR=development"
+            ]
         },
         {
-            "name": "web_link_store (release mode)",
+            "name": "web_link_store (development - profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "profile",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor", "development",
+                "--dart-define", "FLAVOR=development"
+
+            ]
+        },
+        {
+            "name": "web_link_store (development - release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor", "development",
+                "--dart-define", "FLAVOR=development",
+                
+            ]
+        },
+
+        // Production Flavor Configurations
+        {
+            "name": "web_link_store (production - debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
+        },
+        {
+            "name": "web_link_store (production - profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
+        },
+        {
+            "name": "web_link_store (production - release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
         }
     ]
 }

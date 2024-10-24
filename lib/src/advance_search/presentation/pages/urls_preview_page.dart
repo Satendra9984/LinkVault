@@ -3,15 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/enums/loading_states.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
+import 'package:link_vault/src/app_home/presentation/pages/common/update_url_template_screen.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/common/update_url_page.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/url_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -214,8 +210,10 @@ class _SearchedUrlsPreviewListWidgetState
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (ctx) => UpdateUrlPage(
+                                          builder: (ctx) =>
+                                              UpdateUrlTemplateScreen(
                                             urlModel: url,
+                                            isRootCollection: false,
                                           ),
                                         ),
                                       ).then(

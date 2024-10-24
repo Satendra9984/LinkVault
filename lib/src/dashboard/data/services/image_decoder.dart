@@ -11,7 +11,7 @@ class ImageDecodeManager {
 
       return decodedImage;
     } catch (e) {
-      Logger.printLog('Error decoding image: $e');
+      // Logger.printLog('Error decoding image: $e');
       return null;
     }
   }

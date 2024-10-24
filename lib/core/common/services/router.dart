@@ -10,7 +10,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case OnBoardingHomePage.routeName:
       {
         return _pageRouteBuilder(
-          (_) => const OnBoardingHomePage(),
+          (_) => OnBoardingHomePage(),
           settings: settings,
         );
       }

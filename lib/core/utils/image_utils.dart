@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
 import 'package:link_vault/core/utils/logger.dart';
@@ -7,7 +10,44 @@ import 'package:link_vault/core/utils/logger.dart';
 class ImageUtils {
   ImageUtils._();
 
-  static Size? getImageDimFromUintData(Uint8List imageData) {
+// This must be a top-level or static function
+  static Future<Uint8List> loadUiImage(File file) async {
+    final data = await file.readAsBytes();
+    return data;
+  }
+
+  // New method to decode image in a separate isolate
+  static void decodeImageIsolate(List<dynamic> args) {
+    final imageBytes = args[0] as Uint8List;
+    final sendPort = args[1] as SendPort;
+
+    try {
+      // Decode the image
+      final image = img.decodeImage(imageBytes);
+      if (image == null) {
+        sendPort.send(null);
+        return;
+      }
+
+      // Perform any necessary processing here
+      // For example, you might want to resize the image if it's too large
+      final processedImage = img.copyResize(
+        image,
+        width: 1024,
+      ); // Example: resize to max width of 1024
+
+      // Encode the image back to PNG format
+      final pngBytes = img.encodePng(processedImage);
+
+      // Send the processed image bytes back to the main isolate
+      sendPort.send(pngBytes);
+    } catch (e) {
+      print('Error in isolate: $e');
+      sendPort.send(null);
+    }
+  }
+
+  static ui.Size? getImageDimFromUintData(Uint8List imageData) {
     // Decode the image
     final image = img.decodeImage(imageData);
 
@@ -18,9 +58,9 @@ class ImageUtils {
 
       // Logger.prfinalLog('Image dimensions: ${width}x${height}');
 
-      return Size(width, height);
+      return ui.Size(width, height);
     } else {
-      Logger.printLog('Failed to decode image');
+      // Logger.printLog('Failed to decode image');
       // return Size(600, 150);
       return null;
     }

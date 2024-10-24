@@ -3,7 +3,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
 import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
@@ -68,9 +67,9 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     final collectionsIndex = state.collections.length;
 
     createStartDate.value ??= DateTime(2024, 7);
-    createEndDate.value ??= DateTime.now();
+    createEndDate.value ??= DateTime.now().toUtc();
     updatedStartDate.value ??= DateTime(2024, 7);
-    updatedEndDate.value ??= DateTime.now();
+    updatedEndDate.value ??= DateTime.now().toUtc();
 
     await _searchingRepoImpl
         .searchLocalDatabase(
@@ -117,9 +116,9 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
     final urlsIndex = state.urls.length;
 
     createStartDate.value ??= DateTime(2024, 7);
-    createEndDate.value ??= DateTime.now();
+    createEndDate.value ??= DateTime.now().toUtc();
     updatedStartDate.value ??= DateTime(2024, 7);
-    updatedEndDate.value ??= DateTime.now();
+    updatedEndDate.value ??= DateTime.now().toUtc();
 
     await _searchingRepoImpl
         .searchLocalURLs(
@@ -145,7 +144,7 @@ class AdvanceSearchCubit extends Cubit<AdvanceSearchState> {
                   return element.isFavourite != _isFavouriteNotifier.value;
                 },
               );
-            // Logger.printLog(
+            // // Logger.printLog(
             //   'urls length: ${urls.length}, isFav: ${isFavourite.value}',
             // );
             emit(

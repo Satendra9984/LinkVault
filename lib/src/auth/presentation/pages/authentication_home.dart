@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
@@ -17,19 +19,16 @@ class AuthenticationHomePage extends StatefulWidget {
 class _AuthenticationHomePageState extends State<AuthenticationHomePage> {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: [
+        // SystemUiOverlay.bottom,
+        // SystemUiOverlay.top,
+      ],
+    );
+
     return MultiBlocProvider(
       providers: [
-        // BlocProvider(
-        //   create: (context) => AuthenticationCubit(
-        //     authRepositoryImpl: AuthRepositoryImpl(
-        //       authRemoteDataSourcesImpl: AuthRemoteDataSourcesImpl(
-        //         auth: FirebaseAuth.instance,
-        //         firestore: FirebaseFirestore.instance,
-        //         globalAuthDataSourceImpl: GlobalAuthDataSourceImpl(),
-        //       ),
-        //     ),
-        //   ),
-        // ),
         BlocProvider(
           create: (context) => ForgetPasswordCubit(
             authRepoIml: AuthRepositoryImpl(
@@ -42,9 +41,17 @@ class _AuthenticationHomePageState extends State<AuthenticationHomePage> {
           ),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: LoginPage(),
+        color: ColourPallette.white,
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+          ),
+          splashFactory: NoSplash.splashFactory,
+        ),
+        home: const LoginPage(),
       ),
     );
   }

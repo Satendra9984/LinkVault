@@ -1,25 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/src/advance_search/presentation/pages/advance_search_page.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/src/advance_search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
-import 'package:link_vault/src/dashboard/data/data_sources/collection_local_data_sources.dart';
-import 'package:link_vault/src/dashboard/data/data_sources/remote_data_sources.dart';
-import 'package:link_vault/src/dashboard/data/data_sources/url_local_data_sources.dart';
-import 'package:link_vault/src/dashboard/data/repositories/collections_repo_impl.dart';
-import 'package:link_vault/src/dashboard/data/repositories/url_repo_impl.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collection_crud_cubit/collections_crud_cubit_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard/collection_store_page.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_page.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_screen.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
@@ -151,9 +143,14 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => FolderCollectionPage(
+                          builder: (ctx) => CollectionStorePage(
                             collectionId: globalUser,
                             isRootCollection: true,
+                            appBarLeadingIcon: const Icon(
+                              Icons.dashboard_rounded,
+                              color: ColourPallette.mountainMeadow,
+                              size: 16,
+                            ),
                           ),
                         ),
                       );
@@ -176,6 +173,41 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
+                  // DISCOVER
+                  ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => RssFeedCollectionStorePage(
+                            collectionId: '$globalUser$RssFeed',
+                            isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.compassSVG,
+                              height: 16,
+                              width: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.compassSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'My Feeds',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
+
                   // FAVOURITE COLLECTIONS STORE
                   ListTile(
                     onTap: () {
@@ -184,14 +216,15 @@ class _AppHomePageState extends State<AppHomePage> {
                           builder: (ctx) => FavouriteFolderCollectionPage(
                             collectionId: '$globalUser$favourites',
                             isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.favouriteSVG,
+                              height: 16,
+                              width: 16,
+                            ),
                           ),
                         ),
                       );
                     },
-                    // leading: const Icon(
-                    //   Icons.bookmark_rounded,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
                     leading: SvgPicture.asset(
                       MediaRes.favouriteSVG,
                       height: 20,
@@ -210,30 +243,32 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // RECENT COLLECTIONS STORE
-                  // ListTile(
-                  //   onTap: () {},
-                  //   // leading: const Icon(
-                  //   //   Icons.restore_rounded,
-                  //   //   color: ColourPallette.mountainMeadow,
-                  //   // ),
-                  //   leading: SvgPicture.asset(
-                  //     MediaRes.recentSVG,
-                  //     height: 20,
-                  //     width: 20,
-                  //   ),
-                  //   title: const Text(
-                  //     'Recent',
-                  //     style: TextStyle(
-                  //       fontSize: 18,
-                  //       fontWeight: FontWeight.w500,
-                  //     ),
-                  //   ),
-                  //   trailing: const Icon(
-                  //     Icons.arrow_forward_ios_rounded,
-                  //     color: ColourPallette.salemgreen,
-                  //   ),
-                  // ),
+                  // NEWSLETTERS
+                  ListTile(
+                    onTap: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => const AdvanceSearchPage(),
+                      //   ),
+                      // );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.recentSVG ,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'Recents',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
 
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(
@@ -262,70 +297,6 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // DISCOVER
-                  ListTile(
-                    onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.compassSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Your Feeds',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    // trailing: const Icon(
-                    //   Icons.arrow_forward_ios_rounded,
-                    //   color: ColourPallette.salemgreen,
-                    // ),
-                    trailing: SvgPicture.asset(
-                      MediaRes.comingSoonSVG,
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
-
-                  // NEWSLETTERS
-                  ListTile(
-                    onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.newsletterSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Newsletters',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    // trailing: const Icon(
-                    //   Icons.arrow_forward_ios_rounded,
-                    //   color: ColourPallette.salemgreen,
-                    // ),
-                    trailing: SvgPicture.asset(
-                      MediaRes.comingSoonSVG,
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
-
                   // SUPPORT US
                   ListTile(
                     onTap: () {
@@ -335,10 +306,6 @@ class _AppHomePageState extends State<AppHomePage> {
                         ),
                       );
                     },
-                    // leading: const Icon(
-                    //   Icons.support,
-                    //   color: ColourPallette.mountainMeadow,
-                    // ),
                     leading: SvgPicture.asset(
                       MediaRes.collaborateSVG,
                       height: 20,
@@ -365,10 +332,10 @@ class _AppHomePageState extends State<AppHomePage> {
                       //   ),
                       // );
                     },
-                    leading: SvgPicture.asset(
-                      MediaRes.newsletterSVG,
-                      height: 20,
-                      width: 20,
+                    leading: const Icon(
+                      Icons.change_circle,
+                      color: ColourPallette.salemgreen,
+                      size: 24,
                     ),
                     title: const Text(
                       'Sync Devices',

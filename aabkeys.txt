@@ -1,0 +1,932 @@
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.vectordrawable_vectordrawable-animated.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.vectordrawable_vectordrawable.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.versionedparcelable_versionedparcelable.version        
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.viewpager_viewpager.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         7 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.webkit_webkit.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.window.extensions.core_core.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.window_window-java.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.window_window.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.work_work-runtime-ktx.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/androidx.work_work-runtime.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        56 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/com/android/build/gradle/app-metadata.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         5 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/kotlinx_coroutines_android.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         5 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/kotlinx_coroutines_core.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         5 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/kotlinx_coroutines_play_services.version
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        21 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/services/i7.b1
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        33 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/services/i7.s0
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/services/i7.w0
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/services/o8.k0
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm         6 Thu Jan 01 01:01:02 IST 1981 base/root/META-INF/services/t8.v
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       110 Thu Jan 01 01:01:02 IST 1981 base/root/byte_string_store.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        78 Thu Jan 01 01:01:02 IST 1981 base/root/firebase-annotations.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        80 Thu Jan 01 01:01:02 IST 1981 base/root/firebase-auth-interop.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        64 Thu Jan 01 01:01:02 IST 1981 base/root/firebase-auth.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        94 Thu Jan 01 01:01:02 IST 1981 base/root/firebase-database-collection.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       890 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_data_refresh_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       546 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_data_refresh_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       517 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_player_config_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       849 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_player_config_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1758 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1208 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/ad_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       132 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/allowed_pii.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1053 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/campaign_state.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1538 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/client_info.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1344 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/developer_consent.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2386 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/diagnostic_event_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2239 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/dynamic_device_info.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       411 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/error.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       287 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/get_token_event_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       450 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/initialization_completed_event_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1890 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/initialization_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1082 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/initialization_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1554 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/mutable_data.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      4754 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/native_configuration.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1773 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/operative_event_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       352 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/pii.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       150 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/privacy_update_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       151 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/privacy_update_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       546 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/session_counters.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1713 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/static_device_info.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       223 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/test_data.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       385 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/timestamps.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1563 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/transaction_event_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3197 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/universal_request.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1328 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/universal_response.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       338 Thu Jan 01 01:01:02 IST 1981 base/root/gateway/v1/webview_configuration.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      6693 Thu Jan 01 01:01:02 IST 1981 base/root/google/apphosting/datastore/testing/datastore_test_trace.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3775 Thu Jan 01 01:01:02 IST 1981 base/root/google/firebase/firestore/proto/bundle.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2443 Thu Jan 01 01:01:02 IST 1981 base/root/google/firebase/firestore/proto/maybe_document.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2864 Thu Jan 01 01:01:02 IST 1981 base/root/google/firebase/firestore/proto/mutation.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      4772 Thu Jan 01 01:01:02 IST 1981 base/root/google/firebase/firestore/proto/target.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      6063 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/admin/index.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      1741 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/aggregation_result.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3006 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/bloom_filter.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2930 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/common.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      5148 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/document.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm     30320 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/firestore.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm     11413 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/query.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm     11774 Thu Jan 01 01:01:02 IST 1981 base/root/google/firestore/v1/write.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      6042 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/any.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      7729 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/api.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      4892 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/duration.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2363 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/empty.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      8185 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/field_mask.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2341 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/source_context.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3779 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/struct.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      6450 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/timestamp.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      6126 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/type.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      4044 Thu Jan 01 01:01:02 IST 1981 base/root/google/protobuf/wrappers.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        52 Thu Jan 01 01:01:02 IST 1981 base/root/googleid.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       577 Thu Jan 01 01:01:02 IST 1981 base/root/headerbidding/v1/header_bidding_ad_markup.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       833 Thu Jan 01 01:01:02 IST 1981 base/root/headerbidding/v1/header_bidding_token.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        54 Thu Jan 01 01:01:02 IST 1981 base/root/integrity.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       625 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin-tooling-metadata.json
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       926 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/annotation/annotation.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3685 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/collections/collections.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       200 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/coroutines/coroutines.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       646 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/internal/internal.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm     17783 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/kotlin.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      3305 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/ranges/ranges.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm      2395 Thu Jan 01 01:01:02 IST 1981 base/root/kotlin/reflect/reflect.kotlin_builtins
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       218 Thu Jan 01 01:01:02 IST 1981 base/root/okhttp3/internal/publicsuffix/NOTICE
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm     37730 Thu Jan 01 01:01:02 IST 1981 base/root/okhttp3/internal/publicsuffix/publicsuffixes.gz
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       166 Thu Jan 01 01:01:02 IST 1981 base/root/org/jacoco/core/jacoco.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        82 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-ads-base.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        94 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-ads-identifier.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        82 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-ads-lite.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        72 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-ads.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        78 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-appset.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        94 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-auth-api-phone.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        84 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-auth-base.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        74 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-auth.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        74 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-base.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        82 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-basement.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        78 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-cronet.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        74 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-fido.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        98 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-measurement-base.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       104 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-measurement-sdk-api.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        76 Thu Jan 01 01:01:02 IST 1981 base/root/play-services-tasks.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        90 Thu Jan 01 01:01:02 IST 1981 base/root/protolite-well-known-types.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        56 Thu Jan 01 01:01:02 IST 1981 base/root/recaptcha.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       103 Thu Jan 01 01:01:02 IST 1981 base/root/universal_request_store.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm        82 Thu Jan 01 01:01:02 IST 1981 base/root/user-messaging-platform.properties
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+sm       274 Thu Jan 01 01:01:02 IST 1981 base/root/webview_configuration_store.proto
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+       99798 Thu Jan 01 01:01:02 IST 1981 META-INF/UPLOAD.SF
+        1425 Thu Jan 01 01:01:02 IST 1981 META-INF/UPLOAD.RSA
+s      99749 Thu Jan 01 01:01:02 IST 1981 META-INF/MANIFEST.MF
+
+      >>> Signer
+      X.509, CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN
+      Signature algorithm: SHA256withRSA, 2048-bit key
+      [certificate is valid from 7/20/24, 11:31 PM to 12/6/51, 11:31 PM]
+      [Invalid certificate chain: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target]
+
+
+  s = signature was verified
+  m = entry is listed in manifest
+  k = at least one certificate was found in keystore
+
+- Signed by "CN=satendra pal, OU=vicharshala, O=vicharshala, L=lucknow, ST=uttar pradesh, C=IN"
+    Digest algorithm: SHA-256
+    Signature algorithm: SHA256withRSA, 2048-bit key
+
+jar verified.
+
+Warning:
+This jar contains entries whose certificate chain is invalid. Reason: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+This jar contains entries whose signer certificate is self-signed.
+This jar contains signatures that do not include a timestamp. Without a timestamp, users may not be able to validate this jar after any of the signer certificates expire (as early as 2051-12-06).
+POSIX file permission and/or symlink attributes detected. These attributes are ignored when signing and are not protected by the signature.
+
+The signer certificate will expire on 2051-12-06.

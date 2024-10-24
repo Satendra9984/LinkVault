@@ -16,7 +16,7 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
 
   void addInputFiles(List<SharedMediaFile> files) {
     for (final file in files) {
-      // Logger.printLog(
+      // // Logger.printLog(
       //     'filetype: ${file.type.toString()}, message: ${file.path}');
       if (file.type == SharedMediaType.url ||
           file.type == SharedMediaType.text) {
@@ -30,7 +30,7 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
     for (final input in state.inputs) {
       urls.add(input.url);
     }
-    // Logger.printLog('urlsshared: ${urls.length}');
+    // // Logger.printLog('urlsshared: ${urls.length}');
     return urls;
   }
 
@@ -38,7 +38,7 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
     final updatedInputs = List<UrlInput>.from(state.inputs)..add(UrlInput(url));
     emit(state.copyWith(inputs: updatedInputs));
 
-    // Logger.printLog('[intents]: ${state.inputs.length.toString()}');
+    // // Logger.printLog('[intents]: ${state.inputs.length.toString()}');
   }
 
   // Method to add a PDF input
@@ -58,7 +58,7 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
         );
       emit(state.copyWith(inputs: updatedInputs));
     } catch (e) {
-      Logger.printLog('Error removing sharedurl from $e');
+      // Logger.printLog('Error removing sharedurl from $e');
     }
   }
 }

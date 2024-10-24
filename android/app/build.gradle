@@ -36,7 +36,6 @@ if (keystorePropertiesFile.exists()) {
 }
 
 
-
 android {
     compileSdkVersion 34
 
@@ -54,7 +53,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.vicharshala.link_vault"
         minSdkVersion 23
         targetSdkVersion 34
@@ -68,11 +66,14 @@ android {
             dimension "env"
             // applicationIdSuffix ".prod"
             // versionNameSuffix "-prod"
+            buildConfigField "String", "FLAVOR", "\"prod\""
         }
-        dev {
+        development {
             dimension "env"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
+            buildConfigField "String", "FLAVOR", "\"dev\""
+            resValue "string", "app_name", "Link Vault (Dev)"
         }
     }
 
@@ -86,19 +87,18 @@ android {
     }
 
     buildTypes {
+
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
-            signingConfig signingConfigs.release
-        }
+        shrinkResources true
+        minifyEnabled true
+        signingConfig signingConfigs.release
+    }        
+        debug {
+        signingConfig signingConfigs.debug
+        shrinkResources false
+        minifyEnabled false
     }
-    
-    repositories {
-        flatDir {
-            dirs 'libs'
-        }
-    }
+}
 
 }
 
@@ -107,34 +107,27 @@ flutter {
 }
 
 
-// Add this at the end of the file
-// android.applicationVariants.all { variant ->
-//     def googleServicesFile = variant.productFlavors.contains('dev') 
-//         ? file("src/dev/google-services.json") 
-//         : file("google-services.json")
-
-//     if (googleServicesFile.exists()) {
-//         apply plugin: 'com.google.gms.google-services'
-//     }
-// }
-
 android.applicationVariants.all { variant ->
-    def googleServicesFile = variant.productFlavors.get(0).name == "dev"
-        ? file("src/dev/google-services.json") 
-        : file("google-services.json")
+
+    def flavorName = variant.productFlavors.isEmpty() ? null : variant.productFlavors.get(0).name
+    def googleServicesFile = flavorName == "development"
+        ? file("src/development/google-services.json")
+        : file("src/production/google-services.json")
 
     if (googleServicesFile.exists()) {
-        println "Applying google-services.json for ${variant.productFlavors.get(0).name}"
-        apply plugin: 'com.google.gms.google-services'
+        println "Applying google-services.json for $flavorName"
+        if (!project.plugins.hasPlugin('com.google.gms.google-services')) {
+            apply plugin: 'com.google.gms.google-services'
+        }
     } else {
-        throw new FileNotFoundException("google-services.json not found for ${variant.productFlavors.get(0).name}")
+        println "Warning: google-services.json not found for $flavorName"
+        // Optionally, you can throw an exception here if you want to enforce the file's presence
+        // throw new FileNotFoundException("google-services.json not found for $flavorName")
     }
 }
 
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation("com.google.ads.mediation:facebook:6.17.0.0")
     implementation("com.google.ads.mediation:vungle:7.4.0.1")
 }
-

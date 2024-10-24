@@ -4,12 +4,14 @@ import 'package:link_vault/core/common/res/colours.dart';
 class CustomCollTextField extends StatefulWidget {
   const CustomCollTextField({
     required this.controller,
-    required this.labelText,
     required this.validator,
+    this.labelText,
     super.key,
     this.onEditingCompleted,
     this.onSubmitted,
     this.onTapOutside,
+    this.errorText,
+    this.style,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.maxLength,
@@ -21,9 +23,11 @@ class CustomCollTextField extends StatefulWidget {
   final void Function()? onEditingCompleted;
   final void Function(PointerDownEvent)? onTapOutside;
 
-  final String labelText;
+  final String? errorText;
+  final String? labelText;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final TextStyle? style;
   final int? maxLength;
   final int? maxLines;
 
@@ -45,21 +49,22 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(24);
+    final borderRadius = BorderRadius.circular(16);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Text(
-            widget.labelText,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
+        if (widget.labelText != null && widget.labelText!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Text(
+              widget.labelText!,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+              ),
             ),
           ),
-        ),
         TextFormField(
           controller: widget.controller,
           onEditingComplete: widget.onEditingCompleted,
@@ -71,22 +76,27 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
           validator: widget.validator,
           maxLength: widget.maxLength,
           maxLines: widget.maxLines,
-          cursorHeight: 30,
-          cursorWidth: 2.5,
+          // cursorHeight: 30,
+          // cursorWidth: 2.0,
           cursorColor: ColourPallette.salemgreen,
+          style: widget.style ??
+              const TextStyle(
+                color: ColourPallette.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
           decoration: InputDecoration(
             isDense: true,
+            // contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             hintText: widget.hintText,
+            errorText: widget.errorText,
             hintStyle: TextStyle(
               color: Colors.grey.shade500,
+              fontSize: 14,
             ),
             suffixIcon: widget.obscureText
                 ? IconButton(
-                    onPressed: () => setState(
-                      () {
-                        _isObscure = !_isObscure;
-                      },
-                    ),
+                    onPressed: () => setState(() => _isObscure = !_isObscure),
                     icon: _isObscure
                         ? const Icon(Icons.visibility_off)
                         : const Icon(Icons.visibility),
@@ -100,6 +110,9 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
             filled: true,
             border: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
+              borderSide: const BorderSide(
+                color: ColourPallette.grey,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
@@ -107,7 +120,10 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
-              // borderSide: BorderSide(color: Colors.black),
+              borderSide: BorderSide(
+                color: ColourPallette.salemgreen.withOpacity(0.25),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here

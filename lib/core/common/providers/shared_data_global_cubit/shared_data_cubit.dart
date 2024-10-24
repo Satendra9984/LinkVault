@@ -21,7 +21,7 @@ class SharedDataCubit extends Cubit<SharedDataState> {
         ReceiveSharingIntent.instance.getMediaStream().listen(
       _processSharedData,
       onError: (err) {
-        Logger.printLog('getIntentDataStream error: $err');
+        // // Logger.printLog('getIntentDataStream error: $err');
       },
     );
 

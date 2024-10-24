@@ -81,56 +81,38 @@ class _SignUpPageState extends State<SignUpPage> {
       backgroundColor: ColourPallette.white,
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+          padding: const EdgeInsets.only(
+            left: 28,
+            right: 28,
+            top: 16,
+            bottom: 34,
+          ),
           height: size.height,
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: gap * 2),
-                        Text(
-                          "Let's Get Started",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade800,
-                            fontSize: 24,
-                          ),
-                        ),
-                        Text(
-                          'By Creating an Account',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Image.asset(
-                    //   'assets/logo/infinite_loop.jpg',
-                    //   fit: BoxFit.contain,
-                    //   height: 56,
-                    // ),
-                  ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SvgPicture.asset(
-                      MediaRes.loginSVG,
-                      semanticsLabel: 'Login Logo',
-                    ),
+                const SizedBox(height: gap * 2),
+                Text(
+                  "Let's Get Started",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                    fontSize: 24,
                   ),
                 ),
+                Text(
+                  'By Creating an Account',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -248,6 +230,13 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                   ],
+                ),
+                Expanded(
+                  child: SvgPicture.asset(
+                    MediaRes.loginSVG,
+                    semanticsLabel: 'Login Logo',
+                    alignment: Alignment.bottomCenter,
+                  ),
                 ),
               ],
             ),

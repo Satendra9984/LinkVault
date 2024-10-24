@@ -71,8 +71,8 @@ class UrlRepoImpl {
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
-      // Logger.printLog('Adding url metadata');
-      // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
+      // // Logger.printLog('Adding url metadata');
+      // // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
 
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(
         optimisedUrlData,
@@ -82,12 +82,12 @@ class UrlRepoImpl {
       // But storing addedurldata in local for firestore id
       await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
-      Logger.printLog('[isar] : added url data in local');
-      Logger.printLog(
-        StringUtils.getJsonFormat(
-          addedUrlData.toJson(),
-        ),
-      );
+      // Logger.printLog('[isar] : added url data in local');
+      // Logger.printLog(
+      //   StringUtils.getJsonFormat(
+      //     addedUrlData.toJson(),
+      //   ),
+      // );
 
       final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
@@ -109,7 +109,7 @@ class UrlRepoImpl {
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
     } on ServerException catch (e) {
-      Logger.printLog('addUrlrepo : $e');
+      // Logger.printLog('addUrlrepo : $e');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',
@@ -134,8 +134,8 @@ class UrlRepoImpl {
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
-      // Logger.printLog('Updating url metadata');
-      // Logger.printLog(
+      // // Logger.printLog('Updating url metadata');
+      // // Logger.printLog(
       //   StringUtils.getJsonFormat(
       //     optimisedUrlData.toJson(),
       //   ),
@@ -146,12 +146,12 @@ class UrlRepoImpl {
         userId: userId,
       );
 
-      // Logger.printLog('calling update url local');
+      // // Logger.printLog('calling update url local');
       await _urlLocalDataSourcesImpl.updateUrl(optimisedUrlData);
 
       return Right(optimisedUrlData);
     } on ServerException catch (e) {
-      Logger.printLog('updateUrlrepo : ${e.message}');
+      // Logger.printLog('updateUrlrepo : ${e.message}');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',
@@ -175,9 +175,6 @@ class UrlRepoImpl {
       );
 
       await _urlLocalDataSourcesImpl.deleteUrl(urlData.firestoreId);
-      if (collection == null) {
-        return Right((urlData, null));
-      }
       final urlList = collection.urls
         ..removeWhere(
           (url) => url == urlData.firestoreId,
@@ -197,7 +194,7 @@ class UrlRepoImpl {
 
       return Right((urlData, serverUpdatedCollection));
     } on ServerException catch (e) {
-      Logger.printLog('deleteUrlData : $e');
+      // Logger.printLog('deleteUrlData : $e');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',

@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed
+	xmlns="http://www.w3.org/2005/Atom"
+	xmlns:media="http://search.yahoo.com/mrss/">
+	<category term="technology" label="r/technology"/>
+	<updated>2024-10-04T06:51:36+00:00</updated>
+	<icon>https://www.redditstatic.com/icon.png/</icon>
+	<id>/r/technology/.rss</id>
+	<link rel="self" href="https://www.reddit.com/r/technology/.rss" type="application/atom+xml" />
+	<link rel="alternate" href="https://www.reddit.com/r/technology/" type="text/html" />
+	<logo>https://a.thumbs.redditmedia.com/VwBugImhQhFTJhC0HjM9IWyEEEF898HHtI2AunD5SW4.png</logo>
+	<subtitle>Subreddit dedicated to the news and discussions about the creation and use of technology and its surrounding issues.</subtitle>
+	<title>/r/Technology</title>
+	<entry>
+		<author>
+			<name>/u/WillSen</name>
+			<uri>https://www.reddit.com/user/WillSen</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;!-- SC_OFF --&gt;&lt;div class=&quot;md&quot;&gt;&lt;p&gt;&lt;strong&gt;Edit 3&lt;/strong&gt;: I think all done for now but I want to say a true thank you to everyone (and the to the mods for making this happen) for a discourse that was at least as valuable as the meeting I just left.. I’ll come back and answer any last questions tomorrow. If you want to talk more feel free to message me here or on &lt;a href=&quot;https://x.com/willsentance&quot;&gt;&amp;#39;x/twitter&amp;#39;&lt;/a&gt;&lt;/p&gt; &lt;p&gt;&lt;strong&gt;Edit 2 (9pm in Berlin)&lt;/strong&gt;: Ok I’m taking a break for dinner - I&amp;#39;ll be back later. I mostly use reddit for lego updates, I knew there was great discussion to be had, but yep it&amp;#39;s still very satisfying to be part of it - keep sending questions/follow-ups!&lt;/p&gt; &lt;p&gt;&lt;strong&gt;Edit (8pm in Berlin)&lt;/strong&gt; It says &amp;quot;Just finished&amp;quot; but I&amp;#39;m still fine to answer questions&lt;/p&gt; &lt;p&gt;Proof: &lt;a href=&quot;https://imgur.com/a/bYkUiE7&quot;&gt;https://imgur.com/a/bYkUiE7&lt;/a&gt; (thanks to &lt;a href=&quot;/r/technology&quot;&gt;r/technology&lt;/a&gt; mods for approving this AMA)&lt;/p&gt; &lt;p&gt;Right now, I’m at the Berlin Global Dialogue (&lt;a href=&quot;https://www.berlinglobaldialogue.org/&quot;&gt;https://www.berlinglobaldialogue.org/&lt;/a&gt;) – an exclusive event where the world’s top tech and business leaders are deciding how to shape the future. It’s like Davos, but with a sharper focus on tech and AI.&lt;/p&gt; &lt;p&gt;Who’s here? The VP of Global Impact at &lt;strong&gt;OpenAI&lt;/strong&gt;, Herman Hauser (founder of &lt;strong&gt;ARM&lt;/strong&gt;), and French President &lt;strong&gt;Emmanuel&lt;/strong&gt; &lt;strong&gt;Macron&lt;/strong&gt;. &lt;/p&gt; &lt;p&gt;Here’s what you need to know:&lt;/p&gt; &lt;ul&gt; &lt;li&gt;AI and machine learning are being treated like the next industrial revolution. One founder shared he&amp;#39;d laid off 300 people replaced with OpenAI&amp;#39;s APIs (even the VP of at OpenAI appeared surprised)&lt;/li&gt; &lt;li&gt;The conversations are heavily focused on how to control and monetize tech and AI – but there’s a glaring issue...&lt;/li&gt; &lt;li&gt;...everyone here is part of an insider leadership group - and many don&amp;#39;t understand the tech they&amp;#39;re speaking about (OpenAI does though - their tip was &amp;#39;use our tech to understand&amp;#39; - that&amp;#39;s good for them but not for all)&lt;/li&gt; &lt;/ul&gt; &lt;p&gt;I’ve been coding for over a decade, teaching programming on Frontend Masters, and running an independent tech school, but what’s happening in these rooms is more critical than ever. If you work in tech, &lt;strong&gt;get ready for AI/ML to completely change the game.&lt;/strong&gt; Every business will incorporate it, whether you’re prepared or not.&lt;/p&gt; &lt;p&gt;As someone raised by two public school teachers, I’m deeply invested in making sure the benefits of AI don’t stay locked behind corporate doors&lt;/p&gt; &lt;p&gt;I’m here all day at the BGD and will be answering your questions as I dive deeper into these conversations. Ask me anything about what’s really happening here.&lt;/p&gt; &lt;/div&gt;&lt;!-- SC_ON --&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/WillSen&quot;&gt; /u/WillSen &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fufbfm/im_a_tech_ceo_at_the_berlin_global_dialogue_w/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fufbfm/im_a_tech_ceo_at_the_berlin_global_dialogue_w/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt;</content>
+		<id>t3_1fufbfm</id>
+		<link href="https://www.reddit.com/r/technology/comments/1fufbfm/im_a_tech_ceo_at_the_berlin_global_dialogue_w/" />
+		<updated>2024-10-02T12:46:00+00:00</updated>
+		<published>2024-10-02T12:46:00+00:00</published>
+		<title>I'm a Tech CEO at the Berlin Global Dialogue (w OpenAI, Emmanuel Macron) - Here's what you need to know about what's being said about AI/Tech behind closed doors - AMA</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/MetaKnowing</name>
+			<uri>https://www.reddit.com/user/MetaKnowing</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fveug9/image_of_donald_trump_wading_through_flood_water/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/8lEwZ3PctrRnrgl4TpFNvv7YxhH9dCSrpc_eSTH8UZw.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=24f25eaf135e268d6de82559e96010afce309956&quot; alt=&quot;Image of Donald Trump wading through flood water is AI-generated | Fact check&quot; title=&quot;Image of Donald Trump wading through flood water is AI-generated | Fact check&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/MetaKnowing&quot;&gt; /u/MetaKnowing &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.usatoday.com/story/news/factcheck/2024/10/03/ai-image-trump-hurricane-helene-fact-check/75483588007/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fveug9/image_of_donald_trump_wading_through_flood_water/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fveug9</id>
+		<media:thumbnail url="https://external-preview.redd.it/8lEwZ3PctrRnrgl4TpFNvv7YxhH9dCSrpc_eSTH8UZw.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=24f25eaf135e268d6de82559e96010afce309956" />
+		<link href="https://www.reddit.com/r/technology/comments/1fveug9/image_of_donald_trump_wading_through_flood_water/" />
+		<updated>2024-10-03T18:38:38+00:00</updated>
+		<published>2024-10-03T18:38:38+00:00</published>
+		<title>Image of Donald Trump wading through flood water is AI-generated | Fact check</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Hrmbee</name>
+			<uri>https://www.reddit.com/user/Hrmbee</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvcq4s/please_dont_make_me_download_another_app_our/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/xkNlY-ppYxgCHIhTvwdBA6oYsX9bBZGjx1TieDcUONc.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=e33940cb36235a5e1b1b73dd4eaf5d4f8559346c&quot; alt=&quot;Please Don’t Make Me Download Another App | Our phones are being overrun&quot; title=&quot;Please Don’t Make Me Download Another App | Our phones are being overrun&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Hrmbee&quot;&gt; /u/Hrmbee &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.theatlantic.com/technology/archive/2024/10/too-many-apps/680122/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvcq4s/please_dont_make_me_download_another_app_our/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvcq4s</id>
+		<media:thumbnail url="https://external-preview.redd.it/xkNlY-ppYxgCHIhTvwdBA6oYsX9bBZGjx1TieDcUONc.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=e33940cb36235a5e1b1b73dd4eaf5d4f8559346c" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvcq4s/please_dont_make_me_download_another_app_our/" />
+		<updated>2024-10-03T17:08:24+00:00</updated>
+		<published>2024-10-03T17:08:24+00:00</published>
+		<title>Please Don’t Make Me Download Another App | Our phones are being overrun</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Puginator</name>
+			<uri>https://www.reddit.com/user/Puginator</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvnqa0/irs_free_tax_filing_will_be_available_in_24/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/RAS1AQ3J5GwE7sxESv_IXr4yaB1mM-xWJIBYK3FN-2Y.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=6432e2b393c546bf60602723795e4471b266643a&quot; alt=&quot;IRS free tax filing will be available in 24 states for the 2025 season&quot; title=&quot;IRS free tax filing will be available in 24 states for the 2025 season&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Puginator&quot;&gt; /u/Puginator &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.cnbc.com/2024/10/03/irs-free-tax-filing-2025-states.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvnqa0/irs_free_tax_filing_will_be_available_in_24/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvnqa0</id>
+		<media:thumbnail url="https://external-preview.redd.it/RAS1AQ3J5GwE7sxESv_IXr4yaB1mM-xWJIBYK3FN-2Y.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=6432e2b393c546bf60602723795e4471b266643a" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvnqa0/irs_free_tax_filing_will_be_available_in_24/" />
+		<updated>2024-10-04T01:26:20+00:00</updated>
+		<published>2024-10-04T01:26:20+00:00</published>
+		<title>IRS free tax filing will be available in 24 states for the 2025 season</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/domo415</name>
+			<uri>https://www.reddit.com/user/domo415</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/domo415&quot;&gt; /u/domo415 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.energy.gov/articles/biden-harris-administration-invests-15-billion-bolster-nations-electricity-grid-and-0&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvlb5z/bidenharris_administration_invests_15_billion_to/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt;</content>
+		<id>t3_1fvlb5z</id>
+		<link href="https://www.reddit.com/r/technology/comments/1fvlb5z/bidenharris_administration_invests_15_billion_to/" />
+		<updated>2024-10-03T23:24:51+00:00</updated>
+		<published>2024-10-03T23:24:51+00:00</published>
+		<title>Biden-Harris Administration Invests $1.5 Billion to Bolster the Nation's Electricity Grid and Deliver Affordable Electricity to Meet New Demands</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/indig0sixalpha</name>
+			<uri>https://www.reddit.com/user/indig0sixalpha</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvhcw4/23andme_is_on_the_brink_what_happens_to_all_its/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/wRvz0W6VaR8jPMvR_61zBCVgfhoJNw4--kZvQKvkkTI.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=de31596b0bb7551139e12a0fa192eea6d4db2653&quot; alt=&quot;23andMe is on the brink. What happens to all its DNA data?&quot; title=&quot;23andMe is on the brink. What happens to all its DNA data?&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/indig0sixalpha&quot;&gt; /u/indig0sixalpha &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.npr.org/2024/10/03/g-s1-25795/23andme-data-genetic-dna-privacy&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvhcw4/23andme_is_on_the_brink_what_happens_to_all_its/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvhcw4</id>
+		<media:thumbnail url="https://external-preview.redd.it/wRvz0W6VaR8jPMvR_61zBCVgfhoJNw4--kZvQKvkkTI.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=de31596b0bb7551139e12a0fa192eea6d4db2653" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvhcw4/23andme_is_on_the_brink_what_happens_to_all_its/" />
+		<updated>2024-10-03T20:26:29+00:00</updated>
+		<published>2024-10-03T20:26:29+00:00</published>
+		<title>23andMe is on the brink. What happens to all its DNA data?</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/AdSpecialist6598</name>
+			<uri>https://www.reddit.com/user/AdSpecialist6598</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv6di4/microsoft_to_employees_you_can_continue_working/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/lJBuyzm2YyF4h4Il23eHi2hhPx-CFw5Sdfl6CqQgKmI.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=f9004cb8fa2007ba9f931984fdf658c9b3065258&quot; alt=&quot;Microsoft to employees: you can continue working from home unless productivity drops&quot; title=&quot;Microsoft to employees: you can continue working from home unless productivity drops&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/AdSpecialist6598&quot;&gt; /u/AdSpecialist6598 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.techspot.com/news/104972-microsoft-assures-employees-they-can-continue-working-home.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv6di4/microsoft_to_employees_you_can_continue_working/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv6di4</id>
+		<media:thumbnail url="https://external-preview.redd.it/lJBuyzm2YyF4h4Il23eHi2hhPx-CFw5Sdfl6CqQgKmI.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=f9004cb8fa2007ba9f931984fdf658c9b3065258" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv6di4/microsoft_to_employees_you_can_continue_working/" />
+		<updated>2024-10-03T12:21:17+00:00</updated>
+		<published>2024-10-03T12:21:17+00:00</published>
+		<title>Microsoft to employees: you can continue working from home unless productivity drops</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/thespirix</name>
+			<uri>https://www.reddit.com/user/thespirix</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvd0ox/google_says_it_wont_follow_amazons_lead_with_a/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/z3LQNtPcjZkPjJ9qQIZ2l8UhXCcTJf4CbmkeTSrxDN0.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=e6dcf741f004df28b3c1fc95b744f4f3555bcda5&quot; alt=&quot;Google Says It Won't Follow Amazon's Lead With a Return-to-Office Mandate&quot; title=&quot;Google Says It Won't Follow Amazon's Lead With a Return-to-Office Mandate&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/thespirix&quot;&gt; /u/thespirix &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.entrepreneur.com/business-news/google-recommits-to-hybrid-work-schedule-unlike-amazon/480683&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvd0ox/google_says_it_wont_follow_amazons_lead_with_a/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvd0ox</id>
+		<media:thumbnail url="https://external-preview.redd.it/z3LQNtPcjZkPjJ9qQIZ2l8UhXCcTJf4CbmkeTSrxDN0.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=e6dcf741f004df28b3c1fc95b744f4f3555bcda5" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvd0ox/google_says_it_wont_follow_amazons_lead_with_a/" />
+		<updated>2024-10-03T17:21:01+00:00</updated>
+		<published>2024-10-03T17:21:01+00:00</published>
+		<title>Google Says It Won't Follow Amazon's Lead With a Return-to-Office Mandate</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Task_Force-191</name>
+			<uri>https://www.reddit.com/user/Task_Force-191</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv90jz/tesla_recalls_over_27000_cybertrucks_over_laggy/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/MUZwPd-F9Ln_M9WyKPBblyXYlu1MtNU3Eo9VnZvsTIo.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=eb7d222e508a431de9b053df1e6e9b4cef1ae7ec&quot; alt=&quot;Tesla recalls over 27,000 Cybertrucks over laggy reverse cameras&quot; title=&quot;Tesla recalls over 27,000 Cybertrucks over laggy reverse cameras&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Task_Force-191&quot;&gt; /u/Task_Force-191 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.theverge.com/2024/10/3/24261099/tesla-cybertruck-recall-reverse-camera-delay-software&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv90jz/tesla_recalls_over_27000_cybertrucks_over_laggy/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv90jz</id>
+		<media:thumbnail url="https://external-preview.redd.it/MUZwPd-F9Ln_M9WyKPBblyXYlu1MtNU3Eo9VnZvsTIo.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=eb7d222e508a431de9b053df1e6e9b4cef1ae7ec" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv90jz/tesla_recalls_over_27000_cybertrucks_over_laggy/" />
+		<updated>2024-10-03T14:26:12+00:00</updated>
+		<published>2024-10-03T14:26:12+00:00</published>
+		<title>Tesla recalls over 27,000 Cybertrucks over laggy reverse cameras</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Wagamaga</name>
+			<uri>https://www.reddit.com/user/Wagamaga</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv4wif/i_investigated_millions_of_tweets_from_the/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/TsdWGbQU6raJyx35ZTsGbWkPR9HvnT0Z2Phjpu9UHdo.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=cd5ba8f96a027aba80a17988871f3956750f3e06&quot; alt=&quot;I investigated millions of tweets from the Kremlin’s ‘troll factory’ and discovered classic propaganda techniques reimagined for the social media age&quot; title=&quot;I investigated millions of tweets from the Kremlin’s ‘troll factory’ and discovered classic propaganda techniques reimagined for the social media age&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Wagamaga&quot;&gt; /u/Wagamaga &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://theconversation.com/i-investigated-millions-of-tweets-from-the-kremlins-troll-factory-and-discovered-classic-propaganda-techniques-reimagined-for-the-social-media-age-237712&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv4wif/i_investigated_millions_of_tweets_from_the/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv4wif</id>
+		<media:thumbnail url="https://external-preview.redd.it/TsdWGbQU6raJyx35ZTsGbWkPR9HvnT0Z2Phjpu9UHdo.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=cd5ba8f96a027aba80a17988871f3956750f3e06" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv4wif/i_investigated_millions_of_tweets_from_the/" />
+		<updated>2024-10-03T10:54:56+00:00</updated>
+		<published>2024-10-03T10:54:56+00:00</published>
+		<title>I investigated millions of tweets from the Kremlin’s ‘troll factory’ and discovered classic propaganda techniques reimagined for the social media age</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/CrankyBear</name>
+			<uri>https://www.reddit.com/user/CrankyBear</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv9k5e/42_of_daily_x_users_have_a_negative_view_of_it/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/kKq5-tElfCgRM3LHY4T2970JhBMu7Xm1nVb6s2QhWdc.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=6d5cc9b781180251b54fb3a32ed14427a1445a23&quot; alt=&quot;42% of daily X users have a negative view of it - losing the block feature won't help&quot; title=&quot;42% of daily X users have a negative view of it - losing the block feature won't help&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/CrankyBear&quot;&gt; /u/CrankyBear &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.zdnet.com/article/42-of-daily-x-users-have-a-negative-view-of-it-losing-the-block-feature-wont-help/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv9k5e/42_of_daily_x_users_have_a_negative_view_of_it/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv9k5e</id>
+		<media:thumbnail url="https://external-preview.redd.it/kKq5-tElfCgRM3LHY4T2970JhBMu7Xm1nVb6s2QhWdc.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=6d5cc9b781180251b54fb3a32ed14427a1445a23" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv9k5e/42_of_daily_x_users_have_a_negative_view_of_it/" />
+		<updated>2024-10-03T14:50:03+00:00</updated>
+		<published>2024-10-03T14:50:03+00:00</published>
+		<title>42% of daily X users have a negative view of it - losing the block feature won't help</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Captain_Vegetable</name>
+			<uri>https://www.reddit.com/user/Captain_Vegetable</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvgytj/us_and_microsoft_seize_more_than_100_websites/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/aznEL1oJGPoLA5ITZGRjvMOzCm-ivncSilS9x7ip9OM.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=6c99dfa18dc70e1b76bf6213ffc72702b092d39a&quot; alt=&quot;U.S. and Microsoft seize more than 100 websites alleged to have been part of Russian espionage campaign&quot; title=&quot;U.S. and Microsoft seize more than 100 websites alleged to have been part of Russian espionage campaign&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Captain_Vegetable&quot;&gt; /u/Captain_Vegetable &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.nbcnews.com/tech/security/us-microsoft-seize-100-websites-allegedly-used-russian-spies-rcna173784&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvgytj/us_and_microsoft_seize_more_than_100_websites/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvgytj</id>
+		<media:thumbnail url="https://external-preview.redd.it/aznEL1oJGPoLA5ITZGRjvMOzCm-ivncSilS9x7ip9OM.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=6c99dfa18dc70e1b76bf6213ffc72702b092d39a" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvgytj/us_and_microsoft_seize_more_than_100_websites/" />
+		<updated>2024-10-03T20:09:32+00:00</updated>
+		<published>2024-10-03T20:09:32+00:00</published>
+		<title>U.S. and Microsoft seize more than 100 websites alleged to have been part of Russian espionage campaign</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/chrisdh79</name>
+			<uri>https://www.reddit.com/user/chrisdh79</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fva83x/john_deere_accused_of_excluding_righttorepair/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/OZVup_JFfQyjFxp3x1uEw5vseMUiOgwbUKKK-v2xftQ.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=95aa5d3138f04ef478a6613b2c101e359d9b3066&quot; alt=&quot;John Deere accused of ‘excluding’ right-to-repair language in its manuals | Senator Elizabeth Warren accused the company of potentially violating the Clean Air Act by omitting information about repairs in its manuals.&quot; title=&quot;John Deere accused of ‘excluding’ right-to-repair language in its manuals | Senator Elizabeth Warren accused the company of potentially violating the Clean Air Act by omitting information about repairs in its manuals.&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/chrisdh79&quot;&gt; /u/chrisdh79 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.theverge.com/2024/10/3/24260513/john-deere-right-to-repair-elizabeth-warren-clean-air-act&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fva83x/john_deere_accused_of_excluding_righttorepair/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fva83x</id>
+		<media:thumbnail url="https://external-preview.redd.it/OZVup_JFfQyjFxp3x1uEw5vseMUiOgwbUKKK-v2xftQ.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=95aa5d3138f04ef478a6613b2c101e359d9b3066" />
+		<link href="https://www.reddit.com/r/technology/comments/1fva83x/john_deere_accused_of_excluding_righttorepair/" />
+		<updated>2024-10-03T15:17:53+00:00</updated>
+		<published>2024-10-03T15:17:53+00:00</published>
+		<title>John Deere accused of ‘excluding’ right-to-repair language in its manuals | Senator Elizabeth Warren accused the company of potentially violating the Clean Air Act by omitting information about repairs in its manuals.</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/SaveDnet-FRed0</name>
+			<uri>https://www.reddit.com/user/SaveDnet-FRed0</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvgd6l/students_across_the_country_call_for_a/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/fPfmj4ousoJ1Jy4NNVcaikMuteTNS5e6ov-omXZE7kI.jpg?width=320&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=2f85eefecaf9b048e037f9e780bbdf87c8be1546&quot; alt=&quot;Students Across the Country Call for a Back-to-School Ban on Facial Recognition&quot; title=&quot;Students Across the Country Call for a Back-to-School Ban on Facial Recognition&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/SaveDnet-FRed0&quot;&gt; /u/SaveDnet-FRed0 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.fightforthefuture.org/news/2024-09-28-students-across-the-country-call-for-a-back-to-school-ban-on-facial-recognition/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvgd6l/students_across_the_country_call_for_a/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvgd6l</id>
+		<media:thumbnail url="https://external-preview.redd.it/fPfmj4ousoJ1Jy4NNVcaikMuteTNS5e6ov-omXZE7kI.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=2f85eefecaf9b048e037f9e780bbdf87c8be1546" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvgd6l/students_across_the_country_call_for_a/" />
+		<updated>2024-10-03T19:43:39+00:00</updated>
+		<published>2024-10-03T19:43:39+00:00</published>
+		<title>Students Across the Country Call for a Back-to-School Ban on Facial Recognition</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/cricketmad14</name>
+			<uri>https://www.reddit.com/user/cricketmad14</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvq6tn/five_billion_people_being_tracked_by_patternz/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/oSBzz07cChlTri9X1WsInnVsqnoKnICpMovNpLSr7mU.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=e04653b75beebfce3f4afd8a8f5260f93d14ef99&quot; alt=&quot;Five billion people being tracked by Patternz surveillance tool&quot; title=&quot;Five billion people being tracked by Patternz surveillance tool&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/cricketmad14&quot;&gt; /u/cricketmad14 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.techzine.eu/news/privacy-compliance/115811/five-billion-people-being-tracked-by-patternz-surveillance-tool/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvq6tn/five_billion_people_being_tracked_by_patternz/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvq6tn</id>
+		<media:thumbnail url="https://external-preview.redd.it/oSBzz07cChlTri9X1WsInnVsqnoKnICpMovNpLSr7mU.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=e04653b75beebfce3f4afd8a8f5260f93d14ef99" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvq6tn/five_billion_people_being_tracked_by_patternz/" />
+		<updated>2024-10-04T03:40:16+00:00</updated>
+		<published>2024-10-04T03:40:16+00:00</published>
+		<title>Five billion people being tracked by Patternz surveillance tool</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Well_Socialized</name>
+			<uri>https://www.reddit.com/user/Well_Socialized</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvi8er/devs_gaining_little_if_anything_from_ai_coding/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/g69xWnmckoij1mq6h88PqPkFcjH6qFjOeB1qsCGQMq4.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=40c58f140b7aee7a4943ac928c7fb8ec05045e87&quot; alt=&quot;Devs gaining little (if anything) from AI coding assistants&quot; title=&quot;Devs gaining little (if anything) from AI coding assistants&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Well_Socialized&quot;&gt; /u/Well_Socialized &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.cio.com/article/3540579/devs-gaining-little-if-anything-from-ai-coding-assistants.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvi8er/devs_gaining_little_if_anything_from_ai_coding/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvi8er</id>
+		<media:thumbnail url="https://external-preview.redd.it/g69xWnmckoij1mq6h88PqPkFcjH6qFjOeB1qsCGQMq4.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=40c58f140b7aee7a4943ac928c7fb8ec05045e87" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvi8er/devs_gaining_little_if_anything_from_ai_coding/" />
+		<updated>2024-10-03T21:03:41+00:00</updated>
+		<published>2024-10-03T21:03:41+00:00</published>
+		<title>Devs gaining little (if anything) from AI coding assistants</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Bald-Eagle619</name>
+			<uri>https://www.reddit.com/user/Bald-Eagle619</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv9kpr/spotify_now_automatically_creates_an_offline/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/OrB9k1Kj4ezzIqVXtaZphk05i76yZQA8rCG_oMEzLk8.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=b6e25e7e2c681a155becb8cf479a4d66b801dd4b&quot; alt=&quot;Spotify now automatically creates an offline playlist when you lose internet&quot; title=&quot;Spotify now automatically creates an offline playlist when you lose internet&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Bald-Eagle619&quot;&gt; /u/Bald-Eagle619 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.theverge.com/2024/10/3/24261098/spotify-music-offline-backup&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv9kpr/spotify_now_automatically_creates_an_offline/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv9kpr</id>
+		<media:thumbnail url="https://external-preview.redd.it/OrB9k1Kj4ezzIqVXtaZphk05i76yZQA8rCG_oMEzLk8.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=b6e25e7e2c681a155becb8cf479a4d66b801dd4b" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv9kpr/spotify_now_automatically_creates_an_offline/" />
+		<updated>2024-10-03T14:50:41+00:00</updated>
+		<published>2024-10-03T14:50:41+00:00</published>
+		<title>Spotify now automatically creates an offline playlist when you lose internet</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/marketrent</name>
+			<uri>https://www.reddit.com/user/marketrent</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fut406/leaked_whole_foods_ceo_tells_staff_he_wants_to/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/7fnxHYDvNLrjhEoym64bdZZKNciTB0rOf6HzaTB0J5U.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=51073396ba493b62b4035d39c9e87a9dc12f8935&quot; alt=&quot;Leaked: Whole Foods CEO tells staff he wants to turn Amazon’s RTO mandate into ‘carrot’ — All-hands meeting offered vague answers to many questions, and failed to explain how five days in office would fix problems that three days in-person couldn’t&quot; title=&quot;Leaked: Whole Foods CEO tells staff he wants to turn Amazon’s RTO mandate into ‘carrot’ — All-hands meeting offered vague answers to many questions, and failed to explain how five days in office would fix problems that three days in-person couldn’t&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/marketrent&quot;&gt; /u/marketrent &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://fortune.com/2024/10/02/leaked-whole-foods-ceo-meeting-amazon-5-day-rto-office-policy/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fut406/leaked_whole_foods_ceo_tells_staff_he_wants_to/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fut406</id>
+		<media:thumbnail url="https://external-preview.redd.it/7fnxHYDvNLrjhEoym64bdZZKNciTB0rOf6HzaTB0J5U.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=51073396ba493b62b4035d39c9e87a9dc12f8935" />
+		<link href="https://www.reddit.com/r/technology/comments/1fut406/leaked_whole_foods_ceo_tells_staff_he_wants_to/" />
+		<updated>2024-10-02T22:39:38+00:00</updated>
+		<published>2024-10-02T22:39:38+00:00</published>
+		<title>Leaked: Whole Foods CEO tells staff he wants to turn Amazon’s RTO mandate into ‘carrot’ — All-hands meeting offered vague answers to many questions, and failed to explain how five days in office would fix problems that three days in-person couldn’t</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Sariel007</name>
+			<uri>https://www.reddit.com/user/Sariel007</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv66wm/an_interstellar_instrument_takes_a_final_bow_the/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/4rm6b3UcT9teLREGr2Vr4hyBytfNiwgDfN29Qt43m8w.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=7b183472a4d85c2b14a9c3440450142b322fe800&quot; alt=&quot;An interstellar instrument takes a final bow. The Plasma Science Experiment aboard NASA’s Voyager 2 spacecraft turns off after 47 years and 15 billion miles.&quot; title=&quot;An interstellar instrument takes a final bow. The Plasma Science Experiment aboard NASA’s Voyager 2 spacecraft turns off after 47 years and 15 billion miles.&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Sariel007&quot;&gt; /u/Sariel007 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://news.mit.edu/2024/interstellar-instrument-takes-final-bow-1002&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv66wm/an_interstellar_instrument_takes_a_final_bow_the/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv66wm</id>
+		<media:thumbnail url="https://external-preview.redd.it/4rm6b3UcT9teLREGr2Vr4hyBytfNiwgDfN29Qt43m8w.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=7b183472a4d85c2b14a9c3440450142b322fe800" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv66wm/an_interstellar_instrument_takes_a_final_bow_the/" />
+		<updated>2024-10-03T12:11:15+00:00</updated>
+		<published>2024-10-03T12:11:15+00:00</published>
+		<title>An interstellar instrument takes a final bow. The Plasma Science Experiment aboard NASA’s Voyager 2 spacecraft turns off after 47 years and 15 billion miles.</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Anxious-Depth-7983</name>
+			<uri>https://www.reddit.com/user/Anxious-Depth-7983</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvdnnq/reddits_latest_policy_change_could_stifle_future/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/tW9QsiEnnUMDQv7ML-cKRkCvvluYDPPt5qO8DlOMB0I.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=37d906728224559da0dd274b8a5abddf932aa2c3&quot; alt=&quot;Reddit's latest policy change could stifle future protests against the platform&quot; title=&quot;Reddit's latest policy change could stifle future protests against the platform&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Anxious-Depth-7983&quot;&gt; /u/Anxious-Depth-7983 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://mashable.com/article/reddit-community-type-settings-subreddit-policy-change?utm_source=email&amp;amp;utm_medium=newsletter&amp;amp;utm_campaign=lightspeed&amp;amp;zdee=gAAAAABm8zQSamxfBrcFW03I9JaE6Pc1-vuUi2Ixe664LMYoKopYLpfhB8w5bLrEP316iKYAJwfkFOToPmG2knlWHmO96LrCgQriIjm8rftGcUeBO99e9uY%3D&amp;amp;lctg=45176621403&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvdnnq/reddits_latest_policy_change_could_stifle_future/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvdnnq</id>
+		<media:thumbnail url="https://external-preview.redd.it/tW9QsiEnnUMDQv7ML-cKRkCvvluYDPPt5qO8DlOMB0I.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=37d906728224559da0dd274b8a5abddf932aa2c3" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvdnnq/reddits_latest_policy_change_could_stifle_future/" />
+		<updated>2024-10-03T17:48:29+00:00</updated>
+		<published>2024-10-03T17:48:29+00:00</published>
+		<title>Reddit's latest policy change could stifle future protests against the platform</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/Well_Socialized</name>
+			<uri>https://www.reddit.com/user/Well_Socialized</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvi31i/new_yorkers_social_media_is_killing_kids_article/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/wKm0XDzoASM6BrarQXoG18WnZ5CIUPM3ZBe5zppuyFw.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=60f612dc25b6693520e6d4a342645939506f3afd&quot; alt=&quot;New Yorker’s ‘Social Media Is Killing Kids’ Article Waits 71 Paragraphs To Admit Evidence Doesn’t Support The Premise&quot; title=&quot;New Yorker’s ‘Social Media Is Killing Kids’ Article Waits 71 Paragraphs To Admit Evidence Doesn’t Support The Premise&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Well_Socialized&quot;&gt; /u/Well_Socialized &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.techdirt.com/2024/10/02/new-yorkers-social-media-is-killing-kids-article-waits-71-paragraphs-to-admit-evidence-doesnt-support-the-premise/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvi31i/new_yorkers_social_media_is_killing_kids_article/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvi31i</id>
+		<media:thumbnail url="https://external-preview.redd.it/wKm0XDzoASM6BrarQXoG18WnZ5CIUPM3ZBe5zppuyFw.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=60f612dc25b6693520e6d4a342645939506f3afd" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvi31i/new_yorkers_social_media_is_killing_kids_article/" />
+		<updated>2024-10-03T20:57:27+00:00</updated>
+		<published>2024-10-03T20:57:27+00:00</published>
+		<title>New Yorker’s ‘Social Media Is Killing Kids’ Article Waits 71 Paragraphs To Admit Evidence Doesn’t Support The Premise</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/upyoars</name>
+			<uri>https://www.reddit.com/user/upyoars</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvonk8/james_webb_space_telescope_finds_supernova_hope/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/QX_tn_w2Rys-ummKUM0_kINKuIvMi1bpxc1vUHAVr0Q.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=77e0c67a999d24a98d3cfb8593dda57199200411&quot; alt=&quot;James Webb Space Telescope finds supernova 'Hope' that could finally resolve major astronomy debate&quot; title=&quot;James Webb Space Telescope finds supernova 'Hope' that could finally resolve major astronomy debate&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/upyoars&quot;&gt; /u/upyoars &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.space.com/james-webb-space-telescope-hubble-tension-supernova-hope&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvonk8/james_webb_space_telescope_finds_supernova_hope/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvonk8</id>
+		<media:thumbnail url="https://external-preview.redd.it/QX_tn_w2Rys-ummKUM0_kINKuIvMi1bpxc1vUHAVr0Q.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=77e0c67a999d24a98d3cfb8593dda57199200411" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvonk8/james_webb_space_telescope_finds_supernova_hope/" />
+		<updated>2024-10-04T02:15:01+00:00</updated>
+		<published>2024-10-04T02:15:01+00:00</published>
+		<title>James Webb Space Telescope finds supernova 'Hope' that could finally resolve major astronomy debate</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/ardi62</name>
+			<uri>https://www.reddit.com/user/ardi62</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv29vl/amazon_will_ramp_up_prime_video_ads_in_2025/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/GgNmN9NMzlLyBrWIcsiwzf8XWJDX1Sp62mMVYaledxs.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=de9f646c4a86ff6fef506345e14bdfda9f120638&quot; alt=&quot;Amazon will “ramp up” Prime Video ads in 2025&quot; title=&quot;Amazon will “ramp up” Prime Video ads in 2025&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/ardi62&quot;&gt; /u/ardi62 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://arstechnica.com/gadgets/2024/10/amazon-prime-video-is-getting-more-ads-next-year/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fv29vl/amazon_will_ramp_up_prime_video_ads_in_2025/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fv29vl</id>
+		<media:thumbnail url="https://external-preview.redd.it/GgNmN9NMzlLyBrWIcsiwzf8XWJDX1Sp62mMVYaledxs.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=de9f646c4a86ff6fef506345e14bdfda9f120638" />
+		<link href="https://www.reddit.com/r/technology/comments/1fv29vl/amazon_will_ramp_up_prime_video_ads_in_2025/" />
+		<updated>2024-10-03T07:30:41+00:00</updated>
+		<published>2024-10-03T07:30:41+00:00</published>
+		<title>Amazon will “ramp up” Prime Video ads in 2025</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/CrankyBear</name>
+			<uri>https://www.reddit.com/user/CrankyBear</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvb5py/license_plate_readers_are_creating_a_uswide/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/QgJ9kyqWFiyju-I8OZuA8OQH_EyaJ_FGd0SPa04bYJw.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=72e36c065235c4c6d5462e396fc0d7649f4823fe&quot; alt=&quot;License Plate Readers Are Creating a US-Wide Database of More Than Just Cars&quot; title=&quot;License Plate Readers Are Creating a US-Wide Database of More Than Just Cars&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/CrankyBear&quot;&gt; /u/CrankyBear &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.wired.com/story/license-plate-readers-political-signs-bumper-stickers/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvb5py/license_plate_readers_are_creating_a_uswide/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvb5py</id>
+		<media:thumbnail url="https://external-preview.redd.it/QgJ9kyqWFiyju-I8OZuA8OQH_EyaJ_FGd0SPa04bYJw.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=72e36c065235c4c6d5462e396fc0d7649f4823fe" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvb5py/license_plate_readers_are_creating_a_uswide/" />
+		<updated>2024-10-03T15:57:22+00:00</updated>
+		<published>2024-10-03T15:57:22+00:00</published>
+		<title>License Plate Readers Are Creating a US-Wide Database of More Than Just Cars</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/4lgedbeast</name>
+			<uri>https://www.reddit.com/user/4lgedbeast</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvn8b2/minnesota_inventors_poopcopter_scoops_dogdoo_from/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/TKjpp4zzFluOz53-SDl2EW6vG4LAu4KTRFAcDv46cB4.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=0c7914f0969977c4fb6e0570c055c02924c772c2&quot; alt=&quot;Minnesota inventor's &amp;quot;poopcopter&amp;quot; scoops dog-doo from the sky: 'it's full of crap'&quot; title=&quot;Minnesota inventor's &amp;quot;poopcopter&amp;quot; scoops dog-doo from the sky: 'it's full of crap'&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/4lgedbeast&quot;&gt; /u/4lgedbeast &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://nypost.com/2024/10/02/us-news/minnesota-inventors-poopcopter-scoops-dog-doo-from-the-sky-its-full-of-crap/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fvn8b2/minnesota_inventors_poopcopter_scoops_dogdoo_from/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fvn8b2</id>
+		<media:thumbnail url="https://external-preview.redd.it/TKjpp4zzFluOz53-SDl2EW6vG4LAu4KTRFAcDv46cB4.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=0c7914f0969977c4fb6e0570c055c02924c772c2" />
+		<link href="https://www.reddit.com/r/technology/comments/1fvn8b2/minnesota_inventors_poopcopter_scoops_dogdoo_from/" />
+		<updated>2024-10-04T01:00:13+00:00</updated>
+		<published>2024-10-04T01:00:13+00:00</published>
+		<title>Minnesota inventor's &quot;poopcopter&quot; scoops dog-doo from the sky: 'it's full of crap'</title>
+	</entry>
+	<entry>
+		<author>
+			<name>/u/esporx</name>
+			<uri>https://www.reddit.com/user/esporx</uri>
+		</author>
+		<category term="technology" label="r/technology"/>
+		<content type="html">&lt;table&gt; &lt;tr&gt;&lt;td&gt; &lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fuq9ui/nvidia_just_dropped_a_bombshell_its_new_ai_model/&quot;&gt; &lt;img src=&quot;https://external-preview.redd.it/o6W2XDh6Jl6RgpDEVmDhRBfAfU3VlbMZzf_6rbwfm2Q.jpg?width=640&amp;amp;crop=smart&amp;amp;auto=webp&amp;amp;s=fd6d6c63d60164459d4b64c93c076bef3a01053c&quot; alt=&quot;Nvidia just dropped a bombshell: Its new AI model is open, massive, and ready to rival GPT-4&quot; title=&quot;Nvidia just dropped a bombshell: Its new AI model is open, massive, and ready to rival GPT-4&quot; /&gt; &lt;/a&gt; &lt;/td&gt;&lt;td&gt; &amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/esporx&quot;&gt; /u/esporx &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://venturebeat.com/ai/nvidia-just-dropped-a-bombshell-its-new-ai-model-is-open-massive-and-ready-to-rival-gpt-4/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/technology/comments/1fuq9ui/nvidia_just_dropped_a_bombshell_its_new_ai_model/&quot;&gt;[comments]&lt;/a&gt;&lt;/span&gt; &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</content>
+		<id>t3_1fuq9ui</id>
+		<media:thumbnail url="https://external-preview.redd.it/o6W2XDh6Jl6RgpDEVmDhRBfAfU3VlbMZzf_6rbwfm2Q.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=fd6d6c63d60164459d4b64c93c076bef3a01053c" />
+		<link href="https://www.reddit.com/r/technology/comments/1fuq9ui/nvidia_just_dropped_a_bombshell_its_new_ai_model/" />
+		<updated>2024-10-02T20:32:12+00:00</updated>
+		<published>2024-10-02T20:32:12+00:00</published>
+		<title>Nvidia just dropped a bombshell: Its new AI model is open, massive, and ready to rival GPT-4</title>
+	</entry>
+</feed>

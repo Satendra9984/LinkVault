@@ -74,14 +74,15 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: ColourPallette.white,
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+          padding: const EdgeInsets.only(
+            left: 28,
+            right: 28,
+            top: 16,
+            bottom: 34,
+          ),
           height: size.height,
           child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
             listener: (BuildContext context, AuthenticationState state) {
-              debugPrint(
-                '[log] : authstate ${state.authenticationStates}',
-              );
-
               if (state.authenticationStates == AuthenticationStates.signedIn) {
                 context
                     .read<GlobalUserCubit>()
@@ -90,9 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    // builder: (ctx) => const DashboardHomePage(),
                     builder: (ctx) => const AppHomePage(),
-                    
                   ),
                   (route) => false,
                 );
@@ -149,15 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                         // ),
                       ],
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SvgPicture.asset(
-                          MediaRes.loginPasswordSVG,
-                          semanticsLabel: 'Login Logo',
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -265,6 +256,13 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       ],
+                    ),
+                    Expanded(
+                      child: SvgPicture.asset(
+                        MediaRes.loginPasswordSVG,
+                        semanticsLabel: 'Login Logo',
+                        alignment: Alignment.bottomCenter,
+                      ),
                     ),
                   ],
                 ),

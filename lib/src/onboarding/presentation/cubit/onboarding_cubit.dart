@@ -52,8 +52,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
     // debugPrint('[log] : listening isCreditExpired called');
 
     if (state.globalUser == null) {
-      debugPrint('[log] : state.global == null returning true');
-
+      // debugPrint('[log] : state.global == null returning true');
       return true;
     }
 
@@ -61,19 +60,6 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
     final userCreditExpiryDate = state.globalUser!.creditExpiryDate.toUtc();
     // Testing check the dates
-
-    // debugPrint('[log] : currentTime ${todayDate}');
-    // debugPrint('[log] : expiryTime ${userCreditExpiryDate}');
-    // debugPrint(
-    //   '[log] : expiryTimeBefore ${userCreditExpiryDate.isBefore(todayDate)}',
-    // );
-
-    // debugPrint(
-    //   '[log] : ${todayDate.day}/${todayDate.month}/${todayDate.year}:${todayDate.hour}:${todayDate.minute}::${todayDate.second}',
-    // );
-    // debugPrint(
-    //   '[log] : ${userCreditExpiryDate.day}/${userCreditExpiryDate.month}/${userCreditExpiryDate.year}::${userCreditExpiryDate.hour}:${userCreditExpiryDate.minute}/${userCreditExpiryDate.second}',
-    // );
 
     if (userCreditExpiryDate.compareTo(todayDate) < 0) {
       return true;

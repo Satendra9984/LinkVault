@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:isar/isar.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
@@ -19,9 +18,9 @@ class SearchingRepoImpl {
       await _searchLocalDataSourcesImpl.migrateCollections();
 
       await _searchLocalDataSourcesImpl.migrateURLs();
-      Logger.printLog('Migration successful');
+      // // Logger.printLog('Migration successful');
     } on ServerException catch (e) {
-      Logger.printLog('Migration exception: ${e.message}');
+      // // Logger.printLog('Migration exception: ${e.message}');
     }
   }
 

@@ -1,80 +1,102 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/custom_image_painter.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/src/dashboard/presentation/widgets/banner_image_builder_widget.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
-class UrlFaviconLogoWidget extends StatelessWidget {
+class UrlFaviconLogoWidget extends StatefulWidget {
   const UrlFaviconLogoWidget({
-    required this.onDoubleTap,
-    required this.onPress,
+    required this.onLongPress,
+    required this.onTap,
     required this.urlModelData,
     super.key,
   });
   final UrlModel urlModelData;
-  final void Function(UrlMetaData) onDoubleTap;
-  final void Function() onPress;
+  final void Function(UrlMetaData) onLongPress;
+  final void Function() onTap;
+
+  @override
+  State<UrlFaviconLogoWidget> createState() => _UrlFaviconLogoWidgetState();
+}
+
+class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
+  final _preloadUrl = false;
 
   @override
   Widget build(BuildContext context) {
-    final urlMetaData =
-        urlModelData.metaData ?? UrlMetaData.isEmpty(title: urlModelData.title);
+    final urlMetaData = widget.urlModelData.metaData ??
+        UrlMetaData.isEmpty(title: widget.urlModelData.title);
 
-    return GestureDetector(
-      onTap: onPress,
-      onLongPress: () {
-        if (urlMetaData.faviconUrl != null) {
-          final favicon = context
-              .read<NetworkImageCacheCubit>()
-              .getImageData(urlMetaData.faviconUrl!);
+    return VisibilityDetector(
+      key: Key(
+        widget.urlModelData.firestoreId + widget.urlModelData.collectionId,
+      ),
+      onVisibilityChanged: (visibleInfo) {
+        if (visibleInfo.visibleFraction > 0 && _preloadUrl == false) {
+          Logger.printLog(
+            '[customtabs] : calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
+          );
+          // TODO : CALL CUBIT FOR THIS REQUEST
+          
 
-          if (favicon != null) {
-            onDoubleTap(
-              urlMetaData.copyWith(
-                favicon: favicon.value.imageBytesData,
-              ),
-            );
-          } else {
-            onDoubleTap(urlMetaData);
-          }
+
+
         } else {
-          onDoubleTap(urlMetaData);
+          Logger.printLog(
+            '[customtabs] : not calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
+          );
         }
       },
-      child: Column(
-        children: [
-          Container(
-            height: 60,
-            width: 60,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              // color: ColourPallette.mystic.withOpacity(0.15),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onLongPress: () => widget.onLongPress(urlMetaData),
+        child: Column(
+          children: [
+            Container(
+              height: 56,
+              width: 56,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: ColourPallette.white,
+                // color: ColourPallette.mystic.withOpacity(0.1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1), // Softer shadow
+                    spreadRadius: 1, // Wider spread for a subtle shadow
+                    offset: const Offset(0, 2),
+                    blurRadius: 1, // Smoothens the shadow edges
+                  ),
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.06),
+                    spreadRadius: 1,
+                    offset: const Offset(0, 1), // Closer to the element
+                    blurRadius: 1, // Less blur for this shadow
+                  ),
+                ],
+              ),
+              child: _getLogoWidget(
+                context: context,
+                urlMetaData: urlMetaData,
+              ),
             ),
-            child: _getLogoWidget(
-              context: context,
-              urlMetaData: urlMetaData,
+            const SizedBox(height: 8),
+            Text(
+              widget.urlModelData.title,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: ColourPallette.black,
+                height: 1.05,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            urlModelData.title,
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            softWrap: true,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: ColourPallette.black,
-              height: 1.05,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -83,16 +105,48 @@ class UrlFaviconLogoWidget extends StatelessWidget {
     required BuildContext context,
     required UrlMetaData urlMetaData,
   }) {
+    // // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+
+    var name = '';
+
+    if (widget.urlModelData.title.isNotEmpty) {
+      name = widget.urlModelData.title;
+    } else if (urlMetaData.title != null && urlMetaData.title!.isNotEmpty) {
+      name = urlMetaData.title!;
+    } else if (urlMetaData.websiteName != null &&
+        urlMetaData.websiteName!.isNotEmpty) {
+      name = urlMetaData.websiteName!;
+    }
+
+    final placeHolder = Container(
+      padding: const EdgeInsets.all(2),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: ColourPallette.black,
+        // color: Colors.deepPurple
+      ),
+      child: Text(
+        name,
+        maxLines: 1,
+        textAlign: TextAlign.center,
+        softWrap: true,
+        overflow: TextOverflow.fade,
+        style: const TextStyle(
+          color: ColourPallette.white,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+
     if (urlMetaData.favicon != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.memory(
           urlMetaData.favicon!,
-          fit: BoxFit.contain,
+          fit: BoxFit.cover,
           errorBuilder: (ctx, _, __) {
-            return SvgPicture.asset(
-              MediaRes.websiteSVG,
-            );
+            return placeHolder;
           },
         ),
       );
@@ -105,17 +159,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
             imageUrl: urlMetaData.faviconUrl!,
             compressImage: false,
             errorWidgetBuilder: () {
-              return IconButton(
-                onPressed: () =>
-                    context.read<NetworkImageCacheCubit>().addImage(
-                          urlMetaData.faviconUrl!,
-                          compressImage: false,
-                        ),
-                icon: SvgPicture.asset(
-                  MediaRes.websiteSVG,
-                ),
-                color: ColourPallette.black,
-              );
+              return placeHolder;
             },
             successWidgetBuilder: (imageData) {
               return ClipRRect(
@@ -124,15 +168,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
                   imageData.imageBytesData!,
                   fit: BoxFit.contain,
                   errorBuilder: (ctx, _, __) {
-                    try {
-                      final svgImage = SvgPicture.memory(
-                        urlMetaData.favicon!,
-                      );
-
-                      return svgImage;
-                    } catch (e) {
-                      return const Icon(Icons.web);
-                    }
+                    return placeHolder;
                   },
                 ),
               );
@@ -141,7 +177,7 @@ class UrlFaviconLogoWidget extends StatelessWidget {
         ),
       );
     } else {
-      return const Icon(Icons.web);
+      return placeHolder;
     }
   }
 }

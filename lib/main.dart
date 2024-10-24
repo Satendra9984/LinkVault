@@ -10,12 +10,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
 import 'package:link_vault/core/common/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/common/res/colours.dart';
 import 'package:link_vault/core/common/res/media.dart';
 import 'package:link_vault/core/common/services/router.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
-import 'package:link_vault/firebase_options_test.dart' as dev;
-
+import 'package:link_vault/firebase_options_test.dart' as development;
 import 'package:link_vault/src/advance_search/data/local_data_source.dart';
 import 'package:link_vault/src/advance_search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/advance_search/repositories/searching_repo_impl.dart';
@@ -40,10 +40,13 @@ import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_im
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
+import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
 import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:path_provider/path_provider.dart';
+
+// [todo]: https://groups.google.com/g/flutter-dev/c/7ua_tM7znxU/m/x165-JZuBAAJ
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +61,7 @@ void main() async {
             return MaterialApp(
               title: 'link_vault',
               debugShowCheckedModeBanner: false,
+              color: ColourPallette.white,
               theme: ThemeData(
                 scaffoldBackgroundColor: Colors.white,
                 appBarTheme: const AppBarTheme(
@@ -94,17 +98,25 @@ Future<void> _initializeApp() async {
 }
 
 Future<void> _initializeFirebase() async {
-  const isProduction = bool.fromEnvironment('dart.vm.product');
+  // const isProduction = bool.fromEnvironment('dart.vm.product');
+
+  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+
+  // Logger.printLog('[FLAVOR]: $flavor');
+
+  var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
+
+  if (flavor == 'development') {
+    firebaseOptions = development.DefaultFirebaseOptions.currentPlatform;
+  }
+
+  debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
 
   // Start Firebase initialization
   await Firebase.initializeApp(
     name: 'LinkVault Singleton',
-    options: isProduction
-        ? prod.DefaultFirebaseOptions.currentPlatform
-        : prod.DefaultFirebaseOptions.currentPlatform,
+    options: firebaseOptions,
   );
-
-  debugPrint('IsProduction: ${isProduction}');
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
@@ -128,16 +140,18 @@ Future<void> _initializeIsar() async {
   }
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
   Widget build(BuildContext context) {
+    // SystemChrome.setEnabledSystemUIMode(
+    //   SystemUiMode.manual,
+    //   overlays: [
+    //     SystemUiOverlay.bottom,
+    //     SystemUiOverlay.top,
+    //   ],
+    // );
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -234,6 +248,22 @@ class _MyAppState extends State<MyApp> {
             searchingRepoImpl: SearchingRepoImpl(
               searchLocalDataSourcesImpl:
                   SearchLocalDataSourcesImpl(isar: null),
+            ),
+          ),
+        ),
+
+        BlocProvider(
+          create: (context) => RssFeedCubit(
+            collectionCubit: context.read<CollectionsCubit>(),
+            collectionCrudCubit: context.read<CollectionCrudCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
+            urlRepoImpl: UrlRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
           ),
         ),

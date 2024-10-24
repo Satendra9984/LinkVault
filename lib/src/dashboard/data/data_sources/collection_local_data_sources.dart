@@ -31,7 +31,7 @@ class CollectionLocalDataSourcesImpl {
         );
       }
     } catch (e) {
-      Logger.printLog('Collectionoffline: initialize $e');
+      // Logger.printLog('Collectionoffline: initialize $e');
 
       return;
     }
@@ -52,12 +52,12 @@ class CollectionLocalDataSourcesImpl {
       if (collectionModelOffline == null) {
         return null;
       }
-      // Logger.printLog('Collectionoffline: fetchedCollection');
+      // // Logger.printLog('Collectionoffline: fetchedCollection');
       final coll = collectionModelOffline.toCollectionModel();
 
       return coll;
     } catch (e) {
-      Logger.printLog('fetchCollectionLocal : $e');
+      // Logger.printLog('fetchCollectionLocal : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -72,7 +72,7 @@ class CollectionLocalDataSourcesImpl {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
-      // Logger.printLog(
+      // // Logger.printLog(
       //   'Collectionoffline: fetchedCollectionOfflineModel isar ${_isar != null}',
       // );
 
@@ -85,11 +85,11 @@ class CollectionLocalDataSourcesImpl {
       if (collectionModelOffline == null) {
         return null;
       }
-      // Logger.printLog('Collectionoffline: fetchedCollectionOfflineModel');
+      // // Logger.printLog('Collectionoffline: fetchedCollectionOfflineModel');
 
       return collectionModelOffline;
     } catch (e) {
-      Logger.printLog('fetchCollectionOffline : $e');
+      // Logger.printLog('fetchCollectionOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -119,11 +119,11 @@ class CollectionLocalDataSourcesImpl {
         },
       );
 
-      // Logger.printLog('Collectionoffline: addedCollection');
+      // // Logger.printLog('Collectionoffline: addedCollection');
 
       return collectionModelOffline.toCollectionModel();
     } catch (e) {
-      Logger.printLog('addCollectionOffline : $e');
+      // Logger.printLog('addCollectionOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -138,7 +138,7 @@ class CollectionLocalDataSourcesImpl {
   ) async {
     try {
       await _initializeIsar();
-      // Logger.printLog(
+      // // Logger.printLog(
       //   'Collectionoffline: updatedCollection isar ${_isar != null}',
       // );
       if (_isar == null) return;
@@ -162,11 +162,11 @@ class CollectionLocalDataSourcesImpl {
           );
         },
       );
-      // Logger.printLog('urloffline: updatedUrl');
+      // // Logger.printLog('urloffline: updatedUrl');
 
       return;
     } catch (e) {
-      Logger.printLog('updateUrlOffline : $e');
+      // Logger.printLog('updateUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
@@ -186,7 +186,7 @@ class CollectionLocalDataSourcesImpl {
 
       await fetchCollectionModelOffline(collectionId).then(
         (collectionModelOffline) async {
-          // Logger.printLog(
+          // // Logger.printLog(
           //   'Collectionoffline: deletedCollection ${collectionModelOffline?.id}, ${collectionModelOffline?.firestoreId}',
           // );
 
@@ -200,9 +200,9 @@ class CollectionLocalDataSourcesImpl {
           );
         },
       );
-      // Logger.printLog('Collectionoffline: deletedCollection');
+      // // Logger.printLog('Collectionoffline: deletedCollection');
     } catch (e) {
-      Logger.printLog('deleteCollectionOffline : $e');
+      // Logger.printLog('deleteCollectionOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,
