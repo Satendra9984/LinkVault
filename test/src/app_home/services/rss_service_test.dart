@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
-import 'package:link_vault/src/app_home/services/rss_service.dart';
+import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override

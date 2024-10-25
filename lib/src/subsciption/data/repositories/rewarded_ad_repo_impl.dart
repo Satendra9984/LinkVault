@@ -6,11 +6,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:link_vault/core/common/models/global_user_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
 
 class RewardedAdRepoImpl {

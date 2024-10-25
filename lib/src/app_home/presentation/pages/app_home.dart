@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/src/advance_search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard/dashboard_store_screen.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/favourites/favourite_store_screen.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
+import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
+import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 

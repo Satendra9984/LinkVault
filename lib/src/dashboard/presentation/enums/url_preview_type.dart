@@ -1,9 +1,0 @@
-
-
-
-
-enum UrlPreviewType {
-  icons,
-  previewMeta,
-}
-

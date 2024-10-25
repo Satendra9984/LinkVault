@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:link_vault/core/common/models/global_user_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';

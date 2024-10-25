@@ -1,7 +1,5 @@
 package com.example.link_vault
 
-import io.flutter.embedding.android.FlutterActivity
-
 import android.net.Uri
 import android.os.Bundle
 import androidx.browser.customtabs.CustomTabsClient
@@ -18,7 +16,8 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        MethodChannel(flutterEngine?.dartExecutor?.binaryMessenger, CUSTOM_TABS_CLIENT_CHANNEL).setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CUSTOM_TABS_CLIENT_CHANNEL)
+        .setMethodCallHandler { call, result ->
             when (call.method) {
                 "warmUp" -> {
                     warmUpBrowser()

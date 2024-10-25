@@ -1,18 +1,14 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:link_vault/core/common/res/app_tutorials.dart';
-import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
-    as customChromeTabs;
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/url_favicon_widget.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/src/app_home/presentation/pages/common/url_favicon_list_template_screen.dart';
-import 'package:link_vault/src/app_home/services/custom_tabs_service.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
-import 'package:link_vault/src/dashboard/data/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/res/app_tutorials.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -68,6 +64,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     final url = list.value[index].urlModel!;
 
     return UrlFaviconLogoWidget(
+      urlPreloadMethod: UrlPreloadMethods.httpGet,
       onTap: () async {
         final theme = Theme.of(context);
 

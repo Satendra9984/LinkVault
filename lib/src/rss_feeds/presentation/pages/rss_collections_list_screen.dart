@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/collection_icon_button.dart';
-import 'package:link_vault/src/app_home/presentation/pages/common/add_collection_template_screen.dart';
-import 'package:link_vault/src/app_home/presentation/pages/common/collection_list_template_screen.dart';
-import 'package:link_vault/src/app_home/presentation/pages/common/update_collection_template_screen.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_fetch_model.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/add_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/collection_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/collection_icon_button.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 
 class RssCollectionsListScreen extends StatefulWidget {
