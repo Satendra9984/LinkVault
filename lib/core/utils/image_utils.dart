@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
-import 'package:link_vault/core/utils/logger.dart';
 
 class ImageUtils {
   ImageUtils._();
@@ -155,5 +154,22 @@ class ImageUtils {
     } else {
       return 'white';
     }
+  }
+
+  static Future<ui.Image?> decodeImage(Uint8List imageData) async {
+    try {
+      final decodedImage = await _decodeImage(imageData);
+
+      return decodedImage;
+    } catch (e) {
+      // Logger.printLog('Error decoding image: $e');
+      return null;
+    }
+  }
+
+  static Future<ui.Image> _decodeImage(Uint8List imageData) async {
+    final codec = await ui.instantiateImageCodec(imageData);
+    final frame = await codec.getNextFrame();
+    return frame.image;
   }
 }

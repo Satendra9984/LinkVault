@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
+import 'package:link_vault/core/services/url_parsing_service.dart';
 
 void main() {
   test('Fetch and print metadata including RSS feed URL', () async {

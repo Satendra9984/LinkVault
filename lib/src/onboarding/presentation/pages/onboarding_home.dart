@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/providers/global_user_provider/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
-import 'package:link_vault/src/onboarding/presentation/models/loading_states.dart';
+import 'package:link_vault/src/onboarding/data/repositories/models/loading_states.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 
 class OnBoardingHomePage extends StatelessWidget {

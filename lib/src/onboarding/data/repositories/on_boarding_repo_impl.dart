@@ -1,13 +1,13 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:link_vault/core/common/models/global_user_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/src/onboarding/data/data_sources/local_data_source_imple.dart';
+import 'package:link_vault/src/onboarding/data/data_sources/onboard_local_data_source_impl.dart';
 
 class OnBoardingRepoImpl {
   OnBoardingRepoImpl({
-    required LocalDataSourceImpl localDataSourceImpl,
+    required OnBoardingLocalDataSourceImpl localDataSourceImpl,
   }) : _localDataSourceImpl = localDataSourceImpl;
-  final LocalDataSourceImpl _localDataSourceImpl;
+  final OnBoardingLocalDataSourceImpl _localDataSourceImpl;
 
   // Future<Either<Failure, bool>> checkIfFirstTimer() {}
 

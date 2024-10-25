@@ -66,15 +66,26 @@ dev_dependencies:
   mockito: ^5.4.4
   
 
-flutter:
+# dependency_overrides:
+  # url_launcher_windows:
+  #   sdk: 'none'
 
+
+flutter:
   uses-material-design: true
+
   assets:
      - assets/images/
      - assets/logo/
      - assets/animations/
 
-
+# Specify the supported platforms (remove windows)
+platform:
+  android:
+    default: true
+  ios:
+    default: true
+    
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true

@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/src/app_home/services/rss_service.dart';
-import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
-import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/core/services/rss_data_parsing_service.dart';
+import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/local_data_source.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/remote_data_source.dart';
 

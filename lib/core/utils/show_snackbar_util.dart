@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:link_vault/core/common/views/custom_snackbar_widget.dart';
-import 'package:link_vault/core/enums/snakbar_type.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_snackbar_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
 
 void showSnackbar({
   required BuildContext context,

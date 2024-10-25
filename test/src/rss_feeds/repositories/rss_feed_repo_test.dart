@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:link_vault/src/dashboard/data/models/url_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/src/rss_feeds/data/repositories/rss_feed_repo.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';

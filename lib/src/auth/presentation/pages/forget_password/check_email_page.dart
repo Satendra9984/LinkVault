@@ -4,10 +4,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/res/media.dart';
-import 'package:link_vault/core/common/widgets/custom_button.dart';
-import 'package:link_vault/core/utils/open_other_apps.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/utils/open_other_apps_util.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 
 class CheckYourEmailPage extends StatefulWidget {

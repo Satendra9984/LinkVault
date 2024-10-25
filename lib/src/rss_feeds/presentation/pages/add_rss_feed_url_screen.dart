@@ -2,22 +2,21 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/res/colours.dart';
-import 'package:link_vault/core/common/widgets/custom_button.dart';
-import 'package:link_vault/core/common/widgets/custom_textfield.dart';
-import 'package:link_vault/core/enums/loading_states.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
-import 'package:link_vault/src/app_home/services/rss_service.dart';
-import 'package:link_vault/src/app_home/services/url_parsing_service.dart';
-import 'package:link_vault/src/dashboard/data/enums/url_crud_loading_states.dart';
-import 'package:link_vault/src/dashboard/data/models/collection_model.dart';
-import 'package:link_vault/src/dashboard/data/models/url_model.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/cubits/url_crud_cubit/url_crud_cubit.dart';
-import 'package:link_vault/src/dashboard/presentation/enums/coll_constants.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/services/rss_data_parsing_service.dart';
+import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
-import 'package:link_vault/src/rss_feeds/presentation/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
 import 'package:xml/xml.dart';
 
 // https://youtu.be/jMi-VwEBJ70
@@ -568,6 +567,7 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: RssFeedPreviewWidget(
+                  urlPreloadMethod: UrlPreloadMethods.httpGet,
                   onTap: () {},
                   onLongPress: () {},
                   onShareButtonTap: () {},
