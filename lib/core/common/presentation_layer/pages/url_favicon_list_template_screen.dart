@@ -12,7 +12,6 @@ import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_po
 
 class UrlFaviconListTemplateScreen extends StatefulWidget {
   const UrlFaviconListTemplateScreen({
-    // required this.title,
     required this.collectionModel,
     required this.showAddUrlButton,
     required this.onAddUrlPressed,
@@ -332,28 +331,6 @@ class _UrlFaviconListTemplateScreenState
               }
             },
           ),
-          // ListFilterPopupMenuItem(
-          //   title: 'Latest Created First',
-          //   notifier: _createdAtLatestFilter,
-          //   onPress: () {
-          //     _createdAtLatestFilter.value = !_createdAtLatestFilter.value;
-          //     if (_createdAtLatestFilter.value) {
-          //       _createdAtOldestFilter.value = false;
-          //       _filterCreateLatest();
-          //     }
-          //   },
-          // ),
-          // ListFilterPopupMenuItem(
-          //   title: 'Oldest Created First',
-          //   notifier: _createdAtOldestFilter,
-          //   onPress: () {
-          //     _createdAtOldestFilter.value = !_createdAtOldestFilter.value;
-          //     if (_createdAtOldestFilter.value) {
-          //       _createdAtLatestFilter.value = false;
-          //       _filterCreateOldest();
-          //     }
-          //   },
-          // ),
           ListFilterPopupMenuItem(
             title: 'Latest First',
             notifier: _updatedAtLatestFilter,
