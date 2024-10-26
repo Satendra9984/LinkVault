@@ -206,7 +206,6 @@ class UrlParsingService {
 
       // Fallback: try to find favicon in the root directory
       // final fallbackUrl = '/assets/img/favicons.png';
-
       return null;
     } catch (e) {
       // Logger.printLog('error in "extractWebsiteLogoUrl" $e');

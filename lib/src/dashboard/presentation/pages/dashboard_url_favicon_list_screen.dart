@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DashboardUrlFaviconListScreen extends StatefulWidget {
@@ -87,17 +96,11 @@ class _DashboardUrlFaviconListScreenState
         );
       },
       // [TODO] : THIS IS DYNAMIC FIELD
-      onLongPress: (urlMetaData) {
+      onLongPress: (urlMetaData) async {
         final urlc = url.copyWith(metaData: urlMetaData);
-
-        Navigator.push(
+        showOptionsBottomSheet(
           context,
-          MaterialPageRoute(
-            builder: (ctx) => UpdateUrlTemplateScreen(
-              urlModel: urlc,
-              isRootCollection: widget.isRootCollection,
-            ),
-          ),
+          urlModel: urlc,
         );
       },
       urlModelData: url,
@@ -126,6 +129,299 @@ class _DashboardUrlFaviconListScreenState
       actions: [
         ...actions,
       ],
+    );
+  }
+
+  void showOptionsBottomSheet(
+    BuildContext context, {
+    required UrlModel urlModel,
+  }) async {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
+
+    onPop() async {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
+      Navigator.pop(context);
+    }
+
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding:
+            const EdgeInsets.only(top: 16, bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          // color: Colors.white,
+          color: ColourPallette.mystic.withOpacity(0.25),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            // mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Options',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: onPop,
+                  ),
+                ],
+              ),
+              // const Divider(),
+              // UPDATE URL
+              BottomSheetOption(
+                // leadingIcon: Icons.access_time_filled_rounded,
+                leadingIcon: Icons.replay_circle_filled_outlined,
+                title: const Text('Update', style: titleTextStyle),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => UpdateUrlTemplateScreen(
+                        urlModel: urlModel,
+                        isRootCollection: widget.isRootCollection,
+                      ),
+                    ),
+                  ).then(
+                    (_) {
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+
+              // SYNC WITH REMOTE DATABASE
+              BottomSheetOption(
+                leadingIcon: Icons.cloud_sync,
+                title: const Text('Sync', style: titleTextStyle),
+                // trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // Add functionality here
+                },
+              ),
+              // BottomSheetOption(
+              //   leadingIcon: Icons.web,
+              //   title: 'Open in InApp-WebView',
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     // Add functionality here
+              //   },
+              // ),
+              BottomSheetOption(
+                leadingIcon: Icons.bookmark_add_rounded,
+                title: const Text('Add To Favourites', style: titleTextStyle),
+                // trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () async {
+                  await Future.wait(
+                    [
+                      Future(
+                        () async {
+                          // TODO : IMPLEMENT ADD TO FAVOURITES URLS
+                          final globalUser = context
+                              .read<GlobalUserCubit>()
+                              .getGlobalUser()!
+                              .id;
+
+                          final favCollectionId = '$globalUser$favourites';
+                          final urlModelToAddInFav = urlModel.copyWith(
+                            collectionId: favCollectionId,
+                          );
+
+                         await context.read<UrlCrudCubit>().addUrl(
+                                urlData: urlModelToAddInFav,
+                                isRootCollection: widget.isRootCollection,
+                              );
+                        },
+                      ),
+                      Future(
+                        () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              BottomSheetOption(
+                leadingIcon: Icons.open_in_new_rounded,
+                title: const Text('Open In Browser', style: titleTextStyle),
+                // trailing: const Icon(Icons.arrow_forward ),
+                onTap: () async {
+                  await Future.wait(
+                    [
+                      Future(
+                        () async {
+                          final theme = Theme.of(context);
+                          // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
+                          // FOR FASTER WEBPAGE LOADING
+                          await CustomTabsService.launchUrl(
+                            url: urlModel.url,
+                            theme: theme,
+                          ).then(
+                            (_) async {
+                              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                              // JUST LIKE APPS IN BACKGROUND TYPE
+                            },
+                          );
+                        },
+                      ),
+                      Future(
+                        () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              BottomSheetOption(
+                leadingIcon: Icons.share,
+                title: const Text('Share Link', style: titleTextStyle),
+                // trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () async {
+                  await Future.wait(
+                    [
+                      Future(
+                        () async {
+                          await Share.share(
+                            urlModel.url,
+                          );
+                        },
+                      ),
+                      Future(
+                        () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  );
+                  // Add functionality here
+                },
+              ),
+
+              // DELETE URL
+              BottomSheetOption(
+                leadingIcon: Icons.delete_rounded,
+                title: const Text('Delete', style: titleTextStyle),
+                onTap: () async {
+                  await showDeleteConfirmationDialog(
+                    context,
+                    urlModel,
+                    () => context.read<UrlCrudCubit>().deleteUrl(
+                          urlData: urlModel,
+                          isRootCollection: widget.isRootCollection,
+                        ),
+                  ).then(
+                    (_) {
+                      Navigator.pop(context);
+                    },
+                  );
+
+                  // Add functionality here
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(
+      () async {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.edgeToEdge,
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    UrlModel urlModel,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${urlModel.title}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

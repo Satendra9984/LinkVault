@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
@@ -48,6 +49,8 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     var collection = _collectionsCubit.getCollection(
       collectionId: urlData.collectionId,
     );
+
+    while(collection?.collectionFetchingState == LoadingStates.loading){}
 
     if (collection == null) {
       await _collectionsCubit.fetchCollection(

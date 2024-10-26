@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/res/colours.dart';
@@ -297,6 +298,7 @@ class _UrlFaviconListTemplateScreenState
     );
   }
 
+
   Widget _filterOptions() {
     return PopupMenuButton(
       color: ColourPallette.white,
@@ -357,4 +359,98 @@ class _UrlFaviconListTemplateScreenState
       },
     );
   }
+
+
+
+  // void showOptionsBottomSheet(BuildContext context) async {
+  //   await showModalBottomSheet<Widget>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (context) => AnimatedContainer(
+  //       duration: const Duration(milliseconds: 300),
+  //       padding: const EdgeInsets.all(16),
+  //       decoration: const BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               const Text(
+  //                 'Options',
+  //                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //               ),
+  //               IconButton(
+  //                 icon: const Icon(Icons.close),
+  //                 onPressed: () => Navigator.pop(context),
+  //               ),
+  //             ],
+  //           ),
+  //           const Divider(),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.update,
+  //             title: 'Update',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.delete,
+  //             title: 'Delete',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.web,
+  //             title: 'Open in InApp-WebView',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.open_in_browser,
+  //             title: 'Open in Browser',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.share,
+  //             title: 'Share URL',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.favorite,
+  //             title: 'Add to Favourites',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //           BottomSheetOption(
+  //             leadingIcon: Icons.refresh,
+  //             title: 'Refresh',
+  //             onTap: () {
+  //               Navigator.pop(context);
+  //               // Add functionality here
+  //             },
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
 }
