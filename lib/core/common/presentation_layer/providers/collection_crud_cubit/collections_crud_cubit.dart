@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
@@ -34,6 +35,76 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.initial,
       ),
+    );
+  }
+
+  Future<void> syncCollection({
+    required CollectionModel collectionModel,
+    required bool isRootCollection,
+  }) async {
+    var collection = _collectionsCubit.getCollection(
+      collectionId: collectionModel.id,
+    );
+
+    if (collection == null) {
+      await _collectionsCubit.fetchCollection(
+        collectionId: collectionModel.id,
+        userId: _globalUserCubit.getGlobalUser()!.id,
+        isRootCollection: isRootCollection,
+      );
+    }
+
+    collection = _collectionsCubit.getCollection(
+      collectionId: collectionModel.id,
+    );
+
+    if (collection == null || collection.collection == null) {
+      return;
+    }
+
+    _collectionsCubit.updateCollection(
+      updatedCollection: collectionModel,
+      fetchSubCollIndexAdded: 0,
+      collectionFetchState: LoadingStates.loading,
+    );
+
+    // DELETE URL LOCALLY
+    await _collectionRepoImpl
+        .deleteCollectionLocally(
+      collectionId: collection.collection!.id,
+      parentCollectionId: collection.collection!.parentCollection,
+    )
+        .then(
+      (result) async {
+        final fetchedCollection = isRootCollection
+            ? await _collectionRepoImpl.fetchRootCollection(
+                collectionId: collection!.collection!.id,
+                userId: _globalUserCubit.getGlobalUser()!.id,
+                collectionName: collectionModel.name,
+              )
+            : await _collectionRepoImpl.fetchSubCollection(
+                collectionId: collection!.collection!.id,
+                userId: _globalUserCubit.state.globalUser!.id,
+              );
+
+        _collectionsCubit.deleteCollection(collection: collection.collection!);
+
+        // ignore: cascade_invocations
+        fetchedCollection.fold(
+          (_) {
+            _collectionsCubit.updateCollection(
+              updatedCollection: collectionModel,
+              fetchSubCollIndexAdded: 0,
+              collectionFetchState: LoadingStates.loaded,
+            );
+          },
+          (syncedColl) {
+            _collectionsCubit.addCollection(
+              collection: syncedColl,
+            );
+          },
+        );
+      },
     );
   }
 

@@ -11,7 +11,6 @@ class StringUtils {
     return const JsonEncoder.withIndent('  ').convert(data);
   }
 
-
   static String getUnicodeString(String uncodedString) {
     try {
       final encoded = utf8.encode(uncodedString);
@@ -44,5 +43,14 @@ class StringUtils {
   static String decompressString(Uint8List compressedData) {
     final decompressedData = GZipDecoder().decodeBytes(compressedData);
     return utf8.decode(decompressedData);
+  }
+
+  static String capitalizeEachWord(String input) {
+    return input.split(" ").map((word) => capitalize(word)).join(" ");
+  }
+
+  static String capitalize(String input) {
+    if (input.isEmpty) return input;
+    return input[0].toUpperCase() + input.substring(1);
   }
 }

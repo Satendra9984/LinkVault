@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
@@ -17,7 +23,10 @@ import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -117,18 +126,43 @@ class _DashboardUrlFaviconListScreenState
         children: [
           widget.appBarLeadingIcon,
           const SizedBox(width: 8),
-          Text(
-            widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              widget.isRootCollection
+                  ? 'LinkVault'
+                  : widget.collectionModel.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
       ),
       actions: [
+        _syncCollectionOption(),
+        const SizedBox(width: 12),
         ...actions,
+        const SizedBox(width: 8),
       ],
+    );
+  }
+
+  Widget _syncCollectionOption() {
+    return BlocBuilder<CollectionsCubit, CollectionsState>(
+      builder: (ctx, state) {
+        final collCubit = context.read<CollectionCrudCubit>();
+
+        return GestureDetector(
+          onTap: () => collCubit.syncCollection(
+            collectionModel: widget.collectionModel,
+            isRootCollection: widget.isRootCollection,
+          ),
+          child: const Icon(
+            Icons.cloud_sync_rounded,
+          ),
+        );
+      },
     );
   }
 
@@ -136,6 +170,7 @@ class _DashboardUrlFaviconListScreenState
     BuildContext context, {
     required UrlModel urlModel,
   }) async {
+    final size = MediaQuery.of(context).size;
     const titleTextStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w500,
@@ -156,9 +191,14 @@ class _DashboardUrlFaviconListScreenState
       Navigator.pop(context);
     }
 
+    final _showLastUpdated = ValueNotifier(false);
+
     await showModalBottomSheet<Widget>(
       context: context,
       isScrollControlled: true,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -166,7 +206,7 @@ class _DashboardUrlFaviconListScreenState
       builder: (context) => AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         padding:
-            const EdgeInsets.only(top: 16, bottom: 16, left: 16, right: 16),
+            const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
         decoration: BoxDecoration(
           // color: Colors.white,
           color: ColourPallette.mystic.withOpacity(0.25),
@@ -174,30 +214,96 @@ class _DashboardUrlFaviconListScreenState
         ),
         child: SingleChildScrollView(
           child: Column(
-            // mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Options',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: NetworkImageBuilderWidget(
+                          imageUrl: urlModel.metaData!.faviconUrl!,
+                          compressImage: false,
+                          errorWidgetBuilder: () {
+                            return const SizedBox.shrink();
+                          },
+                          successWidgetBuilder: (imageData) {
+                            final imageBytes = imageData.imageBytesData!;
+
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.memory(
+                                imageBytes,
+                                fit: BoxFit.contain,
+                                height: 24,
+                                width: 24,
+                                errorBuilder: (ctx, _, __) {
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: onPop,
-                  ),
-                ],
+                    const SizedBox(width: 16),
+                    Text(
+                      StringUtils.capitalizeEachWord(urlModel.title),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              // const Divider(),
+
+              const SizedBox(height: 16),
+
               // UPDATE URL
               BottomSheetOption(
-                // leadingIcon: Icons.access_time_filled_rounded,
                 leadingIcon: Icons.replay_circle_filled_outlined,
                 title: const Text('Update', style: titleTextStyle),
+                trailing: ValueListenableBuilder(
+                  valueListenable: _showLastUpdated,
+                  builder: (ctx, showLastUpdated, _) {
+                    if (!showLastUpdated) {
+                      return GestureDetector(
+                        onTap: () =>
+                            _showLastUpdated.value = !_showLastUpdated.value,
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 20,
+                        ),
+                      );
+                    }
+
+                    final updatedAt = urlModel.updatedAt;
+                    // Format to get hour with am/pm notation
+                    final formattedTime = DateFormat('h:mma').format(updatedAt);
+                    // Combine with the date
+                    final lastSynced =
+                        'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+                    return GestureDetector(
+                      onTap: () =>
+                          _showLastUpdated.value = !_showLastUpdated.value,
+                      child: Text(
+                        lastSynced,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: ColourPallette.salemgreen.withOpacity(0.75),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 onTap: () async {
                   await Navigator.push(
                     context,
@@ -219,107 +325,117 @@ class _DashboardUrlFaviconListScreenState
               BottomSheetOption(
                 leadingIcon: Icons.cloud_sync,
                 title: const Text('Sync', style: titleTextStyle),
-                // trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () async {
+                  // ADD SYNCING FUNCTIONALITY
+                  final urlCrudCubit = context.read<UrlCrudCubit>();
                   Navigator.pop(context);
+                  await urlCrudCubit.syncUrl(
+                    urlModel: urlModel,
+                    isRootCollection: widget.isRootCollection,
+                  );
                   // Add functionality here
                 },
               ),
-              // BottomSheetOption(
-              //   leadingIcon: Icons.web,
-              //   title: 'Open in InApp-WebView',
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     // Add functionality here
-              //   },
-              // ),
+
+              // ADD TO FAVOURITES
               BottomSheetOption(
                 leadingIcon: Icons.bookmark_add_rounded,
                 title: const Text('Add To Favourites', style: titleTextStyle),
-                // trailing: const Icon(Icons.arrow_forward_ios),
+                trailing: Builder(
+                  builder: (ctx) {
+                    if (urlModel.isFavourite == false) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Icon(
+                      Icons.check_circle_rounded,
+                      color: ColourPallette.salemgreen.withOpacity(0.5),
+                    );
+                  },
+                ),
                 onTap: () async {
+                  // if (urlModel.isFavourite) return;
+
+                  final urlCrudCubit = context.read<UrlCrudCubit>();
+                  final globalUser =
+                      context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
                   await Future.wait(
                     [
-                      Future(
-                        () async {
-                          // TODO : IMPLEMENT ADD TO FAVOURITES URLS
-                          final globalUser = context
-                              .read<GlobalUserCubit>()
-                              .getGlobalUser()!
-                              .id;
-
-                          final favCollectionId = '$globalUser$favourites';
-                          final urlModelToAddInFav = urlModel.copyWith(
-                            collectionId: favCollectionId,
-                          );
-
-                         await context.read<UrlCrudCubit>().addUrl(
-                                urlData: urlModelToAddInFav,
-                                isRootCollection: widget.isRootCollection,
-                              );
-                        },
+                      urlCrudCubit.addUrl(
+                        isRootCollection: true,
+                        urlData: urlModel.copyWith(
+                          parentUrlModelFirestoreId: urlModel.firestoreId,
+                          collectionId: '$globalUser$favourites',
+                          isFavourite: true,
+                        ),
                       ),
-                      Future(
-                        () {
-                          Navigator.pop(context);
-                        },
+                      urlCrudCubit.updateUrl(
+                        urlData: urlModel.copyWith(
+                          isFavourite: true,
+                        ),
                       ),
+                      Future(() => Navigator.pop(context)),
                     ],
+                  );
+                },
+              ),
+
+              // COPY TO CLIPBOARD
+              BlocBuilder<SharedInputsCubit, SharedInputsState>(
+                builder: (ctx, state) {
+                  final sharedInputCubit = context.read<SharedInputsCubit>();
+
+                  final firstCopiedUrl = sharedInputCubit.getTopUrl();
+
+                  return BottomSheetOption(
+                    leadingIcon: Icons.copy_all_rounded,
+                    title: const Text('Copy Link', style: titleTextStyle),
+                    trailing: firstCopiedUrl != null &&
+                            firstCopiedUrl == urlModel.url
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: ColourPallette.salemgreen.withOpacity(0.5),
+                          )
+                        : null,
+                    onTap: () async {
+                      await Future.wait(
+                        [
+                          Future(
+                            () async {
+                              await ClipboardService.instance
+                                  .copyText(urlModel.url);
+                            },
+                          ),
+                          Future(
+                            () => sharedInputCubit.addUrlInput(urlModel.url),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
               BottomSheetOption(
                 leadingIcon: Icons.open_in_new_rounded,
                 title: const Text('Open In Browser', style: titleTextStyle),
-                // trailing: const Icon(Icons.arrow_forward ),
                 onTap: () async {
-                  await Future.wait(
-                    [
-                      Future(
-                        () async {
-                          final theme = Theme.of(context);
-                          // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-                          // FOR FASTER WEBPAGE LOADING
-                          await CustomTabsService.launchUrl(
-                            url: urlModel.url,
-                            theme: theme,
-                          ).then(
-                            (_) async {
-                              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                              // JUST LIKE APPS IN BACKGROUND TYPE
-                            },
-                          );
-                        },
-                      ),
-                      Future(
-                        () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
+                  await CustomTabsService.launchUrl(
+                    url: urlModel.url,
+                    theme: Theme.of(context),
                   );
                 },
               ),
 
+              // SHARE THE LINK TO OTHER APPS
               BottomSheetOption(
                 leadingIcon: Icons.share,
                 title: const Text('Share Link', style: titleTextStyle),
-                // trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () async {
                   await Future.wait(
                     [
-                      Future(
-                        () async {
-                          await Share.share(
-                            urlModel.url,
-                          );
-                        },
-                      ),
-                      Future(
-                        () {
-                          Navigator.pop(context);
-                        },
-                      ),
+                      Share.share(urlModel.url),
+                      Future(() => Navigator.pop(context)),
                     ],
                   );
                   // Add functionality here
@@ -343,8 +459,6 @@ class _DashboardUrlFaviconListScreenState
                       Navigator.pop(context);
                     },
                   );
-
-                  // Add functionality here
                 },
               ),
             ],

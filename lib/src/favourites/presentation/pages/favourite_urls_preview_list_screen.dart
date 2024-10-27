@@ -66,7 +66,7 @@ class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
           widget.appBarLeadingIcon,
           const SizedBox(width: 8),
           Text(
-            widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,
+            widget.isRootCollection ? 'Favourites' : widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

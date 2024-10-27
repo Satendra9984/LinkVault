@@ -15,7 +15,7 @@ import 'package:link_vault/core/common/data_layer/isar_db_models/collection_mode
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/network_image_cache_cubit/network_image_cache_cubit.dart';
@@ -139,9 +139,8 @@ Future<void> _initializeIsar() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
- @override
+  @override
   Widget build(BuildContext context) {
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -204,14 +203,6 @@ class MyApp extends StatelessWidget {
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
-            collectionRepoImpl: CollectionsRepoImpl(
-              remoteDataSourceImpl: RemoteDataSourcesImpl(
-                firestore: FirebaseFirestore.instance,
-              ),
-              collectionLocalDataSourcesImpl:
-                  CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
-            ),
           ),
         ),
 
@@ -276,8 +267,7 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: generateRoute,
       ),
     );
-  } 
-
+  }
 
   // @override
   // Widget build(BuildContext context) {
@@ -305,7 +295,7 @@ class MyApp extends StatelessWidget {
   //         ),
   //       ),
 
-  //       // FOR ON-BOARDING MANAGEMENT 
+  //       // FOR ON-BOARDING MANAGEMENT
   //       BlocProvider(
   //         create: (_) => OnBoardCubit(
   //           onBoardingRepoImpl: OnBoardingRepoImpl(
@@ -387,7 +377,4 @@ class MyApp extends StatelessWidget {
   //     ),
   //   );
   // }
-
-
-
 }

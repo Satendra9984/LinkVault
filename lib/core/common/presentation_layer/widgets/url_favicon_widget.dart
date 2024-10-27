@@ -6,6 +6,7 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class UrlFaviconLogoWidget extends StatefulWidget {
@@ -104,7 +105,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
             ),
             const SizedBox(height: 8),
             Text(
-              widget.urlModelData.title,
+             StringUtils.capitalizeEachWord( widget.urlModelData.title),
               maxLines: 2,
               textAlign: TextAlign.center,
               softWrap: true,
@@ -187,7 +188,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
                 borderRadius: BorderRadius.circular(4),
                 child: Image.memory(
                   imageData.imageBytesData!,
-                  fit: BoxFit.contain,
+                  fit: BoxFit.cover,
                   errorBuilder: (ctx, _, __) {
                     return placeHolder;
                   },

@@ -14,6 +14,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_po
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -694,6 +695,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                       children: [
                         GestureDetector(
                           onTap: () async {
+                            // TODO : LAUNCH IN CUSTOM TAB
                             final uri = Uri.parse(widget.urlModel.url);
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri);
@@ -783,10 +785,12 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                _websiteName(
-                                  widget.urlModel.metaData?.websiteName ??
-                                      widget.urlModel.title,
-                                  15,
+                                StringUtils.capitalizeEachWord(
+                                  _websiteName(
+                                    widget.urlModel.metaData?.websiteName ??
+                                        widget.urlModel.title,
+                                    15,
+                                  ),
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

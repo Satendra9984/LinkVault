@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';

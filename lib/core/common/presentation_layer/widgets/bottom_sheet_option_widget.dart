@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
 class BottomSheetOption extends StatelessWidget {
-  final IconData leadingIcon;
+  final IconData? leadingIcon;
+  final Widget? leadingWidgt;
   final Widget title;
   final VoidCallback onTap;
   final Widget? trailing;
 
   const BottomSheetOption({
     Key? key,
-    required this.leadingIcon,
+    this.leadingIcon,
     required this.title,
     required this.onTap,
+    this.leadingWidgt,
     this.trailing,
   }) : super(key: key);
 
@@ -19,7 +21,7 @@ class BottomSheetOption extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       dense: true,
-      leading: Icon(leadingIcon),
+      leading: leadingWidgt ?? Icon(leadingIcon),
       title: title,
       trailing: trailing,
     );

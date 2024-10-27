@@ -283,4 +283,59 @@ class CollectionsRepoImpl {
       );
     }
   }
+
+  // FOR LOCAL ONLY IMPLEMENTATIONS
+
+  Future<Either<Failure, bool>> deleteCollectionLocally({
+    required String collectionId,
+    required String parentCollectionId,
+    // required String userId,
+  }) async {
+    try {
+      final collection =
+          await _collectionLocalDataSourcesImpl.fetchCollection(
+        collectionId,
+      );
+
+      if (collection == null) {
+        return Left(
+          ServerFailure(
+            message: 'Could Not Deleted. Check internet and try again.',
+            statusCode: 400,
+          ),
+        );
+      }
+
+      // deleting subcollections
+      for (final subCollId in collection!.subcollections) {
+        await deleteCollectionLocally(
+          collectionId: subCollId,
+          parentCollectionId: collectionId,
+        );
+      }
+
+      await Future.wait(
+        [
+          Future(
+            () async {
+              // NEED TO DELETE URLS AS IT WILL BE REFETCHED AND UPDATED FROM ISAR
+              for (final urlId in collection.urls) {
+                await _urlLocalDataSourcesImpl.deleteUrl(urlId);
+              }
+            },
+          ),
+          _collectionLocalDataSourcesImpl.deleteCollection(collectionId),
+        ],
+      );
+
+      return const Right(true);
+    } catch (e) {
+      return Left(
+        ServerFailure(
+          message: 'Could Not Deleted. Check internet and try again.',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
 }

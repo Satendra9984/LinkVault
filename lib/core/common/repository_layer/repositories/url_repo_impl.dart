@@ -79,13 +79,6 @@ class UrlRepoImpl {
       // But storing addedurldata in local for firestore id
       await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
-      // Logger.printLog('[isar] : added url data in local');
-      // Logger.printLog(
-      //   StringUtils.getJsonFormat(
-      //     addedUrlData.toJson(),
-      //   ),
-      // );
-
       final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
@@ -120,8 +113,7 @@ class UrlRepoImpl {
     required UrlModel urlData,
     required String userId,
   }) async {
-    // [TODO] : Add urlData in db
-
+    // Add urlData in db
     try {
       final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
       urlMetaDataJson['favicon'] = null;
@@ -130,13 +122,6 @@ class UrlRepoImpl {
       final optimisedUrlData = urlData.copyWith(
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
-
-      // // Logger.printLog('Updating url metadata');
-      // // Logger.printLog(
-      //   StringUtils.getJsonFormat(
-      //     optimisedUrlData.toJson(),
-      //   ),
-      // );
 
       await _remoteDataSourcesImpl.updateUrl(
         urlModel: optimisedUrlData,
@@ -190,6 +175,28 @@ class UrlRepoImpl {
           .updateCollection(updatedCollectionWithUrls);
 
       return Right((urlData, serverUpdatedCollection));
+    } on ServerException {
+      // Logger.printLog('deleteUrlData : $e');
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
+
+  /// LOCAL DB IMPLEMENTATIONS MAINLY FOR SYNCING
+
+  Future<Either<Failure, bool>> deleteUrlDatalocally({
+    required String urlModelId,
+  }) async {
+    // [TODO] : delete urlData in db
+    // then we need to update the collections also
+    try {
+      await _urlLocalDataSourcesImpl.deleteUrl(urlModelId);
+
+      return  const Right(true);
     } on ServerException {
       // Logger.printLog('deleteUrlData : $e');
       return Left(
