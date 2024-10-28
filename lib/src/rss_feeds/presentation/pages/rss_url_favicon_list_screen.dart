@@ -48,6 +48,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     super.build(context);
 
     return UrlFaviconListTemplateScreen(
+      isRootCollection: widget.isRootCollection,
       collectionModel: widget.collectionModel,
       showAddUrlButton: true,
       onAddUrlPressed: _onAddUrlPressed,
@@ -60,6 +61,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   Widget _urlItemBuilder({
     required ValueNotifier<List<UrlFetchStateModel>> list,
     required int index,
+    required List<Widget> urlOptions,
   }) {
     final url = list.value[index].urlModel!;
 
@@ -102,6 +104,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   Widget _appBarBuilder({
     required ValueNotifier<List<UrlFetchStateModel>> list,
     required List<Widget> actions,
+    required List<Widget> collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,

@@ -63,17 +63,17 @@ class _SearchedCollectionsListWidgetState
     super.build(context);
 
     return CollectionsListScreenTemplate(
+      isRootCollection: false,
       collectionModel: CollectionModel.isEmpty(
         userId: context.read<GlobalUserCubit>().getGlobalUser()?.id ?? 'user',
         name: 'Advance Search',
         parentCollection: 'Advance Search',
         status: {
-          'status' : 'active',
+          'status': 'active',
         },
         createdAt: DateTime.now().toUtc(),
         updatedAt: DateTime.now().toUtc(),
       ),
-
       showAddCollectionButton: false,
       onAddCollectionPressed: () {},
       onCollectionItemFetchedWidget: null,
@@ -204,6 +204,7 @@ class _SearchedCollectionsListWidgetState
   Widget _getAppBar({
     required List<Widget> actions,
     required ValueNotifier<List<CollectionFetchModel>> list,
+    required List<Widget> collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,

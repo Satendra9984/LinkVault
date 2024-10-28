@@ -63,7 +63,11 @@ class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
-          widget.appBarLeadingIcon,
+         SizedBox(
+            height: 20,
+            width: 20,
+            child: widget.appBarLeadingIcon,
+          ),
           const SizedBox(width: 8),
           Text(
             widget.isRootCollection ? 'LinkVault' : widget.collectionModel.name,

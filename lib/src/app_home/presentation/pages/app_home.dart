@@ -149,7 +149,6 @@ class _AppHomePageState extends State<AppHomePage> {
                             appBarLeadingIcon: const Icon(
                               Icons.dashboard_rounded,
                               color: ColourPallette.mountainMeadow,
-                              size: 16,
                             ),
                           ),
                         ),
@@ -173,7 +172,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // DISCOVER
+                  // MY FEEDS
                   ListTile(
                     onTap: () {
                       Navigator.of(context).push(
@@ -183,8 +182,6 @@ class _AppHomePageState extends State<AppHomePage> {
                             isRootCollection: true,
                             appBarLeadingIcon: SvgPicture.asset(
                               MediaRes.compassSVG,
-                              height: 16,
-                              width: 16,
                             ),
                           ),
                         ),
@@ -218,8 +215,6 @@ class _AppHomePageState extends State<AppHomePage> {
                             isRootCollection: true,
                             appBarLeadingIcon: SvgPicture.asset(
                               MediaRes.favouriteSVG,
-                              height: 16,
-                              width: 16,
                             ),
                           ),
                         ),
@@ -243,7 +238,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // NEWSLETTERS
+                  // RECENTS
                   ListTile(
                     onTap: () {
                       // Navigator.of(context).push(

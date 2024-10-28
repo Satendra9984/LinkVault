@@ -3,17 +3,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:lottie/lottie.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
   const CollectionsListScreenTemplate({
+    required this.isRootCollection,
     required this.collectionModel,
     required this.showAddCollectionButton,
     required this.onCollectionItemFetchedWidget,
@@ -23,6 +29,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
     super.key,
   });
 
+  final bool isRootCollection;
   final CollectionModel collectionModel;
   final bool showAddCollectionButton;
 
@@ -31,6 +38,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
   final Widget? Function({
     required List<Widget> actions,
     required ValueNotifier<List<CollectionFetchModel>> list,
+    required List<Widget> collectionOptions,
   }) appBar;
 
   final Widget Function({
@@ -219,10 +227,6 @@ class _CollectionsListScreenTemplateState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  // if (widget.collectionModel == null) {
-                  //   return Container();
-                  // }
-
                   final fetchCollection =
                       state.collections[widget.collectionModel.id];
 
@@ -325,6 +329,12 @@ class _CollectionsListScreenTemplateState
   }
 
   PreferredSize _getAppBar() {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+    final _showLastUpdated = ValueNotifier(false);
+
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: ValueListenableBuilder<bool>(
@@ -337,6 +347,109 @@ class _CollectionsListScreenTemplateState
               list: _list,
               actions: [
                 _filterOptions(),
+              ],
+              collectionOptions: [
+                // UPDATE URL
+                BottomSheetOption(
+                  // leadingIcon: Icons.access_time_filled_rounded,
+                  leadingIcon: Icons.replay_circle_filled_outlined,
+                  title: const Text('Update', style: titleTextStyle),
+                  trailing: ValueListenableBuilder(
+                    valueListenable: _showLastUpdated,
+                    builder: (ctx, showLastUpdated, _) {
+                      if (!showLastUpdated) {
+                        return GestureDetector(
+                          onTap: () =>
+                              _showLastUpdated.value = !_showLastUpdated.value,
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                          ),
+                        );
+                      }
+
+                      final updatedAt = widget.collectionModel.updatedAt;
+                      // Format to get hour with am/pm notation
+                      final formattedTime =
+                          DateFormat('h:mma').format(updatedAt);
+                      // Combine with the date
+                      final lastSynced =
+                          'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+                      return GestureDetector(
+                        onTap: () =>
+                            _showLastUpdated.value = !_showLastUpdated.value,
+                        child: Text(
+                          lastSynced,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ColourPallette.salemgreen.withOpacity(0.75),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => UpdateCollectionTemplateScreen(
+                          collection: widget.collectionModel,
+                        ),
+                      ),
+                    ).then(
+                      (_) {
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+
+                // SYNC WITH REMOTE DATABASE
+                BottomSheetOption(
+                  leadingIcon: Icons.cloud_sync,
+                  title: const Text('Sync', style: titleTextStyle),
+                  onTap: () async {
+                    final collCubit = context.read<CollectionCrudCubit>();
+                    await Navigator.maybePop(context).then(
+                      (_) async {
+                        await collCubit
+                            .syncCollection(
+                              collectionModel: widget.collectionModel,
+                              isRootCollection: widget.isRootCollection,
+                            )
+                            .then(
+                              (_) {},
+                            );
+                      },
+                    );
+                  },
+                ),
+
+                // DELETE URL
+                BottomSheetOption(
+                  leadingIcon: Icons.delete_rounded,
+                  title: const Text('Delete', style: titleTextStyle),
+                  onTap: () async {
+                    await showDeleteCollectionConfirmationDialog(
+                      context,
+                      () async {
+                        final urlCrudCubit =
+                            context.read<CollectionCrudCubit>();
+
+                        await urlCrudCubit.deleteCollection(
+                          collection: widget.collectionModel,
+                        );
+                      },
+                    ).then(
+                      (_) {
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
               ],
             ),
           );
@@ -402,6 +515,70 @@ class _CollectionsListScreenTemplateState
             },
           ),
         ];
+      },
+    );
+  }
+
+  Future<void> showDeleteCollectionConfirmationDialog(
+    BuildContext context,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${widget.collectionModel.name}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

@@ -44,6 +44,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return CollectionsListScreenTemplate(
+      isRootCollection: widget.isRootCollection,
       onAddCollectionPressed: _onAddCollectionPressed,
       collectionModel: widget.collectionModel,
       showAddCollectionButton: true,
@@ -87,6 +88,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
   Widget _getAppBar({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required List<Widget> actions,
+    required List<Widget> collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,

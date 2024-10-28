@@ -40,11 +40,7 @@ class FolderIconButton extends StatelessWidget {
                 stops: const [0.3, 0.5, 0.65, 1],
               ).createShader(bounds);
             },
-            // child: Icon(
-            //   Icons.folder,
-            //   size: 80,
-            //   color: folderColor, // This color will be masked by the gradient
-            // ),
+
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: SvgPicture.asset(
@@ -56,21 +52,6 @@ class FolderIconButton extends StatelessWidget {
             ),
           ),
 
-          // Icon(
-          //   Icons.folder,
-          //   size: 72,
-          //   color: folderColor.withOpacity(1), // This color will be masked by the gradient
-          // ),
-
-          // Padding(
-          //   padding: const EdgeInsets.all(4),
-          //   child: SvgPicture.asset(
-          //     'assets/images/folder_6.svg',
-          //     height: 56,
-          //     width: 56,
-          //     // color: folderColor,
-          //   ),
-          // ),
           const SizedBox(height: 4),
 
           Text(

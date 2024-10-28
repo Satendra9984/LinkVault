@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
@@ -25,6 +26,7 @@ import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:lottie/lottie.dart';
@@ -70,6 +72,7 @@ class _DashboardUrlFaviconListScreenState
   Widget build(BuildContext context) {
     super.build(context);
     return UrlFaviconListTemplateScreen(
+      isRootCollection: widget.isRootCollection,
       collectionModel: widget.collectionModel,
       showAddUrlButton: widget.showAddUrlButton,
       onAddUrlPressed: _onAddUrlPressed,
@@ -82,6 +85,7 @@ class _DashboardUrlFaviconListScreenState
   Widget _urlItemBuilder({
     required ValueNotifier<List<UrlFetchStateModel>> list,
     required int index,
+    required List<Widget> urlOptions,
   }) {
     final url = list.value[index].urlModel!;
 
@@ -91,7 +95,6 @@ class _DashboardUrlFaviconListScreenState
           : UrlPreloadMethods.httpGet,
       onTap: () async {
         final theme = Theme.of(context);
-
         // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
         // FOR FASTER WEBPAGE LOADING
         await CustomTabsService.launchUrl(
@@ -107,9 +110,10 @@ class _DashboardUrlFaviconListScreenState
       // [TODO] : THIS IS DYNAMIC FIELD
       onLongPress: (urlMetaData) async {
         final urlc = url.copyWith(metaData: urlMetaData);
-        showOptionsBottomSheet(
+        showUrlOptionsBottomSheet(
           context,
           urlModel: urlc,
+          urlOptions: urlOptions,
         );
       },
       urlModelData: url,
@@ -119,18 +123,22 @@ class _DashboardUrlFaviconListScreenState
   Widget _appBarBuilder({
     required ValueNotifier<List<UrlFetchStateModel>> list,
     required List<Widget> actions,
+    required List<Widget> collectionOptions,
   }) {
+    // Logger.printLog('[options] : collection ${collectionOptions.length}');
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
-          widget.appBarLeadingIcon,
+          const Icon(
+            Icons.dashboard_rounded,
+            color: ColourPallette.mountainMeadow,
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              widget.isRootCollection
-                  ? 'LinkVault'
-                  : widget.collectionModel.name,
+              widget.collectionModel.name,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -140,35 +148,23 @@ class _DashboardUrlFaviconListScreenState
         ],
       ),
       actions: [
-        _syncCollectionOption(),
-        const SizedBox(width: 12),
         ...actions,
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
+        GestureDetector(
+          onTap: () {},
+          child: const Icon(
+            Icons.layers,
+          ),
+        ),
+        const SizedBox(width: 24),
       ],
     );
   }
 
-  Widget _syncCollectionOption() {
-    return BlocBuilder<CollectionsCubit, CollectionsState>(
-      builder: (ctx, state) {
-        final collCubit = context.read<CollectionCrudCubit>();
-
-        return GestureDetector(
-          onTap: () => collCubit.syncCollection(
-            collectionModel: widget.collectionModel,
-            isRootCollection: widget.isRootCollection,
-          ),
-          child: const Icon(
-            Icons.cloud_sync_rounded,
-          ),
-        );
-      },
-    );
-  }
-
-  void showOptionsBottomSheet(
+  void showUrlOptionsBottomSheet(
     BuildContext context, {
     required UrlModel urlModel,
+    required List<Widget> urlOptions,
   }) async {
     final size = MediaQuery.of(context).size;
     const titleTextStyle = TextStyle(
@@ -192,7 +188,110 @@ class _DashboardUrlFaviconListScreenState
     }
 
     final _showLastUpdated = ValueNotifier(false);
+    urlOptions
+      ..insert(
+        0,
+        // UPDATE URL
+        BottomSheetOption(
+          leadingIcon: Icons.replay_circle_filled_outlined,
+          title: const Text('Update', style: titleTextStyle),
+          trailing: ValueListenableBuilder(
+            valueListenable: _showLastUpdated,
+            builder: (ctx, showLastUpdated, _) {
+              if (!showLastUpdated) {
+                return GestureDetector(
+                  onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                  ),
+                );
+              }
 
+              final updatedAt = urlModel.updatedAt;
+              // Format to get hour with am/pm notation
+              final formattedTime = DateFormat('h:mma').format(updatedAt);
+              // Combine with the date
+              final lastSynced =
+                  'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+              return GestureDetector(
+                onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                child: Text(
+                  lastSynced,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ColourPallette.salemgreen.withOpacity(0.75),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            },
+          ),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => UpdateUrlTemplateScreen(
+                  urlModel: urlModel,
+                  isRootCollection: widget.isRootCollection,
+                  onDeleteURLCallback: (urlModel) async {},
+                ),
+              ),
+            ).then(
+              (_) {
+                Navigator.pop(context);
+              },
+            );
+          },
+        ),
+      )
+      ..insert(
+        2,
+        // ADD TO FAVOURITES
+        BottomSheetOption(
+          leadingIcon: Icons.bookmark_add_rounded,
+          title: const Text('Add To Favourites', style: titleTextStyle),
+          trailing: Builder(
+            builder: (ctx) {
+              if (urlModel.isFavourite == false) {
+                return const SizedBox.shrink();
+              }
+
+              return Icon(
+                Icons.check_circle_rounded,
+                color: ColourPallette.salemgreen.withOpacity(0.5),
+              );
+            },
+          ),
+          onTap: () async {
+            // if (urlModel.isFavourite) return;
+
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            final globalUser =
+                context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
+            await Future.wait(
+              [
+                urlCrudCubit.addUrl(
+                  isRootCollection: true,
+                  urlData: urlModel.copyWith(
+                    parentUrlModelFirestoreId: urlModel.firestoreId,
+                    collectionId: '$globalUser$favourites',
+                    isFavourite: true,
+                  ),
+                ),
+                urlCrudCubit.updateUrl(
+                  urlData: urlModel.copyWith(
+                    isFavourite: true,
+                  ),
+                ),
+                Future(() => Navigator.pop(context)),
+              ],
+            );
+          },
+        ),
+      );
     await showModalBottomSheet<Widget>(
       context: context,
       isScrollControlled: true,
@@ -264,183 +363,7 @@ class _DashboardUrlFaviconListScreenState
 
               const SizedBox(height: 16),
 
-              // UPDATE URL
-              BottomSheetOption(
-                leadingIcon: Icons.replay_circle_filled_outlined,
-                title: const Text('Update', style: titleTextStyle),
-                trailing: ValueListenableBuilder(
-                  valueListenable: _showLastUpdated,
-                  builder: (ctx, showLastUpdated, _) {
-                    if (!showLastUpdated) {
-                      return GestureDetector(
-                        onTap: () =>
-                            _showLastUpdated.value = !_showLastUpdated.value,
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                        ),
-                      );
-                    }
-
-                    final updatedAt = urlModel.updatedAt;
-                    // Format to get hour with am/pm notation
-                    final formattedTime = DateFormat('h:mma').format(updatedAt);
-                    // Combine with the date
-                    final lastSynced =
-                        'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
-
-                    return GestureDetector(
-                      onTap: () =>
-                          _showLastUpdated.value = !_showLastUpdated.value,
-                      child: Text(
-                        lastSynced,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ColourPallette.salemgreen.withOpacity(0.75),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => UpdateUrlTemplateScreen(
-                        urlModel: urlModel,
-                        isRootCollection: widget.isRootCollection,
-                      ),
-                    ),
-                  ).then(
-                    (_) {
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-
-              // SYNC WITH REMOTE DATABASE
-              BottomSheetOption(
-                leadingIcon: Icons.cloud_sync,
-                title: const Text('Sync', style: titleTextStyle),
-                onTap: () async {
-                  // ADD SYNCING FUNCTIONALITY
-                  final urlCrudCubit = context.read<UrlCrudCubit>();
-                  Navigator.pop(context);
-                  await urlCrudCubit.syncUrl(
-                    urlModel: urlModel,
-                    isRootCollection: widget.isRootCollection,
-                  );
-                  // Add functionality here
-                },
-              ),
-
-              // ADD TO FAVOURITES
-              BottomSheetOption(
-                leadingIcon: Icons.bookmark_add_rounded,
-                title: const Text('Add To Favourites', style: titleTextStyle),
-                trailing: Builder(
-                  builder: (ctx) {
-                    if (urlModel.isFavourite == false) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return Icon(
-                      Icons.check_circle_rounded,
-                      color: ColourPallette.salemgreen.withOpacity(0.5),
-                    );
-                  },
-                ),
-                onTap: () async {
-                  // if (urlModel.isFavourite) return;
-
-                  final urlCrudCubit = context.read<UrlCrudCubit>();
-                  final globalUser =
-                      context.read<GlobalUserCubit>().getGlobalUser()!.id;
-
-                  await Future.wait(
-                    [
-                      urlCrudCubit.addUrl(
-                        isRootCollection: true,
-                        urlData: urlModel.copyWith(
-                          parentUrlModelFirestoreId: urlModel.firestoreId,
-                          collectionId: '$globalUser$favourites',
-                          isFavourite: true,
-                        ),
-                      ),
-                      urlCrudCubit.updateUrl(
-                        urlData: urlModel.copyWith(
-                          isFavourite: true,
-                        ),
-                      ),
-                      Future(() => Navigator.pop(context)),
-                    ],
-                  );
-                },
-              ),
-
-              // COPY TO CLIPBOARD
-              BlocBuilder<SharedInputsCubit, SharedInputsState>(
-                builder: (ctx, state) {
-                  final sharedInputCubit = context.read<SharedInputsCubit>();
-
-                  final firstCopiedUrl = sharedInputCubit.getTopUrl();
-
-                  return BottomSheetOption(
-                    leadingIcon: Icons.copy_all_rounded,
-                    title: const Text('Copy Link', style: titleTextStyle),
-                    trailing: firstCopiedUrl != null &&
-                            firstCopiedUrl == urlModel.url
-                        ? Icon(
-                            Icons.check_circle_rounded,
-                            color: ColourPallette.salemgreen.withOpacity(0.5),
-                          )
-                        : null,
-                    onTap: () async {
-                      await Future.wait(
-                        [
-                          Future(
-                            () async {
-                              await ClipboardService.instance
-                                  .copyText(urlModel.url);
-                            },
-                          ),
-                          Future(
-                            () => sharedInputCubit.addUrlInput(urlModel.url),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              BottomSheetOption(
-                leadingIcon: Icons.open_in_new_rounded,
-                title: const Text('Open In Browser', style: titleTextStyle),
-                onTap: () async {
-                  await CustomTabsService.launchUrl(
-                    url: urlModel.url,
-                    theme: Theme.of(context),
-                  );
-                },
-              ),
-
-              // SHARE THE LINK TO OTHER APPS
-              BottomSheetOption(
-                leadingIcon: Icons.share,
-                title: const Text('Share Link', style: titleTextStyle),
-                onTap: () async {
-                  await Future.wait(
-                    [
-                      Share.share(urlModel.url),
-                      Future(() => Navigator.pop(context)),
-                    ],
-                  );
-                  // Add functionality here
-                },
-              ),
+              ...urlOptions,
 
               // DELETE URL
               BottomSheetOption(
@@ -538,6 +461,7 @@ class _DashboardUrlFaviconListScreenState
       },
     );
   }
+
 
   Widget _urlsEmptyWidget() {
     return Center(
