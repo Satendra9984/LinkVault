@@ -115,6 +115,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               RssFeedUrlsListWidget(
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
+                showBottomNavBar: _showBottomNavBar,
               ),
               RssFeedUrlsPreviewListWidget(
                 showBottomNavBar: _showBottomNavBar,

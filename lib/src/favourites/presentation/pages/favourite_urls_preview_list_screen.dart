@@ -35,10 +35,14 @@ class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
     super.build(context);
 
     return UrlPreviewListTemplateScreen(
+      isRootCollection: widget.isRootCollection,
       collectionModel: widget.collectionModel,
       showAddUrlButton: false,
       onAddUrlPressed: ({String? url}) {},
-      onLongPress: (urlModel) {
+      onLongPress: (
+        urlModel, {
+        required List<Widget> urlOptions,
+      }) {
         Navigator.push(
           context,
           MaterialPageRoute(

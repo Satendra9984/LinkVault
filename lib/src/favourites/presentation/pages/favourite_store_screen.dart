@@ -110,6 +110,7 @@ class _FavouriteFolderCollectionPageState
                 isRootCollection: widget.isRootCollection,
                 showAddUrlButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
+                showBottomNavBar: _showBottomNavBar,
               ),
               FavouritesCollectionsListScreen(
                 collectionModel: fetchCollection.collection!,

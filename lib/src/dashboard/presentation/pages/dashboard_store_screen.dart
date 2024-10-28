@@ -31,6 +31,9 @@ class CollectionStorePage extends StatefulWidget {
 
 class _CollectionStorePageState extends State<CollectionStorePage>
     with SingleTickerProviderStateMixin {
+      // TODO : SEE THE POSSIBILITIES OF AUTOMATIC KEEP ALIVE BUT 
+      // TODO : WEBVIEW WILL CREATE PROBLEM AS WILL COMSUME MEMORY
+      
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
@@ -104,6 +107,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
                 showAddUrlButton: true,
+                showBottomNavBar: _showBottomNavBar,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               DashboardCollectionsListScreen(
@@ -112,12 +116,12 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
-              UrlsPreviewListScreen(
-                showBottomBar: _showBottomNavBar,
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-              ),
+              // UrlsPreviewListScreen(
+              //   showBottomBar: _showBottomNavBar,
+              //   collectionModel: fetchCollection.collection!,
+              //   isRootCollection: widget.isRootCollection,
+              //   appBarLeadingIcon: widget.appBarLeadingIcon,
+              // ),
             ],
           );
         },
@@ -186,13 +190,13 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                       selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      unSelectedIcon: Icons.dynamic_feed_outlined,
-                      selectedIcon: Icons.dynamic_feed,
-                      index: 2,
-                      label: 'Previews',
-                    ),
+                    // CustomBottomNavItem.create(
+                    //   currentPage: _currentPage,
+                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
+                    //   selectedIcon: Icons.dynamic_feed,
+                    //   index: 2,
+                    //   label: 'Previews',
+                    // ),
                   ],
                 );
               },

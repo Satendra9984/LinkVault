@@ -17,11 +17,14 @@ class RssFeedUrlsListWidget extends StatefulWidget {
   const RssFeedUrlsListWidget({
     required this.collectionModel,
     required this.isRootCollection,
+    required this.showBottomNavBar,
     super.key,
   });
 
   // final String title;
   final bool isRootCollection;
+  final ValueNotifier<bool> showBottomNavBar;
+
   final CollectionModel collectionModel;
 
   @override
@@ -50,6 +53,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     return UrlFaviconListTemplateScreen(
       isRootCollection: widget.isRootCollection,
       collectionModel: widget.collectionModel,
+      showBottomNavBar: widget.showBottomNavBar,
       showAddUrlButton: true,
       onAddUrlPressed: _onAddUrlPressed,
       appBar: _appBarBuilder,
@@ -59,11 +63,11 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   }
 
   Widget _urlItemBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required int index,
     required List<Widget> urlOptions,
   }) {
-    final url = list.value[index].urlModel!;
+    final url = list.value[index].value.urlModel!;
 
     return UrlFaviconLogoWidget(
       urlPreloadMethod: UrlPreloadMethods.httpGet,
@@ -102,9 +106,8 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   }
 
   Widget _appBarBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
-    required List<Widget> collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,

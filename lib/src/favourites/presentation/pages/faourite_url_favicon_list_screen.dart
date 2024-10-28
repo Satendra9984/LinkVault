@@ -37,12 +37,15 @@ class FavouritesUrlFaviconListScreen extends StatefulWidget {
     required this.isRootCollection,
     required this.showAddUrlButton,
     required this.appBarLeadingIcon,
+    required this.showBottomNavBar,
     super.key,
   });
 
   final CollectionModel collectionModel;
   final bool isRootCollection;
   final bool showAddUrlButton;
+  final ValueNotifier<bool> showBottomNavBar;
+
   final Widget appBarLeadingIcon;
 
   @override
@@ -73,6 +76,7 @@ class _FavouritesUrlFaviconListScreenState
       isRootCollection: widget.isRootCollection,
       collectionModel: widget.collectionModel,
       showAddUrlButton: widget.showAddUrlButton,
+      showBottomNavBar: widget.showBottomNavBar,
       onAddUrlPressed: _onAddUrlPressed,
       appBar: _appBarBuilder,
       urlsEmptyWidget: _urlsEmptyWidget(),
@@ -81,11 +85,11 @@ class _FavouritesUrlFaviconListScreenState
   }
 
   Widget _urlItemBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required int index,
     required List<Widget> urlOptions,
   }) {
-    final url = list.value[index].urlModel!;
+    final url = list.value[index].value.urlModel!;
 
     return UrlFaviconLogoWidget(
       urlPreloadMethod: widget.isRootCollection
@@ -120,9 +124,8 @@ class _FavouritesUrlFaviconListScreenState
   }
 
   Widget _appBarBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
-    required List<Widget> collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
@@ -135,7 +138,7 @@ class _FavouritesUrlFaviconListScreenState
           ),
           const SizedBox(width: 8),
           Text(
-           widget.collectionModel.name,
+            widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -477,8 +480,6 @@ class _FavouritesUrlFaviconListScreenState
       },
     );
   }
-
-
 
   Widget _urlsEmptyWidget() {
     return Center(

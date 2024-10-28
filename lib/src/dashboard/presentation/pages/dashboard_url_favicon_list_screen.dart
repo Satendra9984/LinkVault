@@ -7,15 +7,19 @@ import 'package:link_vault/core/common/presentation_layer/pages/add_url_template
 import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
@@ -39,12 +43,15 @@ class DashboardUrlFaviconListScreen extends StatefulWidget {
     required this.isRootCollection,
     required this.showAddUrlButton,
     required this.appBarLeadingIcon,
+    required this.showBottomNavBar,
     super.key,
   });
 
   final CollectionModel collectionModel;
   final bool isRootCollection;
   final bool showAddUrlButton;
+  final ValueNotifier<bool> showBottomNavBar;
+
   final Widget appBarLeadingIcon;
 
   @override
@@ -55,6 +62,14 @@ class DashboardUrlFaviconListScreen extends StatefulWidget {
 class _DashboardUrlFaviconListScreenState
     extends State<DashboardUrlFaviconListScreen>
     with AutomaticKeepAliveClientMixin {
+  final _listViewType = ValueNotifier(UrlViewType.favicons);
+
+  @override
+  void initState() {
+    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
+    super.initState();
+  }
+
   void _onAddUrlPressed({String? url}) {
     Navigator.push(
       context,
@@ -71,61 +86,65 @@ class _DashboardUrlFaviconListScreenState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return UrlFaviconListTemplateScreen(
-      isRootCollection: widget.isRootCollection,
-      collectionModel: widget.collectionModel,
-      showAddUrlButton: widget.showAddUrlButton,
-      onAddUrlPressed: _onAddUrlPressed,
-      appBar: _appBarBuilder,
-      urlsEmptyWidget: _urlsEmptyWidget(),
-      onUrlModelItemFetchedWidget: _urlItemBuilder,
+
+    return ValueListenableBuilder(
+      valueListenable: _listViewType,
+      builder: (ctx, listViewType, _) {
+        switch (listViewType) {
+          case UrlViewType.previews:
+            return UrlPreviewListTemplateScreen(
+              collectionModel: widget.collectionModel,
+              isRootCollection: widget.isRootCollection,
+              showAddUrlButton: false,
+              onAddUrlPressed: ({String? url}) {},
+              onLongPress: (
+                urlModel, {
+                required List<Widget> urlOptions,
+              }) async {
+                await showUrlOptionsBottomSheet(
+                  context,
+                  urlModel: urlModel,
+                  urlOptions: urlOptions,
+                );
+              },
+              urlsEmptyWidget: _urlsEmptyWidget(),
+              showBottomNavBar: widget.showBottomNavBar,
+              appBar: _faviconsListAppBarBuilder,
+            );
+
+          case UrlViewType.apps:
+            return UrlFaviconListTemplateScreen(
+              isRootCollection: widget.isRootCollection,
+              collectionModel: widget.collectionModel,
+              showAddUrlButton: widget.showAddUrlButton,
+              showBottomNavBar: widget.showBottomNavBar,
+              onAddUrlPressed: _onAddUrlPressed,
+              appBar: _faviconsListAppBarBuilder,
+              urlsEmptyWidget: _urlsEmptyWidget(),
+              onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
+            );
+
+          // ignore: no_default_cases
+          default:
+            return UrlFaviconListTemplateScreen(
+              isRootCollection: widget.isRootCollection,
+              collectionModel: widget.collectionModel,
+              showAddUrlButton: widget.showAddUrlButton,
+              showBottomNavBar: widget.showBottomNavBar,
+              onAddUrlPressed: _onAddUrlPressed,
+              appBar: _faviconsListAppBarBuilder,
+              urlsEmptyWidget: _urlsEmptyWidget(),
+              onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
+            );
+        }
+      },
     );
   }
 
-  Widget _urlItemBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
-    required int index,
-    required List<Widget> urlOptions,
-  }) {
-    final url = list.value[index].urlModel!;
-
-    return UrlFaviconLogoWidget(
-      urlPreloadMethod: widget.isRootCollection
-          ? UrlPreloadMethods.httpGet
-          : UrlPreloadMethods.httpGet,
-      onTap: () async {
-        final theme = Theme.of(context);
-        // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-        // FOR FASTER WEBPAGE LOADING
-        await CustomTabsService.launchUrl(
-          url: url.url,
-          theme: theme,
-        ).then(
-          (_) async {
-            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-            // JUST LIKE APPS IN BACKGROUND TYPE
-          },
-        );
-      },
-      // [TODO] : THIS IS DYNAMIC FIELD
-      onLongPress: (urlMetaData) async {
-        final urlc = url.copyWith(metaData: urlMetaData);
-        showUrlOptionsBottomSheet(
-          context,
-          urlModel: urlc,
-          urlOptions: urlOptions,
-        );
-      },
-      urlModelData: url,
-    );
-  }
-
-  Widget _appBarBuilder({
-    required ValueNotifier<List<UrlFetchStateModel>> list,
+  Widget _faviconsListAppBarBuilder({
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
-    required List<Widget> collectionOptions,
   }) {
-    // Logger.printLog('[options] : collection ${collectionOptions.length}');
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
@@ -148,20 +167,122 @@ class _DashboardUrlFaviconListScreenState
         ],
       ),
       actions: [
+        _urlViewTypeOptions(),
         ...actions,
-        const SizedBox(width: 4),
-        GestureDetector(
-          onTap: () {},
-          child: const Icon(
-            Icons.layers,
-          ),
-        ),
-        const SizedBox(width: 24),
       ],
     );
   }
 
-  void showUrlOptionsBottomSheet(
+  Widget _urlViewTypeOptions() {
+    return FilterPopupMenuButton(
+      icon: const Icon(
+        Icons.format_align_center_rounded,
+      ),
+      menuItems: [
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.favicons,
+          onTap: () => _listViewType.value = UrlViewType.favicons,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.favicons.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.favicons) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.previews,
+          onTap: () => _listViewType.value = UrlViewType.previews,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.previews.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.previews) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _urlFaviconItemBuilder({
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
+    required int index,
+    required List<Widget> urlOptions,
+  }) {
+    final url = list.value[index].value.urlModel!;
+
+    return UrlFaviconLogoWidget(
+      urlPreloadMethod: widget.isRootCollection
+          ? UrlPreloadMethods.httpGet
+          : UrlPreloadMethods.httpGet,
+      onTap: () async {
+        final theme = Theme.of(context);
+        await CustomTabsService.launchUrl(
+          url: url.url,
+          theme: theme,
+        ).then(
+          (_) async {
+            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+            // JUST LIKE APPS IN BACKGROUND TYPE
+          },
+        );
+      },
+      onLongPress: (urlMetaData) async {
+        final urlc = url.copyWith(metaData: urlMetaData);
+        await showUrlOptionsBottomSheet(
+          context,
+          urlModel: urlc,
+          urlOptions: urlOptions,
+        );
+      },
+      urlModelData: url,
+    );
+  }
+
+  Future<void> showUrlOptionsBottomSheet(
     BuildContext context, {
     required UrlModel urlModel,
     required List<Widget> urlOptions,
@@ -461,7 +582,6 @@ class _DashboardUrlFaviconListScreenState
       },
     );
   }
-
 
   Widget _urlsEmptyWidget() {
     return Center(

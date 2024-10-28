@@ -90,10 +90,13 @@ class _SavedFeedsPreviewListScreenState
         }
 
         return UrlPreviewListTemplateScreen(
+          isRootCollection: widget.isRootCollection,
           collectionModel: fetchCollection.collection!,
           showAddUrlButton: false,
           onAddUrlPressed: ({String? url}) {},
-          onLongPress: (urlModel) {
+          onLongPress: (urlModel,{
+            required List<Widget> urlOptions,
+          }) {
             Navigator.push(
               context,
               MaterialPageRoute(

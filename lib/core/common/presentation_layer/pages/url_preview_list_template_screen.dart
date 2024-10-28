@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
@@ -13,6 +15,8 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/services/clipboard_service.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,6 +28,7 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
     required this.urlsEmptyWidget,
     // required this.onUrlModelItemFetchedWidget,
     required this.showBottomNavBar,
+    required this.isRootCollection,
     required this.appBar,
     required this.onLongPress,
     this.onBookmarkButtonTap,
@@ -33,6 +38,7 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
 
   // final String title;
   final bool showAddUrlButton;
+  final bool isRootCollection;
   final ValueNotifier<bool> showBottomNavBar;
 
   final CollectionModel collectionModel;
@@ -40,7 +46,10 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
   // Dynamic Widgets
   final void Function({String? url}) onAddUrlPressed;
 
-  final void Function(UrlModel) onLongPress;
+  final void Function(
+    UrlModel, {
+    required List<Widget> urlOptions,
+  }) onLongPress;
 
   final void Function({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
@@ -263,6 +272,109 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  Future<void> onLongPress(
+    UrlModel urlModel,
+    BuildContext context,
+  ) async {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+    widget.onLongPress(
+      urlModel,
+      urlOptions: [
+        // SYNC WITH REMOTE DATABASE
+        BottomSheetOption(
+          leadingIcon: Icons.cloud_sync,
+          title: const Text(
+            'Sync',
+            style: titleTextStyle,
+          ),
+          onTap: () async {
+            // ADD SYNCING FUNCTIONALITY
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            Navigator.pop(context);
+            await urlCrudCubit.syncUrl(
+              urlModel: urlModel,
+              isRootCollection: widget.isRootCollection,
+            );
+            // Add functionality here
+          },
+        ),
+
+        // COPY TO CLIPBOARD
+        BlocBuilder<SharedInputsCubit, SharedInputsState>(
+          builder: (ctx, state) {
+            final sharedInputCubit = context.read<SharedInputsCubit>();
+
+            final firstCopiedUrl = sharedInputCubit.getTopUrl();
+
+            return BottomSheetOption(
+              leadingIcon: Icons.copy_all_rounded,
+              title: const Text(
+                'Copy Link',
+                style: titleTextStyle,
+              ),
+              trailing: firstCopiedUrl != null && firstCopiedUrl == urlModel.url
+                  ? Icon(
+                      Icons.check_circle_rounded,
+                      color: ColourPallette.salemgreen.withOpacity(
+                        0.5,
+                      ),
+                    )
+                  : null,
+              onTap: () async {
+                await Future.wait(
+                  [
+                    Future(
+                      () async {
+                        await ClipboardService.instance.copyText(
+                          urlModel.url,
+                        );
+                      },
+                    ),
+                    Future(
+                      () => sharedInputCubit.addUrlInput(
+                        urlModel.url,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+
+        // OPEN IN BROWSER
+        BottomSheetOption(
+          leadingIcon: Icons.open_in_new_rounded,
+          title: const Text('Open In Browser', style: titleTextStyle),
+          onTap: () async {
+            await CustomTabsService.launchUrl(
+              url: urlModel.url,
+              theme: Theme.of(context),
+            );
+          },
+        ),
+
+        // SHARE THE LINK TO OTHER APPS
+        BottomSheetOption(
+          leadingIcon: Icons.share,
+          title: const Text('Share Link', style: titleTextStyle),
+          onTap: () async {
+            await Future.wait(
+              [
+                Share.share(urlModel.url),
+                Future(() => Navigator.pop(context)),
+              ],
+            );
+            // Add functionality here
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -402,6 +514,10 @@ class _UrlPreviewListTemplateScreenState
                                         valueListenable: _showDescriptions,
                                         builder:
                                             (context, showDescriptions, _) {
+                                          const titleTextStyle = TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                          );
                                           return Container(
                                             margin: const EdgeInsets.symmetric(
                                               vertical: 8,
@@ -442,8 +558,10 @@ class _UrlPreviewListTemplateScreenState
                                                   await launchUrl(uri);
                                                 }
                                               },
-                                              onLongPress: () =>
-                                                  widget.onLongPress(urlModel),
+                                              onLongPress: () => onLongPress(
+                                                urlModel,
+                                                context,
+                                              ),
                                               onShareButtonTap: () {
                                                 Share.share(
                                                   '${urlModel.url}\n${urlMetaData.title}\n${urlMetaData.description}',
@@ -483,7 +601,6 @@ class _UrlPreviewListTemplateScreenState
             child: widget.appBar(
               list: _list,
               actions: [
-                // _refreshFeedButton(),
                 _searchFeedButton(),
                 _layoutFilterOptions(),
                 _filterOptions(),
@@ -675,78 +792,57 @@ class _UrlPreviewListTemplateScreenState
     );
   }
 
-  Widget _refreshFeedButton() {
-    return IconButton(
-      onPressed: () {
-        // [TODO] : ADD REFRESH BUTTON
-        // final collId = widget.collectionFetchModel.collection!.id;
-        // context
-        //     .read<CollectionsCubit>()
-        //     . (collectionId: collId);
-      },
-      padding: const EdgeInsets.all(8),
-      icon: const Icon(Icons.refresh_rounded),
-    );
-  }
-
   Widget _filterOptions() {
-    return PopupMenuButton(
-      color: ColourPallette.white,
-      padding: const EdgeInsets.only(right: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return FilterPopupMenuButton(
       icon: const Icon(
         Icons.filter_alt_rounded,
       ),
-      itemBuilder: (ctx) {
-        return [
-          ListFilterPopupMenuItem(
-            title: 'A to Z',
-            notifier: _atozFilter,
-            onPress: () {
-              _atozFilter.value = !_atozFilter.value;
-              if (_atozFilter.value) {
-                _ztoaFilter.value = false;
-                _filterAtoZ();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Z to A',
-            notifier: _ztoaFilter,
-            onPress: () {
-              _ztoaFilter.value = !_ztoaFilter.value;
-              if (_ztoaFilter.value) {
-                _atozFilter.value = false;
-                _filterZtoA();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Latest First',
-            notifier: _updatedAtLatestFilter,
-            onPress: () {
-              _updatedAtLatestFilter.value = !_updatedAtLatestFilter.value;
-              if (_updatedAtLatestFilter.value) {
-                _updatedAtOldestFilter.value = false;
-                _filterUpdatedLatest();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Oldest First',
-            notifier: _updatedAtOldestFilter,
-            onPress: () {
-              _updatedAtOldestFilter.value = !_updatedAtOldestFilter.value;
-              if (_updatedAtOldestFilter.value) {
-                _updatedAtLatestFilter.value = false;
-                _filterUpdateOldest();
-              }
-            },
-          ),
-        ];
-      },
+      menuItems: [
+        ListFilterPopupMenuItem(
+          title: 'A to Z',
+          notifier: _atozFilter,
+          onPress: () {
+            _atozFilter.value = !_atozFilter.value;
+            if (_atozFilter.value) {
+              _ztoaFilter.value = false;
+              _filterAtoZ();
+            }
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Z to A',
+          notifier: _ztoaFilter,
+          onPress: () {
+            _ztoaFilter.value = !_ztoaFilter.value;
+            if (_ztoaFilter.value) {
+              _atozFilter.value = false;
+              _filterZtoA();
+            }
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Latest First',
+          notifier: _updatedAtLatestFilter,
+          onPress: () {
+            _updatedAtLatestFilter.value = !_updatedAtLatestFilter.value;
+            if (_updatedAtLatestFilter.value) {
+              _updatedAtOldestFilter.value = false;
+              _filterUpdatedLatest();
+            }
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Oldest First',
+          notifier: _updatedAtOldestFilter,
+          onPress: () {
+            _updatedAtOldestFilter.value = !_updatedAtOldestFilter.value;
+            if (_updatedAtOldestFilter.value) {
+              _updatedAtLatestFilter.value = false;
+              _filterUpdateOldest();
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -763,7 +859,7 @@ class _UrlPreviewListTemplateScreenState
             _showSearchFilterBottomSheet.value =
                 !_showSearchFilterBottomSheet.value;
           },
-          padding: const EdgeInsets.all(8),
+          // padding: const EdgeInsets.all(8),
           icon: const Icon(Icons.search_rounded),
         );
       },
@@ -774,7 +870,7 @@ class _UrlPreviewListTemplateScreenState
     return FilterPopupMenuButton(
       icon: const Icon(
         Icons.format_shapes_rounded,
-        size: 20,
+        // size: 20,
       ),
       menuItems: [
         ListFilterPopupMenuItem(
