@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_editor_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
@@ -58,6 +59,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
   final _previewLoadingStates =
       ValueNotifier<LoadingStates>(LoadingStates.initial);
   final _previewError = ValueNotifier<Failure?>(null);
+  final _allImagesUrlsList = ValueNotifier<List<String>>(<String>[]);
 
   Future<void> _updateUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
@@ -91,16 +93,16 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
 
       Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
-      // await urlCrudCubit
-      //     .updateUrl(
-      //   urlData: urlModelData,
-      // )
-      //     .then(
-      //   (_) {
-      //     if (widget.onUpdateURLCallback == null) return;
-      //     widget.onUpdateURLCallback!(urlModelData);
-      //   },
-      // );
+      await urlCrudCubit
+          .updateUrl(
+        urlData: urlModelData,
+      )
+          .then(
+        (_) {
+          if (widget.onUpdateURLCallback == null) return;
+          widget.onUpdateURLCallback!(urlModelData);
+        },
+      );
     }
   }
 
@@ -119,7 +121,18 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     final (websiteHtmlContent, metaData) =
         await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
 
-    // // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+    final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
+      null,
+      _urlAddressController.text,
+      webHtmlContent: websiteHtmlContent,
+    );
+
+    // for (final image in allImageUrls) {
+    //   Logger.printLog(image);
+    // }
+    _allImagesUrlsList.value = allImageUrls;
+
+    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
       // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
@@ -155,11 +168,11 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       return;
     }
     // }
-    // // Logger.printLog(
+    // Logger.printLog(
     //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
     // );
     _previewLoadingStates.value = LoadingStates.loaded;
-    await _showPreviewBottomSheet(context);
+    _showPreview.value = true;
   }
 
   @override
@@ -260,7 +273,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
               size: 20,
             ),
           ),
-
           const SizedBox(width: 8),
         ],
       ),
@@ -458,130 +470,140 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 ),
 
                 ValueListenableBuilder(
-                  valueListenable: _showPreview,
-                  builder: (ctx, showPreview, _) {
-                    if (!showPreview) {
-                      return const SizedBox.shrink();
-                    }
+                  valueListenable: _allImagesUrlsList,
+                  builder: (ctx, allImagesUrlsList, _) {
                     return ValueListenableBuilder(
-                      valueListenable: _previewMetaData,
-                      builder: (ctx, urlMetaData, _) {
-                        if (urlMetaData == null) {
+                      valueListenable: _showPreview,
+                      builder: (ctx, showPreview, _) {
+                        if (!showPreview) {
                           return const SizedBox.shrink();
                         }
-                        final date = DateTime.now().toUtc();
-                        final urlModelData = UrlModel(
-                          firestoreId: '',
-                          collectionId: widget.urlModel.collectionId,
-                          url: _urlAddressController.text.trim(),
-                          title: _urlTitleController.text.trim(),
-                          description: _urlDescriptionController.text.trim(),
-                          isFavourite: _showPreview.value,
-                          tag: _selectedCategory.value,
-                          isOffline: false,
-                          createdAt: date,
-                          updatedAt: date,
-                          metaData: urlMetaData,
-                        );
+                        return ValueListenableBuilder(
+                          valueListenable: _previewMetaData,
+                          builder: (ctx, urlMetaData, _) {
+                            if (urlMetaData == null) {
+                              return const SizedBox.shrink();
+                            }
+                            final date = DateTime.now().toUtc();
+                            final urlModelData = UrlModel(
+                              firestoreId: '',
+                              collectionId: widget.urlModel.collectionId,
+                              url: _urlAddressController.text.trim(),
+                              title: _urlTitleController.text.trim(),
+                              description:
+                                  _urlDescriptionController.text.trim(),
+                              isFavourite: _showPreview.value,
+                              tag: _selectedCategory.value,
+                              isOffline: false,
+                              createdAt: date,
+                              updatedAt: date,
+                              metaData: urlMetaData,
+                            );
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: ColourPallette.white,
-                            // color: ColourPallette.mystic.withOpacity(0.1),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ColourPallette.mystic.withOpacity(0.2),
-                                spreadRadius: 2,
-                                offset: const Offset(0, 2),
-                                blurRadius: 4, // Smoothens the shadow edges
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 16,
                               ),
-                              BoxShadow(
-                                color: ColourPallette.mystic.withOpacity(0.4),
-                                spreadRadius: 2,
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: ColourPallette.white,
+                                // color: ColourPallette.mystic.withOpacity(0.1),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        ColourPallette.mystic.withOpacity(0.2),
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4, // Smoothens the shadow edges
+                                  ),
+                                  BoxShadow(
+                                    color:
+                                        ColourPallette.mystic.withOpacity(0.4),
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: URLPreviewWidget(
-                            urlModel: urlModelData,
-                            urlPreloadMethod: UrlPreloadMethods.httpGet,
-                            onTap: () async {
-                              switch (_urlLaunchType.value) {
-                                case UrlLaunchType.customTabs:
-                                  {
-                                    final theme = Theme.of(context);
-                                    await CustomTabsService.launchUrl(
-                                      url: urlModelData.url,
-                                      theme: theme,
-                                    ).then(
-                                      (_) async {
-                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                        // JUST LIKE APPS IN BACKGROUND TYPE
-                                      },
-                                    );
-                                    break;
-                                  }
-                                case UrlLaunchType.webView:
-                                  {
-                                    await Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => DashboardWebView(
+                              child: URLPreviewEditorWidget(
+                                urlModel: urlModelData,
+                                metaDataNotifier: _previewMetaData,
+                                allImageUrls: allImagesUrlsList,
+                                urlPreloadMethod: UrlPreloadMethods.httpGet,
+                                onTap: () async {
+                                  switch (_urlLaunchType.value) {
+                                    case UrlLaunchType.customTabs:
+                                      {
+                                        final theme = Theme.of(context);
+                                        await CustomTabsService.launchUrl(
                                           url: urlModelData.url,
-                                        ),
-                                      ),
-                                    );
+                                          theme: theme,
+                                        ).then(
+                                          (_) async {
+                                            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                            // JUST LIKE APPS IN BACKGROUND TYPE
+                                          },
+                                        );
+                                        break;
+                                      }
+                                    case UrlLaunchType.webView:
+                                      {
+                                        await Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (ctx) => DashboardWebView(
+                                              url: urlModelData.url,
+                                            ),
+                                          ),
+                                        );
 
-                                    break;
-                                  }
-                                case UrlLaunchType.readingMode:
-                                  {
-                                    await Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => DashboardWebView(
+                                        break;
+                                      }
+                                    case UrlLaunchType.readingMode:
+                                      {
+                                        await Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (ctx) => DashboardWebView(
+                                              url: urlModelData.url,
+                                            ),
+                                          ),
+                                        );
+
+                                        break;
+                                      }
+                                    case UrlLaunchType.separateBrowserWindow:
+                                      {
+                                        final theme = Theme.of(context);
+                                        await CustomTabsService.launchUrl(
                                           url: urlModelData.url,
-                                        ),
-                                      ),
-                                    );
-
-                                    break;
+                                          theme: theme,
+                                        ).then(
+                                          (_) async {
+                                            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                            // JUST LIKE APPS IN BACKGROUND TYPE
+                                          },
+                                        );
+                                        break;
+                                      }
                                   }
-                                case UrlLaunchType.separateBrowserWindow:
-                                  {
-                                    final theme = Theme.of(context);
-                                    await CustomTabsService.launchUrl(
-                                      url: urlModelData.url,
-                                      theme: theme,
-                                    ).then(
-                                      (_) async {
-                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                        // JUST LIKE APPS IN BACKGROUND TYPE
-                                      },
-                                    );
-                                    break;
-                                  }
-                              }
-                            },
-                            onLongPress: () {},
-                            onShareButtonTap: () {
-                              final urlAddress = _urlAddressController.text;
-                              final urlTitle = _urlTitleController.text;
-                              final urlDescription =
-                                  _urlDescriptionController.text;
+                                },
+                                onLongPress: () {},
+                                onShareButtonTap: () {
+                                  final urlAddress = _urlAddressController.text;
+                                  final urlTitle = _urlTitleController.text;
+                                  final urlDescription =
+                                      _urlDescriptionController.text;
 
-                              Share.share(
-                                '$urlAddress\n$urlTitle\n$urlDescription',
-                              );
-                            },
-                            onLayoutOptionsButtontap: () {},
-                            updateBannerImage: () {},
-                          ),
+                                  Share.share(
+                                    '$urlAddress\n$urlTitle\n$urlDescription',
+                                  );
+                                },
+                                onLayoutOptionsButtontap: () {},
+                                updateBannerImage: () {},
+                              ),
+                            );
+                          },
                         );
                       },
                     );
@@ -622,6 +644,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     ),
                   ],
                 ),
+
                 ValueListenableBuilder(
                   valueListenable: _showCategoryOptionsList,
                   builder: (ctx, showCategoryOptionsList, _) {
@@ -681,8 +704,8 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 ),
 
                 const SizedBox(height: 20),
-                
-                // SETTINGS 
+
+                // SETTINGS
                 const Text(
                   'Settings',
                   style: TextStyle(
@@ -691,6 +714,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     color: ColourPallette.salemgreen,
                   ),
                 ),
+
                 const SizedBox(height: 16),
 
                 // ALWAYS OPEN-IN SETTINGS
@@ -754,7 +778,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
 
                 // ADDITONAL OPTIONS
@@ -766,6 +790,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     color: ColourPallette.salemgreen,
                   ),
                 ),
+
                 const SizedBox(height: 16),
 
                 CustomCollTextField(
@@ -783,11 +808,9 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     return null;
                   },
                 ),
-               
-                const SizedBox(height: 120),
-               
 
-                
+                const SizedBox(height: 120),
+
                 // IS fAVOURITE
                 // Row(
                 //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -819,117 +842,11 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 //     ),
                 //   ],
                 // ),
-
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showPreviewBottomSheet(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: ColourPallette.mystic,
-      isScrollControlled: true,
-      builder: (ctx) {
-        final date = DateTime.now().toUtc();
-        final urlModelData = UrlModel(
-          firestoreId: '',
-          collectionId: widget.urlModel.collectionId,
-          url: _urlAddressController.text.trim(),
-          title: _urlTitleController.text.trim(),
-          description: _urlDescriptionController.text.trim(),
-          isFavourite: _showPreview.value,
-          tag: _selectedCategory.value,
-          isOffline: false,
-          createdAt: date,
-          updatedAt: date,
-          metaData: _previewMetaData.value,
-        );
-
-        return IntrinsicHeight(
-          child: Container(
-            // padding: EdgeInsets.only(
-            //   bottom: MediaQuery.of(context).viewInsets.bottom,
-            // ),
-            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-            child: URLPreviewWidget(
-              urlModel: urlModelData,
-              urlPreloadMethod: UrlPreloadMethods.httpGet,
-              onTap: () async {
-                switch (_urlLaunchType.value) {
-                  case UrlLaunchType.customTabs:
-                    {
-                      final theme = Theme.of(context);
-                      await CustomTabsService.launchUrl(
-                        url: urlModelData.url,
-                        theme: theme,
-                      ).then(
-                        (_) async {
-                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                          // JUST LIKE APPS IN BACKGROUND TYPE
-                        },
-                      );
-                      break;
-                    }
-                  case UrlLaunchType.webView:
-                    {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => DashboardWebView(
-                            url: urlModelData.url,
-                          ),
-                        ),
-                      );
-
-                      break;
-                    }
-                  case UrlLaunchType.readingMode:
-                    {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => DashboardWebView(
-                            url: urlModelData.url,
-                          ),
-                        ),
-                      );
-
-                      break;
-                    }
-                  case UrlLaunchType.separateBrowserWindow:
-                    {
-                      final theme = Theme.of(context);
-                      await CustomTabsService.launchUrl(
-                        url: urlModelData.url,
-                        theme: theme,
-                      ).then(
-                        (_) async {
-                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                          // JUST LIKE APPS IN BACKGROUND TYPE
-                        },
-                      );
-                      break;
-                    }
-                }
-              },
-              onLongPress: () {},
-              onShareButtonTap: () {
-                final urlAddress = _urlAddressController.text;
-                final urlTitle = _urlTitleController.text;
-                final urlDescription = _urlDescriptionController.text;
-
-                Share.share(
-                  '$urlAddress\n$urlTitle\n$urlDescription',
-                );
-              },
-              onLayoutOptionsButtontap: () {},
-              updateBannerImage: () {},
-            ),
-          ),
-        );
-      },
     );
   }
 }
