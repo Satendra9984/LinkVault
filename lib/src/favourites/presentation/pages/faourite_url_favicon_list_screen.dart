@@ -30,6 +30,46 @@ import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/res/app_tutorials.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/services/clipboard_service.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
+import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class FavouritesUrlFaviconListScreen extends StatefulWidget {
   const FavouritesUrlFaviconListScreen({
@@ -56,6 +96,17 @@ class FavouritesUrlFaviconListScreen extends StatefulWidget {
 class _FavouritesUrlFaviconListScreenState
     extends State<FavouritesUrlFaviconListScreen>
     with AutomaticKeepAliveClientMixin {
+
+  final _listViewType = ValueNotifier(UrlViewType.favicons);
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
+    super.initState();
+  }
+
+
   void _onAddUrlPressed({String? url}) {
     Navigator.push(
       context,
@@ -72,19 +123,45 @@ class _FavouritesUrlFaviconListScreenState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return UrlFaviconListTemplateScreen(
-      isRootCollection: widget.isRootCollection,
-      collectionModel: widget.collectionModel,
-      showAddUrlButton: widget.showAddUrlButton,
-      showBottomNavBar: widget.showBottomNavBar,
-      onAddUrlPressed: _onAddUrlPressed,
-      appBar: _appBarBuilder,
-      urlsEmptyWidget: _urlsEmptyWidget(),
-      onUrlModelItemFetchedWidget: _urlItemBuilder,
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (page) {},
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        UrlFaviconListTemplateScreen(
+          isRootCollection: widget.isRootCollection,
+          collectionModel: widget.collectionModel,
+          showAddUrlButton: widget.showAddUrlButton,
+          showBottomNavBar: widget.showBottomNavBar,
+          onAddUrlPressed: _onAddUrlPressed,
+          appBar: _faviconsListAppBarBuilder,
+          urlsEmptyWidget: _urlsEmptyWidget(),
+          onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
+        ),
+        UrlPreviewListTemplateScreen(
+          collectionModel: widget.collectionModel,
+          isRootCollection: widget.isRootCollection,
+          showAddUrlButton: false,
+          onAddUrlPressed: ({String? url}) {},
+          onLongPress: (
+            urlModel, {
+            required List<Widget> urlOptions,
+          }) async {
+            await showUrlOptionsBottomSheet(
+              context,
+              urlModel: urlModel,
+              urlOptions: urlOptions,
+            );
+          },
+          urlsEmptyWidget: _urlsEmptyWidget(),
+          showBottomNavBar: widget.showBottomNavBar,
+          appBar: _faviconsListAppBarBuilder,
+        ),
+      ],
     );
   }
 
-  Widget _urlItemBuilder({
+  Widget _urlFaviconItemBuilder({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required int index,
     required List<Widget> urlOptions,
@@ -113,7 +190,7 @@ class _FavouritesUrlFaviconListScreenState
       // [TODO] : THIS IS DYNAMIC FIELD
       onLongPress: (urlMetaData) async {
         final urlc = url.copyWith(metaData: urlMetaData);
-        showUrlModelOptionsBottomSheet(
+        await showUrlOptionsBottomSheet(
           context,
           urlModel: urlc,
           urlOptions: urlOptions,
@@ -123,7 +200,7 @@ class _FavouritesUrlFaviconListScreenState
     );
   }
 
-  Widget _appBarBuilder({
+  Widget _faviconsListAppBarBuilder({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
   }) {
@@ -147,21 +224,97 @@ class _FavouritesUrlFaviconListScreenState
         ],
       ),
       actions: [
+        _urlViewTypeOptions(),
         ...actions,
-        const SizedBox(width: 4),
-        GestureDetector(
-          onTap: () {},
-          child: const Icon(
-            Icons.layers_outlined,
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  Widget _urlViewTypeOptions() {
+    return FilterPopupMenuButton(
+      icon: const Icon(
+        Icons.format_align_center_rounded,
+      ),
+      menuItems: [
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.favicons,
+          onTap: () {
+            _listViewType.value = UrlViewType.favicons;
+            _pageController.jumpToPage(0);
+            Logger.printLog('currentpage: ${_pageController.page}');
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.favicons.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.favicons) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 24),
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.previews,
+          onTap: () {
+            _listViewType.value = UrlViewType.previews;
+            _pageController.jumpToPage(1);
+            Logger.printLog('currentpage: ${_pageController.page}');
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.previews.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.previews) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
   // FOR THE URL-MODEL
-  void showUrlModelOptionsBottomSheet(
+  Future<void> showUrlOptionsBottomSheet(
     BuildContext context, {
     required UrlModel urlModel,
     required List<Widget> urlOptions,

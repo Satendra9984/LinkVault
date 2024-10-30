@@ -49,6 +49,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   visibility_detector: ^0.4.0+2
   flutter_custom_tabs: ^2.1.0
+  flutter_inappwebview: ^6.0.0
   # archive: ^3.6.1
 
 dev_dependencies:

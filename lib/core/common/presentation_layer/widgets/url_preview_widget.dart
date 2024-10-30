@@ -4,544 +4,889 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/network_image_cache_cubit/network_image_cache_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_image_painter.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/utils/image_utils.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
+import 'package:link_vault/core/services/custom_image_cache_service.dart';
+import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
-class UrlPreviewWidget extends StatelessWidget {
-  UrlPreviewWidget({
-    required this.urlMetaData,
+class URLPreviewWidget extends StatefulWidget {
+  const URLPreviewWidget({
+    required this.urlModel,
     required this.onTap,
     required this.onLongPress,
     required this.onShareButtonTap,
-    required this.onMoreVertButtontap,
-    this.outerScreenHorizontalDistance = 50,
+    required this.onLayoutOptionsButtontap,
+    required this.updateBannerImage,
+    required this.urlPreloadMethod,
+    this.onBookmarkButtonTap,
+    this.showDescription = false,
+    this.showBannerImage = true,
+    this.isSidewaysLayout = false,
     super.key,
   });
 
-  final UrlMetaData urlMetaData;
-  final double outerScreenHorizontalDistance;
+  final UrlModel urlModel;
+  final bool showDescription;
+  final bool showBannerImage;
+  final UrlPreloadMethods urlPreloadMethod;
+
+  final bool isSidewaysLayout;
   final void Function() onTap;
+  final void Function() updateBannerImage;
   final void Function() onLongPress;
   final void Function() onShareButtonTap;
-  final void Function() onMoreVertButtontap;
+  final void Function()? onBookmarkButtonTap;
+  final void Function() onLayoutOptionsButtontap;
 
+  @override
+  State<URLPreviewWidget> createState() => _URLPreviewWidgetState();
+}
+
+class _URLPreviewWidgetState extends State<URLPreviewWidget> {
+  String initials = '';
+
+  // keys for widgets like Title, Image that changes on Filter
+  final GlobalKey _mainWidgetKey = GlobalKey();
+  GlobalKey _urlTitleKey = GlobalKey();
+  GlobalKey _bannerImageKey = GlobalKey();
+  var _preloadUrl = false;
+
+  // Widget Layout Informations for description upper calculations
+  final ValueNotifier<Size?> _urlTitleSize = ValueNotifier<Size?>(null);
+  final ValueNotifier<Size?> _bannerImageSize = ValueNotifier<Size?>(null);
+
+  // For Managing Local and Parent Filters state
   final _showFullDescription = ValueNotifier(false);
+  final _showBannerImage = ValueNotifier(true);
+
+  final _isSideWayLayout = ValueNotifier(false);
+  final _upperDescriptionIndex = ValueNotifier(0);
+
+//   final desc =
+//       '''It would be impossible to overestimate the importance of photosynthesis in the maintenance of life on Earth. If photosynthesis ceased, there would soon be little food or other organic matter on Earth. Most organisms would disappear, and in time Earth’s atmosphere would become nearly devoid of gaseous oxygen. The only organisms able to exist under such conditions would be the chemosynthetic bacteria, which can utilize the chemical energy of certain inorganic compounds and thus are not dependent on the conversion of light energy.
+// How are plant cells different from animal cells?''';
+
+  final upperDescTextStyle = TextStyle(
+    color: Colors.grey.shade800,
+    fontSize: 14,
+  );
+  final titleTextStyle = TextStyle(
+    color: Colors.grey.shade800,
+    fontWeight: FontWeight.w500,
+    fontSize: 16,
+  );
+
+  @override
+  void initState() {
+    _showFullDescription.value = widget.showDescription;
+    _isSideWayLayout.value = widget.isSidewaysLayout;
+    _showBannerImage.value = widget.showBannerImage;
+    final description = widget.urlModel.metaData?.title ?? '';
+
+    initials = description.length > 7
+        ? description.substring(0, 8)
+        : description.substring(0, description.length);
+    _updateFeedBannerImageUrl();
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant URLPreviewWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showBannerImage != oldWidget.showBannerImage) {
+      _showBannerImage.value = widget.showBannerImage;
+    }
+
+    // // Logger.printLog('$initials didUpdateWidget');
+    if (widget.isSidewaysLayout != oldWidget.isSidewaysLayout ||
+        widget.showDescription != oldWidget.showDescription) {
+      // Detach the widgets to mark them for layout
+      _detachWidget(_mainWidgetKey);
+      _detachWidget(_bannerImageKey);
+      _detachWidget(_urlTitleKey);
+
+      // Reassign keys to force rebuild
+      _bannerImageKey = GlobalKey();
+      _urlTitleKey = GlobalKey();
+
+      // Update other states
+      _urlTitleSize.value = null;
+      _bannerImageSize.value = null;
+      _upperDescriptionIndex.value = 0;
+      _showFullDescription.value = widget.showDescription;
+      _isSideWayLayout.value = widget.isSidewaysLayout;
+      _showBannerImage.value = widget.showBannerImage;
+    }
+  }
+
+  @override
+  void dispose() {
+    _urlTitleSize.dispose();
+    _bannerImageSize.dispose();
+    _isSideWayLayout.dispose();
+    _showFullDescription.dispose();
+    _upperDescriptionIndex.dispose();
+
+    super.dispose();
+  }
+
+  Future<void> _updateFeedBannerImageUrl() async {
+    // // Logger.printLog(
+    //   '$initials ${StringUtils.getJsonFormat(widget.urlModel.metaData)}',
+    // );
+
+    if (widget.urlModel.metaData!.bannerImageUrl == null) {
+      // // Logger.printLog('[rss] : _updateBannerImageUrl');
+      widget.updateBannerImage();
+    }
+  }
+
+  void _getDescriptionContainerSize({
+    required TextStyle textStyle,
+    required TextStyle titleTextStyle,
+    required BuildContext context,
+  }) {
+    _updateSize(_urlTitleKey, _urlTitleSize);
+    _updateSize(_bannerImageKey, _bannerImageSize);
+
+    if (_urlTitleSize.value == null ||
+        _bannerImageSize.value == null ||
+        _bannerImageSize.value!.width == 0 ||
+        _bannerImageSize.value!.height == 0) {
+      return;
+    }
+
+    final remainingHeightForDescription =
+        _bannerImageSize.value!.height - _urlTitleSize.value!.height;
+
+    if (remainingHeightForDescription <= 0) {
+      _upperDescriptionIndex.value = 0;
+      _bannerImageSize.value = null;
+
+      return;
+    }
+
+    final remainingWidthForDescription = _urlTitleSize.value!.width;
+
+    if (_bannerImageSize.value!.height > _bannerImageSize.value!.width * 1.1) {
+      _isSideWayLayout.value = true;
+    }
+
+    var description = '';
+    if (widget.urlModel.description != null &&
+        widget.urlModel.description!.isNotEmpty) {
+      description = widget.urlModel.description!;
+    }
+    if (widget.urlModel.metaData?.description?.trim() != null) {
+      description = widget.urlModel.metaData!.description!.trim();
+    }
+
+    // // Logger.printLog('[size] ${_bannerImageSize.value}');
+    _splitDescription(
+      description: description,
+      containerWidth: remainingWidthForDescription,
+      containerHeight: remainingHeightForDescription,
+      targettTextStyle: textStyle,
+    );
+  }
+
+  String? _splitDescription({
+    required String description,
+    required double containerWidth,
+    required double containerHeight,
+    required TextStyle targettTextStyle,
+  }) {
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    )
+      ..maxLines = 1
+      ..text = TextSpan(text: 'description', style: targettTextStyle)
+      ..layout(maxWidth: containerWidth);
+
+    // Create a TextPainter for line height calculation
+    int? maxLines = (containerHeight / textPainter.height).round();
+    maxLines = maxLines > 0 ? maxLines : null;
+
+    if (maxLines == null) return null;
+
+    final words = description.split(' ');
+
+    final part1 = StringBuffer();
+    var currentLineCount = 0;
+    var totolPart1Length = 0;
+    var wordIndex = 0;
+
+    // Iterate over the available number of lines
+    while (currentLineCount < maxLines && wordIndex < words.length) {
+      final currentLine = StringBuffer();
+      // Add words to the current line until it exceeds or matches the container width
+      while (wordIndex < words.length) {
+        final nextWord = words[wordIndex];
+
+        // Create a new text span with the current line + the next word
+        textPainter
+          ..text = TextSpan(
+            text:
+                '$currentLine $nextWord', // Use .toString() to get the current line's text
+            style: targettTextStyle,
+          )
+          ..layout(
+            maxWidth: containerWidth * 1.5,
+          ); // Measure the width without constraints
+
+        final textPainterWidth = textPainter.width;
+        // Case 1: When the text width exactly matches the container width
+        if (textPainterWidth <= containerWidth) {
+          currentLine.write(' $nextWord');
+          wordIndex++;
+        }
+        // Case 3: When the text width exceeds the container width
+        else {
+          break; // Break the loop as the line is overfilled
+        }
+      }
+
+      // Write the completed line to the final result and increment the line count
+      final newlineContent = currentLine.toString();
+      totolPart1Length += newlineContent.length;
+      part1.write(newlineContent);
+      currentLineCount++;
+    }
+
+    final part1t = part1.toString().trim();
+
+    final index = totolPart1Length > 0 ? totolPart1Length - 1 : 0;
+    // Use truncatedDescription in the UI
+    _upperDescriptionIndex.value = index;
+    return part1t; // Return the truncated description part
+  }
+
+  void _updateSize(GlobalKey key, ValueNotifier<Size?> notifier) {
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      notifier.value = renderBox.size;
+    }
+  }
+
+  void _detachWidget(GlobalKey key) {
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      // renderBox.detach();
+      renderBox.markNeedsLayout();
+      // renderBox.reassemble();
+      // // Logger.printLog('$initials detaching $key');
+    }
+  }
+
+  String _getTimeDifferenceOfFeed() {
+    final feedTime = widget.urlModel.createdAt;
+    final currentDate = DateTime.now().toUtc();
+
+    final difference = currentDate.difference(feedTime);
+    // Check if the time difference is in days, hours, or minutes
+    if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''}';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hr${difference.inHours > 1 ? 's' : ''}';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} min';
+    } else if (difference.inSeconds > 0) {
+      return '${difference.inSeconds} sec';
+    } else if (difference.inMilliseconds > 0) {
+      return '${0} sec';
+    }
+
+    // If it's less than a minute
+    return '--';
+  }
+
+  String _websiteName(String websiteName, int allowedLength) {
+    // // Logger.printLog('WebsiteName: $websiteName');
+    if (websiteName.length < allowedLength) {
+      return websiteName;
+    }
+
+    final spaced = websiteName.trim().split(' ');
+    final initials = StringBuffer();
+
+    for (final ele in spaced) {
+      if (ele.isNotEmpty) {
+        initials.write(ele[0]);
+      }
+    }
+
+    return initials.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (urlMetaData.bannerImageUrl != null &&
-            urlMetaData.bannerImageUrl!.isNotEmpty)
-          GestureDetector(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: _bannerImageBuilder(
-                context: context,
-                size: size,
-              ),
-            ),
-          )
-        else if (urlMetaData.title != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                Expanded(child: _getTitle()),
-                if (urlMetaData.faviconUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      height: 56,
-                      width: 56,
-                      child: NetworkImageBuilderWidget(
-                        imageUrl: urlMetaData.faviconUrl!,
-                        compressImage: false,
-                        errorWidgetBuilder: () {
-                          return IconButton(
-                            onPressed: () =>
-                                context.read<NetworkImageCacheCubit>().addImage(
-                                      urlMetaData.faviconUrl!,
-                                      compressImage: false,
-                                    ),
-                            icon: const Icon(Icons.circle),
-                            color: ColourPallette.black,
-                          );
-                        },
-                        successWidgetBuilder: (imageData) {
-                          final imageBytes = imageData.imageBytesData!;
-                          // Logger.printLog(
-                          //   '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
-                          // );
+    final descriptionAvailable = (widget.urlModel.description != null &&
+            widget.urlModel.description!.isNotEmpty) ||
+        (widget.urlModel.metaData?.description != null &&
+            widget.urlModel.metaData!.description!.isNotEmpty);
 
-                          if (imageData.uiImage != null) {
-                            return CustomPaint(
-                              size: const Size(16, 16),
-                              painter: ImagePainter(
-                                imageData.uiImage!,
-                              ),
+    FutureBuilder<FileInfo?>? imageBuilder;
+
+    if (widget.urlModel.metaData?.bannerImageUrl != null &&
+        widget.urlModel.metaData!.bannerImageUrl!.isNotEmpty) {
+      imageBuilder = FutureBuilder<FileInfo?>(
+        future: CustomImagesCacheManager.instance.getImageFile(
+          widget.urlModel.metaData!.bannerImageUrl!,
+          widget.urlModel.collectionId,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.hasError) {
+            return const SizedBox.shrink(); // Show a placeholder while loading
+          }
+
+          final fileInfo = snapshot.data;
+
+          if (fileInfo != null) {
+            return RepaintBoundary(
+              child: Image.file(
+                fileInfo.file,
+                width: size.width,
+                fit: BoxFit.cover,
+                // filterQuality: FilterQuality.low,
+                errorBuilder: (context, _, __) {
+                  return Container(); // Fallback in case of error
+                },
+                frameBuilder: (
+                  BuildContext context,
+                  Widget child,
+                  int? frame,
+                  bool wasSynchronouslyLoaded,
+                ) {
+                  if (frame == null) {
+                    return Container(); // Placeholder or loading indicator while the image is loading
+                  }
+
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ColourPallette.mystic.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey.shade100,
+                        ),
+                      ),
+                      child: ImageFileWidget(
+                        initials: initials,
+                        child: child,
+                        postFrameCallback: () {
+                          if (_bannerImageSize.value == null) {
+                            WidgetsBinding.instance.addPostFrameCallback(
+                              (_) {
+                                _getDescriptionContainerSize(
+                                  context: context,
+                                  textStyle: upperDescTextStyle,
+                                  titleTextStyle: titleTextStyle,
+                                );
+                              },
                             );
                           }
-
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.memory(
-                              imageBytes,
-                              fit: BoxFit.contain,
-                              errorBuilder: (ctx, _, __) {
-                                try {
-                                  final svgImage = SvgPicture.memory(
-                                    urlMetaData.favicon!,
-                                  );
-
-                                  return svgImage;
-                                } catch (e) {
-                                  return const Icon(Icons.web);
-                                }
-                              },
-                            ),
-                          );
                         },
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
+                  ); // Return the loaded image
+                },
+              ),
+            );
+          }
 
-        if (urlMetaData.description != null)
-          ValueListenableBuilder(
-            valueListenable: _showFullDescription,
-            builder: (context, showFullDescription, _) {
-              if (!showFullDescription && urlMetaData.title != null) {
-                return Container();
-              }
-              return Padding(
-                padding: const EdgeInsets.only(),
-                child: RichText(
-                  text: TextSpan(
+          return Container(); // Return an empty container if no image is available
+        },
+      );
+    }
+    return VisibilityDetector(
+      key: _mainWidgetKey,
+      onVisibilityChanged: (VisibilityInfo info) async {
+        // // Logger.printLog('$initials ${info.visibleFraction}');
+        if (info.visibleFraction > 0) {
+          // Widget is at least partially visible
+          if (_showBannerImage.value &&
+              (_bannerImageSize.value == null ||
+                  _bannerImageSize.value!.width < 1.0 ||
+                  _bannerImageSize.value!.height < 1.0)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _getDescriptionContainerSize(
+                context: context,
+                textStyle: upperDescTextStyle,
+                titleTextStyle: titleTextStyle,
+              );
+            });
+          }
+
+          if (widget.urlPreloadMethod != UrlPreloadMethods.none &&
+              _preloadUrl == false) {
+            // Logger.printLog(
+            //   '[customtabs] : calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
+            // );
+            final urlPreloadCubit = context.read<UrlPreloadManagerCubit>();
+            // CALL CUBIT FOR THIS REQUEST
+            await Future.wait(
+              [
+                Future(
+                  () {
+                    urlPreloadCubit.preloadUrl(
+                      widget.urlModel.url,
+                      urlPreloadMethod: widget.urlPreloadMethod,
+                    );
+                  },
+                ),
+                Future(
+                  CustomTabsClientService.warmUp,
+                ),
+              ],
+            );
+            _preloadUrl = true;
+          }
+        } else {
+          // Widget is not visible
+          // // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
+        }
+      },
+      child: ValueListenableBuilder(
+        valueListenable: _isSideWayLayout,
+        builder: (context, isSideWays, _) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // TOP BANNERIMAGE WHEN NOT IN SIDEWAYS
+              if (imageBuilder != null && !isSideWays)
+                GestureDetector(
+                  onTap: widget.onTap,
+                  onLongPress: widget.onLongPress,
+                  child: ValueListenableBuilder(
+                    valueListenable: _bannerImageSize,
+                    builder: (context, bannerImageSize, _) {
+                      final bannerImageHeight =
+                          bannerImageSize?.height != null &&
+                                  bannerImageSize!.height > 1.0
+                              ? min(
+                                  bannerImageSize.height,
+                                  size.width,
+                                )
+                              : null;
+
+                      return ValueListenableBuilder(
+                        valueListenable: _showBannerImage,
+                        builder: (context, showBannerImage, _) {
+                          if (!showBannerImage) return const SizedBox.shrink();
+
+                          return bannerImageHeight == null
+                              ? SizedBox(
+                                  key: _bannerImageKey,
+                                  width: size.width,
+                                  child: imageBuilder,
+                                )
+                              : SizedBox(
+                                  key: _bannerImageKey,
+                                  width: size.width,
+                                  height: bannerImageHeight,
+                                  child: imageBuilder,
+                                );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              if (imageBuilder != null && !isSideWays)
+                const SizedBox(height: 8),
+
+              // TITLE, SIDEWAY UPPER DESCRIPTION, BANNERIMAGE
+              GestureDetector(
+                onTap: widget.onTap,
+                onLongPress: widget.onLongPress,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // TITLE AND UPPERDESCRIPTION
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: widget.onTap,
+                            onLongPress: widget.onLongPress,
+                            child: Text(
+                              widget.urlModel.metaData?.title ??
+                                  widget.urlModel.title,
+                              style: TextStyle(
+                                // fontWeight: FontWeight.w500,
+                                fontSize: isSideWays ? 16 : 18,
+                              ),
+                              key: _urlTitleKey,
+                            ),
+                          ),
+                          if (descriptionAvailable && isSideWays)
+                            ValueListenableBuilder(
+                              valueListenable: _showFullDescription,
+                              builder: (context, showFullDescription, _) {
+                                if (!showFullDescription) {
+                                  return Container();
+                                }
+                                return ValueListenableBuilder(
+                                  valueListenable: _upperDescriptionIndex,
+                                  builder: (context, upperDescriptionIndex, _) {
+                                    // final imageSize = _bannerImageSize.value;
+                                    if (upperDescriptionIndex < 1) {
+                                      return Container();
+                                    }
+
+                                    var upperDescWidth = 0.0;
+                                    var upperDescHeigthht = 0.0;
+
+                                    if (_bannerImageSize.value != null &&
+                                        _urlTitleSize.value != null) {
+                                      upperDescWidth =
+                                          _urlTitleSize.value!.width;
+
+                                      final bannerImageHeight = min(
+                                        _bannerImageSize.value!.height,
+                                        size.width * 0.35,
+                                      );
+
+                                      upperDescHeigthht = bannerImageHeight -
+                                          _urlTitleSize.value!.height;
+                                    }
+
+                                    final descTextStyle = TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 14,
+                                    );
+
+                                    final textPainter = TextPainter(
+                                      textDirection: TextDirection.ltr,
+                                    )
+                                      ..maxLines = 1
+                                      ..text = TextSpan(
+                                        text: 'M',
+                                        style: descTextStyle,
+                                      )
+                                      ..layout(maxWidth: upperDescWidth);
+
+                                    int? maxLines =
+                                        (upperDescHeigthht / textPainter.height)
+                                            .round();
+                                    maxLines = maxLines > 0 ? maxLines : null;
+
+                                    if (maxLines == null) {
+                                      return Container();
+                                    }
+                                    var description = '';
+                                    if (widget.urlModel.description != null &&
+                                        widget
+                                            .urlModel.description!.isNotEmpty) {
+                                      description =
+                                          widget.urlModel.description!;
+                                    }
+                                    if (widget.urlModel.metaData?.description
+                                            ?.trim() !=
+                                        null) {
+                                      description = widget
+                                          .urlModel.metaData!.description!
+                                          .trim();
+                                    }
+
+                                    return Text(
+                                      description,
+                                      style: descTextStyle,
+                                      maxLines: maxLines,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (imageBuilder != null && isSideWays)
+                      const SizedBox(width: 8),
+
+                    // SIDEWAYS BANNERIMAGE
+                    if (imageBuilder != null && isSideWays)
+                      ValueListenableBuilder(
+                        valueListenable: _bannerImageSize,
+                        builder: (context, bannerImageSize, _) {
+                          var bannerWidth = size.width * 0.35;
+
+                          if (bannerImageSize?.width != null) {
+                            bannerWidth =
+                                min(bannerWidth, bannerImageSize!.width);
+                          }
+
+                          // // Logger.printLog(
+                          //   '$initials mgwidth: ${bannerImageSize?.width}, screenwidth: ${size.width * 0.35}, final $bannerWidth',
+                          // );
+
+                          final bannerImageHeight =
+                              bannerImageSize?.height != null &&
+                                      bannerImageSize!.height > 1.0
+                                  ? min(
+                                      bannerImageSize.height,
+                                      size.width * 0.35,
+                                    )
+                                  : null;
+                          return ValueListenableBuilder(
+                            valueListenable: _showBannerImage,
+                            builder: (context, showBannerImage, _) {
+                              if (!showBannerImage) {
+                                return const SizedBox.shrink();
+                              }
+                              return bannerImageHeight == null
+                                  ? SizedBox(
+                                      key: _bannerImageKey,
+                                      width: bannerWidth,
+                                      child: imageBuilder,
+                                    )
+                                  : SizedBox(
+                                      key: _bannerImageKey,
+                                      width: bannerWidth,
+                                      height: bannerImageHeight,
+                                      child: imageBuilder,
+                                    );
+                            },
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+
+              if (descriptionAvailable)
+                ValueListenableBuilder(
+                  valueListenable: _showFullDescription,
+                  builder: (context, showFullDescription, _) {
+                    if (!showFullDescription) {
+                      return Container();
+                    }
+
+                    return ValueListenableBuilder(
+                      valueListenable: _upperDescriptionIndex,
+                      builder: (context, upperDescriptionIndex, _) {
+                        var description =
+                            widget.urlModel.metaData?.description?.trim() ??
+                                widget.urlModel.description ??
+                                '';
+
+                        final start = min(
+                          !isSideWays ? 0 : upperDescriptionIndex,
+                          description.length,
+                        );
+                        final endIndex = description.length;
+
+                        description = description
+                            .substring(
+                              start,
+                              endIndex,
+                            )
+                            .trim();
+                        if (description.isEmpty) {
+                          return Container();
+                        }
+                        return Text(
+                          description,
+                          style: upperDescTextStyle,
+                        );
+                      },
+                    );
+                  },
+                ),
+
+              /// Website details and other option
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 8,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            // LAUNCH IN CUSTOM TAB
+                            final uri = Uri.parse(widget.urlModel.url);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            }
+                          },
+                          onLongPress: widget.onLongPress,
+                          child: Row(
+                            children: [
+                              Builder(
+                                builder: (context) {
+                                  final urlModelData = widget.urlModel;
+                                  final urlMetaData = widget.urlModel.metaData!;
+
+                                  var name = '';
+
+                                  if (urlModelData.title.isNotEmpty) {
+                                    name = urlModelData.title;
+                                  } else if (urlMetaData.title != null &&
+                                      urlMetaData.title!.isNotEmpty) {
+                                    name = urlMetaData.title!;
+                                  } else if (urlMetaData.websiteName != null &&
+                                      urlMetaData.websiteName!.isNotEmpty) {
+                                    name = urlMetaData.websiteName!;
+                                  }
+
+                                  final placeHolder = Container(
+                                    padding: const EdgeInsets.all(2),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: ColourPallette.black,
+                                      // color: Colors.deepPurple
+                                    ),
+                                    child: Text(
+                                      _websiteName(name, 5),
+                                      maxLines: 1,
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                      overflow: TextOverflow.fade,
+                                      style: const TextStyle(
+                                        color: ColourPallette.white,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 8,
+                                      ),
+                                    ),
+                                  );
+
+                                  if (widget.urlModel.metaData?.faviconUrl ==
+                                      null) {
+                                    return placeHolder;
+                                  }
+
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: NetworkImageBuilderWidget(
+                                        imageUrl: widget
+                                            .urlModel.metaData!.faviconUrl!,
+                                        compressImage: false,
+                                        errorWidgetBuilder: () {
+                                          return placeHolder;
+                                        },
+                                        successWidgetBuilder: (imageData) {
+                                          final imageBytes =
+                                              imageData.imageBytesData!;
+
+                                          return ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            child: Image.memory(
+                                              imageBytes,
+                                              fit: BoxFit.contain,
+                                              height: 14,
+                                              width: 14,
+                                              errorBuilder: (ctx, _, __) {
+                                                return placeHolder;
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                StringUtils.capitalizeEachWord(
+                                  _websiteName(
+                                    widget.urlModel.metaData?.websiteName ??
+                                        widget.urlModel.title,
+                                    15,
+                                  ),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey.shade800,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getTimeDifferenceOfFeed(),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
                     children: [
-                      TextSpan(
-                        text: '${urlMetaData.description}',
-                        style: TextStyle(
-                          color: Colors.grey.shade800,
-                          // overflow: TextOverflow.ellipsis,
-                          fontSize: 14,
+                      _layoutFilterOptions(),
+                      IconButton(
+                        onPressed: widget.onShareButtonTap,
+                        icon: Icon(
+                          Icons.share_rounded,
+                          size: 16,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ],
                   ),
-                ),
-              );
-            },
-          ),
-
-        /// Website details and other option
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              flex: 8,
-              child: GestureDetector(
-                onTap: onTap,
-                onLongPress: onLongPress,
-                child: Row(
-                  children: [
-                    if (urlMetaData.faviconUrl != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: NetworkImageBuilderWidget(
-                            imageUrl: urlMetaData.faviconUrl!,
-                            compressImage: false,
-                            errorWidgetBuilder: () {
-                              return IconButton(
-                                onPressed: () => context
-                                    .read<NetworkImageCacheCubit>()
-                                    .addImage(
-                                      urlMetaData.faviconUrl!,
-                                      compressImage: false,
-                                    ),
-                                icon: const Icon(Icons.circle),
-                                color: ColourPallette.black,
-                              );
-                            },
-                            successWidgetBuilder: (imageData) {
-                              final imageBytes = imageData.imageBytesData!;
-                              // Logger.printLog(
-                              //   '[img]: faviconUrl urlpre: ${urlMetaData.faviconUrl!}',
-                              // );
-                              if (imageData.uiImage != null) {
-                                return CustomPaint(
-                                  size: const Size(16, 16),
-                                  painter: ImagePainter(
-                                    imageData.uiImage!,
-                                  ),
-                                );
-                              }
-
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: Image.memory(
-                                  imageBytes,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (ctx, _, __) {
-                                    try {
-                                      final svgImage = SvgPicture.memory(
-                                        urlMetaData.favicon!,
-                                      );
-
-                                      return svgImage;
-                                    } catch (e) {
-                                      return const Icon(Icons.web);
-                                    }
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      )
-                    else
-                      const Icon(
-                        Icons.web,
-                        size: 16,
-                      ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${urlMetaData.websiteName}',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey.shade800,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: _showFullDescription,
-                  builder: (context, showFullDescription, _) {
-                    return IconButton(
-                      onPressed: () => _showFullDescription.value =
-                          !_showFullDescription.value,
-                      icon: Icon(
-                        showFullDescription
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        size: 20,
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  onPressed: onShareButtonTap,
-                  icon: const Icon(
-                    Icons.share_rounded,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _bannerImageBuilder({
-    required BuildContext context,
-    required Size size,
-    bool isSideWays = false,
-  }) {
-    return NetworkImageBuilderWidget(
-      imageUrl: urlMetaData.bannerImageUrl!,
-      imageBytes: urlMetaData.bannerImage,
-      compressImage: true,
-      errorWidgetBuilder: () {
-        if (isSideWays) {
-          return Container();
-        }
-
-        return SizedBox(
-          height: 150,
-          width: 600,
-          child: Center(
-            child: IconButton(
-              onPressed: () => context.read<NetworkImageCacheCubit>().addImage(
-                    urlMetaData.bannerImageUrl!,
-                    compressImage: true,
-                  ),
-              icon: const Icon(Icons.restore_rounded),
-            ),
-          ),
-        );
-      },
-      loadingWidgetBuilder: () {
-        if (isSideWays) {
-          return Container();
-        }
-        return const SizedBox(
-          height: 150,
-          width: 600,
-          child: Center(
-            child: CircularProgressIndicator(
-              backgroundColor: ColourPallette.grey,
-              color: ColourPallette.white,
-            ),
-          ),
-        );
-      },
-      successWidgetBuilder: (imageData) {
-        final imageBytes = imageData.imageBytesData!;
-
-        final bannerImageDim = ImageUtils.getImageDimFromUintData(
-              imageBytes,
-            ) ??
-            const Size(600, 150);
-
-        final bannerImageAspectRatio =
-            bannerImageDim.height / bannerImageDim.width;
-
-        final isSideWaysBanner = bannerImageAspectRatio >= 1.5 ||
-            (bannerImageAspectRatio <= 1.3 && bannerImageAspectRatio > 0.65);
-        var width = bannerImageDim.width;
-        var height = bannerImageDim.height;
-
-        // // Logger.printLog(
-        //   '[bannerimage] : ${imageData.imageUrl.substring(0, 32)}, ${bannerImageAspectRatio}, screen: $size, ui.Image: ${imageData.uiImage != null}',
-        // );
-
-        if (bannerImageAspectRatio >= 1.5) {
-          width = 100;
-          height = min(80, width * bannerImageAspectRatio);
-        } else {
-          width = 100;
-          height = width * bannerImageAspectRatio;
-        }
-
-        if (isSideWaysBanner) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _getTitle(),
-              ),
-              const SizedBox(width: 4),
-              SizedBox(
-                // color: Colors.amber,
-                width: width,
-                height: height,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: (imageData.uiImage != null)
-                      ? CustomPaint(
-                          size: Size(width, height),
-                          painter: ImagePainter(
-                            imageData.uiImage!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Image.memory(
-                          imageBytes,
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, _, __) {
-                            return SvgPicture.memory(
-                              imageBytes,
-                              placeholderBuilder: (context) {
-                                return const SizedBox(
-                                  height: 150,
-                                  width: 600,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                ),
+                ],
               ),
             ],
-          );
-        }
-
-        if (bannerImageAspectRatio > 1.3 && bannerImageAspectRatio < 1.5) {
-          // height is greater
-          width = min(size.width - 32, bannerImageDim.width);
-          height = min(width * bannerImageAspectRatio, bannerImageDim.height);
-
-          final averageBrightNess = ImageUtils.averageBrightness(
-            ImageUtils.extractLowerHalf(imageBytes, fractionLowerHeight: 3 / 4),
-          );
-
-          final gradientColor =
-              averageBrightNess < 128 ? Colors.black : Colors.white;
-
-          final colors = averageBrightNess < 128
-              ? [
-                  gradientColor.withOpacity(0.60),
-                  gradientColor.withOpacity(0.55),
-                  gradientColor.withOpacity(0.50),
-                  gradientColor.withOpacity(0.45),
-                  gradientColor.withOpacity(0.40),
-                  gradientColor.withOpacity(0.05),
-                ]
-              : [
-                  gradientColor.withOpacity(0.9),
-                  gradientColor.withOpacity(0.68),
-                  gradientColor.withOpacity(0.50),
-                  gradientColor.withOpacity(0.45),
-                  gradientColor.withOpacity(0.35),
-                  gradientColor.withOpacity(0.05),
-                ];
-
-          final linearGradient = LinearGradient(
-            colors: colors,
-            begin: Alignment.bottomCenter,
-            end: Alignment.center,
-            stops: const [0.40, 0.6, 0.65, 0.7, 0.75, 1],
-            // tileMode: TileMode.decal,
-          );
-
-          return Stack(
-            alignment: Alignment.bottomLeft,
-            children: [
-              // Banner Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  height: height,
-                  width: width,
-                  child: (imageData.uiImage != null)
-                      ? CustomPaint(
-                          size: Size(width, height),
-                          painter: ImagePainter(
-                            imageData.uiImage!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Image.memory(
-                          imageBytes,
-                          height: height,
-                          width: width,
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, _, __) {
-                            return SvgPicture.memory(
-                              imageBytes,
-                              placeholderBuilder: (context) {
-                                return const SizedBox(
-                                  height: 150,
-                                  width: 600,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ),
-              // title
-              Container(
-                height: height * 0.75,
-                alignment: Alignment.bottomLeft,
-                decoration: BoxDecoration(
-                  gradient: linearGradient,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 8,
-                ),
-                child: Container(
-                  alignment: Alignment.bottomLeft,
-                  child: _getTitle(
-                    titleTextStyle: TextStyle(
-                      color: averageBrightNess > 128
-                          ? Colors.grey.shade900
-                          : ColourPallette.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: bannerImageAspectRatio < 0.8 ? 17 : 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        } else {
-          // width is greater
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: (imageData.uiImage != null)
-                    ? CustomPaint(
-                        size: Size(width, height),
-                        painter: ImagePainter(
-                          imageData.uiImage!,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : Image.memory(
-                        imageBytes,
-                        errorBuilder: (ctx, _, __) {
-                          return SvgPicture.memory(
-                            imageBytes,
-                            placeholderBuilder: (context) {
-                              return const SizedBox(
-                                height: 150,
-                                width: 600,
-                              );
-                            },
-                          );
-                        },
-                      ),
-              ),
-              if (urlMetaData.title != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: _getTitle(),
-                ),
-            ],
-          );
-        }
-      },
-    );
-  }
-
-  Widget _getTitle({TextStyle? titleTextStyle}) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: ValueListenableBuilder(
-        valueListenable: _showFullDescription,
-        builder: (context, showFullDescription, _) {
-          return Text(
-            '${urlMetaData.title}',
-            style: titleTextStyle ??
-                TextStyle(
-                  color: Colors.grey.shade800,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
           );
         },
       ),
+    );
+  }
+
+  Widget _layoutFilterOptions() {
+    return FilterPopupMenuButton(
+      icon: Icon(
+        Icons.format_shapes_rounded,
+        // Icons.more_vert_rounded,
+        color: Colors.grey.shade700,
+        size: 16,
+      ),
+      menuItems: [
+        // ListFilterPopupMenuItem(
+        //   title: 'SideWay Layout',
+        //   notifier: _isSideWayLayout,
+        //   onPress: () => _isSideWayLayout.value = !_isSideWayLayout.value,
+        // ),
+        if (widget.urlModel.description != null ||
+            widget.urlModel.metaData?.description != null)
+          ListFilterPopupMenuItem(
+            title: 'Full Description',
+            notifier: _showFullDescription,
+            onPress: () =>
+                _showFullDescription.value = !_showFullDescription.value,
+          ),
+        ListFilterPopupMenuItem(
+          title: 'Show Images',
+          notifier: _showBannerImage,
+          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+        ),
+      ],
     );
   }
 }

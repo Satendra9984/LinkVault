@@ -6,6 +6,7 @@ import 'package:link_vault/core/common/presentation_layer/providers/shared_input
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
@@ -74,7 +75,8 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
 }
 
 class _UrlPreviewListTemplateScreenState
-    extends State<UrlPreviewListTemplateScreen> {
+    extends State<UrlPreviewListTemplateScreen>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   final _showSearchFilterBottomSheet = ValueNotifier(false);
   final _searchTextEditingController = TextEditingController();
@@ -377,6 +379,7 @@ class _UrlPreviewListTemplateScreenState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -514,10 +517,7 @@ class _UrlPreviewListTemplateScreenState
                                         valueListenable: _showDescriptions,
                                         builder:
                                             (context, showDescriptions, _) {
-                                          const titleTextStyle = TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                          );
+                                          
                                           return Container(
                                             margin: const EdgeInsets.symmetric(
                                               vertical: 8,
@@ -529,7 +529,7 @@ class _UrlPreviewListTemplateScreenState
                                                 ),
                                               ),
                                             ),
-                                            child: RssFeedPreviewWidget(
+                                            child: URLPreviewWidget(
                                               key: ValueKey(
                                                 urlModel.firestoreId,
                                               ),
@@ -891,4 +891,8 @@ class _UrlPreviewListTemplateScreenState
       ],
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

@@ -11,7 +11,7 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_previewbytes_widget.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/constants/coll_constants.dart';
 
@@ -505,7 +505,7 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
             builder: (context, scrollController) {
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: UrlPreviewWidget(
+                child: UrlPreviewBytesWidget(
                   urlMetaData: _previewMetaData.value!,
                   onTap: () {},
                   onLongPress: () {},

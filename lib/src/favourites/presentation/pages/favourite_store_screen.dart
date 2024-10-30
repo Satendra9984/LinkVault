@@ -118,12 +118,12 @@ class _FavouriteFolderCollectionPageState
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
-              UrlsPreviewListScreen(
-                showBottomBar: _showBottomNavBar,
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-              ),
+              // UrlsPreviewListScreen(
+              //   showBottomBar: _showBottomNavBar,
+              //   collectionModel: fetchCollection.collection!,
+              //   isRootCollection: widget.isRootCollection,
+              //   appBarLeadingIcon: widget.appBarLeadingIcon,
+              // ),
             ],
           );
         },
@@ -191,13 +191,13 @@ class _FavouriteFolderCollectionPageState
                       selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      unSelectedIcon: Icons.dynamic_feed_outlined,
-                      selectedIcon: Icons.dynamic_feed,
-                      index: 2,
-                      label: 'Previews',
-                    ),
+                    // CustomBottomNavItem.create(
+                    //   currentPage: _currentPage,
+                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
+                    //   selectedIcon: Icons.dynamic_feed,
+                    //   index: 2,
+                    //   label: 'Previews',
+                    // ),
                   ],
                 );
               },

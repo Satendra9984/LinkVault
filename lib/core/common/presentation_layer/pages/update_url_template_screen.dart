@@ -4,14 +4,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_previewbytes_widget.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/constants/coll_constants.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:share_plus/share_plus.dart';
 
 class UpdateUrlTemplateScreen extends StatefulWidget {
@@ -36,12 +43,17 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
   final _urlAddressController = TextEditingController();
   final _urlTitleController = TextEditingController();
   final _urlDescriptionController = TextEditingController();
-  final _isFavorite = ValueNotifier<bool>(false);
   // CATEGORIES RELATED DATA
   final _predefinedCategories = [...categories];
+  final _showCategoryOptionsList = ValueNotifier(false);
   final _selectedCategory = ValueNotifier<String>('');
 
+  // SETTINGS
+  // OPEN IN
+  final _urlLaunchType = ValueNotifier<UrlLaunchType>(UrlLaunchType.customTabs);
+
   /// PREVIEW RELATED DATA
+  final _showPreview = ValueNotifier<bool>(false);
   final _previewMetaData = ValueNotifier<UrlMetaData?>(null);
   final _previewLoadingStates =
       ValueNotifier<LoadingStates>(LoadingStates.initial);
@@ -56,10 +68,9 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
               title: _urlTitleController.text,
             );
 
-      // final urlMetaDataJson = urlMetaData.toJson();
+      final settings = <String, dynamic>{};
 
-      // urlMetaDataJson['banner_image'] = null;
-      // urlMetaData = UrlMetaData.fromJson(urlMetaDataJson);
+      settings[urlLaunchType] = _urlLaunchType.value.label;
 
       final createdAt = DateTime.now().toUtc();
 
@@ -70,23 +81,26 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         title: _urlTitleController.text,
         tag: _selectedCategory.value,
         description: _urlDescriptionController.text,
-        isFavourite: _isFavorite.value,
+        isFavourite: _showPreview.value,
         isOffline: false,
         createdAt: createdAt,
         updatedAt: createdAt,
         metaData: urlMetaData,
+        settings: settings,
       );
 
-      await urlCrudCubit
-          .updateUrl(
-        urlData: urlModelData,
-      )
-          .then(
-        (_) {
-          if (widget.onUpdateURLCallback == null) return;
-          widget.onUpdateURLCallback!(urlModelData);
-        },
-      );
+      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+
+      // await urlCrudCubit
+      //     .updateUrl(
+      //   urlData: urlModelData,
+      // )
+      //     .then(
+      //   (_) {
+      //     if (widget.onUpdateURLCallback == null) return;
+      //     widget.onUpdateURLCallback!(urlModelData);
+      //   },
+      // );
     }
   }
 
@@ -155,10 +169,13 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     _urlAddressController.text = widget.urlModel.url;
     _urlTitleController.text = widget.urlModel.title;
     _urlDescriptionController.text = widget.urlModel.description ?? '';
-    _isFavorite.value = widget.urlModel.isFavourite;
+    _showPreview.value = widget.urlModel.isFavourite;
     _selectedCategory.value = widget.urlModel.tag;
     _previewMetaData.value = widget.urlModel.metaData;
     _previewLoadingStates.value = LoadingStates.loaded;
+
+    _initializeSettingsOption();
+
     super.initState();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -169,12 +186,21 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     );
   }
 
+  void _initializeSettingsOption() {
+    final settings = widget.urlModel.settings ?? {};
+
+    if (settings.containsKey(urlLaunchType)) {
+      _urlLaunchType.value =
+          UrlLaunchType.fromString(settings[urlLaunchType] as String);
+    }
+  }
+
   @override
   void dispose() {
     _urlAddressController.dispose();
     _urlTitleController.dispose();
     _urlDescriptionController.dispose();
-    _isFavorite.dispose();
+    _showPreview.dispose();
     _selectedCategory.dispose();
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
@@ -193,10 +219,11 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Text(
-          'Update Url',
+          'Update Link',
           style: TextStyle(
             color: Colors.grey.shade800,
             fontWeight: FontWeight.w500,
+            fontSize: 18,
           ),
         ),
         actions: [
@@ -233,6 +260,8 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
               size: 20,
             ),
           ),
+
+          const SizedBox(width: 8),
         ],
       ),
       bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
@@ -291,11 +320,18 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // URL-ADDRESS TEXTFIELD
                 CustomCollTextField(
                   controller: _urlAddressController,
-                  labelText: 'Url Address',
+                  labelText: 'Link Address',
                   hintText: ' eg. https://www.youtube.com ',
                   keyboardType: TextInputType.name,
+                  isRequired: true,
+                  labelTextStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: ColourPallette.black,
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter title';
@@ -305,23 +341,55 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // TITILE TEXTFIELD
+                CustomCollTextField(
+                  controller: _urlTitleController,
+                  labelText: 'Title',
+                  hintText: ' eg. google ',
+                  keyboardType: TextInputType.name,
+                  isRequired: true,
+                  labelTextStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: ColourPallette.black,
+                  ),
+                  maxLength: 30,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter title';
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // PREVIEW AND AUTOFILLL OPTION
                 ValueListenableBuilder<LoadingStates?>(
                   valueListenable: _previewLoadingStates,
                   builder: (context, previewMetaDataLoadingState, _) {
                     final trailingWidgetList = <Widget>[];
 
-                    final previewButton = IconButton(
-                      onPressed: () async {
-                        if (_previewMetaData.value != null) {
-                          await _showPreviewBottomSheet(context);
-                        } else {
-                          await _loadPreview();
-                        }
+                    final previewButton = ValueListenableBuilder(
+                      valueListenable: _showPreview,
+                      builder: (ctx, showPreview, _) {
+                        return IconButton(
+                          onPressed: () async {
+                            if (previewMetaDataLoadingState ==
+                                LoadingStates.loaded) {
+                              _showPreview.value = !_showPreview.value;
+                            } else {
+                              await _loadPreview();
+                            }
+                          },
+                          icon: Icon(
+                            !showPreview
+                                ? Icons.image_rounded
+                                : Icons.hide_image_rounded,
+                            color: ColourPallette.mountainMeadow,
+                          ),
+                        );
                       },
-                      icon: const Icon(
-                        Icons.preview_rounded,
-                        color: ColourPallette.black,
-                      ),
                     );
 
                     final loadAgain = IconButton(
@@ -364,8 +432,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                               'Preview and Autofill',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: ColourPallette.black,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                             Row(
@@ -390,35 +457,337 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                   },
                 ),
 
-                const SizedBox(height: 16),
-
-                CustomCollTextField(
-                  controller: _urlTitleController,
-                  labelText: 'Title',
-                  hintText: ' eg. google ',
-                  keyboardType: TextInputType.name,
-                  maxLength: 30,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter title';
+                ValueListenableBuilder(
+                  valueListenable: _showPreview,
+                  builder: (ctx, showPreview, _) {
+                    if (!showPreview) {
+                      return const SizedBox.shrink();
                     }
-                    return null;
+                    return ValueListenableBuilder(
+                      valueListenable: _previewMetaData,
+                      builder: (ctx, urlMetaData, _) {
+                        if (urlMetaData == null) {
+                          return const SizedBox.shrink();
+                        }
+                        final date = DateTime.now().toUtc();
+                        final urlModelData = UrlModel(
+                          firestoreId: '',
+                          collectionId: widget.urlModel.collectionId,
+                          url: _urlAddressController.text.trim(),
+                          title: _urlTitleController.text.trim(),
+                          description: _urlDescriptionController.text.trim(),
+                          isFavourite: _showPreview.value,
+                          tag: _selectedCategory.value,
+                          isOffline: false,
+                          createdAt: date,
+                          updatedAt: date,
+                          metaData: urlMetaData,
+                        );
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: ColourPallette.white,
+                            // color: ColourPallette.mystic.withOpacity(0.1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: ColourPallette.mystic.withOpacity(0.2),
+                                spreadRadius: 2,
+                                offset: const Offset(0, 2),
+                                blurRadius: 4, // Smoothens the shadow edges
+                              ),
+                              BoxShadow(
+                                color: ColourPallette.mystic.withOpacity(0.4),
+                                spreadRadius: 2,
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: URLPreviewWidget(
+                            urlModel: urlModelData,
+                            urlPreloadMethod: UrlPreloadMethods.httpGet,
+                            onTap: () async {
+                              switch (_urlLaunchType.value) {
+                                case UrlLaunchType.customTabs:
+                                  {
+                                    final theme = Theme.of(context);
+                                    await CustomTabsService.launchUrl(
+                                      url: urlModelData.url,
+                                      theme: theme,
+                                    ).then(
+                                      (_) async {
+                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                        // JUST LIKE APPS IN BACKGROUND TYPE
+                                      },
+                                    );
+                                    break;
+                                  }
+                                case UrlLaunchType.webView:
+                                  {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => DashboardWebView(
+                                          url: urlModelData.url,
+                                        ),
+                                      ),
+                                    );
+
+                                    break;
+                                  }
+                                case UrlLaunchType.readingMode:
+                                  {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => DashboardWebView(
+                                          url: urlModelData.url,
+                                        ),
+                                      ),
+                                    );
+
+                                    break;
+                                  }
+                                case UrlLaunchType.separateBrowserWindow:
+                                  {
+                                    final theme = Theme.of(context);
+                                    await CustomTabsService.launchUrl(
+                                      url: urlModelData.url,
+                                      theme: theme,
+                                    ).then(
+                                      (_) async {
+                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                        // JUST LIKE APPS IN BACKGROUND TYPE
+                                      },
+                                    );
+                                    break;
+                                  }
+                              }
+                            },
+                            onLongPress: () {},
+                            onShareButtonTap: () {
+                              final urlAddress = _urlAddressController.text;
+                              final urlTitle = _urlTitleController.text;
+                              final urlDescription =
+                                  _urlDescriptionController.text;
+
+                              Share.share(
+                                '$urlAddress\n$urlTitle\n$urlDescription',
+                              );
+                            },
+                            onLayoutOptionsButtontap: () {},
+                            updateBannerImage: () {},
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
+
+                // SELECT CATEGORY
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Category',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: _showCategoryOptionsList,
+                      builder: (ctx, showCategoryOptionsList, _) {
+                        if (showCategoryOptionsList) {
+                          return IconButton(
+                            onPressed: () => _showCategoryOptionsList.value =
+                                !_showCategoryOptionsList.value,
+                            icon: const Icon(
+                              Icons.arrow_upward_rounded,
+                            ),
+                          );
+                        }
+                        return IconButton(
+                          onPressed: () => _showCategoryOptionsList.value =
+                              !_showCategoryOptionsList.value,
+                          icon: const Icon(
+                            Icons.arrow_downward_rounded,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                ValueListenableBuilder(
+                  valueListenable: _showCategoryOptionsList,
+                  builder: (ctx, showCategoryOptionsList, _) {
+                    if (!showCategoryOptionsList) {
+                      return const SizedBox.shrink();
+                    }
+                    return ValueListenableBuilder<String>(
+                      valueListenable: _selectedCategory,
+                      builder: (context, selectedCategory, child) {
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: List.generate(
+                            _predefinedCategories.length,
+                            (index) {
+                              final category = _predefinedCategories[index];
+                              final isSelected =
+                                  category == _selectedCategory.value;
+                              return GestureDetector(
+                                onTap: () => _selectedCategory.value = category,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? ColourPallette.mountainMeadow
+                                        : Colors.white,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? ColourPallette.mountainMeadow
+                                          : ColourPallette.grey,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey.shade700,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w500
+                                          : FontWeight.w400,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+                
+                // SETTINGS 
+                const Text(
+                  'Settings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ColourPallette.salemgreen,
+                  ),
+                ),
                 const SizedBox(height: 16),
+
+                // ALWAYS OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Always Open In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _urlLaunchType,
+                      builder: (ctx, urlLaunchType, _) {
+                        return DropdownButton<UrlLaunchType>(
+                          value: urlLaunchType,
+                          onChanged: (urlLaunchType) {
+                            if (urlLaunchType == null) return;
+                            _urlLaunchType.value = urlLaunchType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            DropdownMenuItem(
+                              value: UrlLaunchType.customTabs,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  'Browser', // UrlLaunchType.customTabs.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: UrlLaunchType.webView,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  UrlLaunchType.webView.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+
+                // ADDITONAL OPTIONS
+                const Text(
+                  'Additional',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ColourPallette.salemgreen,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 CustomCollTextField(
                   controller: _urlDescriptionController,
                   labelText: 'Notes',
                   hintText: ' Add your important detail here. ',
                   maxLength: 1000,
                   maxLines: 5,
+                  labelTextStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: ColourPallette.black,
+                  ),
                   validator: (value) {
                     return null;
                   },
                 ),
+               
+                const SizedBox(height: 120),
+               
 
-                const SizedBox(height: 20),
-
+                
                 // IS fAVOURITE
                 // Row(
                 //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -451,65 +820,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 //   ],
                 // ),
 
-                // const SizedBox(height: 20),
-
-                // Selected Category
-                const Text(
-                  'Category',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                ValueListenableBuilder<String>(
-                  valueListenable: _selectedCategory,
-                  builder: (context, selectedCategory, child) {
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: List.generate(
-                        _predefinedCategories.length,
-                        (index) {
-                          final category = _predefinedCategories[index];
-                          final isSelected =
-                              category == _selectedCategory.value;
-                          return GestureDetector(
-                            onTap: () => _selectedCategory.value = category,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? ColourPallette.mountainMeadow
-                                    : Colors.white,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? ColourPallette.mountainMeadow
-                                      : ColourPallette.grey,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                category,
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? Colors.white : Colors.black,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
           ),
@@ -524,25 +834,99 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       backgroundColor: ColourPallette.mystic,
       isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          child: DraggableScrollableSheet(
-            expand: false,
-            builder: (context, scrollController) {
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: UrlPreviewWidget(
-                  urlMetaData: _previewMetaData.value!,
-                  onTap: () => {},
-                  onLongPress: () => {},
-                  onShareButtonTap: () {},
-                  onMoreVertButtontap: () {},
-                ),
-              );
-            },
+        final date = DateTime.now().toUtc();
+        final urlModelData = UrlModel(
+          firestoreId: '',
+          collectionId: widget.urlModel.collectionId,
+          url: _urlAddressController.text.trim(),
+          title: _urlTitleController.text.trim(),
+          description: _urlDescriptionController.text.trim(),
+          isFavourite: _showPreview.value,
+          tag: _selectedCategory.value,
+          isOffline: false,
+          createdAt: date,
+          updatedAt: date,
+          metaData: _previewMetaData.value,
+        );
+
+        return IntrinsicHeight(
+          child: Container(
+            // padding: EdgeInsets.only(
+            //   bottom: MediaQuery.of(context).viewInsets.bottom,
+            // ),
+            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            child: URLPreviewWidget(
+              urlModel: urlModelData,
+              urlPreloadMethod: UrlPreloadMethods.httpGet,
+              onTap: () async {
+                switch (_urlLaunchType.value) {
+                  case UrlLaunchType.customTabs:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
+                        url: urlModelData.url,
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
+                  case UrlLaunchType.webView:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModelData.url,
+                          ),
+                        ),
+                      );
+
+                      break;
+                    }
+                  case UrlLaunchType.readingMode:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModelData.url,
+                          ),
+                        ),
+                      );
+
+                      break;
+                    }
+                  case UrlLaunchType.separateBrowserWindow:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
+                        url: urlModelData.url,
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
+                }
+              },
+              onLongPress: () {},
+              onShareButtonTap: () {
+                final urlAddress = _urlAddressController.text;
+                final urlTitle = _urlTitleController.text;
+                final urlDescription = _urlDescriptionController.text;
+
+                Share.share(
+                  '$urlAddress\n$urlTitle\n$urlDescription',
+                );
+              },
+              onLayoutOptionsButtontap: () {},
+              updateBannerImage: () {},
+            ),
           ),
         );
       },

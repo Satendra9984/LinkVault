@@ -33,6 +33,7 @@ import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -63,6 +64,7 @@ class _DashboardUrlFaviconListScreenState
     extends State<DashboardUrlFaviconListScreen>
     with AutomaticKeepAliveClientMixin {
   final _listViewType = ValueNotifier(UrlViewType.favicons);
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -87,57 +89,41 @@ class _DashboardUrlFaviconListScreenState
   Widget build(BuildContext context) {
     super.build(context);
 
-    return ValueListenableBuilder(
-      valueListenable: _listViewType,
-      builder: (ctx, listViewType, _) {
-        switch (listViewType) {
-          case UrlViewType.previews:
-            return UrlPreviewListTemplateScreen(
-              collectionModel: widget.collectionModel,
-              isRootCollection: widget.isRootCollection,
-              showAddUrlButton: false,
-              onAddUrlPressed: ({String? url}) {},
-              onLongPress: (
-                urlModel, {
-                required List<Widget> urlOptions,
-              }) async {
-                await showUrlOptionsBottomSheet(
-                  context,
-                  urlModel: urlModel,
-                  urlOptions: urlOptions,
-                );
-              },
-              urlsEmptyWidget: _urlsEmptyWidget(),
-              showBottomNavBar: widget.showBottomNavBar,
-              appBar: _faviconsListAppBarBuilder,
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (page) {},
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        UrlFaviconListTemplateScreen(
+          isRootCollection: widget.isRootCollection,
+          collectionModel: widget.collectionModel,
+          showAddUrlButton: widget.showAddUrlButton,
+          showBottomNavBar: widget.showBottomNavBar,
+          onAddUrlPressed: _onAddUrlPressed,
+          appBar: _faviconsListAppBarBuilder,
+          urlsEmptyWidget: _urlsEmptyWidget(),
+          onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
+        ),
+        UrlPreviewListTemplateScreen(
+          collectionModel: widget.collectionModel,
+          isRootCollection: widget.isRootCollection,
+          showAddUrlButton: false,
+          onAddUrlPressed: ({String? url}) {},
+          onLongPress: (
+            urlModel, {
+            required List<Widget> urlOptions,
+          }) async {
+            await showUrlOptionsBottomSheet(
+              context,
+              urlModel: urlModel,
+              urlOptions: urlOptions,
             );
-
-          case UrlViewType.apps:
-            return UrlFaviconListTemplateScreen(
-              isRootCollection: widget.isRootCollection,
-              collectionModel: widget.collectionModel,
-              showAddUrlButton: widget.showAddUrlButton,
-              showBottomNavBar: widget.showBottomNavBar,
-              onAddUrlPressed: _onAddUrlPressed,
-              appBar: _faviconsListAppBarBuilder,
-              urlsEmptyWidget: _urlsEmptyWidget(),
-              onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
-            );
-
-          // ignore: no_default_cases
-          default:
-            return UrlFaviconListTemplateScreen(
-              isRootCollection: widget.isRootCollection,
-              collectionModel: widget.collectionModel,
-              showAddUrlButton: widget.showAddUrlButton,
-              showBottomNavBar: widget.showBottomNavBar,
-              onAddUrlPressed: _onAddUrlPressed,
-              appBar: _faviconsListAppBarBuilder,
-              urlsEmptyWidget: _urlsEmptyWidget(),
-              onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
-            );
-        }
-      },
+          },
+          urlsEmptyWidget: _urlsEmptyWidget(),
+          showBottomNavBar: widget.showBottomNavBar,
+          appBar: _faviconsListAppBarBuilder,
+        ),
+      ],
     );
   }
 
@@ -169,6 +155,7 @@ class _DashboardUrlFaviconListScreenState
       actions: [
         _urlViewTypeOptions(),
         ...actions,
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -181,7 +168,11 @@ class _DashboardUrlFaviconListScreenState
       menuItems: [
         PopupMenuItem<UrlViewType>(
           value: UrlViewType.favicons,
-          onTap: () => _listViewType.value = UrlViewType.favicons,
+          onTap: () {
+            _listViewType.value = UrlViewType.favicons;
+            _pageController.jumpToPage(0);
+            Logger.printLog('currentpage: ${_pageController.page}');
+          },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -213,7 +204,11 @@ class _DashboardUrlFaviconListScreenState
         ),
         PopupMenuItem<UrlViewType>(
           value: UrlViewType.previews,
-          onTap: () => _listViewType.value = UrlViewType.previews,
+          onTap: () {
+            _listViewType.value = UrlViewType.previews;
+            _pageController.jumpToPage(1);
+            Logger.printLog('currentpage: ${_pageController.page}');
+          },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -259,6 +254,13 @@ class _DashboardUrlFaviconListScreenState
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (ctx) => DashboardWebView(
+        //       url: url.url,
+        //     ),
+        //   ),
+        // );
         final theme = Theme.of(context);
         await CustomTabsService.launchUrl(
           url: url.url,

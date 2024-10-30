@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:link_vault/core/utils/string_utils.dart';
 
-
 class UrlModel {
   UrlModel({
     required this.firestoreId,
@@ -39,8 +38,10 @@ class UrlModel {
       htmlContent: json['html_content'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      parentUrlModelFirestoreId: json['parent_url_model_id'] as String?, // Nullable for backward compatibility
-      settings: json['settings'] as Map<String, dynamic>?, // Nullable settings map
+      parentUrlModelFirestoreId: json['parent_url_model_id']
+          as String?, // Nullable for backward compatibility
+      settings:
+          json['settings'] as Map<String, dynamic>?, // Nullable settings map
     );
   }
 
@@ -75,7 +76,8 @@ class UrlModel {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'is_favourite': isFavourite,
-      'parent_url_model_id': parentUrlModelFirestoreId, // Include in JSON serialization
+      'parent_url_model_id':
+          parentUrlModelFirestoreId, // Include in JSON serialization
       'settings': settings, // Include in JSON serialization
     };
   }
@@ -109,13 +111,12 @@ class UrlModel {
       htmlContent: htmlContent ?? this.htmlContent,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      parentUrlModelFirestoreId: parentUrlModelFirestoreId ?? this.parentUrlModelFirestoreId,
+      parentUrlModelFirestoreId:
+          parentUrlModelFirestoreId ?? this.parentUrlModelFirestoreId,
       settings: settings ?? this.settings,
     );
   }
 }
-
-
 
 // class UrlModel {
 //   UrlModel({
@@ -262,7 +263,6 @@ class UrlMetaData {
     );
   }
 
-
   final Uint8List? favicon;
   final String? faviconUrl;
   final Uint8List? bannerImage;
@@ -308,3 +308,6 @@ class UrlMetaData {
   }
 }
 
+// SOME URL-MODEL CONSTANTS
+
+const urlLaunchType = 'url_view_type';

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/res/colours.dart';
@@ -30,6 +31,15 @@ class UrlsPreviewListScreen extends StatefulWidget {
 
 class _UrlsPreviewListScreenState extends State<UrlsPreviewListScreen>
     with AutomaticKeepAliveClientMixin {
+      final _listViewType = ValueNotifier(UrlViewType.favicons);
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);

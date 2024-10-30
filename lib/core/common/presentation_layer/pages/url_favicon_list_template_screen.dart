@@ -21,6 +21,7 @@ import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -66,7 +67,8 @@ class UrlFaviconListTemplateScreen extends StatefulWidget {
 }
 
 class _UrlFaviconListTemplateScreenState
-    extends State<UrlFaviconListTemplateScreen> {
+    extends State<UrlFaviconListTemplateScreen>
+    with AutomaticKeepAliveClientMixin {
   late final ScrollController _scrollController;
   final _showAppBar = ValueNotifier(true);
   final _showSearchFilterBottomSheet = ValueNotifier(false);
@@ -256,6 +258,7 @@ class _UrlFaviconListTemplateScreenState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: _getAppBar(),
       bottomSheet: _getBottomSheet(),
@@ -282,7 +285,7 @@ class _UrlFaviconListTemplateScreenState
                       onPressed: () => widget.onAddUrlPressed(url: url),
                       label: showFullAddUrlButton
                           ? const Text(
-                              'URL',
+                              'Link',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -314,8 +317,7 @@ class _UrlFaviconListTemplateScreenState
               return widget.urlsEmptyWidget;
             }
             // _list.value = availableUrls;
-                  _list.value = availableUrls.map(ValueNotifier.new).toList();
-
+            _list.value = availableUrls.map(ValueNotifier.new).toList();
 
             _filterList();
             return ValueListenableBuilder(
@@ -444,6 +446,29 @@ class _UrlFaviconListTemplateScreenState
                           },
                         ),
 
+                        // OPEN IN WEBVIEW
+                        BottomSheetOption(
+                          leadingIcon: Icons.open_in_new_rounded,
+                          title: const Text(
+                            'Open In WebView(beta)',
+                            style: titleTextStyle,
+                          ),
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => DashboardWebView(
+                                  url: urlModel.url,
+                                ),
+                              ),
+                            ).then(
+                              (_) async{
+                                await Navigator.maybePop(context);
+                              },
+                            );
+                          },
+                        ),
+
                         // SHARE THE LINK TO OTHER APPS
                         BottomSheetOption(
                           leadingIcon: Icons.share,
@@ -472,13 +497,6 @@ class _UrlFaviconListTemplateScreenState
   }
 
   PreferredSize _getAppBar() {
-    // final size = MediaQuery.of(context).size;
-    const titleTextStyle = TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w500,
-    );
-
-    final showLastUpdated = ValueNotifier(false);
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: ValueListenableBuilder<bool>(
@@ -798,4 +816,8 @@ class _UrlFaviconListTemplateScreenState
       },
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

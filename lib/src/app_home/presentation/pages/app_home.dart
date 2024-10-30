@@ -172,39 +172,6 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                   ),
 
-                  // MY FEEDS
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => RssFeedCollectionStorePage(
-                            collectionId: '$globalUser$RssFeed',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.compassSVG,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.compassSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'My Feeds',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
-                    ),
-                  ),
-
                   // FAVOURITE COLLECTIONS STORE
                   ListTile(
                     onTap: () {
@@ -248,7 +215,7 @@ class _AppHomePageState extends State<AppHomePage> {
                       // );
                     },
                     leading: SvgPicture.asset(
-                      MediaRes.recentSVG ,
+                      MediaRes.recentSVG,
                       height: 20,
                       width: 20,
                     ),
@@ -281,6 +248,39 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     title: const Text(
                       'Search',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
+
+                  // MY FEEDS
+                  ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => RssFeedCollectionStorePage(
+                            collectionId: '$globalUser$RssFeed',
+                            isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.compassSVG,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.compassSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'My Feeds',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,

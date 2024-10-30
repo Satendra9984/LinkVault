@@ -18,6 +18,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
@@ -408,6 +409,16 @@ class _RssFeedUrlsPreviewListWidgetState
                                                   urlModelDataForBookmark;
                                             },
                                             onTap: () async {
+                                              
+                                              // Navigator.of(context).push(
+                                              //   MaterialPageRoute(
+                                              //     builder: (ctx) =>
+                                              //         DashboardWebView(
+                                              //       url: url.metaData?.rssFeedUrl ?? url.url,
+                                              //     ),
+                                              //   ),
+                                              // );
+
                                               final theme = Theme.of(context);
                                               // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
                                               // FOR FASTER WEBPAGE LOADING

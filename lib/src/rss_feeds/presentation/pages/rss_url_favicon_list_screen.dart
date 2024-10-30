@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class RssFeedUrlsListWidget extends StatefulWidget {
@@ -33,6 +49,14 @@ class RssFeedUrlsListWidget extends StatefulWidget {
 
 class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     with AutomaticKeepAliveClientMixin {
+        final _listViewType = ValueNotifier(UrlViewType.favicons);
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
+    super.initState();
+  }
   void _onAddUrlPressed({String? url}) {
     Navigator.push(
       context,
@@ -50,19 +74,46 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return UrlFaviconListTemplateScreen(
-      isRootCollection: widget.isRootCollection,
-      collectionModel: widget.collectionModel,
-      showBottomNavBar: widget.showBottomNavBar,
-      showAddUrlButton: true,
-      onAddUrlPressed: _onAddUrlPressed,
-      appBar: _appBarBuilder,
-      urlsEmptyWidget: _urlsEmptyWidget(context),
-      onUrlModelItemFetchedWidget: _urlItemBuilder,
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (page) {},
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        UrlFaviconListTemplateScreen(
+          isRootCollection: widget.isRootCollection,
+          collectionModel: widget.collectionModel,
+          showAddUrlButton: true,
+          showBottomNavBar: widget.showBottomNavBar,
+          onAddUrlPressed: _onAddUrlPressed,
+          appBar: _faviconsListAppBarBuilder,
+          urlsEmptyWidget: _urlsEmptyWidget(context),
+          onUrlModelItemFetchedWidget: _urlFaviconItemBuilder,
+        ),
+        UrlPreviewListTemplateScreen(
+          collectionModel: widget.collectionModel,
+          isRootCollection: widget.isRootCollection,
+          showAddUrlButton: false,
+          onAddUrlPressed: ({String? url}) {},
+          onLongPress: (
+            urlModel, {
+            required List<Widget> urlOptions,
+          }) async {
+            await showUrlOptionsBottomSheet(
+              context,
+              urlModel: urlModel,
+              urlOptions: urlOptions,
+            );
+          },
+          urlsEmptyWidget: _urlsEmptyWidget(context),
+          showBottomNavBar: widget.showBottomNavBar,
+          appBar: _faviconsListAppBarBuilder,
+        ),
+      ],
     );
   }
 
-  Widget _urlItemBuilder({
+
+  Widget _urlFaviconItemBuilder({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required int index,
     required List<Widget> urlOptions,
@@ -70,67 +121,451 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     final url = list.value[index].value.urlModel!;
 
     return UrlFaviconLogoWidget(
-      urlPreloadMethod: UrlPreloadMethods.httpGet,
+      urlPreloadMethod: widget.isRootCollection
+          ? UrlPreloadMethods.httpGet
+          : UrlPreloadMethods.httpGet,
       onTap: () async {
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (ctx) => DashboardWebView(
+        //       url: url.url,
+        //     ),
+        //   ),
+        // );
         final theme = Theme.of(context);
-
-        await Future.wait(
-          [
-            // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-            // FOR FASTER WEBPAGE LOADING
-            CustomTabsService.launchUrl(
-              url: url.url,
-              theme: theme,
-            ),
+        await CustomTabsService.launchUrl(
+          url: url.url,
+          theme: theme,
+        ).then(
+          (_) async {
             // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
             // JUST LIKE APPS IN BACKGROUND TYPE
-          ],
+          },
         );
       },
-      // [TODO] : THIS IS DYNAMIC FIELD
-      onLongPress: (urlMetaData) {
+      onLongPress: (urlMetaData) async {
         final urlc = url.copyWith(metaData: urlMetaData);
-
-        Navigator.push(
+        await showUrlOptionsBottomSheet(
           context,
-          MaterialPageRoute(
-            builder: (ctx) => UpdateRssFeedUrlPage(
-              urlModel: urlc,
-              isRootCollection: widget.isRootCollection,
-            ),
-          ),
+          urlModel: urlc,
+          urlOptions: urlOptions,
         );
       },
       urlModelData: url,
     );
   }
 
-  Widget _appBarBuilder({
+  Widget _faviconsListAppBarBuilder({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
-        // mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SvgPicture.asset(
-            MediaRes.compassSVG,
-            height: 18,
-            width: 18,
+          const Icon(
+            Icons.dashboard_rounded,
+            color: ColourPallette.mountainMeadow,
+            size: 16,
           ),
           const SizedBox(width: 8),
-          Text(
-            widget.isRootCollection ? 'My Feeds' : widget.collectionModel.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              widget.collectionModel.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
       ),
       actions: [
+        _urlViewTypeOptions(),
         ...actions,
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  Future<void> showUrlOptionsBottomSheet(
+    BuildContext context, {
+    required UrlModel urlModel,
+    required List<Widget> urlOptions,
+  }) async {
+    final size = MediaQuery.of(context).size;
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
+
+    onPop() async {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
+      Navigator.pop(context);
+    }
+
+    final _showLastUpdated = ValueNotifier(false);
+    urlOptions
+      ..insert(
+        0,
+        // UPDATE URL
+        BottomSheetOption(
+          leadingIcon: Icons.replay_circle_filled_outlined,
+          title: const Text('Update', style: titleTextStyle),
+          trailing: ValueListenableBuilder(
+            valueListenable: _showLastUpdated,
+            builder: (ctx, showLastUpdated, _) {
+              if (!showLastUpdated) {
+                return GestureDetector(
+                  onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                  ),
+                );
+              }
+
+              final updatedAt = urlModel.updatedAt;
+              // Format to get hour with am/pm notation
+              final formattedTime = DateFormat('h:mma').format(updatedAt);
+              // Combine with the date
+              final lastSynced =
+                  'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+              return GestureDetector(
+                onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                child: Text(
+                  lastSynced,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ColourPallette.salemgreen.withOpacity(0.75),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            },
+          ),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => UpdateUrlTemplateScreen(
+                  urlModel: urlModel,
+                  isRootCollection: widget.isRootCollection,
+                  onDeleteURLCallback: (urlModel) async {},
+                ),
+              ),
+            ).then(
+              (_) {
+                Navigator.pop(context);
+              },
+            );
+          },
+        ),
+      )
+      ..insert(
+        2,
+        // ADD TO FAVOURITES
+        BottomSheetOption(
+          leadingIcon: Icons.bookmark_add_rounded,
+          title: const Text('Add To Favourites', style: titleTextStyle),
+          trailing: Builder(
+            builder: (ctx) {
+              if (urlModel.isFavourite == false) {
+                return const SizedBox.shrink();
+              }
+
+              return Icon(
+                Icons.check_circle_rounded,
+                color: ColourPallette.salemgreen.withOpacity(0.5),
+              );
+            },
+          ),
+          onTap: () async {
+            // if (urlModel.isFavourite) return;
+
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            final globalUser =
+                context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
+            await Future.wait(
+              [
+                urlCrudCubit.addUrl(
+                  isRootCollection: true,
+                  urlData: urlModel.copyWith(
+                    parentUrlModelFirestoreId: urlModel.firestoreId,
+                    collectionId: '$globalUser$favourites',
+                    isFavourite: true,
+                  ),
+                ),
+                urlCrudCubit.updateUrl(
+                  urlData: urlModel.copyWith(
+                    isFavourite: true,
+                  ),
+                ),
+                Future(() => Navigator.pop(context)),
+              ],
+            );
+          },
+        ),
+      );
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding:
+            const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          // color: Colors.white,
+          color: ColourPallette.mystic.withOpacity(0.25),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: NetworkImageBuilderWidget(
+                          imageUrl: urlModel.metaData!.faviconUrl!,
+                          compressImage: false,
+                          errorWidgetBuilder: () {
+                            return const SizedBox.shrink();
+                          },
+                          successWidgetBuilder: (imageData) {
+                            final imageBytes = imageData.imageBytesData!;
+
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.memory(
+                                imageBytes,
+                                fit: BoxFit.contain,
+                                height: 24,
+                                width: 24,
+                                errorBuilder: (ctx, _, __) {
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      StringUtils.capitalizeEachWord(urlModel.title),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ...urlOptions,
+
+              // DELETE URL
+              BottomSheetOption(
+                leadingIcon: Icons.delete_rounded,
+                title: const Text('Delete', style: titleTextStyle),
+                onTap: () async {
+                  await showDeleteConfirmationDialog(
+                    context,
+                    urlModel,
+                    () => context.read<UrlCrudCubit>().deleteUrl(
+                          urlData: urlModel,
+                          isRootCollection: widget.isRootCollection,
+                        ),
+                  ).then(
+                    (_) {
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(
+      () async {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.edgeToEdge,
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    UrlModel urlModel,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${urlModel.title}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Widget _urlViewTypeOptions() {
+    return FilterPopupMenuButton(
+      icon: const Icon(
+        Icons.format_align_center_rounded,
+      ),
+      menuItems: [
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.favicons,
+          onTap: () {
+            _listViewType.value = UrlViewType.favicons;
+            _pageController.jumpToPage(0);
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.favicons.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.favicons) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<UrlViewType>(
+          value: UrlViewType.previews,
+          onTap: () {
+            _listViewType.value = UrlViewType.previews;
+            _pageController.jumpToPage(1);
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                UrlViewType.previews.label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: ColourPallette.black,
+                ),
+              ),
+              ValueListenableBuilder<UrlViewType>(
+                valueListenable: _listViewType,
+                builder: (context, listViewType, child) {
+                  if (listViewType == UrlViewType.previews) {
+                    return const Icon(
+                      Icons.check_box_rounded,
+                      color: ColourPallette.salemgreen,
+                    );
+                  }
+
+                  return const Icon(
+                    Icons.check_box_outline_blank_outlined,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
