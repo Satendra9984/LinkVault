@@ -401,7 +401,7 @@ class UrlParsingService {
       imageUrls.add(handleRelativeUrl(url, baseUrl));
     }
 
-    images.addAll([...imageUrls, ...favicons, ...bannerImages]);
+    images.addAll([...imageUrls,...bannerImages, ...favicons, ]);
     // } catch (e) {
     //   Logger.printLog('Error gettingAllImages $e');
     // }
