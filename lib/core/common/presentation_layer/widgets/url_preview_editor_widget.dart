@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
@@ -14,6 +15,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_po
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -762,40 +764,63 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                                     return placeHolder;
                                   }
 
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: NetworkImageBuilderWidget(
-                                        imageUrl: widget
-                                            .urlModel.metaData!.faviconUrl!,
-                                        compressImage: false,
-                                        errorWidgetBuilder: () {
-                                          return placeHolder;
-                                        },
-                                        successWidgetBuilder: (imageData) {
-                                          final imageBytes =
-                                              imageData.imageBytesData!;
+                                  return Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: NetworkImageBuilderWidget(
+                                            imageUrl: widget
+                                                .urlModel.metaData!.faviconUrl!,
+                                            compressImage: false,
+                                            errorWidgetBuilder: () {
+                                              return placeHolder;
+                                            },
+                                            successWidgetBuilder: (imageData) {
+                                              final imageBytes =
+                                                  imageData.imageBytesData!;
 
-                                          return ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            child: Image.memory(
-                                              imageBytes,
-                                              fit: BoxFit.contain,
-                                              height: 14,
-                                              width: 14,
-                                              errorBuilder: (ctx, _, __) {
-                                                return placeHolder;
-                                              },
-                                            ),
-                                          );
-                                        },
+                                              return ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                                child: Image.memory(
+                                                  imageBytes,
+                                                  fit: BoxFit.contain,
+                                                  height: 14,
+                                                  width: 14,
+                                                  errorBuilder: (ctx, _, __) {
+                                                    return placeHolder;
+                                                  },
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   );
                                 },
+                              ),
+                              IconButton(
+                                onPressed: () async {
+                                  await _showImageOptions(
+                                    context,
+                                    callBack: (imageurl) {
+                                      widget.metaDataNotifier.value = widget
+                                          .metaDataNotifier.value
+                                          ?.copyWith(
+                                        faviconUrl: imageurl,
+                                      );
+                                    },
+                                  );
+                                },
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -859,11 +884,6 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
         size: 16,
       ),
       menuItems: [
-        // ListFilterPopupMenuItem(
-        //   title: 'SideWay Layout',
-        //   notifier: _isSideWayLayout,
-        //   onPress: () => _isSideWayLayout.value = !_isSideWayLayout.value,
-        // ),
         if (widget.urlModel.description != null ||
             widget.urlModel.metaData?.description != null)
           ListFilterPopupMenuItem(
@@ -880,4 +900,102 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
       ],
     );
   }
+
+  Future<void> _showImageOptions(
+    BuildContext context, {
+    required void Function(String) callBack,
+  }) async {
+    final size = MediaQuery.of(context).size;
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: ColourPallette.white,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.only(
+            right: 16,
+            left: 16,
+            top: 16,
+            bottom: 0,
+          ),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4, // Number of items per row
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              // childAspectRatio: 1.0, // Aspect ratio of each item
+            ),
+            itemCount: widget.allImageUrls.length,
+            itemBuilder: (context, index) {
+              final imageUrl = widget.allImageUrls[index];
+              Logger.printLog('$imageUrl\n\n');
+              return GestureDetector(
+                onTap: () {
+                  callBack(imageUrl);
+                  Navigator.pop(context); // Close and return selection
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Builder(
+                    builder: (ctx) {
+                      // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                      if (imageUrl.toLowerCase().endsWith('.svg')) {
+                        // Try loading the SVG and handle errors
+                        return FutureBuilder(
+                          future: _loadSvg(imageUrl),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              // Show a loading indicator while loading the SVG
+                              return const CircularProgressIndicator();
+                            } else if (snapshot.hasError) {
+                              // Fallback if SVG fails to load
+                              return const Icon(Icons.broken_image, size: 50);
+                            } else {
+                              // Return the successfully loaded SVG
+                              return snapshot.data as Widget;
+                            }
+                          },
+                        );
+                      } else {
+                        return Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (ctx, _, __) {
+                            return const Icon(Icons.broken_image, size: 50);
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+  // Function to load SVG and handle potential errors
+Future<Widget> _loadSvg(String url) async {
+  try {
+    // Load the SVG network image
+    return SvgPicture.network(
+      url,
+      placeholderBuilder: (_) => const SizedBox.shrink(),
+      fit: BoxFit.contain,
+      headers: const {"Accept": "image/svg+xml"},
+    );
+  } catch (e) {
+    // If there's an error, throw it to be caught in the FutureBuilder
+    throw Exception("Failed to load SVG: $e");
+  }
+}
 }

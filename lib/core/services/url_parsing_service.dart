@@ -378,9 +378,20 @@ class UrlParsingService {
     final bannerImages = _extractMetaImageUrList(document) ?? <String>[]
       ..addAll(_extractBodyImageUrlList(document) ?? <String>[]);
 
-    // Regular expression to find URLs ending with common image file extensions
+
+    // TODO : TRY SEPARATE ALL THE HTML STRING DATA BY COMMA
+    // TODO : THEN TRY BEST EXAMPLE GOOGLENEWS
+
+    // Regular expression for capturing URLs that look like images
     final urlRegex = RegExp(
-      r"https?://[^\s<>\']+?(?:png|jpg|jpeg|gif|bmp|webp|svg)[^\s<>\']*",
+      // r'(https?://[^\s\'"<>]+?.(?:png|jpg|jpeg|gif|bmp|webp|svg))',
+      r"https?://[^\s<>\']+?(.?.:png|jpg|jpeg|gif|bmp|webp|svg)",
+      caseSensitive: false,
+    );
+
+    // Regular expression for extracting URLs from inline CSS (e.g., background-image)
+    final cssUrlRegex = RegExp(
+      r'url\(([\"]?)(https?://[^\s\<>\"]+?)\1\)',
       caseSensitive: false,
     );
 
@@ -391,7 +402,7 @@ class UrlParsingService {
 
     // Process each match to ensure the URL is complete
     final imageUrls = <String>[];
-//src="https://styles.redditmedia.com/t5_2x3q8/styles/communityIcon_dsw8tf6mg06b1.png"
+    //src="https://styles.redditmedia.com/t5_2x3q8/styles/communityIcon_dsw8tf6mg06b1.png"
 
     for (final match in matches) {
       if (match.group(0) == null) continue;
@@ -401,7 +412,20 @@ class UrlParsingService {
       imageUrls.add(handleRelativeUrl(url, baseUrl));
     }
 
-    images.addAll([...imageUrls,...bannerImages, ...favicons, ]);
+    // Find matches with cssUrlRegex (covers inline CSS or background images in `style`)
+    final cssMatches = cssUrlRegex.allMatches(htmlContent);
+    for (final match in cssMatches) {
+      final cssUrl = match.group(2);
+      if (cssUrl != null) {
+        imageUrls.add(handleRelativeUrl(cssUrl, baseUrl));
+      }
+    }
+
+    images.addAll([
+      ...imageUrls,
+      ...bannerImages,
+      ...favicons,
+    ]);
     // } catch (e) {
     //   Logger.printLog('Error gettingAllImages $e');
     // }

@@ -127,16 +127,16 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       webHtmlContent: websiteHtmlContent,
     );
 
-    // for (final image in allImageUrls) {
-    //   Logger.printLog(image);
-    // }
     _allImagesUrlsList.value = allImageUrls;
 
     // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
 
     if (metaData != null) {
       // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
-      _previewMetaData.value = metaData;
+      _previewMetaData.value = metaData.copyWith(
+        faviconUrl: widget.urlModel.metaData?.faviconUrl,
+        bannerImageUrl: widget.urlModel.metaData?.bannerImageUrl,
+      );
       _previewLoadingStates.value = LoadingStates.loaded;
       _previewError.value = null;
 
@@ -849,4 +849,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       ),
     );
   }
+
+ 
 }

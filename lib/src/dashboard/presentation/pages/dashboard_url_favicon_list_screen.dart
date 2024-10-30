@@ -430,7 +430,6 @@ class _DashboardUrlFaviconListScreenState
         padding:
             const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
         decoration: BoxDecoration(
-          // color: Colors.white,
           color: ColourPallette.mystic.withOpacity(0.25),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
