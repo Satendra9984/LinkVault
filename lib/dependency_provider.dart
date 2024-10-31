@@ -2,8 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/collection_local_data_source.dart';
-import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/url_local_data_sources.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';

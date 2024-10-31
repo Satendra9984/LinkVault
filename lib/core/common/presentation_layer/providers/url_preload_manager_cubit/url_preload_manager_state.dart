@@ -1,14 +1,14 @@
 part of 'url_preload_manager_cubit.dart';
 
 class UrlPreloadManagerState extends Equatable {
+  const UrlPreloadManagerState({
+    this.urlPreloadsData = const {},
+  });
 
   // Factory constructor for initial state
   factory UrlPreloadManagerState.initial() {
     return const UrlPreloadManagerState();
   }
-  const UrlPreloadManagerState({
-    this.urlPreloadsData = const {},
-  });
 
   final Map<String, bool> urlPreloadsData;
 

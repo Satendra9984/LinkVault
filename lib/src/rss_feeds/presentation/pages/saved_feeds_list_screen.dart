@@ -9,10 +9,10 @@ import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:lottie/lottie.dart';
 

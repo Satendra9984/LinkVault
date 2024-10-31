@@ -18,7 +18,7 @@ class ClipboardService {
   /// Retrieves the current text from the clipboard.
   Future<String?> getClipboardText() async {
     try {
-      ClipboardData? data = await Clipboard.getData('text/plain');
+      final data = await Clipboard.getData('text/plain');
       return data?.text;
     } catch (e) {
       print('Failed to retrieve text from clipboard: $e');

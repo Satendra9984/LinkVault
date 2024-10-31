@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
 
 part 'subscription_state.dart';

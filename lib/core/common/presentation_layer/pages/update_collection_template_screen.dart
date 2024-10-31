@@ -5,10 +5,10 @@ import 'package:link_vault/core/common/presentation_layer/providers/collection_c
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
-import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/repository_layer/enums/collection_crud_loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/constants/coll_constants.dart';
+import 'package:link_vault/core/res/colours.dart';
 
 class UpdateCollectionTemplateScreen extends StatefulWidget {
   const UpdateCollectionTemplateScreen({

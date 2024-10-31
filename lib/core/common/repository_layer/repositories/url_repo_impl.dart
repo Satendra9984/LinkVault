@@ -2,8 +2,8 @@
 
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/collection_local_data_source.dart';
-import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/url_local_data_sources.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';

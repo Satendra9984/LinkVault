@@ -5,19 +5,16 @@ import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cub
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_editor_widget.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/url_previewbytes_widget.dart';
+import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
-import 'package:link_vault/core/constants/coll_constants.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:share_plus/share_plus.dart';
@@ -91,7 +88,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         settings: settings,
       );
 
-      Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+      // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
       await urlCrudCubit
           .updateUrl(
@@ -188,7 +185,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     _previewLoadingStates.value = LoadingStates.loaded;
 
     _initializeSettingsOption();
-
+    _loadPreview();
     super.initState();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -849,6 +846,4 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       ),
     );
   }
-
- 
 }

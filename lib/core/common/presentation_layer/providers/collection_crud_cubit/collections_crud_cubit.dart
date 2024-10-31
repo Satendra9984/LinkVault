@@ -4,11 +4,11 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/collection_crud_loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/core/common/repository_layer/enums/collection_crud_loading_states.dart';
 
 part 'collections_crud_cubit_state.dart';
 

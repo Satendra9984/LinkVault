@@ -9,21 +9,19 @@ import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RssFeedUrlsPreviewListWidget extends StatefulWidget {
   const RssFeedUrlsPreviewListWidget({

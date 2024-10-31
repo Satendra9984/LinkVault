@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Define a base class for different types of inputs
 abstract class InputData extends Equatable {
@@ -8,9 +7,9 @@ abstract class InputData extends Equatable {
 
 // Define a class for URL input
 class UrlInput extends InputData {
-  final String url;
 
   const UrlInput(this.url);
+  final String url;
 
   @override
   List<Object?> get props => [url];
@@ -18,9 +17,9 @@ class UrlInput extends InputData {
 
 // Define a class for PDF input
 class PdfInput extends InputData {
-  final String filePath;
 
   const PdfInput(this.filePath);
+  final String filePath;
 
   @override
   List<Object?> get props => [filePath];
@@ -28,9 +27,9 @@ class PdfInput extends InputData {
 
 // Define the state class
 class InputState extends Equatable {
-  final List<InputData> inputs;
 
   const InputState(this.inputs);
+  final List<InputData> inputs;
 
   @override
   List<Object?> get props => [inputs];

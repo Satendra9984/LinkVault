@@ -4,21 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
-import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
@@ -27,15 +22,9 @@ import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
-import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DashboardUrlFaviconListScreen extends StatefulWidget {
@@ -171,7 +160,7 @@ class _DashboardUrlFaviconListScreenState
           onTap: () {
             _listViewType.value = UrlViewType.favicons;
             _pageController.jumpToPage(0);
-            Logger.printLog('currentpage: ${_pageController.page}');
+            // Logger.printLog('currentpage: ${_pageController.page}');
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,7 +196,7 @@ class _DashboardUrlFaviconListScreenState
           onTap: () {
             _listViewType.value = UrlViewType.previews;
             _pageController.jumpToPage(1);
-            Logger.printLog('currentpage: ${_pageController.page}');
+            // Logger.printLog('currentpage: ${_pageController.page}');
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -310,7 +299,7 @@ class _DashboardUrlFaviconListScreenState
       Navigator.pop(context);
     }
 
-    final _showLastUpdated = ValueNotifier(false);
+    final showLastUpdated = ValueNotifier(false);
     urlOptions
       ..insert(
         0,
@@ -319,11 +308,11 @@ class _DashboardUrlFaviconListScreenState
           leadingIcon: Icons.replay_circle_filled_outlined,
           title: const Text('Update', style: titleTextStyle),
           trailing: ValueListenableBuilder(
-            valueListenable: _showLastUpdated,
-            builder: (ctx, showLastUpdated, _) {
-              if (!showLastUpdated) {
+            valueListenable: showLastUpdated,
+            builder: (ctx, showLastUpdatedVal, _) {
+              if (!showLastUpdatedVal) {
                 return GestureDetector(
-                  onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                  onTap: () => showLastUpdated.value = !showLastUpdated.value,
                   child: const Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 20,
@@ -339,7 +328,7 @@ class _DashboardUrlFaviconListScreenState
                   'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
 
               return GestureDetector(
-                onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                onTap: () => showLastUpdated.value = !showLastUpdated.value,
                 child: Text(
                   lastSynced,
                   style: TextStyle(

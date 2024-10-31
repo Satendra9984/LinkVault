@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/utils/queue_manager.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/queue_manager.dart';
 
 part 'url_preload_manager_state.dart';
 

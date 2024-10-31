@@ -1,17 +1,18 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
@@ -355,15 +356,32 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
           final fileInfo = snapshot.data;
 
           if (fileInfo != null) {
+            // Check if the file is an SVG
+            if (widget.urlModel.metaData!.bannerImageUrl!
+                .toLowerCase()
+                .endsWith('.svg')) {
+              // Use the _loadSvgFile function for SVG files
+              return FutureBuilder<Widget>(
+                future: _loadSvgFile(fileInfo.file),
+                builder: (context, svgSnapshot) {
+                  if (svgSnapshot.connectionState == ConnectionState.waiting ||
+                      svgSnapshot.hasError) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return svgSnapshot.data!;
+                },
+              );
+            }
+
+            // Standard image loading for non-SVG files
             return RepaintBoundary(
               child: Image.file(
                 fileInfo.file,
                 width: size.width,
                 fit: BoxFit.cover,
-                // filterQuality: FilterQuality.low,
-                errorBuilder: (context, _, __) {
-                  return Container(); // Fallback in case of error
-                },
+                errorBuilder: (context, _, __) =>
+                    Container(), // Fallback in case of error
                 frameBuilder: (
                   BuildContext context,
                   Widget child,
@@ -371,7 +389,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                   bool wasSynchronouslyLoaded,
                 ) {
                   if (frame == null) {
-                    return Container(); // Placeholder or loading indicator while the image is loading
+                    return Container(); // Placeholder while the image is loading
                   }
 
                   return ClipRRect(
@@ -380,9 +398,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                       decoration: BoxDecoration(
                         color: ColourPallette.mystic.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.grey.shade100,
-                        ),
+                        border: Border.all(color: Colors.grey.shade100),
                       ),
                       child: ImageFileWidget(
                         initials: initials,
@@ -402,7 +418,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                         },
                       ),
                     ),
-                  ); // Return the loaded image
+                  );
                 },
               ),
             );
@@ -412,10 +428,11 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
         },
       );
     }
+
     return VisibilityDetector(
       key: _mainWidgetKey,
       onVisibilityChanged: (VisibilityInfo info) async {
-        // // Logger.printLog('$initials ${info.visibleFraction}');
+        // Logger.printLog('$initials ${info.visibleFraction}');
         if (info.visibleFraction > 0) {
           // Widget is at least partially visible
           if (_showBannerImage.value &&
@@ -770,37 +787,59 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                                       null) {
                                     return placeHolder;
                                   }
+                                  final metaData = widget.urlModel.metaData;
 
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
                                     child: SizedBox(
                                       height: 14,
                                       width: 14,
-                                      child: NetworkImageBuilderWidget(
-                                        imageUrl: widget
-                                            .urlModel.metaData!.faviconUrl!,
-                                        compressImage: false,
-                                        errorWidgetBuilder: () {
-                                          return placeHolder;
-                                        },
-                                        successWidgetBuilder: (imageData) {
-                                          final imageBytes =
-                                              imageData.imageBytesData!;
-
-                                          return ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            child: Image.memory(
-                                              imageBytes,
-                                              fit: BoxFit.contain,
-                                              height: 14,
-                                              width: 14,
-                                              errorBuilder: (ctx, _, __) {
-                                                return placeHolder;
-                                              },
-                                            ),
-                                          );
-                                        },
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                        child: Builder(
+                                          builder: (ctx) {
+                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                            if (metaData!.faviconUrl!
+                                                .toLowerCase()
+                                                .endsWith('.svg')) {
+                                              // Try loading the SVG and handle errors
+                                              return FutureBuilder(
+                                                future: _loadSvg(
+                                                    metaData.faviconUrl!,),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    // Show a loading indicator while loading the SVG
+                                                    return const CircularProgressIndicator();
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    // Fallback if SVG fails to load
+                                                    return const Icon(
+                                                      Icons.broken_image,
+                                                      size: 50,
+                                                    );
+                                                  } else {
+                                                    // Return the successfully loaded SVG
+                                                    return snapshot.data!;
+                                                  }
+                                                },
+                                              );
+                                            } else {
+                                              return Image.network(
+                                                metaData.faviconUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (ctx, _, __) {
+                                                  return const Icon(
+                                                    Icons.broken_image,
+                                                    size: 50,
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          },
+                                        ),
                                       ),
                                     ),
                                   );
@@ -859,6 +898,35 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
     );
   }
 
+  // Function to load SVG and handle potential errors
+  Future<Widget> _loadSvg(String url) async {
+    try {
+      // Load the SVG network image
+      return SvgPicture.network(
+        url,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+        headers: const {'Accept': 'image/svg+xml'},
+      );
+    } catch (e) {
+      // If there's an error, throw it to be caught in the FutureBuilder
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  // Function to load SVG from a local file
+  Future<Widget> _loadSvgFile(File file) async {
+    try {
+      // Load the SVG file
+      return SvgPicture.file(
+        file,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      // Handle errors during loading
+      throw Exception('Failed to load SVG from file: $e');
+    }
+  }
+
   Widget _layoutFilterOptions() {
     return FilterPopupMenuButton(
       icon: Icon(
@@ -868,11 +936,6 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
         size: 16,
       ),
       menuItems: [
-        // ListFilterPopupMenuItem(
-        //   title: 'SideWay Layout',
-        //   notifier: _isSideWayLayout,
-        //   onPress: () => _isSideWayLayout.value = !_isSideWayLayout.value,
-        // ),
         if (widget.urlModel.description != null ||
             widget.urlModel.metaData?.description != null)
           ListFilterPopupMenuItem(

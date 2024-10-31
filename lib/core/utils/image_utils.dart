@@ -15,6 +15,20 @@ class ImageUtils {
     return data;
   }
 
+ static bool isSupportedImageType(String url) {
+    final supportedExtensions = [
+      'png',
+      'jpeg',
+      'jpg',
+      'gif',
+      'svg',
+      'bmp',
+      'webp',
+    ];
+    final extension = url.split('.').last.toLowerCase();
+    return supportedExtensions.contains(extension);
+  }
+
   // New method to decode image in a separate isolate
   static void decodeImageIsolate(List<dynamic> args) {
     final imageBytes = args[0] as Uint8List;

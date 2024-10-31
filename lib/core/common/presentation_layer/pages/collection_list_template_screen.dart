@@ -9,12 +9,12 @@ import 'package:link_vault/core/common/presentation_layer/providers/collection_c
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:lottie/lottie.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
@@ -333,7 +333,7 @@ class _CollectionsListScreenTemplateState
       fontSize: 18,
       fontWeight: FontWeight.w500,
     );
-    final _showLastUpdated = ValueNotifier(false);
+    final showLastUpdated = ValueNotifier(false);
 
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -355,12 +355,12 @@ class _CollectionsListScreenTemplateState
                   leadingIcon: Icons.replay_circle_filled_outlined,
                   title: const Text('Update', style: titleTextStyle),
                   trailing: ValueListenableBuilder(
-                    valueListenable: _showLastUpdated,
-                    builder: (ctx, showLastUpdated, _) {
-                      if (!showLastUpdated) {
+                    valueListenable: showLastUpdated,
+                    builder: (ctx, showLastUpdatedVal, _) {
+                      if (!showLastUpdatedVal) {
                         return GestureDetector(
                           onTap: () =>
-                              _showLastUpdated.value = !_showLastUpdated.value,
+                              showLastUpdated.value = !showLastUpdated.value,
                           child: const Icon(
                             Icons.arrow_back_ios_new_rounded,
                             size: 20,
@@ -378,7 +378,7 @@ class _CollectionsListScreenTemplateState
 
                       return GestureDetector(
                         onTap: () =>
-                            _showLastUpdated.value = !_showLastUpdated.value,
+                            showLastUpdated.value = !showLastUpdated.value,
                         child: Text(
                           lastSynced,
                           style: TextStyle(

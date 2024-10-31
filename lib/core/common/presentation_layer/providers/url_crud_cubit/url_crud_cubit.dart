@@ -3,11 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
-import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 
 part 'url_cubit_state.dart';
 
@@ -138,13 +136,13 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       collectionId: urlData.collectionId,
     );
 
-    if (collection == null || collection?.collection == null) {
+    if (collection == null || collection.collection == null) {
       return;
     }
 
     await _urlRepoImpl
         .addUrlData(
-      collection: collection!.collection!,
+      collection: collection.collection!,
       urlData: urlData,
       userId: _globalUserCubit.state.globalUser!.id,
     )

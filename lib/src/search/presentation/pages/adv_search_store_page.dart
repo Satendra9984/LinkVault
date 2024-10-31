@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
+import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_collections_list_page.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_urls_list_page.dart';
 import 'package:link_vault/src/search/presentation/pages/search_filters_page.dart';

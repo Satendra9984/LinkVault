@@ -8,11 +8,11 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/local_image_data_source.dart';
-import 'package:link_vault/core/common/repository_layer/models/network_image_cache_model.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/utils/image_utils.dart';
+import 'package:link_vault/core/common/repository_layer/models/network_image_cache_model.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/image_utils.dart';
 
 part 'network_image_cache_state.dart';
 
@@ -58,14 +58,14 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
     imagesData[imageUrl] = ValueNotifier(networkImageCacheModel);
     emit(state.copyWith(imagesData: imagesData));
 
-    // // Logger.printLog('[img] : $imageUrl addImage');
+    // Logger.printLog('[img] : $imageUrl addImage');
     // Add the image loading task to the queue manager
     // _imageQueueManager.addTask(
     //   () async {
-    final stopWatch = Stopwatch()..start();
+    // final stopWatch = Stopwatch()..start();
     final localImageBytes = await _localImageDataSource.getImageData(imageUrl);
 
-    // // Logger.printLog(
+    // Logger.printLog(
     //   '[img] : ${stopWatch.elapsedMilliseconds}ms in local storage ${localImageBytes != null}',
     // );
 
@@ -76,7 +76,7 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
           compressImage: compressImage,
           quality: 75,
         );
-    stopWatch.stop();
+    // stopWatch.stop();
 
     final addedImageModel = getImageData(imageUrl) ??
         ValueNotifier(
@@ -127,13 +127,11 @@ class NetworkImageCacheCubit extends Cubit<NetworkImageCacheState> {
           imageBytes: imageBytes,
         );
       }
-      stopWatch.stop();
-      // // Logger.printLog(
+      // stopWatch.stop();
+      // Logger.printLog(
       //   '[img] : stop ${stopWatch.elapsedMilliseconds}ms storing in local storage',
       // );
     }
-    // },
-    // );
   }
 
   Future<NetworkImageCacheModel?> fetchUrlModel({

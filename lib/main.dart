@@ -28,7 +28,6 @@ import 'package:link_vault/core/common/repository_layer/repositories/url_repo_im
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/router.dart';
-import 'package:link_vault/dependency_provider.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
 import 'package:link_vault/firebase_options_test.dart' as development;
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';

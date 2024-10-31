@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 
 class UrlFetchStateModel extends Equatable {
   const UrlFetchStateModel({

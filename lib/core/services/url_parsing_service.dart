@@ -8,7 +8,6 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 
 class UrlParsingService {
@@ -351,84 +350,94 @@ class UrlParsingService {
   }
 
   static List<String> getAllImageUrlsAvailable(
-    Document? webpagedocument,
+    Document? webPageDocument,
     String baseUrl, {
     String? webHtmlContent,
   }) {
     final images = <String>{};
 
-    // try {
-    Logger.printLog(
-        '${webpagedocument == null}, html ${webHtmlContent == null}');
-    if (webpagedocument == null && webHtmlContent == null) {
+    if (webPageDocument == null && webHtmlContent == null) {
       return images.toList();
     }
     var document = html_parser.parse('');
 
-    if (webpagedocument != null) {
-      document = webpagedocument;
+    if (webPageDocument != null) {
+      document = webPageDocument;
     }
 
     if (webHtmlContent != null) {
       document = html_parser.parse(webHtmlContent);
     }
-    // first get all the favicons
-    final favicons =
-        extractWebsiteLogoUrlList(document) ?? [getWebsiteLogoUrl(baseUrl)];
-    final bannerImages = _extractMetaImageUrList(document) ?? <String>[]
+
+    // Extract favicons
+    final favicons = [getWebsiteLogoUrl(baseUrl)];
+
+    final logoUrl = extractWebsiteLogoUrlList(document);
+    if (logoUrl != null) {
+      favicons.addAll(logoUrl);
+    }
+
+    for (var i = 0; i < favicons.length; i++) {
+      favicons[i] = handleRelativeUrl(favicons[i], baseUrl);
+    }
+
+    // Extract meta and body images
+    final bannerImages = (_extractMetaImageUrList(document) ?? <String>[])
       ..addAll(_extractBodyImageUrlList(document) ?? <String>[]);
 
+    for (var i = 0; i < bannerImages.length; i++) {
+      bannerImages[i] = handleRelativeUrl(bannerImages[i], baseUrl);
+    }
 
-    // TODO : TRY SEPARATE ALL THE HTML STRING DATA BY COMMA
-    // TODO : THEN TRY BEST EXAMPLE GOOGLENEWS
+    // Additional approach: extract URLs by comma, space, and tag boundaries
+    final htmlContent = webHtmlContent ?? document.outerHtml;
 
-    // Regular expression for capturing URLs that look like images
+    // Regular expression for capturing URLs that look like images (both in text and inline CSS)
     final urlRegex = RegExp(
-      // r'(https?://[^\s\'"<>]+?.(?:png|jpg|jpeg|gif|bmp|webp|svg))',
-      r"https?://[^\s<>\']+?(.?.:png|jpg|jpeg|gif|bmp|webp|svg)",
+      r'''https?://[^\s<>"',;]+?\.(png|jpg|jpeg|gif|bmp|webp|svg)''',
       caseSensitive: false,
     );
 
     // Regular expression for extracting URLs from inline CSS (e.g., background-image)
     final cssUrlRegex = RegExp(
-      r'url\(([\"]?)(https?://[^\s\<>\"]+?)\1\)',
+      r'''url\((["']?)(https?://[^\s<>"']+?)\1\)''',
       caseSensitive: false,
     );
 
-    final htmlContent = webHtmlContent ?? document.toString();
-    // Logger.printLog(webHtmlContent ?? '');
-    // Find all matches of the regular expression in the HTML content
-    final matches = urlRegex.allMatches(htmlContent);
+    // for (final img in favicons) {
+    //   Logger.printLog('regexfv: $img \n');
+    // }
 
-    // Process each match to ensure the URL is complete
+    // for (final img in bannerImages) {
+    //   Logger.printLog('regexbn: $img \n');
+    // }
+
+    // Find matches with image URLs
     final imageUrls = <String>[];
-    //src="https://styles.redditmedia.com/t5_2x3q8/styles/communityIcon_dsw8tf6mg06b1.png"
-
-    for (final match in matches) {
-      if (match.group(0) == null) continue;
-
-      final url = match.group(0)!;
-      // Logger.printLog('regex: $url');
-      imageUrls.add(handleRelativeUrl(url, baseUrl));
+    for (final match in urlRegex.allMatches(htmlContent)) {
+      final url = match.group(0);
+      if (url != null && _isSupportedImageType(url)) {
+        final relativeUrled = handleRelativeUrl(url, baseUrl);
+        // Logger.printLog('regex: $relativeUrled');
+        imageUrls.add(relativeUrled);
+      }
     }
 
-    // Find matches with cssUrlRegex (covers inline CSS or background images in `style`)
-    final cssMatches = cssUrlRegex.allMatches(htmlContent);
-    for (final match in cssMatches) {
+    // Find matches with CSS URL patterns
+    for (final match in cssUrlRegex.allMatches(htmlContent)) {
       final cssUrl = match.group(2);
-      if (cssUrl != null) {
-        imageUrls.add(handleRelativeUrl(cssUrl, baseUrl));
+      if (cssUrl != null && _isSupportedImageType(cssUrl)) {
+        final relativeUrled = handleRelativeUrl(cssUrl, baseUrl);
+        // Logger.printLog('regex: $relativeUrled');
+        imageUrls.add(relativeUrled);
       }
     }
 
     images.addAll([
+      ...favicons,
       ...imageUrls,
       ...bannerImages,
-      ...favicons,
     ]);
-    // } catch (e) {
-    //   Logger.printLog('Error gettingAllImages $e');
-    // }
 
     return images.toList();
   }
@@ -436,7 +445,15 @@ class UrlParsingService {
   // CHECKS IF THE URL CONTAINS ANY IMAGE ELEMENT
   // LIKE [.png, .jped, .jpg, .gif] ANYWHERE IN THE URL
   static bool _isSupportedImageType(String url) {
-    final supportedExtensions = ['png', 'jpeg', 'jpg', 'gif'];
+    final supportedExtensions = [
+      'png',
+      'jpeg',
+      'jpg',
+      'gif',
+      'svg',
+      'bmp',
+      'webp',
+    ];
     final extension = url.split('.').last.toLowerCase();
     return supportedExtensions.contains(extension);
   }
@@ -522,7 +539,8 @@ class UrlParsingService {
 
     if (htmlContent == null) {
       metaData['websiteName'] = extractWebsiteNameFromUrlString(url);
-      final websiteLogoUrl = getWebsiteLogoUrl(url);
+      var websiteLogoUrl = getWebsiteLogoUrl(url);
+      websiteLogoUrl = handleRelativeUrl(websiteLogoUrl, url);
       metaData['favicon_url'] = websiteLogoUrl;
 
       return (null, UrlMetaData.fromJson(metaData));
@@ -557,7 +575,6 @@ class UrlParsingService {
     }
 
     var imageUrl = extractImageUrl(document);
-    // Logger.printLog('imageUrl : $imageUrl');
     if (imageUrl != null && imageUrl != websiteLogoUrl) {
       imageUrl = handleRelativeUrl(imageUrl, url);
       metaData['banner_image_url'] = imageUrl;

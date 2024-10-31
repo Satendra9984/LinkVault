@@ -6,11 +6,11 @@ import 'package:link_vault/core/common/presentation_layer/pages/collection_list_
 import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/collection_icon_button.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
 

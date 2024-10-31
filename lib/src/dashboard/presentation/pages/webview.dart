@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // WebViewEnvironment? webViewEnvironment;
 
@@ -20,7 +19,6 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
   InAppWebViewController? webViewController;
   InAppWebViewSettings settings = InAppWebViewSettings(
-    cacheEnabled: true,
     useOnLoadResource: true, // Ensures it caches resources when loading.
     isInspectable: kDebugMode,
     mediaPlaybackRequiresUserGesture: false,
@@ -31,7 +29,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
   PullToRefreshController? pullToRefreshController;
   final _url = ValueNotifier('');
-  final _progress = ValueNotifier<double>(0.0);
+  final _progress = ValueNotifier<double>(0);
   final urlController = TextEditingController();
 
   @override
@@ -52,7 +50,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
               } else if (defaultTargetPlatform == TargetPlatform.iOS) {
                 await webViewController?.loadUrl(
                     urlRequest:
-                        URLRequest(url: await webViewController?.getUrl()));
+                        URLRequest(url: await webViewController?.getUrl()),);
               }
             },
           );

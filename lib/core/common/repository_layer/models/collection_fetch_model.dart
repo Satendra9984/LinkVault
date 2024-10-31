@@ -1,9 +1,9 @@
 // always_put_required_named_parameters_first
 
 import 'package:equatable/equatable.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 
 class CollectionFetchModel extends Equatable {
   const CollectionFetchModel({

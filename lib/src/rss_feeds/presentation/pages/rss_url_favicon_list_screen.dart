@@ -12,6 +12,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_o
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
@@ -20,12 +21,9 @@ import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -214,7 +212,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
       Navigator.pop(context);
     }
 
-    final _showLastUpdated = ValueNotifier(false);
+    final showLastUpdated = ValueNotifier(false);
     urlOptions
       ..insert(
         0,
@@ -223,11 +221,11 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
           leadingIcon: Icons.replay_circle_filled_outlined,
           title: const Text('Update', style: titleTextStyle),
           trailing: ValueListenableBuilder(
-            valueListenable: _showLastUpdated,
-            builder: (ctx, showLastUpdated, _) {
-              if (!showLastUpdated) {
+            valueListenable: showLastUpdated,
+            builder: (ctx, showLastUpdatedVal, _) {
+              if (!showLastUpdatedVal) {
                 return GestureDetector(
-                  onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                  onTap: () => showLastUpdated.value = !showLastUpdated.value,
                   child: const Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 20,
@@ -243,7 +241,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
                   'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
 
               return GestureDetector(
-                onTap: () => _showLastUpdated.value = !_showLastUpdated.value,
+                onTap: () => showLastUpdated.value = !showLastUpdated.value,
                 child: Text(
                   lastSynced,
                   style: TextStyle(

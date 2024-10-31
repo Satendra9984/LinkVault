@@ -1,21 +1,23 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -346,69 +348,92 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting ||
               snapshot.hasError) {
-            return const SizedBox.shrink(); // Show a placeholder while loading
+            return const SizedBox.shrink();
           }
 
           final fileInfo = snapshot.data;
 
           if (fileInfo != null) {
-            return RepaintBoundary(
-              child: Image.file(
-                fileInfo.file,
-                width: size.width,
-                fit: BoxFit.cover,
-                // filterQuality: FilterQuality.low,
-                errorBuilder: (context, _, __) {
-                  return Container(); // Fallback in case of error
-                },
-                frameBuilder: (
-                  BuildContext context,
-                  Widget child,
-                  int? frame,
-                  bool wasSynchronouslyLoaded,
-                ) {
-                  if (frame == null) {
-                    return Container(); // Placeholder or loading indicator while the image is loading
+            // Check if the file is an SVG
+            if (widget.urlModel.metaData!.bannerImageUrl!
+                .toLowerCase()
+                .endsWith('.svg')) {
+              return FutureBuilder<Widget>(
+                future: _loadSvgFile(fileInfo.file),
+                builder: (context, svgSnapshot) {
+                  if (svgSnapshot.connectionState == ConnectionState.waiting ||
+                      svgSnapshot.hasError) {
+                    return const SizedBox.shrink();
                   }
+                  return _buildImageContainer(
+                    context: context,
+                    child: svgSnapshot.data!,
+                  );
+                },
+              );
+            }
 
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: ColourPallette.mystic.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.grey.shade100,
+            // Standard image loading for non-SVG files
+            return _buildImageContainer(
+              context: context,
+              child: RepaintBoundary(
+                child: Image.file(
+                  fileInfo.file,
+                  width: size.width,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, _, __) => Container(),
+                  frameBuilder: (
+                    BuildContext context,
+                    Widget child,
+                    int? frame,
+                    bool wasSynchronouslyLoaded,
+                  ) {
+                    if (frame == null) {
+                      return Container();
+                    }
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ColourPallette.mystic.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade100),
+                        ),
+                        child: ImageFileWidget(
+                          initials: initials,
+                          child: child,
+                          postFrameCallback: () {
+                            if (_bannerImageSize.value == null) {
+                              WidgetsBinding.instance.addPostFrameCallback(
+                                (_) {
+                                  _getDescriptionContainerSize(
+                                    context: context,
+                                    textStyle: upperDescTextStyle,
+                                    titleTextStyle: titleTextStyle,
+                                  );
+                                },
+                              );
+                            }
+                          },
                         ),
                       ),
-                      child: ImageFileWidget(
-                        initials: initials,
-                        child: child,
-                        postFrameCallback: () {
-                          if (_bannerImageSize.value == null) {
-                            WidgetsBinding.instance.addPostFrameCallback(
-                              (_) {
-                                _getDescriptionContainerSize(
-                                  context: context,
-                                  textStyle: upperDescTextStyle,
-                                  titleTextStyle: titleTextStyle,
-                                );
-                              },
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ); // Return the loaded image
-                },
+                    );
+                  },
+                ),
               ),
             );
           }
 
-          return Container(); // Return an empty container if no image is available
+          return Stack(
+            children: [
+              _buildEditButton(context),
+            ],
+          );
         },
       );
     }
+
     return VisibilityDetector(
       key: _mainWidgetKey,
       onVisibilityChanged: (VisibilityInfo info) async {
@@ -419,6 +444,7 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                   _bannerImageSize.value!.width < 1.0 ||
                   _bannerImageSize.value!.height < 1.0)) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Logger.printLog('calling getdesc');
               _getDescriptionContainerSize(
                 context: context,
                 textStyle: upperDescTextStyle,
@@ -457,7 +483,7 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
         valueListenable: _isSideWayLayout,
         builder: (context, isSideWays, _) {
           return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // TOP BANNERIMAGE WHEN NOT IN SIDEWAYS
               if (imageBuilder != null && !isSideWays)
@@ -496,6 +522,44 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                         },
                       );
                     },
+                  ),
+                ),
+
+              if (imageBuilder == null)
+                Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    width: 32, // Fixed width for the button container
+                    height: 32, // Fixed height for the button container
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(4),
+                    child: IconButton(
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(
+                        minWidth: 24,
+                        minHeight: 24,
+                      ),
+                      icon: const Icon(
+                        Icons.edit,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      onPressed: () async {
+                        await _showImageOptions(
+                          context,
+                          callBack: (imageurl) {
+                            widget.metaDataNotifier.value =
+                                widget.metaDataNotifier.value?.copyWith(
+                              bannerImageUrl: imageurl,
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
               if (imageBuilder != null && !isSideWays)
@@ -720,89 +784,7 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                           onLongPress: widget.onLongPress,
                           child: Row(
                             children: [
-                              Builder(
-                                builder: (context) {
-                                  final urlModelData = widget.urlModel;
-                                  final urlMetaData = widget.urlModel.metaData!;
-
-                                  var name = '';
-
-                                  if (urlModelData.title.isNotEmpty) {
-                                    name = urlModelData.title;
-                                  } else if (urlMetaData.title != null &&
-                                      urlMetaData.title!.isNotEmpty) {
-                                    name = urlMetaData.title!;
-                                  } else if (urlMetaData.websiteName != null &&
-                                      urlMetaData.websiteName!.isNotEmpty) {
-                                    name = urlMetaData.websiteName!;
-                                  }
-
-                                  final placeHolder = Container(
-                                    padding: const EdgeInsets.all(2),
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      color: ColourPallette.black,
-                                      // color: Colors.deepPurple
-                                    ),
-                                    child: Text(
-                                      _websiteName(name, 5),
-                                      maxLines: 1,
-                                      textAlign: TextAlign.center,
-                                      softWrap: true,
-                                      overflow: TextOverflow.fade,
-                                      style: const TextStyle(
-                                        color: ColourPallette.white,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 8,
-                                      ),
-                                    ),
-                                  );
-
-                                  if (widget.urlModel.metaData?.faviconUrl ==
-                                      null) {
-                                    return placeHolder;
-                                  }
-
-                                  return Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(4),
-                                        child: SizedBox(
-                                          height: 18,
-                                          width: 18,
-                                          child: NetworkImageBuilderWidget(
-                                            imageUrl: widget
-                                                .urlModel.metaData!.faviconUrl!,
-                                            compressImage: false,
-                                            errorWidgetBuilder: () {
-                                              return placeHolder;
-                                            },
-                                            successWidgetBuilder: (imageData) {
-                                              final imageBytes =
-                                                  imageData.imageBytesData!;
-
-                                              return ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                child: Image.memory(
-                                                  imageBytes,
-                                                  fit: BoxFit.contain,
-                                                  height: 14,
-                                                  width: 14,
-                                                  errorBuilder: (ctx, _, __) {
-                                                    return placeHolder;
-                                                  },
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
+                              _buildNetworkImage(),
                               IconButton(
                                 onPressed: () async {
                                   await _showImageOptions(
@@ -875,6 +857,181 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
     );
   }
 
+// Separate method to build the container with minimum size constraints
+  Widget _buildImageContainer({
+    required BuildContext context,
+    required Widget child,
+  }) {
+    // Constants for minimum container size and button dimensions
+    const minContainerHeight = 48.0; // Minimum height to accommodate the button
+    const minContainerWidth = 48.0; // Minimum width to accommodate the button
+
+    return Container(
+      constraints: const BoxConstraints(
+        minWidth: minContainerWidth,
+        minHeight: minContainerHeight,
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Center(child: child),
+          _buildEditButton(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetworkImage() {
+    return Builder(
+      builder: (context) {
+        final urlModelData = widget.urlModel;
+        final urlMetaData = widget.urlModel.metaData!;
+
+        var name = '';
+
+        if (urlModelData.title.isNotEmpty) {
+          name = urlModelData.title;
+        } else if (urlMetaData.title != null && urlMetaData.title!.isNotEmpty) {
+          name = urlMetaData.title!;
+        } else if (urlMetaData.websiteName != null &&
+            urlMetaData.websiteName!.isNotEmpty) {
+          name = urlMetaData.websiteName!;
+        }
+
+        final placeHolder = Container(
+          padding: const EdgeInsets.all(2),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: ColourPallette.black,
+            // color: Colors.deepPurple
+          ),
+          child: Text(
+            _websiteName(name, 5),
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            overflow: TextOverflow.fade,
+            style: const TextStyle(
+              color: ColourPallette.white,
+              fontWeight: FontWeight.w500,
+              fontSize: 8,
+            ),
+          ),
+        );
+
+        if (widget.urlModel.metaData?.faviconUrl == null) {
+          return placeHolder;
+        }
+
+        return Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                height: 18,
+                width: 18,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: NetworkImageBuilderWidget(
+                    imageUrl: urlMetaData.faviconUrl!,
+                    compressImage: false,
+                    errorWidgetBuilder: () {
+                      return placeHolder;
+                    },
+                    successWidgetBuilder: (imageData) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Builder(
+                          builder: (ctx) {
+                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                            if (urlMetaData.faviconUrl!
+                                .toLowerCase()
+                                .endsWith('.svg')) {
+                              // Try loading the SVG and handle errors
+                              return FutureBuilder(
+                                future:
+                                    _loadSvgBytes(imageData.imageBytesData!),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    // Show a loading indicator while loading the SVG
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    // Fallback if SVG fails to load
+                                    return placeHolder;
+                                  } else {
+                                    // Return the successfully loaded SVG
+                                    return snapshot.data!;
+                                  }
+                                },
+                              );
+                            } else {
+                              return Image.memory(
+                                imageData.imageBytesData!,
+                                fit: BoxFit.contain,
+                                errorBuilder: (ctx, _, __) {
+                                  return placeHolder;
+                                },
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Separate method for the edit button
+  Widget _buildEditButton(BuildContext context) {
+    return Positioned(
+      bottom: 4,
+      right: 4,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: 32, // Fixed width for the button container
+          height: 32, // Fixed height for the button container
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(
+              minWidth: 24,
+              minHeight: 24,
+            ),
+            icon: const Icon(
+              Icons.edit,
+              size: 16,
+              color: Colors.white,
+            ),
+            onPressed: () async {
+              await _showImageOptions(
+                context,
+                callBack: (imageurl) {
+                  widget.metaDataNotifier.value =
+                      widget.metaDataNotifier.value?.copyWith(
+                    bannerImageUrl: imageurl,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _layoutFilterOptions() {
     return FilterPopupMenuButton(
       icon: Icon(
@@ -922,59 +1079,75 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
           padding: const EdgeInsets.only(
             right: 16,
             left: 16,
-            top: 16,
-            bottom: 0,
+            top: 20,
+            bottom: 20,
           ),
           child: GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4, // Number of items per row
-              mainAxisSpacing: 8.0,
-              crossAxisSpacing: 8.0,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
               // childAspectRatio: 1.0, // Aspect ratio of each item
             ),
             itemCount: widget.allImageUrls.length,
             itemBuilder: (context, index) {
               final imageUrl = widget.allImageUrls[index];
-              Logger.printLog('$imageUrl\n\n');
-              return GestureDetector(
-                onTap: () {
-                  callBack(imageUrl);
-                  Navigator.pop(context); // Close and return selection
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Builder(
-                    builder: (ctx) {
-                      // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                      if (imageUrl.toLowerCase().endsWith('.svg')) {
-                        // Try loading the SVG and handle errors
-                        return FutureBuilder(
-                          future: _loadSvg(imageUrl),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              // Show a loading indicator while loading the SVG
-                              return const CircularProgressIndicator();
-                            } else if (snapshot.hasError) {
-                              // Fallback if SVG fails to load
-                              return const Icon(Icons.broken_image, size: 50);
-                            } else {
-                              // Return the successfully loaded SVG
-                              return snapshot.data as Widget;
-                            }
-                          },
-                        );
-                      } else {
-                        return Image.network(
-                          imageUrl,
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, _, __) {
+              // Logger.printLog('$imageUrl\n\n');
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Builder(
+                  builder: (ctx) {
+                    // Logger.printLog(imageUrl);
+                    // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                    if (imageUrl.toLowerCase().endsWith('.svg')) {
+                      // Try loading the SVG and handle errors
+                      // Logger.printLog('its svg');
+
+                      return FutureBuilder(
+                        future: _loadSvg(imageUrl),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // Show a loading indicator while loading the SVG
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
                             return const Icon(Icons.broken_image, size: 50);
-                          },
-                        );
-                      }
-                    },
-                  ),
+                          } else {
+                            // Return the successfully loaded SVG
+                            return GestureDetector(
+                              onTap: () {
+                                callBack(imageUrl);
+                                Navigator.pop(context);
+                              },
+                              child: snapshot.data,
+                            );
+                          }
+                        },
+                      );
+                    } else {
+                      // Logger.printLog('itspng or other');
+
+                      return Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        frameBuilder: (ctx, imageWidget, frame, _) {
+                          if (frame == null) {
+                            return const SizedBox.shrink();
+                          }
+                          return GestureDetector(
+                            onTap: () {
+                              callBack(imageUrl);
+                              Navigator.pop(context);
+                            },
+                            child: imageWidget,
+                          );
+                        },
+                        errorBuilder: (ctx, _, __) {
+                          return const Icon(Icons.broken_image, size: 50);
+                        },
+                      );
+                    }
+                  },
                 ),
               );
             },
@@ -983,19 +1156,77 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
       },
     );
   }
+
   // Function to load SVG and handle potential errors
-Future<Widget> _loadSvg(String url) async {
-  try {
-    // Load the SVG network image
-    return SvgPicture.network(
-      url,
-      placeholderBuilder: (_) => const SizedBox.shrink(),
-      fit: BoxFit.contain,
-      headers: const {"Accept": "image/svg+xml"},
-    );
-  } catch (e) {
-    // If there's an error, throw it to be caught in the FutureBuilder
-    throw Exception("Failed to load SVG: $e");
+  Future<Widget> _loadSvg(String url) async {
+    try {
+      // Fetch the SVG data
+      final response =
+          await http.get(Uri.parse(url), headers: {'Accept': 'image/svg+xml'});
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load SVG from network');
+      }
+
+      var svgData = response.body;
+
+      // Check for both `viewBox`, `width`, and `height` in the SVG
+      final hasViewBox = svgData.contains('viewBox');
+      final hasWidth = svgData.contains('width');
+      final hasHeight = svgData.contains('height');
+
+      // If any dimension attributes are missing, add them
+      if (!hasViewBox || !hasWidth || !hasHeight) {
+        var additionalAttributes = '';
+
+        // Set a default viewBox if missing
+        if (!hasViewBox) {
+          additionalAttributes += ' viewBox="0 0 100 100"';
+        }
+
+        // Set a default width if missing
+        if (!hasWidth) {
+          additionalAttributes += ' width="100"';
+        }
+
+        // Set a default height if missing
+        if (!hasHeight) {
+          additionalAttributes += ' height="100"';
+        }
+
+        // Add these attributes to the <svg> tag
+        svgData = svgData.replaceFirst('<svg', '<svg$additionalAttributes');
+      }
+
+      return SvgPicture.string(
+        svgData,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
+    }
   }
-}
+
+  Future<Widget> _loadSvgBytes(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  // Function to load SVG from a local file
+  Future<Widget> _loadSvgFile(File file) async {
+    try {
+      return SvgPicture.file(
+        file,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG from file: $e');
+    }
+  }
 }

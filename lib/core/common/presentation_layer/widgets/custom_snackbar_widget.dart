@@ -1,8 +1,8 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/repository_layer/enums/snakbar_type.dart';
+import 'package:link_vault/core/res/colours.dart';
 
 
 class CustomSnackbarContent extends StatelessWidget {

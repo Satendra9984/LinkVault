@@ -7,10 +7,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/network_image_cache_cubit/network_image_cache_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_image_painter.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 
 class UrlPreviewBytesWidget extends StatelessWidget {
   UrlPreviewBytesWidget({
