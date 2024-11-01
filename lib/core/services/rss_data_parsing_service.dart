@@ -8,6 +8,7 @@ import 'package:intl/intl.dart'; // Required for date parsing
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/services/html_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:xml/xml.dart';
 
 class RssXmlParsingService {
@@ -27,9 +28,9 @@ class RssXmlParsingService {
       if (response.statusCode == 200) {
         return XmlDocument.parse(response.body);
       } else {
-        // // Logger.printLog(
-        //   'HTTP error ${response.statusCode}: ${response.reasonPhrase}',
-        // );
+        Logger.printLog(
+          'HTTP error url = ${url}, ${response.statusCode}: ${response.reasonPhrase}',
+        );
       }
 
       // If the original URL failed and it was HTTP, try HTTPS
@@ -45,7 +46,7 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          // // Logger.printLog(
+          // Logger.printLog(
           //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
           // );
         }
@@ -61,39 +62,39 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          // // Logger.printLog(
+          // Logger.printLog(
           //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
           // );
         }
       }
 
-      // // Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
+      Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
       return null;
     } catch (e) {
       if (e is TimeoutException) {
-        // // Logger.printLog(
-        //   'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
-        // );
+        Logger.printLog(
+          'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
+        );
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi if Using Mobile Internet.',
         );
       } else if (e is SocketException) {
-        // // Logger.printLog('Socket error: $e');
+        Logger.printLog('Socket error: $e');
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi sometime mobile internet not work.',
         );
       } else if (e is FormatException) {
-        // // Logger.printLog('Invalid URL format: $e');
+        Logger.printLog('Invalid URL format: $e');
         throw const HttpException(
           'Invalid RSS Feed Address.',
         );
       } else if (e is XmlParserException) {
-        // // Logger.printLog('XML parsing error: $e');
+        Logger.printLog('XML parsing error: $e');
         throw const HttpException(
           'Invalid RSS Feed Address',
         );
       } else {
-        // // Logger.printLog('Unexpected error in fetchRssFeed: $e');
+        Logger.printLog('Unexpected error in fetchRssFeed: $e');
         throw const HttpException(
           'Something Went Wrong.',
         );

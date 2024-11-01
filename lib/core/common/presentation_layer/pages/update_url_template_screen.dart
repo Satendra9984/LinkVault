@@ -207,6 +207,10 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     _selectedCategory.dispose();
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
+    _allImagesUrlsList.dispose();
+    _urlLaunchType.dispose();
+    
+
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.edgeToEdge,
       overlays: [],

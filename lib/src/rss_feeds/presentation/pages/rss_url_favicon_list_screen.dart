@@ -345,6 +345,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    if(urlModel.metaData?.faviconUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: SizedBox(

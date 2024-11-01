@@ -129,7 +129,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               ),
               SavedFeedsPreviewListScreen(
                 showBottomBar: _showBottomNavBar,
-                isRootCollection: widget.isRootCollection,
+                isRootCollection: true,
                 collectionId: fetchCollection.collection!.id + savedFeeds,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),

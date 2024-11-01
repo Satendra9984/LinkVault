@@ -9,6 +9,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/data/repositories/rss_feed_repo.dart';
 
@@ -84,8 +85,8 @@ class RssFeedCubit extends Cubit<RssFeedState> {
     );
   }
 
-  // IMPROVE REFRESH LOGIC TO NOT DELETE SAME FEED
-  // WILL BE USEFUL WHEN IT HAS READ BOOKMARK OPTIONS TO STORE
+  /// IMPROVE REFRESH LOGIC TO NOT DELETE SAME FEED
+  /// WILL BE USEFUL WHEN IT HAS READ BOOKMARK OPTIONS TO STORE
   Future<void> refreshCollectionFeed({
     required String collectionId,
   }) async {
@@ -237,9 +238,14 @@ class RssFeedCubit extends Cubit<RssFeedState> {
         (failure) {
           // Logger.printLog('Failed to fetch feeds for URL: ');
         },
-        allFeeds.addAll,
+        (feeds) {
+          // Logger.printLog('Got feeds for ${feeds.length}');
+          allFeeds.addAll(feeds);
+        },
       );
     }
+
+    // Logger.printLog('Fetching feed ended');
 
     allFeeds.sort(
       (u1, u2) => u2.createdAt.compareTo(u1.createdAt),

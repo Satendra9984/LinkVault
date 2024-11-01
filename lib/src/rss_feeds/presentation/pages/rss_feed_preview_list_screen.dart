@@ -19,6 +19,7 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:share_plus/share_plus.dart';
@@ -178,15 +179,15 @@ class _RssFeedUrlsPreviewListWidgetState
     // _rssFeedCubit.clearCollectionFeed(
     //   collectionId: widget.collectionFetchModel.collection!.id,
     // );
-    // // Logger.printLog('[rss] : rssfeed preview list disposed');
+    // Logger.printLog('[rss] : rssfeed preview list disposed');
     super.dispose();
   }
 
   double getNavigationBarHeight(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     // return mediaQuery.viewPadding.bottom;
-    final physicalHeight = ui.window.physicalSize.height;
-    final devicePixelRatio = ui.window.devicePixelRatio;
+    final physicalHeight = View.of(context).physicalSize.height;
+    final devicePixelRatio = View.of(context).devicePixelRatio;
     final screenHeight = physicalHeight / devicePixelRatio;
 
     // Calculate the height of all known system UI elements
@@ -270,7 +271,7 @@ class _RssFeedUrlsPreviewListWidgetState
                 final feeds = state.feedCollections[
                     widget.collectionFetchModel.collection!.id];
 
-                if (feeds == null || feeds.allFeeds.isEmpty) {
+                if (feeds == null) {
                   return Center(
                     child: Column(
                       children: [
@@ -279,6 +280,50 @@ class _RssFeedUrlsPreviewListWidgetState
                         const CircularProgressIndicator(
                           color: ColourPallette.mountainMeadow,
                           backgroundColor: ColourPallette.white,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (feeds.allFeeds.isEmpty) {
+                  return Center(
+                    child: Column(
+                      children: [
+                        rssFeedNewsWidget,
+                        const SizedBox(height: 20),
+                        Text(
+                          'No Feed For Now.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: ColourPallette.information,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () {
+                            final collId =
+                                widget.collectionFetchModel.collection!.id;
+                            context
+                                .read<RssFeedCubit>()
+                                .refreshCollectionFeed(collectionId: collId);
+                          },
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Refresh',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: ColourPallette.black,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.refresh_rounded),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -407,7 +452,6 @@ class _RssFeedUrlsPreviewListWidgetState
                                                   urlModelDataForBookmark;
                                             },
                                             onTap: () async {
-                                              
                                               // Navigator.of(context).push(
                                               //   MaterialPageRoute(
                                               //     builder: (ctx) =>

@@ -5,6 +5,7 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/local_data_source.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/remote_data_source.dart';
 
@@ -30,10 +31,12 @@ class RssFeedRepo {
         );
 
         if (ffeeds != null && ffeeds.isNotEmpty) {
-          // // Logger.printLog('got fees in repo local ${ffeeds}');
+          // Logger.printLog('got fees in repo local ${ffeeds}');
           yield Right(ffeeds); // Emit local data if available
         } else if (urlModel.metaData?.rssFeedUrl != null) {
           // Fetch from the website source if no local data is available
+          // Logger.printLog('rssfeedurl: ${urlModel.metaData?.rssFeedUrl}');
+
           final xmlRawData = await _remoteDataSource.fetchRssFeed(
             urlModel.metaData!.rssFeedUrl!,
           );
@@ -46,7 +49,9 @@ class RssFeedRepo {
             );
 
             final faviconUrl = urlModel.metaData?.faviconUrl;
-            // Logger.printLog('copyingtitle: ${urlModel.title}');
+            // Logger.printLog(
+            //   'copyingtitle: ${urlModel.title}, tfeeds: ${tfeeds.length}',
+            // );
             // if (faviconUrl != null) {
             for (var i = 0; i < tfeeds.length; i++) {
               tfeeds[i] = tfeeds[i].copyWith(
@@ -54,6 +59,7 @@ class RssFeedRepo {
                       faviconUrl: faviconUrl,
                       websiteName: urlModel.title,
                     ),
+                settings: tfeeds[i].settings,
               );
               // }
             }

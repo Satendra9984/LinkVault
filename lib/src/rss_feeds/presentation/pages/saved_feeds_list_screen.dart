@@ -13,6 +13,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:lottie/lottie.dart';
 
@@ -94,7 +95,8 @@ class _SavedFeedsPreviewListScreenState
           collectionModel: fetchCollection.collection!,
           showAddUrlButton: false,
           onAddUrlPressed: ({String? url}) {},
-          onLongPress: (urlModel,{
+          onLongPress: (
+            urlModel, {
             required List<Widget> urlOptions,
           }) {
             Navigator.push(

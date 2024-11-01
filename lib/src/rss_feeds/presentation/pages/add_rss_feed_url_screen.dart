@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
@@ -83,7 +84,7 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
       // Check if RSS Feed Url is valid
       final rssFeedCubit = context.read<RssFeedCubit>();
 
-      while (_previewLoadingStates.value == LoadingStates.loading) {}
+      // while (_previewLoadingStates.value == LoadingStates.loading) {}
       if (_previewMetaData.value == null) {
         await _loadPreview();
       }
@@ -247,6 +248,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
     context.read<UrlCrudCubit>().cleanUp();
     _rssFeedUrlAddressController.text = widget.url ?? '';
     _selectedCategory.value = _predefinedCategories.first;
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
     super.initState();
   }
 
@@ -260,6 +268,17 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
     _previewError.dispose();
+    _urlLaunchType.dispose();
+    _allImagesUrlsList.dispose();
+    _feedUrlLaunchType.dispose();
+    _showCategoryOptionsList.dispose();
+    _showPreview.dispose();
+    _rssFeedUrlErrorNotifier.dispose();
+
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: [],
+    );
     super.dispose();
   }
 
@@ -381,13 +400,17 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                         validator: (value) {
                           try {
                             // Validate the URL
-                            final validationResult =
-                                Validator.validateUrl(value ?? '');
+                            // final validationResult =
+                            //     Validator.validateUrl(value ?? '');
 
-                            if (validationResult != null) {
-                              return validationResult;
+                            // if (validationResult != null) {
+                            //   return validationResult;
+                            // }
+
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter title';
                             }
-
+                            // return null;
                             return null;
                           } catch (e) {
                             // Logger.printLog(e.toString());

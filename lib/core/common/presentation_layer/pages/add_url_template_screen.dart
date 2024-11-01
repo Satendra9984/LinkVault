@@ -69,7 +69,7 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
     if (isValid) {
       _urlAddressController.text =
           Validator.formatUrl(_urlAddressController.text);
-      while (_previewLoadingStates.value == LoadingStates.loading) {}
+      // while (_previewLoadingStates.value == LoadingStates.loading) {}
 
       if (_previewMetaData.value == null) {
         await _loadPreview();

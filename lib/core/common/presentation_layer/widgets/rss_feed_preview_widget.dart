@@ -626,7 +626,7 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                                 min(bannerWidth, bannerImageSize!.width);
                           }
 
-                          // // Logger.printLog(
+                          // Logger.printLog(
                           //   '$initials mgwidth: ${bannerImageSize?.width}, screenwidth: ${size.width * 0.35}, final $bannerWidth',
                           // );
 
@@ -766,60 +766,66 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                                   }
                                   final metaData = widget.urlModel.metaData;
 
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                        child: Builder(
-                                          builder: (ctx) {
-                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                                            if (metaData!.faviconUrl!
-                                                .toLowerCase()
-                                                .endsWith('.svg')) {
-                                              // Try loading the SVG and handle errors
-                                              return FutureBuilder(
-                                                future: _loadSvg(
-                                                    metaData.faviconUrl!,),
-                                                builder: (context, snapshot) {
-                                                  if (snapshot
-                                                          .connectionState ==
-                                                      ConnectionState.waiting) {
-                                                    // Show a loading indicator while loading the SVG
-                                                    return const CircularProgressIndicator();
-                                                  } else if (snapshot
-                                                      .hasError) {
-                                                    // Fallback if SVG fails to load
+                                  if (metaData?.faviconUrl != null) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: SizedBox(
+                                        height: 14,
+                                        width: 14,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Builder(
+                                            builder: (ctx) {
+                                              // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                              if (metaData!.faviconUrl!
+                                                  .toLowerCase()
+                                                  .endsWith('.svg')) {
+                                                // Try loading the SVG and handle errors
+                                                return FutureBuilder(
+                                                  future: _loadSvg(
+                                                    metaData.faviconUrl!,
+                                                  ),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot
+                                                            .connectionState ==
+                                                        ConnectionState
+                                                            .waiting) {
+                                                      // Show a loading indicator while loading the SVG
+                                                      return const CircularProgressIndicator();
+                                                    } else if (snapshot
+                                                        .hasError) {
+                                                      // Fallback if SVG fails to load
+                                                      return const Icon(
+                                                        Icons.broken_image,
+                                                        size: 50,
+                                                      );
+                                                    } else {
+                                                      // Return the successfully loaded SVG
+                                                      return snapshot.data!;
+                                                    }
+                                                  },
+                                                );
+                                              } else {
+                                                return Image.network(
+                                                  metaData.faviconUrl!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (ctx, _, __) {
                                                     return const Icon(
                                                       Icons.broken_image,
                                                       size: 50,
                                                     );
-                                                  } else {
-                                                    // Return the successfully loaded SVG
-                                                    return snapshot.data!;
-                                                  }
-                                                },
-                                              );
-                                            } else {
-                                              return Image.network(
-                                                metaData.faviconUrl!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (ctx, _, __) {
-                                                  return const Icon(
-                                                    Icons.broken_image,
-                                                    size: 50,
-                                                  );
-                                                },
-                                              );
-                                            }
-                                          },
+                                                  },
+                                                );
+                                              }
+                                            },
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  } else {
+                                    return placeHolder;
+                                  }
                                 },
                               ),
                               const SizedBox(width: 8),

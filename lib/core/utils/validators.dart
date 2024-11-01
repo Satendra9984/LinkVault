@@ -62,10 +62,7 @@ class Validator {
   /// Formats the URL by adding missing "https://" if necessary.
   /// Does not automatically add "www" as it's not required for modern websites.
   static String formatUrl(String url) {
-    var formattedUrl = url.trim().toLowerCase();
-
-    // Remove any leading/trailing whitespace and convert to lowercase
-    formattedUrl = formattedUrl.trim().toLowerCase();
+    var formattedUrl = url.trim();
 
     // Handle special cases
     if (formattedUrl.startsWith('localhost')) {
