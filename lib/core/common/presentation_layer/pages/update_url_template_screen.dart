@@ -65,7 +65,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     if (isValid) {
       _urlAddressController.text =
           Validator.formatUrl(_urlAddressController.text);
-          
+
       final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
@@ -107,74 +107,62 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
   }
 
   Future<void> _loadPreview() async {
-    if (_urlAddressController.text.isEmpty) {
-      // // Logger.printLog('url address is empty');
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value =
-          GeneralFailure(message: 'Url Address is empty', statusCode: '400');
-      return;
-    }
+    try {
+      _formKey.currentState?.validate();
 
-    _urlAddressController.text =
-        Validator.formatUrl(_urlAddressController.text);
-    // Fetching all details
-    _previewLoadingStates.value = LoadingStates.loading;
-
-    final (websiteHtmlContent, metaData) =
-        await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
-
-    final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
-      null,
-      _urlAddressController.text,
-      webHtmlContent: websiteHtmlContent,
-    );
-
-    _allImagesUrlsList.value = allImageUrls;
-
-    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
-
-    if (metaData != null) {
-      // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
-      _previewMetaData.value = metaData.copyWith(
-        faviconUrl: widget.urlModel.metaData?.faviconUrl,
-        bannerImageUrl: widget.urlModel.metaData?.bannerImageUrl,
-      );
-      _previewLoadingStates.value = LoadingStates.loaded;
-      _previewError.value = null;
-
-      // Initilializing default values
-      if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
-        _urlTitleController.text = metaData.websiteName!;
+      if (_urlAddressController.text.isEmpty) {
+        // // Logger.printLog('url address is empty');
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value =
+            GeneralFailure(message: 'Url Address is empty', statusCode: '400');
+        return;
       }
 
-      /// DONT NEED AS WEBSITE DESCRIIPTION IS PRESENT IN URL_PREVIEW_LIST
-      /// USER CAN SHARE FROM THERE
-      /// AND TO SAVE DB SPACE
-      // if (_urlDescriptionController.text.isEmpty &&
-      //     metaData.description != null) {
-      //   // Logger.printLog('desclen: ${metaData.description?.length}');
-      //   if (metaData.description!.length > 1000) {
-      //     _urlDescriptionController.text =
-      //         metaData.description?.substring(0, 1000) ?? '';
-      //   } else {
-      //     _urlDescriptionController.text = metaData.description ?? '';
-      //   }
-      // }
-    } else {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = GeneralFailure(
-        message: 'Something went wrong. Check your internet and try again.',
-        statusCode: '400',
+      _urlAddressController.text =
+          Validator.formatUrl(_urlAddressController.text);
+      // Fetching all details
+      _previewLoadingStates.value = LoadingStates.loading;
+      _previewError.value = null;
+
+      final (websiteHtmlContent, metaData) =
+          await UrlParsingService.getWebsiteMetaData(
+        _urlAddressController.text,
       );
 
-      return;
-    }
-    // }
-    // Logger.printLog(
-    //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
-    // );
-    _previewLoadingStates.value = LoadingStates.loaded;
-    _showPreview.value = true;
+      final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
+        null,
+        _urlAddressController.text,
+        webHtmlContent: websiteHtmlContent,
+      );
+
+      _allImagesUrlsList.value = allImageUrls;
+
+      // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+
+      if (metaData != null) {
+        // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+        _previewMetaData.value = metaData.copyWith(
+          faviconUrl: widget.urlModel.metaData?.faviconUrl,
+          bannerImageUrl: widget.urlModel.metaData?.bannerImageUrl,
+        );
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _previewError.value = null;
+
+        // Initilializing default values
+        if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
+          _urlTitleController.text = metaData.websiteName!;
+        }
+
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _showPreview.value = true;
+      } else {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = GeneralFailure(
+          message: 'Something went wrong. Check your internet and try again.',
+          statusCode: '400',
+        );
+      }
+    } catch (e) {}
   }
 
   @override
@@ -233,13 +221,23 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       appBar: AppBar(
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
-        title: Text(
-          'Update Link',
-          style: TextStyle(
-            color: Colors.grey.shade800,
-            fontWeight: FontWeight.w500,
-            fontSize: 18,
-          ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.update_rounded,
+              // color: ColourPallette.warning,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Update Link',
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(

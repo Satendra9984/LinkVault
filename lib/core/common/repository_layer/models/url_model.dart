@@ -311,3 +311,4 @@ class UrlMetaData {
 // SOME URL-MODEL CONSTANTS
 
 const urlLaunchType = 'url_view_type';
+const feedUrlLaunchType = 'feed_url_view_type';

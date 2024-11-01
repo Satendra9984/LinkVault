@@ -51,6 +51,7 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
   final _showCategoryOptionsList = ValueNotifier(false);
   final _predefinedCategories = [...categories];
   final _selectedCategory = ValueNotifier<String>('');
+
   // SETTINGS
   // OPEN IN
   final _urlLaunchType = ValueNotifier<UrlLaunchType>(UrlLaunchType.customTabs);
@@ -111,60 +112,63 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
   }
 
   Future<void> _loadPreview() async {
-    if (_urlAddressController.text.isEmpty) {
-      // // Logger.printLog('url address is empty');
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value =
-          GeneralFailure(message: 'Link Address is empty', statusCode: '400');
-      return;
-    }
+    try {
+      _formKey.currentState?.validate();
 
-    // Fetching all details
-    _previewLoadingStates.value = LoadingStates.loading;
-    _urlAddressController.text =
-        Validator.formatUrl(_urlAddressController.text);
-        
-    final (websiteHtmlContent, metaData) =
-        await UrlParsingService.getWebsiteMetaData(_urlAddressController.text);
+      if (_urlAddressController.text.isEmpty) {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value =
+            GeneralFailure(message: 'Link Address is empty', statusCode: '400');
+        return;
+      }
 
-    // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+      // Fetching all details
+      _urlAddressController.text =
+          Validator.formatUrl(_urlAddressController.text);
 
-    final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
-      null,
-      _urlAddressController.text,
-      webHtmlContent: websiteHtmlContent,
-    );
-
-    _allImagesUrlsList.value = allImageUrls;
-    if (metaData != null) {
-      // // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
-      _previewMetaData.value = metaData;
-      _previewLoadingStates.value = LoadingStates.loaded;
+      _previewLoadingStates.value = LoadingStates.loading;
       _previewError.value = null;
 
-      // Initilializing default values
-      if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
-        if (metaData.websiteName!.length < 30) {
-          _urlTitleController.text = metaData.websiteName!;
-        } else {
-          _urlTitleController.text = metaData.websiteName!.substring(0, 30);
-        }
-      }
-    } else {
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = GeneralFailure(
-        message: 'Something went wrong. Check your internet and try again.',
-        statusCode: '400',
+      final (websiteHtmlContent, metaData) =
+          await UrlParsingService.getWebsiteMetaData(
+        _urlAddressController.text,
       );
 
-      return;
-    }
-    // }
-    // Logger.printLog(
-    //   'metadata size: ${_previewMetaData.value!.toJson().toString().length}',
-    // );
-    _previewLoadingStates.value = LoadingStates.loaded;
-    _showPreview.value = true;
+      // Logger.printLog('htmlContentLen : ${websiteHtmlContent?.length}');
+      final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
+        null,
+        _urlAddressController.text,
+        webHtmlContent: websiteHtmlContent,
+      );
+
+      _allImagesUrlsList.value = allImageUrls;
+
+      if (metaData != null) {
+        // Logger.printLog('metadata size: ${metaData.toJson().toString().length}');
+        _previewMetaData.value = metaData;
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _previewError.value = null;
+
+        // Initilializing default values
+        if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
+          if (metaData.websiteName!.length < 30) {
+            _urlTitleController.text = metaData.websiteName!;
+          } else {
+            _urlTitleController.text = metaData.websiteName!.substring(0, 30);
+          }
+        }
+
+        _previewLoadingStates.value = LoadingStates.loaded;
+        _showPreview.value = true;
+        _previewError.value = null;
+      } else {
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = GeneralFailure(
+          message: 'Something went wrong. Check your internet and try again.',
+          statusCode: '400',
+        );
+      }
+    } catch (e) {}
   }
 
   @override
@@ -217,13 +221,21 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
         appBar: AppBar(
           backgroundColor: ColourPallette.white,
           surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
-          title: Text(
-            'Add Link',
-            style: TextStyle(
-              color: Colors.grey.shade800,
-              fontWeight: FontWeight.w500,
-              fontSize: 18,
-            ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.add_link_rounded,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Add Link',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
         ),
         bottomNavigationBar: BlocConsumer<UrlCrudCubit, UrlCrudCubitState>(
