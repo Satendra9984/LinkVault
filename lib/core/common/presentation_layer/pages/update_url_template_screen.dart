@@ -15,7 +15,9 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/core/utils/validators.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -42,8 +44,8 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
   final _urlTitleController = TextEditingController();
   final _urlDescriptionController = TextEditingController();
   // CATEGORIES RELATED DATA
-  final _predefinedCategories = [...categories];
   final _showCategoryOptionsList = ValueNotifier(false);
+  final _predefinedCategories = [...categories];
   final _selectedCategory = ValueNotifier<String>('');
 
   // SETTINGS
@@ -61,6 +63,9 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
   Future<void> _updateUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
+      _urlAddressController.text =
+          Validator.formatUrl(_urlAddressController.text);
+          
       final urlMetaData = _previewMetaData.value != null
           ? _previewMetaData.value!
           : UrlMetaData.isEmpty(
@@ -88,8 +93,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         settings: settings,
       );
 
-      // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
-
       await urlCrudCubit
           .updateUrl(
         urlData: urlModelData,
@@ -112,6 +115,8 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
       return;
     }
 
+    _urlAddressController.text =
+        Validator.formatUrl(_urlAddressController.text);
     // Fetching all details
     _previewLoadingStates.value = LoadingStates.loading;
 
@@ -333,8 +338,8 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                 CustomCollTextField(
                   controller: _urlAddressController,
                   labelText: 'Link Address',
-                  hintText: ' eg. https://www.youtube.com ',
-                  keyboardType: TextInputType.name,
+                  hintText: 'e.g., https://www.youtube.com',
+                  keyboardType: TextInputType.url,
                   isRequired: true,
                   labelTextStyle: const TextStyle(
                     fontSize: 16,
@@ -342,12 +347,31 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                     color: ColourPallette.black,
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter title';
+                    try {
+                      // Validate the URL
+                      final validationResult =
+                          Validator.validateUrl(value ?? '');
+
+                      if (validationResult != null) {
+                        return validationResult;
+                      }
+
+                      return null;
+                    } catch (e) {
+                      // Logger.printLog(e.toString());
+                      return 'Could not validate Link. Something Went Wrong';
                     }
-                    return null;
+                  },
+                  onEditingCompleted: () {
+                    _urlAddressController.text =
+                        Validator.formatUrl(_urlAddressController.text);
+                  },
+                  onSubmitted: (value) {
+                    // Format the URL and update the controller
+                    _urlAddressController.text = Validator.formatUrl(value);
                   },
                 ),
+
                 const SizedBox(height: 16),
 
                 // TITILE TEXTFIELD
@@ -483,7 +507,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                             }
                             final date = DateTime.now().toUtc();
                             final urlModelData = UrlModel(
-                              firestoreId: '',
+                              firestoreId: widget.urlModel.firestoreId,
                               collectionId: widget.urlModel.collectionId,
                               url: _urlAddressController.text.trim(),
                               title: _urlTitleController.text.trim(),
@@ -492,7 +516,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
                               isFavourite: _showPreview.value,
                               tag: _selectedCategory.value,
                               isOffline: false,
-                              createdAt: date,
+                              createdAt: widget.urlModel.createdAt,
                               updatedAt: date,
                               metaData: urlMetaData,
                             );

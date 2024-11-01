@@ -24,6 +24,7 @@ import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -257,7 +258,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (ctx) => UpdateUrlTemplateScreen(
+                builder: (ctx) => UpdateRssFeedUrlPage(
                   urlModel: urlModel,
                   isRootCollection: widget.isRootCollection,
                   onDeleteURLCallback: (urlModel) async {},
