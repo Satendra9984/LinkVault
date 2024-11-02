@@ -16,6 +16,7 @@ class CollectionModel {
     this.description,
     this.icon,
     this.background,
+    this.settings, // Added new field
   });
 
   factory CollectionModel.fromJson(Map<String, dynamic> json) {
@@ -38,11 +39,12 @@ class CollectionModel {
           .toList(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      settings:
+          json['settings'] as Map<String, dynamic>?, // Nullable settings field
     );
   }
 
   factory CollectionModel.isEmpty({
-    /// userId is necessary as will be use in sharing feature etc
     required String userId,
     required String name,
     required String parentCollection,
@@ -55,36 +57,32 @@ class CollectionModel {
       userId: userId,
       parentCollection: parentCollection,
       name: name,
-      // description: null,
       category: '',
       subcollections: [],
       urls: [],
-      // icon: null,
-      // background: null,
       status: status,
       sharedWith: [],
       createdAt: createdAt,
       updatedAt: updatedAt,
+      settings: null, // Ensure settings is nullable
     );
   }
 
   final String id;
-  final String userId; // Owner's user id
-  final String parentCollection; // id
-
+  final String userId;
+  final String parentCollection;
   final String name;
   final String? description;
-  final String category; // tag
-  final List<String> subcollections; // ids of subcollections
-  final List<String> urls; // ids of URLs
-
-  final Map<String, dynamic>? icon; // id
-  final Map<String, dynamic>? background; // id
-  final Map<String, dynamic>? status; // active, deleted
-  final List<SharedWith> sharedWith; // Embedded list of JSON objects
-
-  final DateTime createdAt; // timestamp
+  final String category;
+  final List<String> subcollections;
+  final List<String> urls;
+  final Map<String, dynamic>? icon;
+  final Map<String, dynamic>? background;
+  final Map<String, dynamic>? status;
+  final List<SharedWith> sharedWith;
+  final DateTime createdAt;
   final DateTime updatedAt;
+  final Map<String, dynamic>? settings; // New nullable field
 
   Map<String, dynamic> toJson() {
     return {
@@ -102,6 +100,8 @@ class CollectionModel {
       'shared_with': sharedWith.map((item) => item.toJson()).toList(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      if (settings != null)
+        'settings': settings, // Conditional inclusion of settings
     };
   }
 
@@ -120,6 +120,7 @@ class CollectionModel {
     List<SharedWith>? sharedWith,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Map<String, dynamic>? settings, // New parameter for copyWith
   }) {
     return CollectionModel(
       id: id ?? this.id,
@@ -136,6 +137,7 @@ class CollectionModel {
       sharedWith: sharedWith ?? this.sharedWith,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      settings: settings ?? this.settings, // Handle null case
     );
   }
 }
@@ -164,26 +166,28 @@ class SharedWith {
   }
 }
 
-class SubCollection {
-  SubCollection({
-    required this.subCollectionId,
-    required this.subCollectionName,
-  });
+// class SubCollection {
+//   SubCollection({
+//     required this.subCollectionId,
+//     required this.subCollectionName,
+//   });
 
-  factory SubCollection.fromJson(Map<String, dynamic> json) {
-    return SubCollection(
-      subCollectionId: json['sub_collection_id'] as String,
-      subCollectionName: json['sub_collection_name'] as String,
-    );
-  }
+//   factory SubCollection.fromJson(Map<String, dynamic> json) {
+//     return SubCollection(
+//       subCollectionId: json['sub_collection_id'] as String,
+//       subCollectionName: json['sub_collection_name'] as String,
+//     );
+//   }
 
-  final String subCollectionId;
-  final String subCollectionName; // e.g., 'admin', 'editor', 'viewer'
+//   final String subCollectionId;
+//   final String subCollectionName; // e.g., 'admin', 'editor', 'viewer'
 
-  Map<String, dynamic> toJson() {
-    return {
-      'sub_collection_id': subCollectionId,
-      'sub_collection_name': subCollectionName,
-    };
-  }
-}
+//   Map<String, dynamic> toJson() {
+//     return {
+//       'sub_collection_id': subCollectionId,
+//       'sub_collection_name': subCollectionName,
+//     };
+//   }
+// }
+
+const urlsViewType = 'urls_view_type';

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/collection_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/collection_icon_button.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
@@ -61,29 +66,19 @@ class _DashboardCollectionsListScreenState
   Widget _collectionItemBuilder({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required int index,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     final subCollection = list.value[index];
     return FolderIconButton(
       collection: subCollection.collection!,
-      onLongPress: () {
-        Navigator.push(
+      onLongPress: () async {
+        await showCollectionModelOptionsBottomSheet(
           context,
-          MaterialPageRoute(
-            builder: (ctx) => CollectionStorePage(
-              collectionId: subCollection.collection!.id,
-              isRootCollection: false,
-              appBarLeadingIcon: widget.appBarLeadingIcon,
-            ),
-          ),
+          collectionModel: subCollection.collection,
+          collectionOptions: subCollection.collection == null
+              ? <Widget>[]
+              : collectionOptions(subCollection.collection!),
         );
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (ctx) => UpdateCollectionTemplateScreen(
-        //       collection: subCollection.collection!,
-        //     ),
-        //   ),
-        // );
       },
       onPress: () {
         Navigator.push(
@@ -103,7 +98,7 @@ class _DashboardCollectionsListScreenState
   Widget _getAppBar({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required List<Widget> actions,
-    required List<Widget> collectionOptions,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
@@ -132,7 +127,8 @@ class _DashboardCollectionsListScreenState
         GestureDetector(
           onTap: () => showCollectionModelOptionsBottomSheet(
             context,
-            collectionOptions: collectionOptions,
+            collectionOptions: collectionOptions(widget.collectionModel),
+            collectionModel: widget.collectionModel,
           ),
           child: const Icon(
             Icons.keyboard_option_key_rounded,
@@ -147,7 +143,12 @@ class _DashboardCollectionsListScreenState
   Future<void> showCollectionModelOptionsBottomSheet(
     BuildContext context, {
     required List<Widget> collectionOptions,
+    required CollectionModel? collectionModel,
   }) async {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
     final size = MediaQuery.of(context).size;
 
     await SystemChrome.setEnabledSystemUIMode(
@@ -164,6 +165,8 @@ class _DashboardCollectionsListScreenState
       );
       Navigator.pop(context);
     }
+
+    final showLastUpdated = ValueNotifier(false);
 
     await showModalBottomSheet<Widget>(
       context: context,
@@ -206,7 +209,7 @@ class _DashboardCollectionsListScreenState
                     const SizedBox(width: 16),
                     Text(
                       StringUtils.capitalizeEachWord(
-                        widget.collectionModel.name,
+                        collectionModel?.name ?? '--',
                       ),
                       style: const TextStyle(
                         fontSize: 18,
@@ -226,70 +229,6 @@ class _DashboardCollectionsListScreenState
       () async {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.edgeToEdge,
-        );
-      },
-    );
-  }
-
-  Future<void> showDeleteCollectionConfirmationDialog(
-    BuildContext context,
-    VoidCallback onConfirm,
-  ) async {
-    await showDialog<Widget>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog.adaptive(
-          backgroundColor: ColourPallette.white,
-          shadowColor: ColourPallette.mystic,
-          title: Row(
-            children: [
-              LottieBuilder.asset(
-                MediaRes.errorANIMATION,
-                height: 28,
-                width: 28,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Confirm Deletion',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to delete "${widget.collectionModel.name}"?',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text(
-                'CANCEL',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                onConfirm(); // Call the confirm callback
-              },
-              child: Text(
-                'DELETE',
-                style: TextStyle(
-                  color: ColourPallette.error,
-                ),
-              ),
-            ),
-          ],
         );
       },
     );

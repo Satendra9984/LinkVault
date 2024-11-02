@@ -204,7 +204,7 @@ class _SearchedCollectionsListWidgetState
   Widget _getAppBar({
     required List<Widget> actions,
     required ValueNotifier<List<CollectionFetchModel>> list,
-    required List<Widget> collectionOptions,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,

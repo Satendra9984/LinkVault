@@ -369,7 +369,7 @@ class _UrlFaviconListTemplateScreenState
                     return widget.onUrlModelItemFetchedWidget!(
                       index: index,
                       list: _list,
-                      urlOptions: [
+                      urlOptions: [ 
                         // SYNC WITH REMOTE DATABASE
                         BottomSheetOption(
                           leadingIcon: Icons.cloud_sync,
@@ -813,6 +813,5 @@ class _UrlFaviconListTemplateScreenState
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }

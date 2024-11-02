@@ -64,6 +64,9 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
   final _previewError = ValueNotifier<Failure?>(null);
   final _allImagesUrlsList = ValueNotifier<List<String>>(<String>[]);
 
+  
+
+
   Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {

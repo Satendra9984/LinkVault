@@ -6,9 +6,12 @@ import 'package:link_vault/core/common/presentation_layer/providers/global_user_
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
 import 'package:link_vault/core/common/repository_layer/enums/collection_crud_loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 
 class UpdateCollectionTemplateScreen extends StatefulWidget {
   const UpdateCollectionTemplateScreen({
@@ -27,9 +30,13 @@ class _UpdateCollectionTemplateScreenState
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _collectionNameController;
   late final TextEditingController _descEditingController;
-  late final List<String> _predefinedCategories;
-  bool _favourite = false;
-  String _selectedCategory = '';
+  // CATEGORIES RELATED DATA
+  final _showCategoryOptionsList = ValueNotifier(false);
+  final _predefinedCategories = [...categories];
+  final _selectedCategory = ValueNotifier<String>('');
+  final bool _favourite = false;
+  // SETTINGS RELATED
+  final _urlsViewType = ValueNotifier(UrlViewType.favicons);
 
   Future<void> _updateCollection(CollectionCrudCubit collectionCubit) async {
     final isValid = _formKey.currentState!.validate();
@@ -38,14 +45,19 @@ class _UpdateCollectionTemplateScreenState
       final status = widget.collection.status ?? {};
 
       status['is_favourite'] = _favourite;
+      final settings = <String, dynamic>{};
+      settings[urlsViewType] = _urlsViewType.value.label;
 
       final updatedCollection = widget.collection.copyWith(
         name: _collectionNameController.text,
         description: _descEditingController.text,
         status: status,
         updatedAt: updatedAt,
-        category: _selectedCategory,
+        category: _selectedCategory.value,
+        settings: settings,
       );
+
+      Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
 
       await collectionCubit.updateCollection(
         collection: updatedCollection,
@@ -56,16 +68,23 @@ class _UpdateCollectionTemplateScreenState
   void _initialize() {
     // INITITALIZING VARIABLES
     _formKey = GlobalKey<FormState>();
-    _predefinedCategories = [...categories];
     _collectionNameController = TextEditingController();
     _descEditingController = TextEditingController();
-    _selectedCategory = _predefinedCategories.first;
+    _selectedCategory.value = widget.collection.category;
 
     // INITITALIZING VALUES
     _collectionNameController.text = widget.collection.name;
     _descEditingController.text = widget.collection.description ?? '';
-    _selectedCategory = widget.collection.category;
-    _favourite = (widget.collection.status?['is_favourite'] as bool?) ?? false;
+    _selectedCategory.value = widget.collection.category;
+    // _favourite. = (widget.collection.status?['is_favourite'] as bool?) ?? false;
+
+    final settings = widget.collection.settings ?? <String, dynamic>{};
+
+    if (settings.containsKey(urlsViewType)) {
+      _urlsViewType.value = UrlViewType.fromString(
+        settings[urlsViewType].toString(),
+      );
+    }
   }
 
   @override
@@ -87,6 +106,10 @@ class _UpdateCollectionTemplateScreenState
   void dispose() {
     _collectionNameController.dispose();
     _descEditingController.dispose();
+    _selectedCategory.dispose();
+    _showCategoryOptionsList.dispose();
+    _urlsViewType.dispose();
+
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.edgeToEdge,
       overlays: [],
@@ -101,12 +124,21 @@ class _UpdateCollectionTemplateScreenState
       appBar: AppBar(
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
-        title: Text(
-          'Update Collection',
-          style: TextStyle(
-            color: Colors.grey.shade800,
-            fontWeight: FontWeight.w500,
-          ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.create_new_folder_rounded,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Update Collection',
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -183,6 +215,12 @@ class _UpdateCollectionTemplateScreenState
                   labelText: 'Collection Name',
                   hintText: ' eg. Exam Resources ',
                   keyboardType: TextInputType.name,
+                  isRequired: true,
+                  labelTextStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: ColourPallette.black,
+                  ),
                   maxLength: 30,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -191,7 +229,179 @@ class _UpdateCollectionTemplateScreenState
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Category',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: _showCategoryOptionsList,
+                      builder: (ctx, showCategoryOptionsList, _) {
+                        if (showCategoryOptionsList) {
+                          return IconButton(
+                            onPressed: () => _showCategoryOptionsList.value =
+                                !_showCategoryOptionsList.value,
+                            icon: const Icon(
+                              Icons.arrow_upward_rounded,
+                            ),
+                          );
+                        }
+                        return IconButton(
+                          onPressed: () => _showCategoryOptionsList.value =
+                              !_showCategoryOptionsList.value,
+                          icon: const Icon(
+                            Icons.arrow_downward_rounded,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                ValueListenableBuilder(
+                  valueListenable: _showCategoryOptionsList,
+                  builder: (ctx, showCategoryOptionsList, _) {
+                    if (!showCategoryOptionsList) {
+                      return const SizedBox.shrink();
+                    }
+                    return ValueListenableBuilder<String>(
+                      valueListenable: _selectedCategory,
+                      builder: (context, selectedCategory, child) {
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: List.generate(
+                            _predefinedCategories.length,
+                            (index) {
+                              final category = _predefinedCategories[index];
+                              final isSelected =
+                                  category == _selectedCategory.value;
+                              return GestureDetector(
+                                onTap: () => _selectedCategory.value = category,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? ColourPallette.mountainMeadow
+                                        : Colors.white,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? ColourPallette.mountainMeadow
+                                          : ColourPallette.grey,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey.shade700,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w500
+                                          : FontWeight.w400,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // SETTINGS
+                const Text(
+                  'Settings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ColourPallette.salemgreen,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ALWAYS OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'URLs View Mode',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _urlsViewType,
+                      builder: (ctx, urlsViewType, _) {
+                        return DropdownButton<UrlViewType>(
+                          value: urlsViewType,
+                          onChanged: (urlsViewType) {
+                            if (urlsViewType == null) return;
+                            _urlsViewType.value = urlsViewType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            DropdownMenuItem(
+                              value: UrlViewType.favicons,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  UrlViewType.favicons.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: UrlViewType.previews,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  UrlViewType.previews.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
                 CustomCollTextField(
                   controller: _descEditingController,
                   labelText: 'Description',
@@ -235,59 +445,6 @@ class _UpdateCollectionTemplateScreenState
                 // ),
 
                 // const SizedBox(height: 20),
-
-                // Selected Category
-                const Text(
-                  'Categories',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: List.generate(
-                    _predefinedCategories.length,
-                    (index) {
-                      final category = _predefinedCategories[index];
-                      final isSelected = category == _selectedCategory;
-                      return GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedCategory = category;
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? ColourPallette.mountainMeadow
-                                : Colors.white,
-                            border: Border.all(
-                              color: isSelected
-                                  ? ColourPallette.mountainMeadow
-                                  : ColourPallette.grey,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
               ],
             ),
           ),

@@ -400,17 +400,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                         validator: (value) {
                           try {
                             // Validate the URL
-                            // final validationResult =
-                            //     Validator.validateUrl(value ?? '');
+                            final validationResult =
+                                Validator.validateUrl(value ?? '');
 
-                            // if (validationResult != null) {
-                            //   return validationResult;
-                            // }
-
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter title';
+                            if (validationResult != null) {
+                              return validationResult;
                             }
-                            // return null;
+
                             return null;
                           } catch (e) {
                             // Logger.printLog(e.toString());

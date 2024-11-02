@@ -12,7 +12,7 @@ class ColourPallette {
   static const Color darkTeal = Color(0xff005163);
 
   //
-  static const Color salemgreen = Color(0xff0D974E);
+  static const Color salemgreen =  Color(0xff0D974E);
   static const Color bitterlemon = Color(0xffDEEF0D);
   static const Color mountainMeadow = Color(0xff129F65);
   static const Color mystic = Color(0xffE2EAE8);

@@ -61,29 +61,19 @@ class _FavouritesCollectionsListScreenState
   Widget _collectionItemBuilder({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required int index,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     final subCollection = list.value[index];
     return FolderIconButton(
       collection: subCollection.collection!,
-      onLongPress: () {
-        Navigator.push(
+      onLongPress: () async {
+        await showCollectionModelOptionsBottomSheet(
           context,
-          MaterialPageRoute(
-            builder: (ctx) => CollectionStorePage(
-              collectionId: subCollection.collection!.id,
-              isRootCollection: false,
-              appBarLeadingIcon: widget.appBarLeadingIcon,
-            ),
-          ),
+          collectionModel: subCollection.collection,
+          collectionOptions: subCollection.collection == null
+              ? <Widget>[]
+              : collectionOptions(subCollection.collection!),
         );
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (ctx) => UpdateCollectionTemplateScreen(
-        //       collection: subCollection.collection!,
-        //     ),
-        //   ),
-        // );
       },
       onPress: () {
         Navigator.push(
@@ -103,7 +93,7 @@ class _FavouritesCollectionsListScreenState
   Widget _getAppBar({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required List<Widget> actions,
-    required List<Widget> collectionOptions,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
@@ -130,7 +120,8 @@ class _FavouritesCollectionsListScreenState
         GestureDetector(
           onTap: () => showCollectionModelOptionsBottomSheet(
             context,
-            collectionOptions: collectionOptions,
+            collectionOptions: collectionOptions(widget.collectionModel),
+            collectionModel: widget.collectionModel,
           ),
           child: const Icon(
             Icons.keyboard_option_key_rounded,
@@ -145,7 +136,12 @@ class _FavouritesCollectionsListScreenState
   Future<void> showCollectionModelOptionsBottomSheet(
     BuildContext context, {
     required List<Widget> collectionOptions,
+    required CollectionModel? collectionModel,
   }) async {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
     final size = MediaQuery.of(context).size;
 
     await SystemChrome.setEnabledSystemUIMode(
@@ -162,6 +158,8 @@ class _FavouritesCollectionsListScreenState
       );
       Navigator.pop(context);
     }
+
+    final showLastUpdated = ValueNotifier(false);
 
     await showModalBottomSheet<Widget>(
       context: context,
@@ -207,9 +205,9 @@ class _FavouritesCollectionsListScreenState
                     const SizedBox(width: 16),
                     Text(
                       StringUtils.capitalizeEachWord(
-                        widget.isRootCollection
+                        collectionModel == null
                             ? 'Favourites'
-                            : widget.collectionModel.name,
+                            : collectionModel.name,
                       ),
                       style: const TextStyle(
                         fontSize: 18,
@@ -229,70 +227,6 @@ class _FavouritesCollectionsListScreenState
       () async {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.edgeToEdge,
-        );
-      },
-    );
-  }
-
-  Future<void> showDeleteCollectionConfirmationDialog(
-    BuildContext context,
-    VoidCallback onConfirm,
-  ) async {
-    await showDialog<Widget>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog.adaptive(
-          backgroundColor: ColourPallette.white,
-          shadowColor: ColourPallette.mystic,
-          title: Row(
-            children: [
-              LottieBuilder.asset(
-                MediaRes.errorANIMATION,
-                height: 28,
-                width: 28,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Confirm Deletion',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to delete "${widget.isRootCollection ? 'Favourites' : widget.collectionModel.name}"?',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text(
-                'CANCEL',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                onConfirm(); // Call the confirm callback
-              },
-              child: Text(
-                'DELETE',
-                style: TextStyle(
-                  color: ColourPallette.error,
-                ),
-              ),
-            ),
-          ],
         );
       },
     );

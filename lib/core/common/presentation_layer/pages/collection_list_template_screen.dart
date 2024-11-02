@@ -15,6 +15,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_fetch_
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:lottie/lottie.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
@@ -38,7 +39,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
   final Widget? Function({
     required List<Widget> actions,
     required ValueNotifier<List<CollectionFetchModel>> list,
-    required List<Widget> collectionOptions,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) appBar;
 
   final Widget Function({
@@ -49,6 +50,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
   final Widget Function({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required int index,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   })? onCollectionItemFetchedWidget;
 
   @override
@@ -317,6 +319,11 @@ class _CollectionsListScreenTemplateState
                           return widget.onCollectionItemFetchedWidget!(
                             index: index,
                             list: _list,
+                            collectionOptions: (collectionModel) =>
+                                showCollectionModelOptionsBottomSheet(
+                              context,
+                              collectionModel: collectionModel,
+                            ),
                           );
                         },
                       );
@@ -329,12 +336,6 @@ class _CollectionsListScreenTemplateState
   }
 
   PreferredSize _getAppBar() {
-    const titleTextStyle = TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w500,
-    );
-    final showLastUpdated = ValueNotifier(false);
-
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: ValueListenableBuilder<bool>(
@@ -348,109 +349,11 @@ class _CollectionsListScreenTemplateState
               actions: [
                 _filterOptions(),
               ],
-              collectionOptions: [
-                // UPDATE URL
-                BottomSheetOption(
-                  // leadingIcon: Icons.access_time_filled_rounded,
-                  leadingIcon: Icons.replay_circle_filled_outlined,
-                  title: const Text('Update', style: titleTextStyle),
-                  trailing: ValueListenableBuilder(
-                    valueListenable: showLastUpdated,
-                    builder: (ctx, showLastUpdatedVal, _) {
-                      if (!showLastUpdatedVal) {
-                        return GestureDetector(
-                          onTap: () =>
-                              showLastUpdated.value = !showLastUpdated.value,
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 20,
-                          ),
-                        );
-                      }
-
-                      final updatedAt = widget.collectionModel.updatedAt;
-                      // Format to get hour with am/pm notation
-                      final formattedTime =
-                          DateFormat('h:mma').format(updatedAt);
-                      // Combine with the date
-                      final lastSynced =
-                          'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
-
-                      return GestureDetector(
-                        onTap: () =>
-                            showLastUpdated.value = !showLastUpdated.value,
-                        child: Text(
-                          lastSynced,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: ColourPallette.salemgreen.withOpacity(0.75),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => UpdateCollectionTemplateScreen(
-                          collection: widget.collectionModel,
-                        ),
-                      ),
-                    ).then(
-                      (_) {
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-
-                // SYNC WITH REMOTE DATABASE
-                BottomSheetOption(
-                  leadingIcon: Icons.cloud_sync,
-                  title: const Text('Sync', style: titleTextStyle),
-                  onTap: () async {
-                    final collCubit = context.read<CollectionCrudCubit>();
-                    await Navigator.maybePop(context).then(
-                      (_) async {
-                        await collCubit
-                            .syncCollection(
-                              collectionModel: widget.collectionModel,
-                              isRootCollection: widget.isRootCollection,
-                            )
-                            .then(
-                              (_) {},
-                            );
-                      },
-                    );
-                  },
-                ),
-
-                // DELETE URL
-                BottomSheetOption(
-                  leadingIcon: Icons.delete_rounded,
-                  title: const Text('Delete', style: titleTextStyle),
-                  onTap: () async {
-                    await showDeleteCollectionConfirmationDialog(
-                      context,
-                      () async {
-                        final urlCrudCubit =
-                            context.read<CollectionCrudCubit>();
-
-                        await urlCrudCubit.deleteCollection(
-                          collection: widget.collectionModel,
-                        );
-                      },
-                    ).then(
-                      (_) {
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ],
+              collectionOptions: (collectionModel) =>
+                  showCollectionModelOptionsBottomSheet(
+                context,
+                collectionModel: collectionModel,
+              ),
             ),
           );
         },
@@ -519,10 +422,125 @@ class _CollectionsListScreenTemplateState
     );
   }
 
+  // FOR THE COLLECTION-MODEL
+  List<Widget> showCollectionModelOptionsBottomSheet(
+    BuildContext context, {
+    required CollectionModel collectionModel,
+  }) {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    final showLastUpdated = ValueNotifier(false);
+
+    return [
+      // UPDATE URL
+      BottomSheetOption(
+        // leadingIcon: Icons.access_time_filled_rounded,
+        leadingIcon: Icons.replay_circle_filled_outlined,
+        title: const Text('Update', style: titleTextStyle),
+        trailing: ValueListenableBuilder(
+          valueListenable: showLastUpdated,
+          builder: (ctx, showLastUpdatedVal, _) {
+            if (!showLastUpdatedVal) {
+              return GestureDetector(
+                onTap: () => showLastUpdated.value = !showLastUpdated.value,
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                ),
+              );
+            }
+
+            final updatedAt = collectionModel.updatedAt;
+            // Format to get hour with am/pm notation
+            final formattedTime = DateFormat('h:mma').format(updatedAt);
+            // Combine with the date
+            final lastSynced =
+                'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+            return GestureDetector(
+              onTap: () => showLastUpdated.value = !showLastUpdated.value,
+              child: Text(
+                lastSynced,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ColourPallette.salemgreen.withOpacity(0.75),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
+        ),
+
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => UpdateCollectionTemplateScreen(
+                collection: collectionModel,
+              ),
+            ),
+          ).then(
+            (_) {
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
+
+      // SYNC WITH REMOTE DATABASE
+      BottomSheetOption(
+        leadingIcon: Icons.cloud_sync,
+        title: const Text('Sync', style: titleTextStyle),
+        onTap: () async {
+          final collCubit = context.read<CollectionCrudCubit>();
+          await Navigator.maybePop(context).then(
+            (_) async {
+              await collCubit
+                  .syncCollection(
+                    collectionModel: collectionModel,
+                    isRootCollection: false,
+                  )
+                  .then(
+                    (_) {},
+                  );
+            },
+          );
+        },
+      ),
+
+      // DELETE URL
+      BottomSheetOption(
+        leadingIcon: Icons.delete_rounded,
+        title: const Text('Delete', style: titleTextStyle),
+        onTap: () async {
+          await showDeleteCollectionConfirmationDialog(
+            context,
+            () async {
+              final urlCrudCubit = context.read<CollectionCrudCubit>();
+
+              await urlCrudCubit.deleteCollection(
+                collection: collectionModel,
+              );
+            },
+            collectionModel: collectionModel,
+          ).then(
+            (_) {
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
+    ];
+  }
+
   Future<void> showDeleteCollectionConfirmationDialog(
     BuildContext context,
-    VoidCallback onConfirm,
-  ) async {
+    VoidCallback onConfirm, {
+    required CollectionModel? collectionModel,
+  }) async {
     await showDialog<Widget>(
       context: context,
       builder: (BuildContext context) {
@@ -547,7 +565,7 @@ class _CollectionsListScreenTemplateState
             ],
           ),
           content: Text(
-            'Are you sure you want to delete "${widget.collectionModel.name}"?',
+            'Are you sure you want to delete "${collectionModel?.name}"?',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
