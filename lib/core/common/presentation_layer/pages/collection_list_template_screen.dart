@@ -600,4 +600,6 @@ class _CollectionsListScreenTemplateState
       },
     );
   }
+
+
 }

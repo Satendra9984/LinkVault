@@ -179,6 +179,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
 
     _initializeSettingsOption();
     _loadPreview();
+    
     super.initState();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
