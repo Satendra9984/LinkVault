@@ -67,7 +67,9 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
         await showCollectionModelOptionsBottomSheet(
           context,
           collectionModel: subCollection.collection,
-          collectionOptions: [],
+          collectionOptions: subCollection.collection == null
+              ? <Widget>[]
+              : collectionOptions(subCollection.collection!),
         );
       },
       onPress: () {
@@ -112,6 +114,18 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
       ),
       actions: [
         ...actions,
+        const SizedBox(width: 4),
+        GestureDetector(
+          onTap: () => showCollectionModelOptionsBottomSheet(
+            context,
+            collectionOptions: collectionOptions(widget.collectionModel),
+            collectionModel: widget.collectionModel,
+          ),
+          child: const Icon(
+            Icons.keyboard_option_key_rounded,
+          ),
+        ),
+        const SizedBox(width: 24),
       ],
     );
   }

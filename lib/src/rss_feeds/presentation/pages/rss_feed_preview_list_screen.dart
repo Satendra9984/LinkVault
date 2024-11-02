@@ -271,7 +271,9 @@ class _RssFeedUrlsPreviewListWidgetState
                 final feeds = state.feedCollections[
                     widget.collectionFetchModel.collection!.id];
 
-                if (feeds == null) {
+                if (feeds == null ||
+                    feeds.loadingStates == LoadingStates.loading ||
+                    feeds.loadingStates == LoadingStates.initial) {
                   return Center(
                     child: Column(
                       children: [
