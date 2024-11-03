@@ -124,7 +124,7 @@ class _UrlPreviewListTemplateScreenState
     }
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // // Logger.printLog('[scroll] Called on scroll in urlslist');
+      // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
     _previousOffset = _scrollController.offset;
