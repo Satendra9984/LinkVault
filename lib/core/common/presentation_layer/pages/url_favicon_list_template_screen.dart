@@ -431,7 +431,7 @@ class _UrlFaviconListTemplateScreenState
                         // OPEN IN BROWSER
                         BottomSheetOption(
                           leadingIcon: Icons.open_in_new_rounded,
-                          title: const Text('Open In Browser',
+                          title: const Text('Open Browser',
                               style: titleTextStyle,),
                           onTap: () async {
                             await CustomTabsService.launchUrl(
@@ -445,7 +445,7 @@ class _UrlFaviconListTemplateScreenState
                         BottomSheetOption(
                           leadingIcon: Icons.open_in_new_rounded,
                           title: const Text(
-                            'Open In WebView(beta)',
+                            'Open WebView(beta)',
                             style: titleTextStyle,
                           ),
                           onTap: () async {

@@ -17,6 +17,7 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -349,7 +350,7 @@ class _UrlPreviewListTemplateScreenState
         // OPEN IN BROWSER
         BottomSheetOption(
           leadingIcon: Icons.open_in_new_rounded,
-          title: const Text('Open In Browser', style: titleTextStyle),
+          title: const Text('Open Browser', style: titleTextStyle),
           onTap: () async {
             await CustomTabsService.launchUrl(
               url: urlModel.url,
@@ -357,7 +358,29 @@ class _UrlPreviewListTemplateScreenState
             );
           },
         ),
-
+        
+        // OPEN IN WEBVIEW
+        BottomSheetOption(
+          leadingIcon: Icons.open_in_new_rounded,
+          title: const Text(
+            'Open WebView(beta)',
+            style: titleTextStyle,
+          ),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => DashboardWebView(
+                  url: urlModel.url,
+                ),
+              ),
+            ).then(
+              (_) async {
+                await Navigator.maybePop(context);
+              },
+            );
+          },
+        ),
         // SHARE THE LINK TO OTHER APPS
         BottomSheetOption(
           leadingIcon: Icons.share,
@@ -516,7 +539,6 @@ class _UrlPreviewListTemplateScreenState
                                         valueListenable: _showDescriptions,
                                         builder:
                                             (context, showDescriptions, _) {
-                                          
                                           return Container(
                                             margin: const EdgeInsets.symmetric(
                                               vertical: 8,

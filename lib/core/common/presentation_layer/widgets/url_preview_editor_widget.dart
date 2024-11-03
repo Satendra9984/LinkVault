@@ -687,7 +687,7 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                                 min(bannerWidth, bannerImageSize!.width);
                           }
 
-                          // // Logger.printLog(
+                          // Logger.printLog(
                           //   '$initials mgwidth: ${bannerImageSize?.width}, screenwidth: ${size.width * 0.35}, final $bannerWidth',
                           // );
 
