@@ -31,7 +31,7 @@ class RssFeedRepo {
         );
 
         if (ffeeds != null && ffeeds.isNotEmpty) {
-          // Logger.printLog('got fees in repo local ${ffeeds}');
+          Logger.printLog('got fees in repo local ${ffeeds.length}');
           yield Right(ffeeds); // Emit local data if available
         } else if (urlModel.metaData?.rssFeedUrl != null) {
           // Fetch from the website source if no local data is available

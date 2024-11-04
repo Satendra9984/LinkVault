@@ -80,6 +80,9 @@ flutter:
      - assets/logo/
      - assets/animations/
 
+     - assets/js/readability/readabilityjs/
+     - assets/js/readability/readabilityjs/Readability.js
+
 # Specify the supported platforms (remove windows)
 platform:
   android:
