@@ -326,7 +326,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
         // ADD TO FAVOURITES
         BottomSheetOption(
           leadingIcon: Icons.bookmark_add_rounded,
-          title: const Text('Add To Favourites', style: titleTextStyle),
+          title: const Text('Favourites', style: titleTextStyle),
           trailing: Builder(
             builder: (ctx) {
               if (urlModel.isFavourite == false) {

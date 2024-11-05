@@ -495,7 +495,9 @@ class _RssFeedUrlsPreviewListWidgetState
                                                         Theme.of(context);
                                                     await CustomTabsService
                                                         .launchUrl(
-                                                      url: urlModel.url,
+                                                      url: urlModel.metaData
+                                                              ?.rssFeedUrl ??
+                                                          urlModel.url,
                                                       theme: theme,
                                                     ).then(
                                                       (_) async {
@@ -512,7 +514,9 @@ class _RssFeedUrlsPreviewListWidgetState
                                                       MaterialPageRoute(
                                                         builder: (ctx) =>
                                                             DashboardWebView(
-                                                          url: urlModel.url,
+                                                          url: urlModel.metaData
+                                                                  ?.rssFeedUrl ??
+                                                              urlModel.url,
                                                         ),
                                                       ),
                                                     );
@@ -526,7 +530,9 @@ class _RssFeedUrlsPreviewListWidgetState
                                                       MaterialPageRoute(
                                                         builder: (ctx) =>
                                                             RSSFeedWebView(
-                                                          url: urlModel.url,
+                                                          url: urlModel.metaData
+                                                                  ?.rssFeedUrl ??
+                                                              urlModel.url,
                                                         ),
                                                       ),
                                                     );
@@ -540,7 +546,9 @@ class _RssFeedUrlsPreviewListWidgetState
                                                         Theme.of(context);
                                                     await CustomTabsService
                                                         .launchUrl(
-                                                      url: urlModel.url,
+                                                      url: urlModel.metaData
+                                                              ?.rssFeedUrl ??
+                                                          urlModel.url,
                                                       theme: theme,
                                                     ).then(
                                                       (_) async {
@@ -553,7 +561,7 @@ class _RssFeedUrlsPreviewListWidgetState
                                               }
                                             },
                                             onLongPress: () async {
-                                              // [TODO] : SHOW MORE OPTIONS
+                                              // SHOW MORE OPTIONS
                                               final urlc = url.copyWith(
                                                 metaData: urlMetaData,
                                               );
@@ -1364,7 +1372,8 @@ class _RssFeedUrlsPreviewListWidgetState
                         await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (ctx) => DashboardWebView(
-                              url: urlModel.url,
+                              url:
+                                  urlModel.metaData?.rssFeedUrl ?? urlModel.url,
                             ),
                           ),
                         );
@@ -1376,7 +1385,8 @@ class _RssFeedUrlsPreviewListWidgetState
                         await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (ctx) => RSSFeedWebView(
-                              url: urlModel.url,
+                              url:
+                                  urlModel.metaData?.rssFeedUrl ?? urlModel.url,
                             ),
                           ),
                         );
@@ -1387,7 +1397,7 @@ class _RssFeedUrlsPreviewListWidgetState
                       {
                         final theme = Theme.of(context);
                         await CustomTabsService.launchUrl(
-                          url: urlModel.url,
+                          url: urlModel.metaData?.rssFeedUrl ?? urlModel.url,
                           theme: theme,
                         ).then(
                           (_) async {
@@ -1462,7 +1472,6 @@ class _RssFeedUrlsPreviewListWidgetState
               //     );
               //   },
               // ),
-            
             ],
           ),
         ),
@@ -1569,7 +1578,6 @@ class _RssFeedUrlsPreviewListWidgetState
 
     return initials.toString();
   }
-
 
   @override
   bool get wantKeepAlive => true;
