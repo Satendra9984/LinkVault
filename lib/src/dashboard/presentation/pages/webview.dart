@@ -139,7 +139,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                   await webViewController?.goBack();
                 } else {
                   // Logger.printLog('CanGoBack WebView cannot go back, popping screen');
-                  await Navigator.of(context).maybePop();
+                  // await Navigator.of(context).maybePop();
                 }
               },
               child: Scaffold(

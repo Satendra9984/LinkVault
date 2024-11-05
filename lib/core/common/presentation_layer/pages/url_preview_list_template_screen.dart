@@ -10,6 +10,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_m
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
@@ -17,6 +18,7 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -274,10 +276,87 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  Future<void> onTap({
+    required UrlModel urlModel,
+    required BuildContext context,
+  }) async {
+    final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
+
+    if (urlModel.settings != null &&
+        urlModel.settings!.containsKey(urlLaunchType)) {
+      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+        urlModel.settings![urlLaunchType].toString(),
+      );
+    }
+    switch (urlLaunchTypeLocalNotifier.value) {
+      case UrlLaunchType.customTabs:
+        {
+          final theme = Theme.of(context);
+          await CustomTabsService.launchUrl(
+            url: urlModel.url,
+            theme: theme,
+          ).then(
+            (_) async {
+              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+              // JUST LIKE APPS IN BACKGROUND TYPE
+            },
+          );
+          break;
+        }
+      case UrlLaunchType.webView:
+        {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => DashboardWebView(
+                url: urlModel.url,
+              ),
+            ),
+          );
+
+          break;
+        }
+      case UrlLaunchType.readingMode:
+        {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => DashboardWebView(
+                url: urlModel.url,
+              ),
+            ),
+          );
+
+          break;
+        }
+      case UrlLaunchType.separateBrowserWindow:
+        {
+          final theme = Theme.of(context);
+          await CustomTabsService.launchUrl(
+            url: urlModel.url,
+            theme: theme,
+          ).then(
+            (_) async {
+              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+              // JUST LIKE APPS IN BACKGROUND TYPE
+            },
+          );
+          break;
+        }
+    }
+  }
+
   Future<void> onLongPress(
     UrlModel urlModel,
     BuildContext context,
   ) async {
+    final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
+
+    if (urlModel.settings != null &&
+        urlModel.settings!.containsKey(urlLaunchType)) {
+      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+        urlModel.settings![urlLaunchType].toString(),
+      );
+    }
+
     const titleTextStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w500,
@@ -350,37 +429,136 @@ class _UrlPreviewListTemplateScreenState
         // OPEN IN BROWSER
         BottomSheetOption(
           leadingIcon: Icons.open_in_new_rounded,
-          title: const Text('Open Browser', style: titleTextStyle),
-          onTap: () async {
-            await CustomTabsService.launchUrl(
-              url: urlModel.url,
-              theme: Theme.of(context),
-            );
-          },
-        ),
-        
-        // OPEN IN WEBVIEW
-        BottomSheetOption(
-          leadingIcon: Icons.open_in_new_rounded,
           title: const Text(
-            'Open WebView(beta)',
+            'Open In',
             style: titleTextStyle,
           ),
+          trailing: // DROPDOWN OF BROWSER, WEBVIEW
+              ValueListenableBuilder(
+            valueListenable: urlLaunchTypeLocalNotifier,
+            builder: (ctx, urlLaunchType, _) {
+              return DropdownButton<UrlLaunchType>(
+                value: urlLaunchType,
+                onChanged: (urlLaunchType) {
+                  if (urlLaunchType == null) return;
+                  urlLaunchTypeLocalNotifier.value = urlLaunchType;
+                },
+                isDense: true,
+                iconEnabledColor: ColourPallette.black,
+                elevation: 4,
+                borderRadius: BorderRadius.circular(8),
+                underline: const SizedBox.shrink(),
+                dropdownColor: ColourPallette.mystic,
+                items: [
+                  DropdownMenuItem(
+                    value: UrlLaunchType.customTabs,
+                    child: Text(
+                      StringUtils.capitalize(
+                        'Browser', // UrlLaunchType.customTabs.label,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: UrlLaunchType.webView,
+                    child: Text(
+                      StringUtils.capitalize(
+                        UrlLaunchType.webView.label,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
           onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (ctx) => DashboardWebView(
-                  url: urlModel.url,
-                ),
-              ),
-            ).then(
-              (_) async {
-                await Navigator.maybePop(context);
-              },
-            );
+            switch (urlLaunchTypeLocalNotifier.value) {
+              case UrlLaunchType.customTabs:
+                {
+                  final theme = Theme.of(context);
+                  await CustomTabsService.launchUrl(
+                    url: urlModel.url,
+                    theme: theme,
+                  ).then(
+                    (_) async {
+                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                      // JUST LIKE APPS IN BACKGROUND TYPE
+                    },
+                  );
+                  break;
+                }
+              case UrlLaunchType.webView:
+                {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => DashboardWebView(
+                        url: urlModel.url,
+                      ),
+                    ),
+                  );
+
+                  break;
+                }
+              case UrlLaunchType.readingMode:
+                {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => DashboardWebView(
+                        url: urlModel.url,
+                      ),
+                    ),
+                  );
+
+                  break;
+                }
+              case UrlLaunchType.separateBrowserWindow:
+                {
+                  final theme = Theme.of(context);
+                  await CustomTabsService.launchUrl(
+                    url: urlModel.url,
+                    theme: theme,
+                  ).then(
+                    (_) async {
+                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                      // JUST LIKE APPS IN BACKGROUND TYPE
+                    },
+                  );
+                  break;
+                }
+            }
           },
         ),
+
+        // OPEN IN WEBVIEW
+        // BottomSheetOption(
+        //   leadingIcon: Icons.open_in_new_rounded,
+        //   title: const Text(
+        //     'Open WebView(beta)',
+        //     style: titleTextStyle,
+        //   ),
+        //   onTap: () async {
+        //     await Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (ctx) => DashboardWebView(
+        //           url: urlModel.url,
+        //         ),
+        //       ),
+        //     ).then(
+        //       (_) async {
+        //         await Navigator.maybePop(context);
+        //       },
+        //     );
+        //   },
+        // ),
+
         // SHARE THE LINK TO OTHER APPS
         BottomSheetOption(
           leadingIcon: Icons.share,
@@ -572,13 +750,10 @@ class _UrlPreviewListTemplateScreenState
                                                             url: urlModel,
                                                           );
                                                         },
-                                              onTap: () async {
-                                                final uri =
-                                                    Uri.parse(urlModel.url);
-                                                if (await canLaunchUrl(uri)) {
-                                                  await launchUrl(uri);
-                                                }
-                                              },
+                                              onTap: () async => onTap(
+                                                urlModel: urlModel,
+                                                context: context,
+                                              ),
                                               onLongPress: () => onLongPress(
                                                 urlModel,
                                                 context,
@@ -914,6 +1089,5 @@ class _UrlPreviewListTemplateScreenState
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }

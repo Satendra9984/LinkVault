@@ -6,6 +6,7 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/local_data_source.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/remote_data_source.dart';
 
@@ -31,7 +32,7 @@ class RssFeedRepo {
         );
 
         if (ffeeds != null && ffeeds.isNotEmpty) {
-          Logger.printLog('got fees in repo local ${ffeeds.length}');
+          // Logger.printLog('got fees in repo local ${ffeeds.length}');
           yield Right(ffeeds); // Emit local data if available
         } else if (urlModel.metaData?.rssFeedUrl != null) {
           // Fetch from the website source if no local data is available
@@ -50,7 +51,7 @@ class RssFeedRepo {
 
             final faviconUrl = urlModel.metaData?.faviconUrl;
             // Logger.printLog(
-            //   'copyingtitle: ${urlModel.title}, tfeeds: ${tfeeds.length}',
+            //   'settings: ${urlModel.metaData?.websiteName}, tfeeds: ${tfeeds[0].settings}',
             // );
             // if (faviconUrl != null) {
             for (var i = 0; i < tfeeds.length; i++) {
@@ -59,7 +60,7 @@ class RssFeedRepo {
                       faviconUrl: faviconUrl,
                       websiteName: urlModel.title,
                     ),
-                settings: tfeeds[i].settings,
+                settings: urlModel.settings,
               );
               // }
             }
@@ -115,6 +116,7 @@ class RssFeedRepo {
                   faviconUrl: faviconUrl,
                   websiteName: urlModel.title,
                 ),
+            settings: urlModel.settings,
           );
         }
 
@@ -136,7 +138,9 @@ class RssFeedRepo {
         // If the feed already exists, replace the existing feed in `newlyfectedfeeds`
         if (existingFeed.metaData?.rssFeedUrl ==
             newlyFetchedFeed.metaData?.rssFeedUrl) {
-          newlyfectedfeeds[i] = existingFeed;
+          newlyfectedfeeds[i] = existingFeed.copyWith(
+            settings: newlyfectedfeeds[i].settings,
+          );
         }
       }
 

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
@@ -789,57 +791,62 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                                   }
                                   final metaData = widget.urlModel.metaData;
 
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                        child: Builder(
-                                          builder: (ctx) {
-                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                                            if (metaData!.faviconUrl!
-                                                .toLowerCase()
-                                                .endsWith('.svg')) {
-                                              // Try loading the SVG and handle errors
-                                              return FutureBuilder(
-                                                future: _loadSvg(
-                                                    metaData.faviconUrl!,),
-                                                builder: (context, snapshot) {
-                                                  if (snapshot
-                                                          .connectionState ==
-                                                      ConnectionState.waiting) {
-                                                    // Show a loading indicator while loading the SVG
-                                                    return const CircularProgressIndicator();
-                                                  } else if (snapshot
-                                                      .hasError) {
-                                                    // Fallback if SVG fails to load
-                                                    return const Icon(
-                                                      Icons.broken_image,
-                                                      size: 50,
-                                                    );
-                                                  } else {
-                                                    // Return the successfully loaded SVG
-                                                    return snapshot.data!;
-                                                  }
-                                                },
-                                              );
-                                            } else {
-                                              return Image.network(
-                                                metaData.faviconUrl!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (ctx, _, __) {
-                                                  return const Icon(
-                                                    Icons.broken_image,
-                                                    size: 50,
+                                  return SizedBox(
+                                    height: 14,
+                                    width: 14,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: NetworkImageBuilderWidget(
+                                        imageUrl: urlMetaData.faviconUrl!,
+                                        compressImage: false,
+                                        errorWidgetBuilder: () {
+                                          return placeHolder;
+                                        },
+                                        successWidgetBuilder: (imageData) {
+                                          return ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            child: Builder(
+                                              builder: (ctx) {
+                                                final memoryImage =
+                                                    Image.memory(
+                                                  imageData.imageBytesData!,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (ctx, _, __) {
+                                                    return placeHolder;
+                                                  },
+                                                );
+                                                // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                                if (urlMetaData.faviconUrl!
+                                                    .toLowerCase()
+                                                    .endsWith('.svg')) {
+                                                  // Try loading the SVG and handle errors
+                                                  return FutureBuilder(
+                                                    future: _loadSvgBytes(
+                                                      imageData.imageBytesData!,
+                                                    ),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return const CircularProgressIndicator();
+                                                      } else if (snapshot
+                                                          .hasError) {
+                                                        return memoryImage;
+                                                      } else {
+                                                        return snapshot.data!;
+                                                      }
+                                                    },
                                                   );
-                                                },
-                                              );
-                                            }
-                                          },
-                                        ),
+                                                } else {
+                                                  return memoryImage;
+                                                }
+                                              },
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   );
@@ -909,6 +916,17 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
       );
     } catch (e) {
       // If there's an error, throw it to be caught in the FutureBuilder
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  Future<Widget> _loadSvgBytes(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
       throw Exception('Failed to load SVG: $e');
     }
   }

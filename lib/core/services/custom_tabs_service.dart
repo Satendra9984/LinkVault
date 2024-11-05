@@ -44,7 +44,7 @@ class CustomTabsService {
     }
 
     stopWatch.stop();
-    Logger.printLog('[customtabs] : stopped ${stopWatch.elapsedMilliseconds}');
+    // Logger.printLog('[customtabs] : stopped ${stopWatch.elapsedMilliseconds}');
   }
 
   static Future<void> openUrlInCustomTab({

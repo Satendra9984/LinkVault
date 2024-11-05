@@ -10,12 +10,15 @@ import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfie
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
@@ -315,6 +318,7 @@ class _UrlFaviconListTemplateScreenState
             _list.value = availableUrls.map(ValueNotifier.new).toList();
 
             _filterList();
+
             return ValueListenableBuilder(
               valueListenable: _list,
               builder: (context, availableUrls, _) {
@@ -365,17 +369,28 @@ class _UrlFaviconListTemplateScreenState
                       fontWeight: FontWeight.w500,
                     );
 
+                    final urlLaunchTypeLocalNotifier =
+                        ValueNotifier(UrlLaunchType.customTabs);
+
                     final urlModel = url.urlModel!;
+                    if (urlModel.settings != null &&
+                        urlModel.settings!.containsKey(urlLaunchType)) {
+                      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+                        urlModel.settings![urlLaunchType].toString(),
+                      );
+                    }
+                    
                     return widget.onUrlModelItemFetchedWidget!(
                       index: index,
                       list: _list,
-                      urlOptions: [ 
+                      urlOptions: [
                         // SYNC WITH REMOTE DATABASE
                         BottomSheetOption(
                           leadingIcon: Icons.cloud_sync,
                           title: const Text('Sync', style: titleTextStyle),
                           onTap: () async {
                             // ADD SYNCING FUNCTIONALITY
+
                             final urlCrudCubit = context.read<UrlCrudCubit>();
                             Navigator.pop(context);
                             await urlCrudCubit.syncUrl(
@@ -431,38 +446,135 @@ class _UrlFaviconListTemplateScreenState
                         // OPEN IN BROWSER
                         BottomSheetOption(
                           leadingIcon: Icons.open_in_new_rounded,
-                          title: const Text('Open Browser',
-                              style: titleTextStyle,),
+                          title: const Text(
+                            'Open In',
+                            style: titleTextStyle,
+                          ),
+                          trailing: // DROPDOWN OF BROWSER, WEBVIEW
+                              ValueListenableBuilder(
+                            valueListenable: urlLaunchTypeLocalNotifier,
+                            builder: (ctx, urlLaunchType, _) {
+                              return DropdownButton<UrlLaunchType>(
+                                value: urlLaunchType,
+                                onChanged: (urlLaunchType) {
+                                  if (urlLaunchType == null) return;
+                                  urlLaunchTypeLocalNotifier.value = urlLaunchType;
+                                },
+                                isDense: true,
+                                iconEnabledColor: ColourPallette.black,
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(8),
+                                underline: const SizedBox.shrink(),
+                                dropdownColor: ColourPallette.mystic,
+                                items: [
+                                  DropdownMenuItem(
+                                    value: UrlLaunchType.customTabs,
+                                    child: Text(
+                                      StringUtils.capitalize(
+                                        'Browser', // UrlLaunchType.customTabs.label,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: UrlLaunchType.webView,
+                                    child: Text(
+                                      StringUtils.capitalize(
+                                        UrlLaunchType.webView.label,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                           onTap: () async {
-                            await CustomTabsService.launchUrl(
-                              url: urlModel.url,
-                              theme: Theme.of(context),
-                            );
+                            switch (urlLaunchTypeLocalNotifier.value) {
+                              case UrlLaunchType.customTabs:
+                                {
+                                  final theme = Theme.of(context);
+                                  await CustomTabsService.launchUrl(
+                                    url: urlModel.url,
+                                    theme: theme,
+                                  ).then(
+                                    (_) async {
+                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                      // JUST LIKE APPS IN BACKGROUND TYPE
+                                    },
+                                  );
+                                  break;
+                                }
+                              case UrlLaunchType.webView:
+                                {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (ctx) => DashboardWebView(
+                                        url: urlModel.url,
+                                      ),
+                                    ),
+                                  );
+
+                                  break;
+                                }
+                              case UrlLaunchType.readingMode:
+                                {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (ctx) => DashboardWebView(
+                                        url: urlModel.url,
+                                      ),
+                                    ),
+                                  );
+
+                                  break;
+                                }
+                              case UrlLaunchType.separateBrowserWindow:
+                                {
+                                  final theme = Theme.of(context);
+                                  await CustomTabsService.launchUrl(
+                                    url: urlModel.url,
+                                    theme: theme,
+                                  ).then(
+                                    (_) async {
+                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                      // JUST LIKE APPS IN BACKGROUND TYPE
+                                    },
+                                  );
+                                  break;
+                                }
+                            }
                           },
                         ),
 
                         // OPEN IN WEBVIEW
-                        BottomSheetOption(
-                          leadingIcon: Icons.open_in_new_rounded,
-                          title: const Text(
-                            'Open WebView(beta)',
-                            style: titleTextStyle,
-                          ),
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) => DashboardWebView(
-                                  url: urlModel.url,
-                                ),
-                              ),
-                            ).then(
-                              (_) async{
-                                await Navigator.maybePop(context);
-                              },
-                            );
-                          },
-                        ),
+                        // BottomSheetOption(
+                        //   leadingIcon: Icons.open_in_new_rounded,
+                        //   title: const Text(
+                        //     'Open WebView(beta)',
+                        //     style: titleTextStyle,
+                        //   ),
+                        //   onTap: () async {
+                        //     await Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (ctx) => DashboardWebView(
+                        //           url: urlModel.url,
+                        //         ),
+                        //       ),
+                        //     ).then(
+                        //       (_) async {
+                        //         await Navigator.maybePop(context);
+                        //       },
+                        //     );
+                        //   },
+                        // ),
 
                         // SHARE THE LINK TO OTHER APPS
                         BottomSheetOption(

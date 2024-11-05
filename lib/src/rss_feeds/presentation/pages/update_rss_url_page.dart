@@ -181,7 +181,7 @@ class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
         }
 
         final baseUrl = RssXmlParsingService.getBaseUrlFromRssData(channel);
-        Logger.printLog('AddRSS: $baseUrl');
+        // Logger.printLog('AddRSS: $baseUrl');
 
         if (baseUrl == null || baseUrl.isEmpty) {
           _previewLoadingStates.value = LoadingStates.errorLoading;
@@ -852,7 +852,7 @@ class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        'Always Open In',
+                        'Open Url In',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
@@ -916,7 +916,7 @@ class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
                   children: [
                     const Expanded(
                       child: Text(
-                        'Always Open RSS Feed In',
+                        'Open RSS Feed In',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
@@ -941,25 +941,21 @@ class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
                           underline: const SizedBox.shrink(),
                           dropdownColor: ColourPallette.mystic,
                           items: [
-                            DropdownMenuItem(
-                              value: UrlLaunchType.separateBrowserWindow,
-                              child: Text(
-                                StringUtils.capitalize('Browser'),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: UrlLaunchType.webView,
-                              child: Text(
-                                StringUtils.capitalize(
-                                  UrlLaunchType.webView.label,
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                            ...UrlLaunchType.values.map(
+                              (urlLaunchType) => DropdownMenuItem(
+                                value: urlLaunchType,
+                                child: Text(
+                                  StringUtils.capitalize(
+                                    urlLaunchType ==
+                                            UrlLaunchType.separateBrowserWindow
+                                        ? 'Browser'
+                                        : urlLaunchType
+                                            .label, // UrlLaunchType.customTabs.label,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ),

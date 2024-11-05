@@ -68,33 +68,33 @@ class RssXmlParsingService {
         }
       }
 
-      Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
+      // Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
       return null;
     } catch (e) {
       if (e is TimeoutException) {
-        Logger.printLog(
-          'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
-        );
+        // Logger.printLog(
+        //   'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
+        // );
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi if Using Mobile Internet.',
         );
       } else if (e is SocketException) {
-        Logger.printLog('Socket error: $e');
+        // Logger.printLog('Socket error: $e');
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi sometime mobile internet not work.',
         );
       } else if (e is FormatException) {
-        Logger.printLog('Invalid URL format: $e');
+        // Logger.printLog('Invalid URL format: $e');
         throw const HttpException(
           'Invalid RSS Feed Address.',
         );
       } else if (e is XmlParserException) {
-        Logger.printLog('XML parsing error: $e');
+        // Logger.printLog('XML parsing error: $e');
         throw const HttpException(
           'Invalid RSS Feed Address',
         );
       } else {
-        Logger.printLog('Unexpected error in fetchRssFeed: $e');
+        // Logger.printLog('Unexpected error in fetchRssFeed: $e');
         throw const HttpException(
           'Something Went Wrong.',
         );

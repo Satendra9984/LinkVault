@@ -329,37 +329,113 @@ class _SavedFeedsPreviewListScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: NetworkImageBuilderWidget(
-                            imageUrl: urlModel.metaData!.faviconUrl!,
-                            compressImage: false,
-                            errorWidgetBuilder: () {
-                              return const SizedBox.shrink();
-                            },
-                            successWidgetBuilder: (imageData) {
-                              final imageBytes = imageData.imageBytesData!;
+                      Builder(
+                      builder: (context) {
+                        final urlModelData = urlModel;
+                        final urlMetaData = urlModel.metaData!;
 
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: Image.memory(
-                                  imageBytes,
-                                  fit: BoxFit.contain,
-                                  height: 24,
-                                  width: 24,
-                                  errorBuilder: (ctx, _, __) {
-                                    return const SizedBox.shrink();
+                        var name = '';
+
+                        if (urlModelData.title.isNotEmpty) {
+                          name = urlModelData.title;
+                        } else if (urlMetaData.title != null &&
+                            urlMetaData.title!.isNotEmpty) {
+                          name = urlMetaData.title!;
+                        } else if (urlMetaData.websiteName != null &&
+                            urlMetaData.websiteName!.isNotEmpty) {
+                          name = urlMetaData.websiteName!;
+                        }
+
+                        final placeHolder = Container(
+                          padding: const EdgeInsets.all(2),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: ColourPallette.black,
+                            // color: Colors.deepPurple
+                          ),
+                          child: Text(
+                            _websiteName(name, 5),
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            overflow: TextOverflow.fade,
+                            style: const TextStyle(
+                              color: ColourPallette.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 8,
+                            ),
+                          ),
+                        );
+
+                        if (urlModel.metaData?.faviconUrl == null) {
+                          return placeHolder;
+                        }
+                        final metaData = urlModel.metaData;
+
+                        if (metaData?.faviconUrl != null) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: NetworkImageBuilderWidget(
+                                  imageUrl: urlMetaData.faviconUrl!,
+                                  compressImage: false,
+                                  errorWidgetBuilder: () {
+                                    return placeHolder;
+                                  },
+                                  successWidgetBuilder: (imageData) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Builder(
+                                        builder: (ctx) {
+                                          final memoryImage = Image.memory(
+                                            imageData.imageBytesData!,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (ctx, _, __) {
+                                              return placeHolder;
+                                            },
+                                          );
+                                          // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                          if (urlMetaData.faviconUrl!
+                                              .toLowerCase()
+                                              .endsWith('.svg')) {
+                                            // Try loading the SVG and handle errors
+                                            return FutureBuilder(
+                                              future: _loadSvgBytes(
+                                                imageData.imageBytesData!,
+                                              ),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const CircularProgressIndicator();
+                                                } else if (snapshot.hasError) {
+                                                  return memoryImage;
+                                                } else {
+                                                  return snapshot.data!;
+                                                }
+                                              },
+                                            );
+                                          } else {
+                                            return memoryImage;
+                                          }
+                                        },
+                                      ),
+                                    );
                                   },
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return placeHolder;
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 16),
                       Text(
                         StringUtils.capitalizeEachWord(
                           urlModel.metaData?.websiteName ??
@@ -566,6 +642,36 @@ class _SavedFeedsPreviewListScreenState
       ),
     );
   }
+
+  Future<Widget> _loadSvgBytes(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  String _websiteName(String websiteName, int allowedLength) {
+    // // Logger.printLog('WebsiteName: $websiteName');
+    if (websiteName.length < allowedLength) {
+      return websiteName;
+    }
+
+    final spaced = websiteName.trim().split(' ');
+    final initials = StringBuffer();
+
+    for (final ele in spaced) {
+      if (ele.isNotEmpty) {
+        initials.write(ele[0]);
+      }
+    }
+
+    return initials.toString();
+  }
+
 
   @override
   bool get wantKeepAlive => true;

@@ -9,7 +9,7 @@ import 'package:link_vault/core/utils/logger.dart';
 
 
 
-// Use this https://github.com/xaynetwork/xayn_readability
+// Use this https://github.com/xaynetwork/xayn_readabilityc
 class RSSFeedWebView extends StatefulWidget {
   const RSSFeedWebView({required this.url, super.key});
 

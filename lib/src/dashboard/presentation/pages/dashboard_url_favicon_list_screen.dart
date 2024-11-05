@@ -13,6 +13,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_o
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
@@ -24,6 +25,7 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,7 +59,6 @@ class _DashboardUrlFaviconListScreenState
 
   @override
   void initState() {
-    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
     super.initState();
   }
 
@@ -236,40 +237,86 @@ class _DashboardUrlFaviconListScreenState
     required int index,
     required List<Widget> urlOptions,
   }) {
-    final url = list.value[index].value.urlModel!;
+    final urlModel = list.value[index].value.urlModel!;
 
     return UrlFaviconLogoWidget(
       urlPreloadMethod: widget.isRootCollection
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
-        // Navigator.of(context).push(
-        //   MaterialPageRoute(
-        //     builder: (ctx) => DashboardWebView(
-        //       url: url.url,
-        //     ),
-        //   ),
-        // );
-        final theme = Theme.of(context);
-        await CustomTabsService.launchUrl(
-          url: url.url,
-          theme: theme,
-        ).then(
-          (_) async {
-            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-            // JUST LIKE APPS IN BACKGROUND TYPE
-          },
-        );
+        final urlLaunchTypeLocalNotifier =
+            ValueNotifier(UrlLaunchType.customTabs);
+
+        if (urlModel.settings != null &&
+            urlModel.settings!.containsKey(urlLaunchType)) {
+          urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+            urlModel.settings![urlLaunchType].toString(),
+          );
+        }
+        switch (urlLaunchTypeLocalNotifier.value) {
+          case UrlLaunchType.customTabs:
+            {
+              final theme = Theme.of(context);
+              await CustomTabsService.launchUrl(
+                url: urlModel.url,
+                theme: theme,
+              ).then(
+                (_) async {
+                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                  // JUST LIKE APPS IN BACKGROUND TYPE
+                },
+              );
+              break;
+            }
+          case UrlLaunchType.webView:
+            {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => DashboardWebView(
+                    url: urlModel.url,
+                  ),
+                ),
+              );
+
+              break;
+            }
+          case UrlLaunchType.readingMode:
+            {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => DashboardWebView(
+                    url: urlModel.url,
+                  ),
+                ),
+              );
+
+              break;
+            }
+          case UrlLaunchType.separateBrowserWindow:
+            {
+              final theme = Theme.of(context);
+              await CustomTabsService.launchUrl(
+                url: urlModel.url,
+                theme: theme,
+              ).then(
+                (_) async {
+                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                  // JUST LIKE APPS IN BACKGROUND TYPE
+                },
+              );
+              break;
+            }
+        }
       },
       onLongPress: (urlMetaData) async {
-        final urlc = url.copyWith(metaData: urlMetaData);
+        final urlc = urlModel.copyWith(metaData: urlMetaData);
         await showUrlOptionsBottomSheet(
           context,
           urlModel: urlc,
           urlOptions: urlOptions,
         );
       },
-      urlModelData: url,
+      urlModelData: urlModel,
     );
   }
 
@@ -404,6 +451,7 @@ class _DashboardUrlFaviconListScreenState
           },
         ),
       );
+
     await showModalBottomSheet<Widget>(
       context: context,
       isScrollControlled: true,
@@ -427,48 +475,129 @@ class _DashboardUrlFaviconListScreenState
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: NetworkImageBuilderWidget(
-                          imageUrl: urlModel.metaData!.faviconUrl!,
-                          compressImage: false,
-                          errorWidgetBuilder: () {
-                            return const SizedBox.shrink();
-                          },
-                          successWidgetBuilder: (imageData) {
-                            final imageBytes = imageData.imageBytesData!;
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Builder(
+                        builder: (context) {
+                          final urlModelData = urlModel;
+                          final urlMetaData = urlModel.metaData!;
 
+                          var name = '';
+
+                          if (urlModelData.title.isNotEmpty) {
+                            name = urlModelData.title;
+                          } else if (urlMetaData.title != null &&
+                              urlMetaData.title!.isNotEmpty) {
+                            name = urlMetaData.title!;
+                          } else if (urlMetaData.websiteName != null &&
+                              urlMetaData.websiteName!.isNotEmpty) {
+                            name = urlMetaData.websiteName!;
+                          }
+
+                          final placeHolder = Container(
+                            padding: const EdgeInsets.all(2),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: ColourPallette.black,
+                              // color: Colors.deepPurple
+                            ),
+                            child: Text(
+                              _websiteName(name, 5),
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              overflow: TextOverflow.fade,
+                              style: const TextStyle(
+                                color: ColourPallette.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 8,
+                              ),
+                            ),
+                          );
+
+                          if (urlModel.metaData?.faviconUrl == null) {
+                            return placeHolder;
+                          }
+                          final metaData = urlModel.metaData;
+
+                          if (metaData?.faviconUrl != null) {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(4),
-                              child: Image.memory(
-                                imageBytes,
-                                fit: BoxFit.contain,
+                              child: SizedBox(
                                 height: 24,
                                 width: 24,
-                                errorBuilder: (ctx, _, __) {
-                                  return const SizedBox.shrink();
-                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: NetworkImageBuilderWidget(
+                                    imageUrl: urlMetaData.faviconUrl!,
+                                    compressImage: false,
+                                    errorWidgetBuilder: () {
+                                      return placeHolder;
+                                    },
+                                    successWidgetBuilder: (imageData) {
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Builder(
+                                          builder: (ctx) {
+                                            final memoryImage = Image.memory(
+                                              imageData.imageBytesData!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (ctx, _, __) {
+                                                return placeHolder;
+                                              },
+                                            );
+                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                            if (urlMetaData.faviconUrl!
+                                                .toLowerCase()
+                                                .endsWith('.svg')) {
+                                              // Try loading the SVG and handle errors
+                                              return FutureBuilder(
+                                                future: _loadSvgBytes(
+                                                  imageData.imageBytesData!,
+                                                ),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const CircularProgressIndicator();
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    return memoryImage;
+                                                  } else {
+                                                    return snapshot.data!;
+                                                  }
+                                                },
+                                              );
+                                            } else {
+                                              return memoryImage;
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
                             );
-                          },
+                          } else {
+                            return placeHolder;
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        StringUtils.capitalizeEachWord(urlModel.title),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      StringUtils.capitalizeEachWord(urlModel.title),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -619,6 +748,35 @@ class _DashboardUrlFaviconListScreenState
         ],
       ),
     );
+  }
+
+  Future<Widget> _loadSvgBytes(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  String _websiteName(String websiteName, int allowedLength) {
+    // // Logger.printLog('WebsiteName: $websiteName');
+    if (websiteName.length < allowedLength) {
+      return websiteName;
+    }
+
+    final spaced = websiteName.trim().split(' ');
+    final initials = StringBuffer();
+
+    for (final ele in spaced) {
+      if (ele.isNotEmpty) {
+        initials.write(ele[0]);
+      }
+    }
+
+    return initials.toString();
   }
 
   @override

@@ -180,6 +180,13 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
                 borderRadius: BorderRadius.circular(4),
                 child: Builder(
                   builder: (ctx) {
+                    final memoryImage = Image.memory(
+                      imageData.imageBytesData!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (ctx, _, __) {
+                        return placeHolder;
+                      },
+                    );
                     // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
                     if (urlMetaData.faviconUrl!
                         .toLowerCase()
@@ -194,7 +201,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
                             return const CircularProgressIndicator();
                           } else if (snapshot.hasError) {
                             // Fallback if SVG fails to load
-                            return placeHolder;
+                            return memoryImage;
                           } else {
                             // Return the successfully loaded SVG
                             return snapshot.data!;
@@ -202,13 +209,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
                         },
                       );
                     } else {
-                      return Image.memory(
-                        imageData.imageBytesData!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (ctx, _, __) {
-                          return placeHolder;
-                        },
-                      );
+                      return memoryImage;
                     }
                   },
                 ),

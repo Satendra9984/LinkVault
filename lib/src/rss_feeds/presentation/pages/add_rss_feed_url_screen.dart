@@ -788,116 +788,111 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
 
                   const SizedBox(height: 16),
 
-                  // ALWAYS OPEN-IN SETTINGS
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Always Open In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
+                   // ALWAYS OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Open Url In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
+                    ),
 
-                      // DROPDOWN OF BROWSER, WEBVIEW
-                      ValueListenableBuilder(
-                        valueListenable: _urlLaunchType,
-                        builder: (ctx, urlLaunchType, _) {
-                          return DropdownButton<UrlLaunchType>(
-                            value: urlLaunchType,
-                            onChanged: (urlLaunchType) {
-                              if (urlLaunchType == null) return;
-                              _urlLaunchType.value = urlLaunchType;
-                            },
-                            isDense: true,
-                            iconEnabledColor: ColourPallette.black,
-                            elevation: 4,
-                            borderRadius: BorderRadius.circular(8),
-                            underline: const SizedBox.shrink(),
-                            dropdownColor: ColourPallette.mystic,
-                            items: [
-                              DropdownMenuItem(
-                                value: UrlLaunchType.customTabs,
-                                child: Text(
-                                  StringUtils.capitalize(
-                                    'Browser', // UrlLaunchType.customTabs.label,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _urlLaunchType,
+                      builder: (ctx, urlLaunchType, _) {
+                        return DropdownButton<UrlLaunchType>(
+                          value: urlLaunchType,
+                          onChanged: (urlLaunchType) {
+                            if (urlLaunchType == null) return;
+                            _urlLaunchType.value = urlLaunchType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            DropdownMenuItem(
+                              value: UrlLaunchType.customTabs,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  'Browser', // UrlLaunchType.customTabs.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              DropdownMenuItem(
-                                value: UrlLaunchType.webView,
-                                child: Text(
-                                  StringUtils.capitalize(
-                                    UrlLaunchType.webView.label,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                            ),
+                            DropdownMenuItem(
+                              value: UrlLaunchType.webView,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  UrlLaunchType.webView.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
 
-                  const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-                  // ALWAYS RSS FEED URL OPEN-IN SETTINGS
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Always Open RSS Feed In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
+                // ALWAYS RSS FEED URL OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Open RSS Feed In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
+                    ),
 
-                      // DROPDOWN OF BROWSER, WEBVIEW
-                      ValueListenableBuilder(
-                        valueListenable: _feedUrlLaunchType,
-                        builder: (ctx, feedUrlLaunchType, _) {
-                          return DropdownButton<UrlLaunchType>(
-                            value: _feedUrlLaunchType.value,
-                            onChanged: (feedUrlLaunchType) {
-                              if (feedUrlLaunchType == null) return;
-                              _feedUrlLaunchType.value = feedUrlLaunchType;
-                            },
-                            isDense: true,
-                            iconEnabledColor: ColourPallette.black,
-                            elevation: 4,
-                            borderRadius: BorderRadius.circular(8),
-                            underline: const SizedBox.shrink(),
-                            dropdownColor: ColourPallette.mystic,
-                            items: [
-                              DropdownMenuItem(
-                                value: UrlLaunchType.separateBrowserWindow,
-                                child: Text(
-                                  StringUtils.capitalize('Browser'),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: UrlLaunchType.webView,
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _feedUrlLaunchType,
+                      builder: (ctx, feedUrlLaunchType, _) {
+                        return DropdownButton<UrlLaunchType>(
+                          value: _feedUrlLaunchType.value,
+                          onChanged: (feedUrlLaunchType) {
+                            if (feedUrlLaunchType == null) return;
+                            _feedUrlLaunchType.value = feedUrlLaunchType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            ...UrlLaunchType.values.map(
+                              (urlLaunchType) => DropdownMenuItem(
+                                value: urlLaunchType,
                                 child: Text(
                                   StringUtils.capitalize(
-                                    UrlLaunchType.webView.label,
+                                    urlLaunchType ==
+                                            UrlLaunchType.separateBrowserWindow
+                                        ? 'Browser'
+                                        : urlLaunchType
+                                            .label, // UrlLaunchType.customTabs.label,
                                   ),
                                   style: const TextStyle(
                                     fontSize: 16,
@@ -905,12 +900,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                                   ),
                                 ),
                               ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
 
                   const SizedBox(height: 24),
 
