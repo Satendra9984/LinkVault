@@ -68,9 +68,6 @@ class UrlRepoImpl {
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
-      // Logger.printLog('Adding url metadata');
-      // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
-
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(
         optimisedUrlData,
         userId: userId,
@@ -194,8 +191,96 @@ class UrlRepoImpl {
     }
   }
 
-  /// LOCAL DB IMPLEMENTATIONS MAINLY FOR SYNCING
+  Future<Either<Failure, (UrlModel, CollectionModel)>> addRecentUrlData({
+    required CollectionModel collection,
+    required UrlModel urlData,
+    required String userId,
+  }) async {
+    // Add urlData in db
+    try {
+      // Removing images bytes data for remote database storage
+      final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
+      urlMetaDataJson['favicon'] = null;
+      urlMetaDataJson['banner_image'] = null;
 
+      final optimisedUrlData = urlData.copyWith(
+        metaData: UrlMetaData.fromJson(urlMetaDataJson),
+      );
+
+      final addedUrlData = await _remoteDataSourcesImpl.updateUrl(
+        urlModel: optimisedUrlData,
+        userId: userId,
+      );
+
+      // But storing addedurldata in local for firestore id
+      await _urlLocalDataSourcesImpl.updateUrl(addedUrlData);
+
+      final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
+
+      final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
+
+      // updating collection
+      final serverUpdatedCollection =
+          await _remoteDataSourcesImpl.updateCollection(
+        collection: updatedCollectionWithUrls,
+        userId: userId,
+      );
+
+      // final url with metadata for app state
+      final readdedMetaDataUrlModel = addedUrlData.copyWith(
+        metaData: urlData.metaData,
+      );
+
+      await _collectionLocalDataSourcesImpl
+          .updateCollection(updatedCollectionWithUrls);
+
+      return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
+    } on ServerException {
+      // Logger.printLog('addUrlrepo : $e');
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
+
+  Future<Either<Failure, UrlModel>> updateUrlLocally({
+    required UrlModel urlData,
+    required String userId,
+  }) async {
+    // Add urlData in db
+    try {
+      final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
+      urlMetaDataJson['favicon'] = null;
+      urlMetaDataJson['banner_image'] = null;
+
+      final optimisedUrlData = urlData.copyWith(
+        metaData: UrlMetaData.fromJson(urlMetaDataJson),
+      );
+
+      await _remoteDataSourcesImpl.updateUrl(
+        urlModel: optimisedUrlData,
+        userId: userId,
+      );
+
+      // Logger.printLog('calling update url local');
+      await _urlLocalDataSourcesImpl.updateUrl(optimisedUrlData);
+
+      return Right(optimisedUrlData);
+    } on ServerException {
+      // Logger.printLog('updateUrlrepo : ${e.message}');
+      return Left(
+        ServerFailure(
+          message: 'Something Went Wrong',
+          statusCode: 400,
+        ),
+      );
+    }
+  }
+
+  /// LOCAL DB IMPLEMENTATIONS MAINLY FOR SYNCING
   Future<Either<Failure, bool>> deleteUrlDatalocally({
     required String urlModelId,
   }) async {

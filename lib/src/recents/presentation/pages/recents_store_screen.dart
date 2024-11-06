@@ -8,6 +8,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/favourites/presentation/pages/faourite_url_favicon_list_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_collections_list_screen.dart';
 import 'package:link_vault/src/recents/presentation/pages/recents_collections_list_screen.dart';
@@ -26,12 +27,10 @@ class RecentsStorePage extends StatefulWidget {
   final Widget appBarLeadingIcon;
 
   @override
-  State<RecentsStorePage> createState() =>
-      _RecentsStorePageState();
+  State<RecentsStorePage> createState() => _RecentsStorePageState();
 }
 
-class _RecentsStorePageState
-    extends State<RecentsStorePage>
+class _RecentsStorePageState extends State<RecentsStorePage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
@@ -61,7 +60,6 @@ class _RecentsStorePageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColourPallette.white,
-      bottomNavigationBar: _getBottomNavigationBar(),
       body: BlocBuilder<CollectionsCubit, CollectionsState>(
         builder: (context, state) {
           // final size = MediaQuery.of(context).size;
@@ -94,33 +92,19 @@ class _RecentsStorePageState
             );
           }
 
-          // Logger.printLog('Updated collection store page');
-
           final collection = fetchCollection.collection;
+          Logger.printLog(
+              '[RECENT] : Updated recentstore collection store page, ${collection?.urls}');
           if (collection == null) {
             return Container();
           }
 
-          return PageView(
-            controller: _pageController,
-            onPageChanged: (page) {
-              _currentPage.value = page;
-            },
-            children: [
-              RecentsUrlFaviconListScreen(
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                showAddUrlButton: false,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-                showBottomNavBar: _showBottomNavBar,
-              ),
-              RecentsCollectionsListScreen(
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                showAddCollectionButton: false,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-              ),
-            ],
+          return RecentsUrlFaviconListScreen(
+            collectionModel: collection,
+            isRootCollection: widget.isRootCollection,
+            showAddUrlButton: false,
+            appBarLeadingIcon: widget.appBarLeadingIcon,
+            showBottomNavBar: _showBottomNavBar,
           );
         },
       ),
@@ -180,13 +164,13 @@ class _RecentsStorePageState
                       selectedIcon: Icons.webhook_rounded,
                       index: 0,
                     ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      label: 'Collections',
-                      unSelectedIcon: Icons.folder_outlined,
-                      selectedIcon: Icons.folder_rounded,
-                      index: 1,
-                    ),
+                    // CustomBottomNavItem.create(
+                    //   currentPage: _currentPage,
+                    //   label: 'Collections',
+                    //   unSelectedIcon: Icons.folder_outlined,
+                    //   selectedIcon: Icons.folder_rounded,
+                    //   index: 1,
+                    // ),
                     // CustomBottomNavItem.create(
                     //   currentPage: _currentPage,
                     //   unSelectedIcon: Icons.dynamic_feed_outlined,

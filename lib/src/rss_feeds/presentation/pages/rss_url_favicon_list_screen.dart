@@ -26,6 +26,7 @@ import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
 import 'package:lottie/lottie.dart';
@@ -127,7 +128,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
-        final urlCrudCubit = context.read<UrlCrudCubit>();
+        final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
         final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
@@ -195,11 +196,8 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
 
         await Future.wait(
           [
-            urlCrudCubit.addUrl(
-              isRootCollection: true,
-              urlData: urlModel.copyWith(
-                collectionId: '$globalUser$recents',
-              ),
+            recentUrlCrudCubit.addRecentUrl(
+              urlData: urlModel,
             ),
           ],
         );

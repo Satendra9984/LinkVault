@@ -63,15 +63,15 @@ class _AppHomePageState extends State<AppHomePage> {
       home: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          toolbarHeight: 120,
+          toolbarHeight: 128,
           title: Column(
             children: [
               SvgPicture.asset(
                 MediaRes.linkVaultLogoSVG,
-                height: 56,
-                width: 56,
+                height: 60,
+                width: 60,
               ),
-              const SizedBox(width: 16),
+              // const SizedBox(width: 16),
               const Text(
                 'LinkVault',
                 style: TextStyle(
@@ -83,33 +83,14 @@ class _AppHomePageState extends State<AppHomePage> {
           ),
         ),
         body: ListView(
-          // padding: EdgeInsets.symmetric(horizontal: 8),
           children: [
-            const SizedBox(height: 8),
-            // Column(
-            //   children: [
-            //     SvgPicture.asset(
-            //       MediaRes.linkVaultLogoSVG,
-            //       height: 56,
-            //       width: 56,
-            //     ),
-            // const SizedBox(width: 16),
-            // const Text(
-            //   'LinkVault',
-            //   style: TextStyle(
-            //     fontSize: 16,
-            //     fontWeight: FontWeight.w500,
-            //   ),
-            // ),
-            // ],
-            // ),
             // Some Profile Details
             BlocBuilder<GlobalUserCubit, GlobalUserState>(
               builder: (context, state) {
                 return ListTile(
                   onTap: () {},
                   leading: CircleAvatar(
-                    radius: 32,
+                    radius: 28,
                     backgroundColor:
                         ColourPallette.mountainMeadow.withOpacity(0.5),
                     child: SvgPicture.asset(

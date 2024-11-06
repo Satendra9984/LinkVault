@@ -19,8 +19,10 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -107,7 +109,7 @@ class _UrlFaviconListTemplateScreenState
 
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // // Logger.printLog('[scroll] Called on scroll in urlslist');
+      // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
   }
@@ -315,7 +317,15 @@ class _UrlFaviconListTemplateScreenState
               // [TODO] : THIS IS DYNAMIC FIELD
               return widget.urlsEmptyWidget;
             }
-            // _list.value = availableUrls;
+
+            Logger.printLog(
+              '[RECENTS] : URLS UPDATED ${widget.collectionModel.id}, ${widget.collectionModel.urls}',
+            );
+
+            Logger.printLog(
+              '[RECENTS] : URLS UPDATED ${widget.collectionModel.id},available ${availableUrls}',
+            );
+
             _list.value = availableUrls.map(ValueNotifier.new).toList();
 
             _filterList();
@@ -347,7 +357,8 @@ class _UrlFaviconListTemplateScreenState
                         ),
                       );
                     } else if (url.loadingStates ==
-                        LoadingStates.errorLoading) {
+                            LoadingStates.errorLoading ||
+                        url.urlModel == null) {
                       return SizedBox(
                         height: 56,
                         width: 56,
@@ -499,7 +510,8 @@ class _UrlFaviconListTemplateScreenState
                             },
                           ),
                           onTap: () async {
-                            final urlCrudCubit = context.read<UrlCrudCubit>();
+                            final recentUrlCrudCubit =
+                                context.read<RecentsUrlCubit>();
                             final globalUser = context
                                 .read<GlobalUserCubit>()
                                 .getGlobalUser()!
@@ -571,11 +583,8 @@ class _UrlFaviconListTemplateScreenState
 
                             await Future.wait(
                               [
-                                urlCrudCubit.addUrl(
-                                  isRootCollection: true,
-                                  urlData: urlModel.copyWith(
-                                    collectionId: '$globalUser$recents',
-                                  ),
+                                recentUrlCrudCubit.addRecentUrl(
+                                  urlData: urlModel,
                                 ),
                               ],
                             );

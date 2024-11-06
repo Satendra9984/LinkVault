@@ -21,6 +21,7 @@ import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -281,6 +282,7 @@ class _UrlPreviewListTemplateScreenState
     required UrlModel urlModel,
     required BuildContext context,
   }) async {
+    final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
     final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
 
     if (urlModel.settings != null &&
@@ -343,6 +345,14 @@ class _UrlPreviewListTemplateScreenState
           break;
         }
     }
+
+    await Future.wait(
+      [
+        recentUrlCrudCubit.addRecentUrl(
+          urlData: urlModel,
+        ),
+      ],
+    );
   }
 
   Future<void> onLongPress(
@@ -480,7 +490,8 @@ class _UrlPreviewListTemplateScreenState
             },
           ),
           onTap: () async {
-            final urlCrudCubit = context.read<UrlCrudCubit>();
+            final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+
             final globalUser =
                 context.read<GlobalUserCubit>().getGlobalUser()!.id;
             final urlLaunchTypeLocalNotifier =
@@ -549,11 +560,8 @@ class _UrlPreviewListTemplateScreenState
 
             await Future.wait(
               [
-                urlCrudCubit.addUrl(
-                  isRootCollection: true,
-                  urlData: urlModel.copyWith(
-                    collectionId: '$globalUser$recents',
-                  ),
+                recentUrlCrudCubit.addRecentUrl(
+                  urlData: urlModel,
                 ),
               ],
             );

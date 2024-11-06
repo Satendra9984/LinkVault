@@ -166,6 +166,8 @@ class RemoteDataSourcesImpl {
           .collection(folderCollections)
           .doc(collectionId)
           .delete();
+
+
     } catch (e) {
       throw ServerException(
         message: 'Something went wrong.',
@@ -179,7 +181,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('fetchUrl : urlId $urlId');
+      // Logger.printLog('fetchUrl : urlId $urlId');
 
       final response = await _firestore
           .collection(userCollection)
@@ -187,7 +189,9 @@ class RemoteDataSourcesImpl {
           .collection(urlDataCollection)
           .doc(urlId)
           .get();
+
       final data = response.data();
+      
       if (data == null) {
         // Logger.printLog('Url data is null');
         throw ServerException(
@@ -213,8 +217,8 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('UrlModel length');
-      // // Logger.printLog(urlModel.toJson().toString().length.toString());
+      // Logger.printLog('UrlModel length');
+      // Logger.printLog(urlModel.toJson().toString().length.toString());
       // await  _firestore.enableNetwork();
       final response = await _firestore
           .collection(userCollection)
@@ -238,7 +242,7 @@ class RemoteDataSourcesImpl {
     required UrlModel urlModel,
     required String userId,
   }) async {
-    // [TODO] : Add subcollection in db
+    // Add subcollection in db
     try {
       await _firestore
           .collection(userCollection)

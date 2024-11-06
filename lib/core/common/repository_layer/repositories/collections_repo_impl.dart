@@ -134,10 +134,10 @@ class CollectionsRepoImpl {
       await _collectionLocalDataSourcesImpl.addCollection(collection);
       if (parentCollection != null) {
         final updatedParentCollection = parentCollection.copyWith(
-          subcollections: {
+          subcollections: [
             collection.id,
             ...parentCollection.subcollections,
-          }.toList(),
+          ],
         );
 
         await _remoteDataSourcesImpl.updateCollection(

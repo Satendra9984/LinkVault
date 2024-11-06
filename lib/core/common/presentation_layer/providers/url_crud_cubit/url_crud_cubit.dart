@@ -6,6 +6,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 part 'url_cubit_state.dart';
 
@@ -34,7 +35,6 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       ),
     );
   }
-
 
   Future<UrlModel?> fetchSingleUrlModel(String urlModelId) async {
     UrlModel? fetchedUrlModel;
@@ -140,6 +140,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       return;
     }
 
+    Logger.printLog('[recents] : ${collection.collection!.urls}');
+    Logger.printLog('[recents] : urlid ${urlData.firestoreId}');
+
+    if (collection.collection!.urls.contains(urlData.firestoreId)) {
+      Logger.printLog('[recent] : URL already exists ${urlData.firestoreId}');
+      return;
+    }
+
+    // TODO : HANDLE DUPLICATION OF RECENT URLS
     await _urlRepoImpl
         .addUrlData(
       collection: collection.collection!,
@@ -159,8 +168,13 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           (response) {
             final (urlData, collection) = response;
 
-            _collectionsCubit.addUrl(url: urlData, collection: collection);
-
+            _collectionsCubit
+              ..addUrl(url: urlData, collection: collection)
+              ..updateCollection(
+                updatedCollection: collection,
+                fetchSubCollIndexAdded: 0,
+              );
+              
             emit(
               state.copyWith(
                 urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,

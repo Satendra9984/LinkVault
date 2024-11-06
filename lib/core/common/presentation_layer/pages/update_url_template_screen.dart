@@ -85,7 +85,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         title: _urlTitleController.text,
         tag: _selectedCategory.value,
         description: _urlDescriptionController.text,
-        isFavourite: _showPreview.value,
+        isFavourite: widget.urlModel.isFavourite,
         isOffline: false,
         createdAt: createdAt,
         updatedAt: createdAt,

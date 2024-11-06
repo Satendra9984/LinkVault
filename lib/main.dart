@@ -37,6 +37,7 @@ import 'package:link_vault/src/onboarding/data/data_sources/onboard_local_data_s
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/search/data/local_data_source.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
@@ -192,6 +193,28 @@ class MyApp extends StatelessWidget {
         //  Create a CRUD cubit for managing crud operation a single collection
         BlocProvider(
           create: (BuildContext context) => UrlCrudCubit(
+            urlRepoImpl: UrlRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+            ),
+            collectionsCubit: context.read<CollectionsCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => RecentsUrlCubit(
+            collectionRepoImpl: CollectionsRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+            ),
             urlRepoImpl: UrlRepoImpl(
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,

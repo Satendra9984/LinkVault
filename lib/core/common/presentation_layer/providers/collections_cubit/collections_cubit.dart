@@ -285,23 +285,19 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           prevCollection.subCollectionFetchedIndex + fetchSubCollIndexAdded,
     );
 
-    final newState = {...state.collections};
-    newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionsState = {
+      ...state.collections,
+    };
+    newCollectionsState[updatedCollection.id] = updatedCollectionfetch;
 
     emit(
       state.copyWith(
-        collections: newState,
+        collections: newCollectionsState,
       ),
     );
   }
 
   // <--------------------------------- URLS ---------------------------------->
-
-  // UrlModel? getUrlModel({
-  //   required String urlId,
-  // }) {
-  //   return state.collectionUrls[urlId];
-  // }
 
   Future<UrlModel?> fetchSingleUrlModel(String urlModelId) async {
     UrlModel? fetchedUrlModel;
@@ -449,7 +445,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     }
 
     final updatedUrlsState = {...state.collectionUrls};
-    // [TODO] : [important] changed url.collectionId to collection.id
+
     final updatedUrlsList = [
       fetchedUrl,
       ...updatedUrlsState[collection.id]!,
@@ -503,6 +499,61 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
   }
+
+  void updateUrlsList({
+    required CollectionModel updatedCollection,
+  }) {
+    // newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionUrlssState = {
+      ...state.collectionUrls,
+    };
+
+    final previousUrlsMap = <String, UrlFetchStateModel>{};
+
+    if (state.collectionUrls.containsKey(updatedCollection.id)) {
+      final urlsList =
+          state.collectionUrls[updatedCollection.id] ?? <UrlFetchStateModel>[];
+      for (final urlf in urlsList) {
+        if (urlf.urlModel == null) continue;
+        previousUrlsMap[urlf.urlModel!.firestoreId] = urlf;
+      }
+    }
+
+    final newUrlsList = <UrlFetchStateModel>[];
+
+    for (final urlId in updatedCollection.urls) {
+      if (previousUrlsMap.containsKey(urlId) == false) continue;
+
+      newUrlsList.add(previousUrlsMap[urlId]!);
+    }
+
+    newCollectionUrlssState[updatedCollection.id] = newUrlsList;
+
+    emit(
+      state.copyWith(
+        collectionUrls: newCollectionUrlssState,
+      ),
+    );
+  }
+
+ void clearUrlsList({
+    required String collectionId,
+  }) {
+    // newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionUrlssState = {
+      ...state.collectionUrls,
+    };
+
+
+    newCollectionUrlssState[collectionId] = <UrlFetchStateModel>[];
+
+    emit(
+      state.copyWith(
+        collectionUrls: newCollectionUrlssState,
+      ),
+    );
+  }
+
 
   void deleteUrl({
     required UrlModel url,

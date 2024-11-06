@@ -264,10 +264,14 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         );
       },
       (updatedCollection) async {
-        _collectionsCubit.updateCollection(
-          updatedCollection: updatedCollection,
-          fetchSubCollIndexAdded: 0,
-        );
+        _collectionsCubit
+          ..updateCollection(
+            updatedCollection: updatedCollection,
+            fetchSubCollIndexAdded: 0,
+          )
+          ..updateUrlsList(
+            updatedCollection: updatedCollection,
+          );
 
         emit(
           state.copyWith(

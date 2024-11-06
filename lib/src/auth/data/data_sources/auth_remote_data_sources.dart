@@ -151,8 +151,9 @@ class AuthRemoteDataSourcesImpl {
 
   Future<void> deleteUser() async {
     try {
-      Logger.printLog('Current User: ${_auth.currentUser?.uid}');
+      Logger.printLog('[deleting] : Current User: ${_auth.currentUser?.uid}');
       final user = _auth.currentUser;
+      final firestore = FirebaseFirestore.instance;
 
       if (user == null) {
         throw AuthException(
@@ -160,22 +161,27 @@ class AuthRemoteDataSourcesImpl {
           statusCode: 402,
         );
       }
+      // Reference to the user's main document
+      final accountRef = firestore.collection(userCollection).doc(user.uid);
+
+      // Reference to the user's subcollections
+      final folderCollectionRef = accountRef.collection(folderCollections);
+      final urlsDataRef = accountRef.collection(urlDataCollection);
 
       await Future.wait(
         [
-          Future(
-            () async {
-              await FirebaseFirestore.instance
-                  .collection(userCollection)
-                  .doc(user.uid)
-                  .delete();
-            },
-          ),
-          Future(
-            () async {
-              await _auth.currentUser?.delete();
-            },
-          ),
+          // Delete all documents in the folderCollections subcollection
+          _deleteCollection(folderCollectionRef),
+
+          // Delete all documents in the urlDataCollection subcollection
+          _deleteCollection(urlsDataRef),
+
+          // Delete the user's main document after subcollections are deleted
+          accountRef.delete(),
+
+          // Delete the Firebase Authentication user
+          _auth.currentUser?.delete() ??
+              Future.value(), // Handle null user if not authenticated
         ],
       );
     } catch (e) {
@@ -184,5 +190,18 @@ class AuthRemoteDataSourcesImpl {
         statusCode: 402,
       );
     }
+  }
+
+  // Function to delete all documents in a collection
+  Future<void> _deleteCollection(CollectionReference collectionRef) async {
+    final batch = FirebaseFirestore.instance.batch();
+    final snapshot = await collectionRef.get();
+
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // Commit the batch deletion
+    await batch.commit();
   }
 }
