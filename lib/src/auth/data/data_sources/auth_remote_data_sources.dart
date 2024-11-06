@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class AuthRemoteDataSourcesImpl {
   AuthRemoteDataSourcesImpl({
@@ -90,7 +93,7 @@ class AuthRemoteDataSourcesImpl {
       final todayDate = DateTime.now().toUtc();
       final creditExpiryDate = todayDate.add(
         const Duration(
-          days: accountSingUpCreditLimit,  // [TODO] : WILL CHANGE TO DAYS
+          days: accountSingUpCreditLimit, // [TODO] : WILL CHANGE TO DAYS
         ),
       );
 
@@ -143,6 +146,43 @@ class AuthRemoteDataSourcesImpl {
       debugPrint('[log] : $e');
 
       throw AuthException(message: e.toString(), statusCode: 402);
+    }
+  }
+
+  Future<void> deleteUser() async {
+    try {
+      Logger.printLog('Current User: ${_auth.currentUser?.uid}');
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        throw AuthException(
+          message: 'Account Not Found. Something Went Wrong.',
+          statusCode: 402,
+        );
+      }
+
+      await Future.wait(
+        [
+          Future(
+            () async {
+              await FirebaseFirestore.instance
+                  .collection(userCollection)
+                  .doc(user.uid)
+                  .delete();
+            },
+          ),
+          Future(
+            () async {
+              await _auth.currentUser?.delete();
+            },
+          ),
+        ],
+      );
+    } catch (e) {
+      throw AuthException(
+        message: 'Account Not Deleted. Something Went Wrong.',
+        statusCode: 402,
+      );
     }
   }
 }

@@ -15,6 +15,7 @@ import 'package:link_vault/core/common/repository_layer/enums/url_preload_method
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
@@ -479,6 +480,18 @@ class _UrlPreviewListTemplateScreenState
             },
           ),
           onTap: () async {
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            final globalUser =
+                context.read<GlobalUserCubit>().getGlobalUser()!.id;
+            final urlLaunchTypeLocalNotifier =
+                ValueNotifier(UrlLaunchType.customTabs);
+
+            if (urlModel.settings != null &&
+                urlModel.settings!.containsKey(urlLaunchType)) {
+              urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+                urlModel.settings![urlLaunchType].toString(),
+              );
+            }
             switch (urlLaunchTypeLocalNotifier.value) {
               case UrlLaunchType.customTabs:
                 {
@@ -533,6 +546,17 @@ class _UrlPreviewListTemplateScreenState
                   break;
                 }
             }
+
+            await Future.wait(
+              [
+                urlCrudCubit.addUrl(
+                  isRootCollection: true,
+                  urlData: urlModel.copyWith(
+                    collectionId: '$globalUser$recents',
+                  ),
+                ),
+              ],
+            );
           },
         ),
 

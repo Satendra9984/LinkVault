@@ -11,9 +11,14 @@ enum AuthenticationStates {
   errorSigningUp,
 
 
-
   // 
   signingOut,
   signedOut,
   errorSigningOut,
+
+
+  // 
+  deletingAccount,
+  deleted,
+  errorDeleted,
 }

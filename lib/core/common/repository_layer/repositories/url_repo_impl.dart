@@ -57,7 +57,7 @@ class UrlRepoImpl {
     required UrlModel urlData,
     required String userId,
   }) async {
-    // [TODO] : Add urlData in db
+    // Add urlData in db
     try {
       // Removing images bytes data for remote database storage
       final urlMetaDataJson = urlData.metaData?.toJson() ?? {};
@@ -68,8 +68,8 @@ class UrlRepoImpl {
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
-      // // Logger.printLog('Adding url metadata');
-      // // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
+      // Logger.printLog('Adding url metadata');
+      // Logger.printLog(StringUtils.getJsonFormat(optimisedUrlData));
 
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(
         optimisedUrlData,
@@ -79,7 +79,15 @@ class UrlRepoImpl {
       // But storing addedurldata in local for firestore id
       await _urlLocalDataSourcesImpl.addUrl(addedUrlData);
 
-      final urlList = collection.urls..insert(0, addedUrlData.firestoreId);
+      final urlList = {
+        addedUrlData.firestoreId,
+        ...collection.urls,
+      }.toList();
+
+      // collection.urls
+      //   ..insert(0, addedUrlData.firestoreId)
+      //   ..toSet();
+
       final updatedCollectionWithUrls = collection.copyWith(urls: urlList);
 
       // updating collection
@@ -128,7 +136,7 @@ class UrlRepoImpl {
         userId: userId,
       );
 
-      // // Logger.printLog('calling update url local');
+      // Logger.printLog('calling update url local');
       await _urlLocalDataSourcesImpl.updateUrl(optimisedUrlData);
 
       return Right(optimisedUrlData);
@@ -196,7 +204,7 @@ class UrlRepoImpl {
     try {
       await _urlLocalDataSourcesImpl.deleteUrl(urlModelId);
 
-      return  const Right(true);
+      return const Right(true);
     } on ServerException {
       // Logger.printLog('deleteUrlData : $e');
       return Left(

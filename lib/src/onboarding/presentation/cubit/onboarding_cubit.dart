@@ -21,9 +21,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
   final OnBoardingRepoImpl _boardingRepoImpl;
 
   Future<void> checkIfLoggedIn() async {
-
     final result = await _boardingRepoImpl.isLoggedIn();
-    debugPrint('Current state before emit: $state');
+    // debugPrint('Current state before emit: $state');
 
     result.fold(
       (failed) {
@@ -67,4 +66,6 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
     return false;
   }
+
+  Future<void> deleteUserForever() async {}
 }

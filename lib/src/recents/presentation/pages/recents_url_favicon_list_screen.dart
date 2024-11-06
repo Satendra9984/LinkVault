@@ -29,8 +29,8 @@ import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class FavouritesUrlFaviconListScreen extends StatefulWidget {
-  const FavouritesUrlFaviconListScreen({
+class RecentsUrlFaviconListScreen extends StatefulWidget {
+  const RecentsUrlFaviconListScreen({
     required this.collectionModel,
     required this.isRootCollection,
     required this.showAddUrlButton,
@@ -47,19 +47,18 @@ class FavouritesUrlFaviconListScreen extends StatefulWidget {
   final Widget appBarLeadingIcon;
 
   @override
-  State<FavouritesUrlFaviconListScreen> createState() =>
-      _FavouritesUrlFaviconListScreenState();
+  State<RecentsUrlFaviconListScreen> createState() =>
+      _RecentsUrlFaviconListScreenState();
 }
 
-class _FavouritesUrlFaviconListScreenState
-    extends State<FavouritesUrlFaviconListScreen>
+class _RecentsUrlFaviconListScreenState
+    extends State<RecentsUrlFaviconListScreen>
     with AutomaticKeepAliveClientMixin {
   final _listViewType = ValueNotifier(UrlViewType.favicons);
   final PageController _pageController = PageController();
 
   @override
   void initState() {
-    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
     super.initState();
   }
 
@@ -79,6 +78,7 @@ class _FavouritesUrlFaviconListScreenState
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     return PageView(
       controller: _pageController,
       onPageChanged: (page) {},
@@ -117,109 +117,6 @@ class _FavouritesUrlFaviconListScreenState
     );
   }
 
-  Widget _urlFaviconItemBuilder({
-    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
-    required int index,
-    required List<Widget> urlOptions,
-  }) {
-    final urlModel = list.value[index].value.urlModel!;
-
-    return UrlFaviconLogoWidget(
-      urlPreloadMethod: widget.isRootCollection
-          ? UrlPreloadMethods.httpGet
-          : UrlPreloadMethods.httpGet,
-      onTap: () async {
-        final urlCrudCubit = context.read<UrlCrudCubit>();
-        final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
-        final urlLaunchTypeLocalNotifier =
-            ValueNotifier(UrlLaunchType.customTabs);
-
-        if (urlModel.settings != null &&
-            urlModel.settings!.containsKey(urlLaunchType)) {
-          urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
-            urlModel.settings![urlLaunchType].toString(),
-          );
-        }
-        switch (urlLaunchTypeLocalNotifier.value) {
-          case UrlLaunchType.customTabs:
-            {
-              final theme = Theme.of(context);
-              await CustomTabsService.launchUrl(
-                url: urlModel.url,
-                theme: theme,
-              ).then(
-                (_) async {
-                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                  // JUST LIKE APPS IN BACKGROUND TYPE
-                },
-              );
-              break;
-            }
-          case UrlLaunchType.webView:
-            {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => DashboardWebView(
-                    url: urlModel.url,
-                  ),
-                ),
-              );
-
-              break;
-            }
-          case UrlLaunchType.readingMode:
-            {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => DashboardWebView(
-                    url: urlModel.url,
-                  ),
-                ),
-              );
-
-              break;
-            }
-          case UrlLaunchType.separateBrowserWindow:
-            {
-              final theme = Theme.of(context);
-              await CustomTabsService.launchUrl(
-                url: urlModel.url,
-                theme: theme,
-              ).then(
-                (_) async {
-                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                  // JUST LIKE APPS IN BACKGROUND TYPE
-                },
-              );
-              break;
-            }
-        }
-
-        await Future.wait(
-          [
-            urlCrudCubit.addUrl(
-              isRootCollection: true,
-              urlData: urlModel.copyWith(
-                collectionId: '$globalUser$recents',
-              ),
-            ),
-          ],
-        );
-      },
-
-      // [TODO] : THIS IS DYNAMIC FIELD
-      onLongPress: (urlMetaData) async {
-        final urlc = urlModel.copyWith(metaData: urlMetaData);
-        await showUrlOptionsBottomSheet(
-          context,
-          urlModel: urlc,
-          urlOptions: urlOptions,
-        );
-      },
-      urlModelData: urlModel,
-    );
-  }
-
   Widget _faviconsListAppBarBuilder({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
     required List<Widget> actions,
@@ -228,17 +125,19 @@ class _FavouritesUrlFaviconListScreenState
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
-          SizedBox(
-            height: 14,
-            width: 14,
-            child: widget.appBarLeadingIcon,
+          const Icon(
+            Icons.dashboard_rounded,
+            color: ColourPallette.mountainMeadow,
+            size: 16,
           ),
           const SizedBox(width: 8),
-          Text(
-            widget.collectionModel.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              widget.collectionModel.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -333,7 +232,94 @@ class _FavouritesUrlFaviconListScreenState
     );
   }
 
-  // FOR THE URL-MODEL
+  Widget _urlFaviconItemBuilder({
+    required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
+    required int index,
+    required List<Widget> urlOptions,
+  }) {
+    final urlModel = list.value[index].value.urlModel!;
+
+    return UrlFaviconLogoWidget(
+      urlPreloadMethod: widget.isRootCollection
+          ? UrlPreloadMethods.httpGet
+          : UrlPreloadMethods.httpGet,
+      onTap: () async {
+        final urlLaunchTypeLocalNotifier =
+            ValueNotifier(UrlLaunchType.customTabs);
+
+        if (urlModel.settings != null &&
+            urlModel.settings!.containsKey(urlLaunchType)) {
+          urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+            urlModel.settings![urlLaunchType].toString(),
+          );
+        }
+        switch (urlLaunchTypeLocalNotifier.value) {
+          case UrlLaunchType.customTabs:
+            {
+              final theme = Theme.of(context);
+              await CustomTabsService.launchUrl(
+                url: urlModel.url,
+                theme: theme,
+              ).then(
+                (_) async {
+                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                  // JUST LIKE APPS IN BACKGROUND TYPE
+                },
+              );
+              break;
+            }
+          case UrlLaunchType.webView:
+            {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => DashboardWebView(
+                    url: urlModel.url,
+                  ),
+                ),
+              );
+
+              break;
+            }
+          case UrlLaunchType.readingMode:
+            {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => DashboardWebView(
+                    url: urlModel.url,
+                  ),
+                ),
+              );
+
+              break;
+            }
+          case UrlLaunchType.separateBrowserWindow:
+            {
+              final theme = Theme.of(context);
+              await CustomTabsService.launchUrl(
+                url: urlModel.url,
+                theme: theme,
+              ).then(
+                (_) async {
+                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                  // JUST LIKE APPS IN BACKGROUND TYPE
+                },
+              );
+              break;
+            }
+        }
+      },
+      onLongPress: (urlMetaData) async {
+        final urlc = urlModel.copyWith(metaData: urlMetaData);
+        await showUrlOptionsBottomSheet(
+          context,
+          urlModel: urlc,
+          urlOptions: urlOptions,
+        );
+      },
+      urlModelData: urlModel,
+    );
+  }
+
   Future<void> showUrlOptionsBottomSheet(
     BuildContext context, {
     required UrlModel urlModel,
@@ -361,87 +347,110 @@ class _FavouritesUrlFaviconListScreenState
     }
 
     final showLastUpdated = ValueNotifier(false);
-    urlOptions.insert(
-      0,
-      // ADDING UPDATE URL OPTION
-      BottomSheetOption(
-        // leadingIcon: Icons.access_time_filled_rounded,
-        leadingIcon: Icons.replay_circle_filled_outlined,
-        title: const Text('Update', style: titleTextStyle),
-        trailing: ValueListenableBuilder(
-          valueListenable: showLastUpdated,
-          builder: (ctx, showLastUpdatedVal, _) {
-            if (!showLastUpdatedVal) {
+    urlOptions
+      ..insert(
+        0,
+        // UPDATE URL
+        BottomSheetOption(
+          leadingIcon: Icons.replay_circle_filled_outlined,
+          title: const Text('Update', style: titleTextStyle),
+          trailing: ValueListenableBuilder(
+            valueListenable: showLastUpdated,
+            builder: (ctx, showLastUpdatedVal, _) {
+              if (!showLastUpdatedVal) {
+                return GestureDetector(
+                  onTap: () => showLastUpdated.value = !showLastUpdated.value,
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                  ),
+                );
+              }
+
+              final updatedAt = urlModel.updatedAt;
+              // Format to get hour with am/pm notation
+              final formattedTime = DateFormat('h:mma').format(updatedAt);
+              // Combine with the date
+              final lastSynced =
+                  'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
               return GestureDetector(
                 onTap: () => showLastUpdated.value = !showLastUpdated.value,
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 20,
+                child: Text(
+                  lastSynced,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ColourPallette.salemgreen.withOpacity(0.75),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               );
-            }
-
-            final updatedAt = urlModel.updatedAt;
-            // Format to get hour with am/pm notation
-            final formattedTime = DateFormat('h:mma').format(updatedAt);
-            // Combine with the date
-            final lastSynced =
-                'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
-
-            return GestureDetector(
-              onTap: () => showLastUpdated.value = !showLastUpdated.value,
-              child: Text(
-                lastSynced,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: ColourPallette.salemgreen.withOpacity(0.75),
-                  fontWeight: FontWeight.w600,
+            },
+          ),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => UpdateUrlTemplateScreen(
+                  urlModel: urlModel,
+                  isRootCollection: widget.isRootCollection,
+                  onDeleteURLCallback: (urlModel) async {},
                 ),
               ),
+            ).then(
+              (_) {
+                Navigator.pop(context);
+              },
             );
           },
         ),
+      )
+      ..insert(
+        2,
+        // ADD TO FAVOURITES
+        BottomSheetOption(
+          leadingIcon: Icons.bookmark_add_rounded,
+          title: const Text('Favourites', style: titleTextStyle),
+          trailing: Builder(
+            builder: (ctx) {
+              if (urlModel.isFavourite == false) {
+                return const SizedBox.shrink();
+              }
 
-        onTap: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => UpdateUrlTemplateScreen(
-                urlModel: urlModel,
-                isRootCollection: widget.isRootCollection,
-                onDeleteURLCallback: (_) async {
-                  final urlCrudCubit = context.read<UrlCrudCubit>();
-
-                  if (urlModel.parentUrlModelFirestoreId == null) {
-                    return;
-                  }
-
-                  final parentUrlModel = await urlCrudCubit.fetchSingleUrlModel(
-                    urlModel.parentUrlModelFirestoreId!,
-                  );
-
-                  if (parentUrlModel == null) {
-                    return;
-                  }
-
-                  final updatedParentUrl = parentUrlModel.copyWith(
-                    isFavourite: false,
-                  );
-
-                  await urlCrudCubit.updateUrl(
-                    urlData: updatedParentUrl,
-                  );
-                },
-              ),
-            ),
-          ).then(
-            (_) {
-              Navigator.pop(context);
+              return Icon(
+                Icons.check_circle_rounded,
+                color: ColourPallette.salemgreen.withOpacity(0.5),
+              );
             },
-          );
-        },
-      ),
-    );
+          ),
+          onTap: () async {
+            // if (urlModel.isFavourite) return;
+
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            final globalUser =
+                context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
+            await Future.wait(
+              [
+                urlCrudCubit.addUrl(
+                  isRootCollection: true,
+                  urlData: urlModel.copyWith(
+                    parentUrlModelFirestoreId: urlModel.firestoreId,
+                    collectionId: '$globalUser$favourites',
+                    isFavourite: true,
+                  ),
+                ),
+                urlCrudCubit.updateUrl(
+                  urlData: urlModel.copyWith(
+                    isFavourite: true,
+                  ),
+                ),
+                Future(() => Navigator.pop(context)),
+              ],
+            );
+          },
+        ),
+      );
 
     await showModalBottomSheet<Widget>(
       context: context,
@@ -458,7 +467,6 @@ class _FavouritesUrlFaviconListScreenState
         padding:
             const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
         decoration: BoxDecoration(
-          // color: Colors.white,
           color: ColourPallette.mystic.withOpacity(0.25),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
@@ -467,124 +475,129 @@ class _FavouritesUrlFaviconListScreenState
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Builder(
-                      builder: (context) {
-                        final urlModelData = urlModel;
-                        final urlMetaData = urlModel.metaData!;
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Builder(
+                        builder: (context) {
+                          final urlModelData = urlModel;
+                          final urlMetaData = urlModel.metaData!;
 
-                        var name = '';
+                          var name = '';
 
-                        if (urlModelData.title.isNotEmpty) {
-                          name = urlModelData.title;
-                        } else if (urlMetaData.title != null &&
-                            urlMetaData.title!.isNotEmpty) {
-                          name = urlMetaData.title!;
-                        } else if (urlMetaData.websiteName != null &&
-                            urlMetaData.websiteName!.isNotEmpty) {
-                          name = urlMetaData.websiteName!;
-                        }
+                          if (urlModelData.title.isNotEmpty) {
+                            name = urlModelData.title;
+                          } else if (urlMetaData.title != null &&
+                              urlMetaData.title!.isNotEmpty) {
+                            name = urlMetaData.title!;
+                          } else if (urlMetaData.websiteName != null &&
+                              urlMetaData.websiteName!.isNotEmpty) {
+                            name = urlMetaData.websiteName!;
+                          }
 
-                        final placeHolder = Container(
-                          padding: const EdgeInsets.all(2),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            color: ColourPallette.black,
-                            // color: Colors.deepPurple
-                          ),
-                          child: Text(
-                            _websiteName(name, 5),
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                            overflow: TextOverflow.fade,
-                            style: const TextStyle(
-                              color: ColourPallette.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 8,
+                          final placeHolder = Container(
+                            padding: const EdgeInsets.all(2),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: ColourPallette.black,
+                              // color: Colors.deepPurple
                             ),
-                          ),
-                        );
-
-                        if (urlModel.metaData?.faviconUrl == null) {
-                          return placeHolder;
-                        }
-                        final metaData = urlModel.metaData;
-
-                        if (metaData?.faviconUrl != null) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: NetworkImageBuilderWidget(
-                                  imageUrl: urlMetaData.faviconUrl!,
-                                  compressImage: false,
-                                  errorWidgetBuilder: () {
-                                    return placeHolder;
-                                  },
-                                  successWidgetBuilder: (imageData) {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Builder(
-                                        builder: (ctx) {
-                                          final memoryImage = Image.memory(
-                                            imageData.imageBytesData!,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (ctx, _, __) {
-                                              return placeHolder;
-                                            },
-                                          );
-                                          // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                                          if (urlMetaData.faviconUrl!
-                                              .toLowerCase()
-                                              .endsWith('.svg')) {
-                                            // Try loading the SVG and handle errors
-                                            return FutureBuilder(
-                                              future: _loadSvgBytes(
-                                                imageData.imageBytesData!,
-                                              ),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return const CircularProgressIndicator();
-                                                } else if (snapshot.hasError) {
-                                                  return memoryImage;
-                                                } else {
-                                                  return snapshot.data!;
-                                                }
-                                              },
-                                            );
-                                          } else {
-                                            return memoryImage;
-                                          }
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                            child: Text(
+                              _websiteName(name, 5),
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              overflow: TextOverflow.fade,
+                              style: const TextStyle(
+                                color: ColourPallette.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 8,
                               ),
                             ),
                           );
-                        } else {
-                          return placeHolder;
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      StringUtils.capitalizeEachWord(urlModel.title),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+
+                          if (urlModel.metaData?.faviconUrl == null) {
+                            return placeHolder;
+                          }
+                          final metaData = urlModel.metaData;
+
+                          if (metaData?.faviconUrl != null) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: NetworkImageBuilderWidget(
+                                    imageUrl: urlMetaData.faviconUrl!,
+                                    compressImage: false,
+                                    errorWidgetBuilder: () {
+                                      return placeHolder;
+                                    },
+                                    successWidgetBuilder: (imageData) {
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Builder(
+                                          builder: (ctx) {
+                                            final memoryImage = Image.memory(
+                                              imageData.imageBytesData!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (ctx, _, __) {
+                                                return placeHolder;
+                                              },
+                                            );
+                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                            if (urlMetaData.faviconUrl!
+                                                .toLowerCase()
+                                                .endsWith('.svg')) {
+                                              // Try loading the SVG and handle errors
+                                              return FutureBuilder(
+                                                future: _loadSvgBytes(
+                                                  imageData.imageBytesData!,
+                                                ),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const CircularProgressIndicator();
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    return memoryImage;
+                                                  } else {
+                                                    return snapshot.data!;
+                                                  }
+                                                },
+                                              );
+                                            } else {
+                                              return memoryImage;
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            return placeHolder;
+                          }
+                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      Text(
+                        StringUtils.capitalizeEachWord(urlModel.title),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -597,54 +610,13 @@ class _FavouritesUrlFaviconListScreenState
                 leadingIcon: Icons.delete_rounded,
                 title: const Text('Delete', style: titleTextStyle),
                 onTap: () async {
-                  await showDeleteUrlConfirmationDialog(
+                  await showDeleteConfirmationDialog(
                     context,
                     urlModel,
-                    () async {
-                      final urlCrudCubit = context.read<UrlCrudCubit>();
-
-                      await Future.wait(
-                        [
-                          context.read<UrlCrudCubit>().deleteUrl(
-                                urlData: urlModel,
-                                isRootCollection: widget.isRootCollection,
-                              ),
-
-                          // UPDATE PARENT URLMODEL
-                          Future(
-                            () async {
-                              if (urlModel.parentUrlModelFirestoreId == null) {
-                                return;
-                              }
-
-                              final parentUrlModel =
-                                  await urlCrudCubit.fetchSingleUrlModel(
-                                urlModel.parentUrlModelFirestoreId!,
-                              );
-
-                              // Logger.printLog(
-                              //   '[option] : deleting ${urlModel.firestoreId}, parent ${urlModel.parentUrlModelFirestoreId}',
-                              // );
-
-                              if (parentUrlModel == null) {
-                                // Logger.printLog(
-                                //   '[option] : deleting parentmodel is null',
-                                // );
-                                return;
-                              }
-
-                              final updatedParentUrl = parentUrlModel.copyWith(
-                                isFavourite: false,
-                              );
-
-                              await urlCrudCubit.updateUrl(
-                                urlData: updatedParentUrl,
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                    () => context.read<UrlCrudCubit>().deleteUrl(
+                          urlData: urlModel,
+                          isRootCollection: widget.isRootCollection,
+                        ),
                   ).then(
                     (_) {
                       Navigator.pop(context);
@@ -665,7 +637,7 @@ class _FavouritesUrlFaviconListScreenState
     );
   }
 
-  Future<void> showDeleteUrlConfirmationDialog(
+  Future<void> showDeleteConfirmationDialog(
     BuildContext context,
     UrlModel urlModel,
     VoidCallback onConfirm,
@@ -790,7 +762,7 @@ class _FavouritesUrlFaviconListScreenState
   }
 
   String _websiteName(String websiteName, int allowedLength) {
-    // // Logger.printLog('WebsiteName: $websiteName');
+    // Logger.printLog('WebsiteName: $websiteName');
     if (websiteName.length < allowedLength) {
       return websiteName;
     }

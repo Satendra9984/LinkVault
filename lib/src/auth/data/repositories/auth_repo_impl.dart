@@ -135,4 +135,14 @@ class AuthRepositoryImpl {
       );
     }
   }
+
+  Future<Either<Failure, void>> deleteUserAccount() async {
+    try {
+      await _authRemoteDataSourcesImpl.deleteUser();
+
+      return const Right(unit);
+    } catch (e) {
+      return Left(AuthFailure(message: 'Could Not Deleted ', statusCode: 402));
+    }
+  }
 }

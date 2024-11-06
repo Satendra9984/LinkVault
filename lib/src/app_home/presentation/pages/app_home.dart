@@ -10,6 +10,8 @@ import 'package:link_vault/src/auth/presentation/cubit/authentication/authentica
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
+import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
+import 'package:link_vault/src/recents/presentation/pages/recents_store_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
@@ -60,12 +62,14 @@ class _AppHomePageState extends State<AppHomePage> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Row(
+          centerTitle: true,
+          toolbarHeight: 120,
+          title: Column(
             children: [
               SvgPicture.asset(
                 MediaRes.linkVaultLogoSVG,
-                height: 32,
-                width: 32,
+                height: 56,
+                width: 56,
               ),
               const SizedBox(width: 16),
               const Text(
@@ -82,7 +86,23 @@ class _AppHomePageState extends State<AppHomePage> {
           // padding: EdgeInsets.symmetric(horizontal: 8),
           children: [
             const SizedBox(height: 8),
-
+            // Column(
+            //   children: [
+            //     SvgPicture.asset(
+            //       MediaRes.linkVaultLogoSVG,
+            //       height: 56,
+            //       width: 56,
+            //     ),
+            // const SizedBox(width: 16),
+            // const Text(
+            //   'LinkVault',
+            //   style: TextStyle(
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            // ),
+            // ],
+            // ),
             // Some Profile Details
             BlocBuilder<GlobalUserCubit, GlobalUserState>(
               builder: (context, state) {
@@ -157,7 +177,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     leading: const Icon(
                       Icons.dashboard_rounded,
                       color: ColourPallette.mountainMeadow,
-                      size: 24,
+                      size: 20,
                     ),
                     title: const Text(
                       'Dashboard',
@@ -168,7 +188,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
@@ -189,8 +209,8 @@ class _AppHomePageState extends State<AppHomePage> {
                     },
                     leading: SvgPicture.asset(
                       MediaRes.favouriteSVG,
-                      height: 20,
-                      width: 20,
+                      height: 18,
+                      width: 18,
                     ),
                     title: const Text(
                       'Favourite',
@@ -201,18 +221,24 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
                   // RECENTS
                   ListTile(
                     onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => RecentsStorePage(
+                            collectionId: '$globalUser$recents',
+                            isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.recentSVG,
+                            ),
+                          ),
+                        ),
+                      );
                     },
                     leading: SvgPicture.asset(
                       MediaRes.recentSVG,
@@ -228,7 +254,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
@@ -255,7 +281,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
@@ -288,7 +314,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
@@ -315,38 +341,34 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.mountainMeadow,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
 
+                  // PROFILE
                   ListTile(
                     onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const ProfileHome(),
+                        ),
+                      );
                     },
-                    leading: const Icon(
-                      Icons.change_circle,
-                      color: ColourPallette.salemgreen,
-                      size: 24,
+                    leading: SvgPicture.asset(
+                      MediaRes.personSVG,
+                      height: 24,
+                      width: 24,
                     ),
                     title: const Text(
-                      'Sync Devices',
+                      'Profile',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    // trailing: const Icon(
-                    //   Icons.arrow_forward_ios_rounded,
-                    //   color: ColourPallette.salemgreen,
-                    // ),
-                    trailing: SvgPicture.asset(
-                      MediaRes.comingSoonSVG,
-                      height: 24,
-                      width: 24,
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.darkTeal,
                     ),
                   ),
                 ],

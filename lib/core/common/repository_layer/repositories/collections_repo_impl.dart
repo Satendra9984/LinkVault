@@ -32,7 +32,7 @@ class CollectionsRepoImpl {
       final localCollection =
           await _collectionLocalDataSourcesImpl.fetchCollection(collectionId);
 
-      // // Logger.printLog('fetchRootCollection : $collectionId');
+      // Logger.printLog('fetchRootCollection : $collectionId');
 
       final collection = localCollection ??
           await _remoteDataSourcesImpl.fetchCollection(
@@ -123,7 +123,7 @@ class CollectionsRepoImpl {
     required String userId, // Optional as root collection does not have parent
     CollectionModel? parentCollection,
   }) async {
-    // [TODO] : Add subcollection in db
+    // Add subcollection in db
 
     try {
       final collection = await _remoteDataSourcesImpl.addCollection(
@@ -134,15 +134,17 @@ class CollectionsRepoImpl {
       await _collectionLocalDataSourcesImpl.addCollection(collection);
       if (parentCollection != null) {
         final updatedParentCollection = parentCollection.copyWith(
-          subcollections: [
+          subcollections: {
             collection.id,
             ...parentCollection.subcollections,
-          ],
+          }.toList(),
         );
+
         await _remoteDataSourcesImpl.updateCollection(
           collection: updatedParentCollection,
           userId: userId,
         );
+
         await _collectionLocalDataSourcesImpl
             .updateCollection(updatedParentCollection);
         return Right((collection, updatedParentCollection));

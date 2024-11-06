@@ -108,7 +108,7 @@ class UrlModel {
       tag: tag ?? this.tag,
       metaData: metaData ?? this.metaData,
       isOffline: isOffline ?? this.isOffline,
-      htmlContent: htmlContent ?? this.htmlContent,
+      htmlContent: htmlContent,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       parentUrlModelFirestoreId:

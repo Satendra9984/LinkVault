@@ -5,10 +5,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/utils/logger.dart';
 
-
-
-
-
 // Use this https://github.com/xaynetwork/xayn_readabilityc
 class RSSFeedWebView extends StatefulWidget {
   const RSSFeedWebView({required this.url, super.key});
@@ -193,23 +189,34 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                           return NavigationActionPolicy.ALLOW;
                         },
                         onLoadStop: (controller, url) async {
-                          if (readabilityScript != null) {
-                            // Inject Readability.js
-                            await webViewController?.evaluateJavascript(
-                              source: readabilityScript!,
-                            );
+                          try {
+                            if (readabilityScript != null) {
+                              // Inject Readability.js
+                              await webViewController?.evaluateJavascript(
+                                source: readabilityScript!,
+                              );
 
-                            // Inject the main script for distraction-free reading
-                            await webViewController?.evaluateJavascript(
-                              source: _getDistractionFreeScript(),
+                              // Inject the main script for distraction-free reading
+                              await webViewController?.evaluateJavascript(
+                                source: _getDistractionFreeScript(),
+                              );
+                            }
+                            _url.value = url.toString();
+                            urlController.text = _url.value;
+
+                            await Future.wait(
+                              [
+                                Future(
+                                  () async => await pullToRefreshController
+                                      ?.endRefreshing(),
+                                ),
+                                _detectDarkMode(),
+                                _updateCanBack(),
+                              ],
                             );
+                          } catch (e) {
+                            Logger.printLog('RSS Feed WebView error $e');
                           }
-                          await pullToRefreshController?.endRefreshing();
-                          _url.value = url.toString();
-                          urlController.text = _url.value;
-
-                          await _detectDarkMode();
-                          await _updateCanBack(); // Update canGoBack on page load
                         },
                         onReceivedError: (controller, request, error) {
                           pullToRefreshController?.endRefreshing();
@@ -259,8 +266,9 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       },
     );
   }
-String _getDistractionFreeScript() {
-  return '''
+
+  String _getDistractionFreeScript() {
+    return '''
     (function() {
       // Remove unwanted elements
       const selectorsToRemove = [
@@ -341,7 +349,7 @@ String _getDistractionFreeScript() {
       document.head.appendChild(style);
     })();
   ''';
-}
+  }
 
 //   String _getDistractionFreeScript() {
 //     return '''

@@ -14,6 +14,7 @@ import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.da
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
@@ -375,11 +376,12 @@ class _UrlFaviconListTemplateScreenState
                     final urlModel = url.urlModel!;
                     if (urlModel.settings != null &&
                         urlModel.settings!.containsKey(urlLaunchType)) {
-                      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+                      urlLaunchTypeLocalNotifier.value =
+                          UrlLaunchType.fromString(
                         urlModel.settings![urlLaunchType].toString(),
                       );
                     }
-                    
+
                     return widget.onUrlModelItemFetchedWidget!(
                       index: index,
                       list: _list,
@@ -458,7 +460,8 @@ class _UrlFaviconListTemplateScreenState
                                 value: urlLaunchType,
                                 onChanged: (urlLaunchType) {
                                   if (urlLaunchType == null) return;
-                                  urlLaunchTypeLocalNotifier.value = urlLaunchType;
+                                  urlLaunchTypeLocalNotifier.value =
+                                      urlLaunchType;
                                 },
                                 isDense: true,
                                 iconEnabledColor: ColourPallette.black,
@@ -496,6 +499,21 @@ class _UrlFaviconListTemplateScreenState
                             },
                           ),
                           onTap: () async {
+                            final urlCrudCubit = context.read<UrlCrudCubit>();
+                            final globalUser = context
+                                .read<GlobalUserCubit>()
+                                .getGlobalUser()!
+                                .id;
+                            final urlLaunchTypeLocalNotifier =
+                                ValueNotifier(UrlLaunchType.customTabs);
+
+                            if (urlModel.settings != null &&
+                                urlModel.settings!.containsKey(urlLaunchType)) {
+                              urlLaunchTypeLocalNotifier.value =
+                                  UrlLaunchType.fromString(
+                                urlModel.settings![urlLaunchType].toString(),
+                              );
+                            }
                             switch (urlLaunchTypeLocalNotifier.value) {
                               case UrlLaunchType.customTabs:
                                 {
@@ -550,6 +568,17 @@ class _UrlFaviconListTemplateScreenState
                                   break;
                                 }
                             }
+
+                            await Future.wait(
+                              [
+                                urlCrudCubit.addUrl(
+                                  isRootCollection: true,
+                                  urlData: urlModel.copyWith(
+                                    collectionId: '$globalUser$recents',
+                                  ),
+                                ),
+                              ],
+                            );
                           },
                         ),
 

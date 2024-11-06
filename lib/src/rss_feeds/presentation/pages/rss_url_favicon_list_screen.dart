@@ -127,6 +127,8 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
+        final urlCrudCubit = context.read<UrlCrudCubit>();
+        final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
 
@@ -190,6 +192,17 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
               break;
             }
         }
+
+        await Future.wait(
+          [
+            urlCrudCubit.addUrl(
+              isRootCollection: true,
+              urlData: urlModel.copyWith(
+                collectionId: '$globalUser$recents',
+              ),
+            ),
+          ],
+        );
       },
       onLongPress: (urlMetaData) async {
         final urlc = urlModel.copyWith(metaData: urlMetaData);

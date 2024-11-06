@@ -21,10 +21,14 @@ class GlobalUserCubit extends Cubit<GlobalUserState> {
         globalUser: globleUser,
       ),
     );
-    debugPrint('[log] : ${globleUser.toJson()}');
+    // debugPrint('[log] : ${globleUser.toJson()}');
   }
 
   GlobalUser? getGlobalUser() {
     return state.globalUser;
+  }
+
+  Future<void> deleteUserForever() async {
+    
   }
 }

@@ -244,6 +244,8 @@ class _DashboardUrlFaviconListScreenState
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
+        final urlCrudCubit = context.read<UrlCrudCubit>();
+        final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
 
@@ -307,6 +309,17 @@ class _DashboardUrlFaviconListScreenState
               break;
             }
         }
+
+        await Future.wait(
+          [
+            urlCrudCubit.addUrl(
+              isRootCollection: true,
+              urlData: urlModel.copyWith(
+                collectionId: '$globalUser$recents',
+              ),
+            ),
+          ],
+        );
       },
       onLongPress: (urlMetaData) async {
         final urlc = urlModel.copyWith(metaData: urlMetaData);
@@ -762,7 +775,7 @@ class _DashboardUrlFaviconListScreenState
   }
 
   String _websiteName(String websiteName, int allowedLength) {
-    // // Logger.printLog('WebsiteName: $websiteName');
+    // Logger.printLog('WebsiteName: $websiteName');
     if (websiteName.length < allowedLength) {
       return websiteName;
     }
