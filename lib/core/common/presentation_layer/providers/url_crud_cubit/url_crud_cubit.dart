@@ -140,15 +140,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       return;
     }
 
-    Logger.printLog('[recents] : ${collection.collection!.urls}');
-    Logger.printLog('[recents] : urlid ${urlData.firestoreId}');
+    // Logger.printLog('[recents] : ${collection.collection!.urls}');
+    // Logger.printLog('[recents] : urlid ${urlData.firestoreId}');
 
-    if (collection.collection!.urls.contains(urlData.firestoreId)) {
-      Logger.printLog('[recent] : URL already exists ${urlData.firestoreId}');
-      return;
-    }
+    // if (collection.collection!.urls.contains(urlData.firestoreId)) {
+    //   Logger.printLog('[recent] : URL already exists ${urlData.firestoreId}');
+    //   return;
+    // }
 
-    // TODO : HANDLE DUPLICATION OF RECENT URLS
+
     await _urlRepoImpl
         .addUrlData(
       collection: collection.collection!,

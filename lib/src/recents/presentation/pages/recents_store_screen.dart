@@ -93,8 +93,8 @@ class _RecentsStorePageState extends State<RecentsStorePage>
           }
 
           final collection = fetchCollection.collection;
-          Logger.printLog(
-              '[RECENT] : Updated recentstore collection store page, ${collection?.urls}');
+          // Logger.printLog(
+          //     '[RECENT] : Updated recentstore collection store page, ${collection?.urls}');
           if (collection == null) {
             return Container();
           }

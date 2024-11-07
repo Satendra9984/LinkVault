@@ -286,7 +286,7 @@ class _RssFeedUrlsPreviewListWidgetState
                     widget.collectionFetchModel.collection!.id];
 
                 if (feeds == null ||
-                    feeds.loadingStates == LoadingStates.loading ||
+                    // feeds.loadingStates == LoadingStates.loading ||
                     feeds.loadingStates == LoadingStates.initial) {
                   return Center(
                     child: Column(
@@ -370,7 +370,12 @@ class _RssFeedUrlsPreviewListWidgetState
                         if (index == 0) {
                           return const SizedBox(height: kToolbarHeight);
                         } else if (index > allLocalFeedsList.length) {
-                          return const SizedBox(height: 200);
+                          return feeds.loadingStates == LoadingStates.loading
+                              ? const CircularProgressIndicator(
+                                  color: ColourPallette.mountainMeadow,
+                                  backgroundColor: ColourPallette.white,
+                                )
+                              : const SizedBox(height: 200);
                         }
 
                         return ValueListenableBuilder(
@@ -1007,7 +1012,7 @@ class _RssFeedUrlsPreviewListWidgetState
     required List<Widget> urlOptions,
   }) async {
     // Logger.printLog('showUrlOptionsBottomSheet, ${urlModel.title}');
-    debugPrint(urlModel.title);
+    // debugPrint(urlModel.title);
 
     final size = MediaQuery.of(context).size;
     const titleTextStyle = TextStyle(
@@ -1030,7 +1035,7 @@ class _RssFeedUrlsPreviewListWidgetState
       Navigator.pop(context);
     }
 
-    final showLastUpdated = ValueNotifier(false);
+    // final showLastUpdated = ValueNotifier(false);
     final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
 
     // final urlModel = url.urlModel!;

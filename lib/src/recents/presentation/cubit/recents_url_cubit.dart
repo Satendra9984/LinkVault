@@ -12,7 +12,6 @@ import 'package:link_vault/core/utils/string_utils.dart';
 
 part 'recents_url_state.dart';
 
-// TODO : ADD RECENTS URLS FEATURE
 class RecentsUrlCubit extends Cubit<RecentsUrlState> {
   RecentsUrlCubit({
     required CollectionsCubit collectionsCubit,
@@ -64,16 +63,16 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
 
     final newRecentsUrlFirestoreId = urlData.firestoreId + recents;
 
-    Logger.printLog(
-      '[RECENTS] : $newRecentsUrlFirestoreId, collId $recentsCollectionId ${collection.collection!.urls}',
-    );
+    // Logger.printLog(
+    //   '[RECENTS] : $newRecentsUrlFirestoreId, collId $recentsCollectionId ${collection.collection!.urls}',
+    // );
 
     final urlIndexInRecents = collection.collection!.urls.indexWhere(
       (url) => url == urlData.firestoreId,
     );
-    Logger.printLog(
-      '[RECENTS] : ${urlData.firestoreId} already exists $urlIndexInRecents',
-    );
+    // Logger.printLog(
+    //   '[RECENTS] : ${urlData.firestoreId} already exists $urlIndexInRecents',
+    // );
 
     if (urlIndexInRecents == 0) return;
 
@@ -101,9 +100,9 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
       urls: urlsList,
     );
 
-    Logger.printLog(
-      '[RECENTS] : $newRecentsUrlFirestoreId adding ${StringUtils.getJsonFormat(recentUpdatedCollection.toJson())}',
-    );
+    // Logger.printLog(
+    //   '[RECENTS] : $newRecentsUrlFirestoreId adding ${StringUtils.getJsonFormat(recentUpdatedCollection.toJson())}',
+    // );
 
     await _collectionsRepoImpl
         .updateSubCollection(
@@ -115,7 +114,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
         result.fold(
           (failed) {},
           (updatedCollection) {
-            Logger.printLog('[RECENTS] : updating ${updatedCollection.id}');
+            // Logger.printLog('[RECENTS] : updating ${updatedCollection.id}');
 
             _collectionsCubit
               ..updateCollection(

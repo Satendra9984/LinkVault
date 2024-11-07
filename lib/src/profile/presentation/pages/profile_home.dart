@@ -9,6 +9,7 @@ import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
+import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:lottie/lottie.dart';
 
@@ -172,15 +173,11 @@ class ProfileHome extends StatelessWidget {
                               () async {
                                 await authCubit.deleteAccount().then(
                                   (_) async {
-                                    await authCubit.signOut().then(
-                                      (value) {
-                                        navigator.pushAndRemoveUntil(
-                                          MaterialPageRoute(
-                                            builder: (ctx) => const LoginPage(),
-                                          ),
-                                          (route) => false,
-                                        );
-                                      },
+                                    await navigator.pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => const SignUpPage(),
+                                      ),
+                                      (route) => false,
                                     );
                                   },
                                 );

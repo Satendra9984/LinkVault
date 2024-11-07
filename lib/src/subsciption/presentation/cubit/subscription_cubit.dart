@@ -34,7 +34,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   Future<void> loadRewardedAd() async {
-    debugPrint('[log] : loading a new ad');
+    // debugPrint('[log] : loading a new ad');
     emit(
       state.copyWith(
         loadingStates: LoadingStates.loading,

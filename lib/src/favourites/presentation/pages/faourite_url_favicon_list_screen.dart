@@ -24,6 +24,7 @@ import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
@@ -60,9 +61,40 @@ class _FavouritesUrlFaviconListScreenState
 
   @override
   void initState() {
-    // TODO : INITIALIZE LISTVIEWTYPE FROM COLLECTION SETTINGS
+    _initializeListViewType();
     super.initState();
   }
+
+  void _initializeListViewType() {
+    if (widget.collectionModel.settings != null &&
+        widget.collectionModel.settings!.containsKey(urlsViewType)) {
+      _listViewType.value = UrlViewType.fromString(
+        widget.collectionModel.settings![urlsViewType].toString(),
+      );
+
+      _switchPages();
+    }
+  }
+
+  void _switchPages() {
+    try {
+      final pageIndex = {
+            UrlViewType.favicons: 0,
+            UrlViewType.previews: 1,
+            UrlViewType.apps: 0,
+          }[_listViewType.value] ??
+          0;
+
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          _pageController.jumpToPage(pageIndex);
+        },
+      );
+    } catch (e) {
+      // Logger.printLog('error switching pages $e');
+    }
+  }
+
 
   void _onAddUrlPressed({String? url}) {
     Navigator.push(

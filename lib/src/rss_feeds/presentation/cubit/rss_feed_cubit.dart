@@ -208,16 +208,13 @@ class RssFeedCubit extends Cubit<RssFeedState> {
         _collectionCubit.urlsFetchModelList(collectionId: collectionId) ?? [];
 
     // Extract UrlModels from the fetched URLs
-    final urlModelList = <UrlModel>[];
-    for (final urlModel in fetchedUrls) {
-      if (urlModel.urlModel != null) {
-        urlModelList.add(urlModel.urlModel!);
-      }
-    }
+    final urlModelList = fetchedUrls
+        .where((urlModel) => urlModel.urlModel != null)
+        .map((urlModel) => urlModel.urlModel!)
+        .toList();
 
     // Emit a loading state
     final currentCollectionFeed = state.feedCollections[collectionId]!;
-
     emit(
       state.copyWith(
         feedCollections: {
@@ -229,29 +226,54 @@ class RssFeedCubit extends Cubit<RssFeedState> {
       ),
     );
 
-    final allFeeds = <UrlModel>[]; // List to collect all feeds
+    const maxConcurrentFetches = 5; // Set a limit for concurrent requests
 
-    // for (final urlModel in urlModelList) {
-    await for (final result
-        in _rssFeedRepo.getAllFeeds(urlModels: urlModelList)) {
-      result.fold(
-        (failure) {
-          // Logger.printLog('Failed to fetch feeds for URL: ');
-        },
-        (feeds) {
-          // Logger.printLog('Got feeds for ${feeds.length}');
-          allFeeds.addAll(feeds);
-        },
+    // Initialize an empty list to collect all feeds
+    final allFeeds = <UrlModel>[];
+
+    // Divide urlModelList into batches based on maxConcurrentFetches
+    for (var i = 0; i < urlModelList.length; i += maxConcurrentFetches) {
+      final batch = urlModelList.skip(i).take(maxConcurrentFetches);
+
+      // Fetch feeds concurrently for the current batch
+      final fetchTasks = batch.map(
+        (urlModel) => _rssFeedRepo.getAllFeeds(urlModels: [urlModel]).first,
       );
+
+      // Wait for all fetches in the current batch to complete
+      final results = await Future.wait(fetchTasks);
+
+      // Process each result in the batch
+      for (final result in results) {
+        result.fold(
+          (failure) {
+            // Log the failure if needed
+            // Logger.printLog('Failed to fetch feeds for URL');
+          },
+          (feeds) {
+            // Add fetched feeds to allFeeds
+            allFeeds
+              ..addAll(feeds)
+              ..sort((u1, u2) => u2.createdAt.compareTo(u1.createdAt));
+
+            // Emit the updated state with the latest feeds
+            emit(
+              state.copyWith(
+                feedCollections: {
+                  ...state.feedCollections,
+                  collectionId: state.feedCollections[collectionId]!.copyWith(
+                    allFeeds: List<UrlModel>.from(allFeeds),
+                    loadingStates: LoadingStates.loading,
+                  ),
+                },
+              ),
+            );
+          },
+        );
+      }
     }
 
-    // Logger.printLog('Fetching feed ended');
-
-    allFeeds.sort(
-      (u1, u2) => u2.createdAt.compareTo(u1.createdAt),
-    );
-
-    // Update the state with all feeds after all fetching is done
+    // Once all feeds have been fetched, update to loaded state
     emit(
       state.copyWith(
         feedCollections: {

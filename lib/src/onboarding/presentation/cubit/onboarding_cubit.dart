@@ -44,7 +44,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
         }
       },
     );
-    debugPrint('Current state after emit: $state');
+    // debugPrint('Current state after emit: $state');
   }
 
   bool isCreditExpired() {

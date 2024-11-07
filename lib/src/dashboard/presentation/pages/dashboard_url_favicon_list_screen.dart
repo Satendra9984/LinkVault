@@ -24,6 +24,7 @@ import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
@@ -60,7 +61,38 @@ class _DashboardUrlFaviconListScreenState
 
   @override
   void initState() {
+    _initializeListViewType();
     super.initState();
+  }
+
+  void _initializeListViewType() {
+    if (widget.collectionModel.settings != null &&
+        widget.collectionModel.settings!.containsKey(urlsViewType)) {
+      _listViewType.value = UrlViewType.fromString(
+        widget.collectionModel.settings![urlsViewType].toString(),
+      );
+
+      _switchPages();
+    }
+  }
+
+  void _switchPages() {
+    try {
+      final pageIndex = {
+            UrlViewType.favicons: 0,
+            UrlViewType.previews: 1,
+            UrlViewType.apps: 0,
+          }[_listViewType.value] ??
+          0;
+
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          _pageController.jumpToPage(pageIndex);
+        },
+      );
+    } catch (e) {
+      Logger.printLog('error switching pages $e');
+    }
   }
 
   void _onAddUrlPressed({String? url}) {
@@ -161,8 +193,7 @@ class _DashboardUrlFaviconListScreenState
           value: UrlViewType.favicons,
           onTap: () {
             _listViewType.value = UrlViewType.favicons;
-            _pageController.jumpToPage(0);
-            // Logger.printLog('currentpage: ${_pageController.page}');
+            _switchPages();
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,8 +228,7 @@ class _DashboardUrlFaviconListScreenState
           value: UrlViewType.previews,
           onTap: () {
             _listViewType.value = UrlViewType.previews;
-            _pageController.jumpToPage(1);
-            // Logger.printLog('currentpage: ${_pageController.page}');
+            _switchPages();
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -246,7 +276,6 @@ class _DashboardUrlFaviconListScreenState
           : UrlPreloadMethods.httpGet,
       onTap: () async {
         final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
-        final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
 

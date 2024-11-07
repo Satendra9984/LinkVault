@@ -55,7 +55,7 @@ class AuthRemoteDataSourcesImpl {
 
       return globalUser;
     } on FirebaseAuthException catch (e) {
-      debugPrint('[log] auth: ${e.message}');
+      // debugPrint('[log] auth: ${e.message}');
       if (e.code == 'user-not-found') {
         throw LocalAuthException(
           message: 'No user found for that email.',
@@ -68,7 +68,7 @@ class AuthRemoteDataSourcesImpl {
         );
       }
     } catch (e) {
-      debugPrint('[log] auth: $e');
+      // debugPrint('[log] auth: $e');
 
       throw LocalAuthException(
         message: 'Could Not Authenticate',
@@ -143,53 +143,50 @@ class AuthRemoteDataSourcesImpl {
     try {
       await _auth.sendPasswordResetEmail(email: emailAddress);
     } catch (e) {
-      debugPrint('[log] : $e');
+      // debugPrint('[log] : $e');
 
       throw AuthException(message: e.toString(), statusCode: 402);
     }
   }
 
   Future<void> deleteUser() async {
-    try {
-      Logger.printLog('[deleting] : Current User: ${_auth.currentUser?.uid}');
-      final user = _auth.currentUser;
-      final firestore = FirebaseFirestore.instance;
+    final auth = FirebaseAuth.instance;
 
-      if (user == null) {
-        throw AuthException(
-          message: 'Account Not Found. Something Went Wrong.',
-          statusCode: 402,
-        );
-      }
-      // Reference to the user's main document
-      final accountRef = firestore.collection(userCollection).doc(user.uid);
+    // Logger.printLog('[deleting] : Current User: ${auth.currentUser?.uid}');
+    final user = auth.currentUser;
+    final firestore = FirebaseFirestore.instance;
 
-      // Reference to the user's subcollections
-      final folderCollectionRef = accountRef.collection(folderCollections);
-      final urlsDataRef = accountRef.collection(urlDataCollection);
-
-      await Future.wait(
-        [
-          // Delete all documents in the folderCollections subcollection
-          _deleteCollection(folderCollectionRef),
-
-          // Delete all documents in the urlDataCollection subcollection
-          _deleteCollection(urlsDataRef),
-
-          // Delete the user's main document after subcollections are deleted
-          accountRef.delete(),
-
-          // Delete the Firebase Authentication user
-          _auth.currentUser?.delete() ??
-              Future.value(), // Handle null user if not authenticated
-        ],
-      );
-    } catch (e) {
+    if (user == null) {
       throw AuthException(
-        message: 'Account Not Deleted. Something Went Wrong.',
+        message: 'Account Not Found. Something Went Wrong.',
         statusCode: 402,
       );
     }
+    // Reference to the user's main document
+    final accountRef = firestore.collection(userCollection).doc(user.uid);
+
+    // Reference to the user's subcollections
+    final folderCollectionRef = accountRef.collection(folderCollections);
+    final urlsDataRef = accountRef.collection(urlDataCollection);
+
+
+    await Future.wait(
+      [
+        // Delete all documents in the folderCollections subcollection
+        _deleteCollection(folderCollectionRef),
+
+        // Delete all documents in the urlDataCollection subcollection
+        _deleteCollection(urlsDataRef),
+
+        // Delete the user's main document after subcollections are deleted
+        accountRef.delete(),
+
+        // Delete the Firebase Authentication user
+        // user.delete(), // Handle null user if not authenticated
+      ],
+    );
+    await user.delete(); // Handle null user if not authenticated
+
   }
 
   // Function to delete all documents in a collection

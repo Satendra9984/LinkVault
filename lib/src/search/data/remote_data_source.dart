@@ -45,7 +45,7 @@ class RemoteDataSourcesImpl {
 
       return collectionModel;
     } catch (e) {
-      debugPrint('[log] : fetchCollection $e');
+      // debugPrint('[log] : fetchCollection $e');
 
       throw ServerException(
         message: 'Something Went Wrong',

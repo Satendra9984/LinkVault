@@ -34,7 +34,7 @@ class _AppHomePageState extends State<AppHomePage> {
         ReceiveSharingIntent.instance.getMediaStream().listen(
           context.read<SharedInputsCubit>().addInputFiles,
           onError: (err) {
-            debugPrint('getMediaStream error: $err');
+            // debugPrint('getMediaStream error: $err');
           },
         );
 

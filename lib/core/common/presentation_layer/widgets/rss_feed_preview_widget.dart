@@ -17,6 +17,7 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -714,11 +715,14 @@ class _RssFeedPreviewWidgetState extends State<RssFeedPreviewWidget> {
                       children: [
                         GestureDetector(
                           onTap: () async {
-                            // TODO : LAUNCH IN CUSTOM TAB
-                            final uri = Uri.parse(widget.urlModel.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri);
-                            }
+                            // LAUNCH IN CUSTOM TAB
+                            final theme = Theme.of(context);
+                            await CustomTabsService.launchUrl(
+                              url: widget.urlModel.url,
+                              theme: theme,
+                            ).then(
+                              (_) async {},
+                            );
                           },
                           onLongPress: widget.onLongPress,
                           child: Row(

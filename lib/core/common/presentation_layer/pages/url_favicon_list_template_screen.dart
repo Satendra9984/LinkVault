@@ -318,13 +318,13 @@ class _UrlFaviconListTemplateScreenState
               return widget.urlsEmptyWidget;
             }
 
-            Logger.printLog(
-              '[RECENTS] : URLS UPDATED ${widget.collectionModel.id}, ${widget.collectionModel.urls}',
-            );
+            // Logger.printLog(
+            //   '[RECENTS] : URLS UPDATED ${widget.collectionModel.id}, ${widget.collectionModel.urls}',
+            // );
 
-            Logger.printLog(
-              '[RECENTS] : URLS UPDATED ${widget.collectionModel.id},available ${availableUrls}',
-            );
+            // Logger.printLog(
+            //   '[RECENTS] : URLS UPDATED ${widget.collectionModel.id},available ${availableUrls}',
+            // );
 
             _list.value = availableUrls.map(ValueNotifier.new).toList();
 
@@ -512,10 +512,7 @@ class _UrlFaviconListTemplateScreenState
                           onTap: () async {
                             final recentUrlCrudCubit =
                                 context.read<RecentsUrlCubit>();
-                            final globalUser = context
-                                .read<GlobalUserCubit>()
-                                .getGlobalUser()!
-                                .id;
+                            
                             final urlLaunchTypeLocalNotifier =
                                 ValueNotifier(UrlLaunchType.customTabs);
 
