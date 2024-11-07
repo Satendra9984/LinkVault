@@ -8,6 +8,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class UrlRepoImpl {
   UrlRepoImpl({
@@ -66,6 +67,7 @@ class UrlRepoImpl {
 
       final optimisedUrlData = urlData.copyWith(
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
+        htmlContent: '',
       );
 
       final addedUrlData = await _remoteDataSourcesImpl.addUrl(
@@ -126,6 +128,7 @@ class UrlRepoImpl {
 
       final optimisedUrlData = urlData.copyWith(
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
+        htmlContent: '',
       );
 
       await _remoteDataSourcesImpl.updateUrl(
@@ -205,6 +208,7 @@ class UrlRepoImpl {
 
       final optimisedUrlData = urlData.copyWith(
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
+        htmlContent: '',
       );
 
       final addedUrlData = await _remoteDataSourcesImpl.updateUrl(
@@ -235,8 +239,8 @@ class UrlRepoImpl {
           .updateCollection(updatedCollectionWithUrls);
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
-    } on ServerException {
-      // Logger.printLog('addUrlrepo : $e');
+    } on ServerException catch (se){
+      // Logger.printLog('[RECENTS] : ERROR addUrlrepo : ${se.message}');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',

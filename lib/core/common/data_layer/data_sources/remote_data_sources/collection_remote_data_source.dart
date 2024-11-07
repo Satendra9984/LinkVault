@@ -4,6 +4,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class RemoteDataSourcesImpl {
   RemoteDataSourcesImpl({
@@ -255,7 +256,7 @@ class RemoteDataSourcesImpl {
 
       return urlModelUp;
     } catch (e) {
-      // Logger.printLog('updateUrl : $e urlId: ${urlModel.firestoreId}');
+      // Logger.printLog('[RECENTS] : updateUrl : $e urlId: ${urlModel.firestoreId}');
 
       throw ServerException(
         message: 'Something Went Wrong',
@@ -269,7 +270,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('UrlModel length');
+      // Logger.printLog('UrlModel length');
       // Logger.printLog(urlId);
 
       await _firestore

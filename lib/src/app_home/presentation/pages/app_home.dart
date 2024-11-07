@@ -178,7 +178,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => FavouriteFolderCollectionPage(
+                          builder: (ctx) => FavouritesStorePage(
                             collectionId: '$globalUser$favourites',
                             isRootCollection: true,
                             appBarLeadingIcon: SvgPicture.asset(

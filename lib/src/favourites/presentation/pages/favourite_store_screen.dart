@@ -12,8 +12,8 @@ import 'package:link_vault/src/favourites/presentation/pages/faourite_url_favico
 import 'package:link_vault/src/favourites/presentation/pages/favourite_collections_list_screen.dart';
 import 'package:lottie/lottie.dart';
 
-class FavouriteFolderCollectionPage extends StatefulWidget {
-  const FavouriteFolderCollectionPage({
+class FavouritesStorePage extends StatefulWidget {
+  const FavouritesStorePage({
     required this.collectionId,
     required this.isRootCollection,
     required this.appBarLeadingIcon,
@@ -24,12 +24,10 @@ class FavouriteFolderCollectionPage extends StatefulWidget {
   final Widget appBarLeadingIcon;
 
   @override
-  State<FavouriteFolderCollectionPage> createState() =>
-      _FavouriteFolderCollectionPageState();
+  State<FavouritesStorePage> createState() => _FavouritesStorePageState();
 }
 
-class _FavouriteFolderCollectionPageState
-    extends State<FavouriteFolderCollectionPage>
+class _FavouritesStorePageState extends State<FavouritesStorePage>
     with SingleTickerProviderStateMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
@@ -91,7 +89,7 @@ class _FavouriteFolderCollectionPageState
               globalUserCubit: globalUserCubit,
             );
           }
-          // // Logger.printLog('Updated collection store page');
+          // Logger.printLog('Updated collection store page');
 
           final collection = fetchCollection.collection;
           if (collection == null) {

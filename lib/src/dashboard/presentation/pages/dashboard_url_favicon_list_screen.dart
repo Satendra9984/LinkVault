@@ -747,7 +747,9 @@ class _DashboardUrlFaviconListScreenState
       child: Column(
         children: [
           SvgPicture.asset(
-            MediaRes.webSurf1SVG,
+            MediaRes.mobileAppsAmicoSVG,
+            // MediaRes.mobileAppsBroSVG,
+            // MediaRes.mobileAppsPanaSVG,
           ),
           GestureDetector(
             onTap: () async {
@@ -762,23 +764,24 @@ class _DashboardUrlFaviconListScreenState
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 6,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                     color: ColourPallette.error,
                   ),
                   child: const Icon(
                     Icons.play_arrow_rounded,
                     color: ColourPallette.white,
+                    size: 16,
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Watch How to Add URL',
+                  'How To Add Link',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

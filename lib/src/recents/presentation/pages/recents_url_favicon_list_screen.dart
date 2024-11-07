@@ -16,6 +16,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_o
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
@@ -252,6 +253,28 @@ class _RecentsUrlFaviconListScreenState
     required int index,
     required List<Widget> urlOptions,
   }) {
+    // final urlModelFetch = list.value[index].value;
+
+    // if (urlModelFetch.loadingStates == LoadingStates.errorLoading ||
+    //     urlModelFetch.urlModel == null) {
+    //   return SizedBox(
+    //     height: 56,
+    //     width: 56,
+    //     child: GestureDetector(
+    //       onTap: () async {
+    //         await showUrlOptionsBottomSheet(
+    //           context,
+    //           urlModel: urlModel,
+    //           urlOptions: urlOptions,
+    //         );
+    //       },
+    //       child: const Icon(
+    //         Icons.restore,
+    //         color: ColourPallette.black,
+    //       ),
+    //     ),
+    //   );
+    // }
     final urlModel = list.value[index].value.urlModel!;
 
     return UrlFaviconLogoWidget(
@@ -531,22 +554,14 @@ class _RecentsUrlFaviconListScreenState
                 leadingIcon: Icons.delete_rounded,
                 title: const Text('Delete', style: titleTextStyle),
                 onTap: () async {
-                  final collectionCrudCubit =
-                      context.read<CollectionCrudCubit>();
-                  // final collectionCubit = context.read<CollectionsCubit>();
-
-                  await showDeleteConfirmationDialog(context, urlModel,
-                      () async {
-                    // DELETE(UPDATE) ONLY URL
-                    final newUrls = widget.collectionModel.urls
-                      ..removeWhere((urlId) => urlId == urlModel.firestoreId);
-
-                    await collectionCrudCubit.updateCollection(
-                      collection: widget.collectionModel.copyWith(
-                        urls: newUrls,
-                      ),
-                    );
-                  }).then(
+                  await showDeleteConfirmationDialog(
+                    context,
+                    urlModel,
+                    () => context.read<UrlCrudCubit>().deleteUrl(
+                          urlData: urlModel,
+                          isRootCollection: widget.isRootCollection,
+                        ),
+                  ).then(
                     (_) {
                       Navigator.pop(context);
                     },
@@ -896,7 +911,9 @@ class _RecentsUrlFaviconListScreenState
       child: Column(
         children: [
           SvgPicture.asset(
-            MediaRes.webSurf1SVG,
+            // MediaRes.mobileAppsAmicoSVG,
+            MediaRes.mobileAppsBroSVG,
+            // MediaRes.mobileAppsPanaSVG,
           ),
           GestureDetector(
             onTap: () async {
@@ -911,23 +928,24 @@ class _RecentsUrlFaviconListScreenState
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 6,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                     color: ColourPallette.error,
                   ),
                   child: const Icon(
                     Icons.play_arrow_rounded,
                     color: ColourPallette.white,
+                    size: 16,
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Watch How to Add URL',
+                  'How To Add Link',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

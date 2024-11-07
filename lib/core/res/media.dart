@@ -28,9 +28,9 @@ class MediaRes {
   static const String rssFeedSVG = 'assets/images/rss_feed.svg';
   static const String feedListSVG = 'assets/images/feed_list.svg';
   static const String newsBroSVG = 'assets/images/News-bro.svg';
-  // static const String SVG= 'assets/images/.svg';
-  // static const String SVG= 'assets/images/.svg';
-  // static const String SVG= 'assets/images/.svg';
+  static const String mobileAppsAmicoSVG= 'assets/images/mobile_apps_amico.svg';
+  static const String mobileAppsBroSVG= 'assets/images/mobile_apps_bro.svg';
+  static const String mobileAppsPanaSVG= 'assets/images/mobile_apps_pana.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
 

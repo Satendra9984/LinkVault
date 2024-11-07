@@ -253,10 +253,10 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
-          const Icon(
-            Icons.dashboard_rounded,
-            color: ColourPallette.mountainMeadow,
-            size: 16,
+          SvgPicture.asset(
+            MediaRes.compassSVG,
+            height: 18,
+            width: 18,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -1002,7 +1002,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
   }
 
   String _websiteName(String websiteName, int allowedLength) {
-    // // Logger.printLog('WebsiteName: $websiteName');
+    // Logger.printLog('WebsiteName: $websiteName');
     if (websiteName.length < allowedLength) {
       return websiteName;
     }

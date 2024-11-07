@@ -260,6 +260,7 @@ class _UrlFaviconListTemplateScreenState
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     return Scaffold(
       appBar: _getAppBar(),
       bottomSheet: _getBottomSheet(),
@@ -276,8 +277,11 @@ class _UrlFaviconListTemplateScreenState
                 return ValueListenableBuilder(
                   valueListenable: _showFullAddUrlButton,
                   builder: (context, showFullAddUrlButton, _) {
+                    Logger.printLog(
+                      'Favourites: template ${widget.collectionModel.name}, ${widget.showAddUrlButton}',
+                    );
                     return FloatingActionButton.extended(
-                      key: const ValueKey('extended'),
+                      key: ValueKey(widget.collectionModel.id),
                       isExtended: showFullAddUrlButton,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
@@ -318,14 +322,6 @@ class _UrlFaviconListTemplateScreenState
               return widget.urlsEmptyWidget;
             }
 
-            // Logger.printLog(
-            //   '[RECENTS] : URLS UPDATED ${widget.collectionModel.id}, ${widget.collectionModel.urls}',
-            // );
-
-            // Logger.printLog(
-            //   '[RECENTS] : URLS UPDATED ${widget.collectionModel.id},available ${availableUrls}',
-            // );
-
             _list.value = availableUrls.map(ValueNotifier.new).toList();
 
             _filterList();
@@ -356,20 +352,24 @@ class _UrlFaviconListTemplateScreenState
                           ),
                         ),
                       );
-                    } else if (url.loadingStates ==
-                            LoadingStates.errorLoading ||
+                    }
+
+                    // TODO : HANDLE ERROR LOADING CASES IN ALL SCREENS
+
+                    else if (url.loadingStates == LoadingStates.errorLoading ||
                         url.urlModel == null) {
-                      return SizedBox(
-                        height: 56,
-                        width: 56,
-                        child: IconButton(
-                          onPressed: _fetchMoreUrls,
-                          icon: const Icon(
-                            Icons.restore,
-                            color: ColourPallette.black,
+                      // _fetchMoreUrls();
+                        return SizedBox(
+                          height: 56,
+                          width: 56,
+                          child: GestureDetector(
+                            onTap: _fetchMoreUrls,
+                            child: const Icon(
+                              Icons.restore,
+                              color: ColourPallette.black,
+                            ),
                           ),
-                        ),
-                      );
+                        );
                     }
 
                     if (widget.onUrlModelItemFetchedWidget == null) {
@@ -512,7 +512,7 @@ class _UrlFaviconListTemplateScreenState
                           onTap: () async {
                             final recentUrlCrudCubit =
                                 context.read<RecentsUrlCubit>();
-                            
+
                             final urlLaunchTypeLocalNotifier =
                                 ValueNotifier(UrlLaunchType.customTabs);
 
@@ -587,29 +587,6 @@ class _UrlFaviconListTemplateScreenState
                             );
                           },
                         ),
-
-                        // OPEN IN WEBVIEW
-                        // BottomSheetOption(
-                        //   leadingIcon: Icons.open_in_new_rounded,
-                        //   title: const Text(
-                        //     'Open WebView(beta)',
-                        //     style: titleTextStyle,
-                        //   ),
-                        //   onTap: () async {
-                        //     await Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (ctx) => DashboardWebView(
-                        //           url: urlModel.url,
-                        //         ),
-                        //       ),
-                        //     ).then(
-                        //       (_) async {
-                        //         await Navigator.maybePop(context);
-                        //       },
-                        //     );
-                        //   },
-                        // ),
 
                         // SHARE THE LINK TO OTHER APPS
                         BottomSheetOption(

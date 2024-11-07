@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
@@ -61,111 +63,116 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
       return;
     }
 
-    final newRecentsUrlFirestoreId = urlData.firestoreId + recents;
+    // Encode URL to create a Firestore-safe ID
+    final newRecentsUrlFirestoreId =
+        base64Url.encode(utf8.encode('${urlData.url}#$recents'));
 
     // Logger.printLog(
-    //   '[RECENTS] : $newRecentsUrlFirestoreId, collId $recentsCollectionId ${collection.collection!.urls}',
+    //   '[RECENTS] : newrecentsid: $newRecentsUrlFirestoreId',
     // );
 
     final urlIndexInRecents = collection.collection!.urls.indexWhere(
-      (url) => url == urlData.firestoreId,
+      (urlFirestoreIds) {
+        // Encode the existing URL in the list to match with the encoded Firestore ID
+        final encodedUrlInList =
+            urlFirestoreIds; // already encoded do not encode again to compare
+        Logger.printLog(
+          // ignore: lines_longer_than_80_chars
+          '[RECENTS] : cmpr $newRecentsUrlFirestoreId $encodedUrlInList, isMatched ${encodedUrlInList == newRecentsUrlFirestoreId}',
+        );
+        return encodedUrlInList == newRecentsUrlFirestoreId;
+      },
     );
+
     // Logger.printLog(
     //   '[RECENTS] : ${urlData.firestoreId} already exists $urlIndexInRecents',
     // );
 
     if (urlIndexInRecents == 0) return;
 
-    final recentUrlData = urlData.copyWith(
-      firestoreId: newRecentsUrlFirestoreId,
-      collectionId: recentsCollectionId,
-      parentUrlModelFirestoreId: urlData.firestoreId,
-    );
-
-    // CHANGE THE ID TO THE FIRST IT WILL HELP ELIMINATION LEAST
-    // USED URLS AS FREQUENTLY USED URLS WILL ALWAYS COMES FIRST
-    // LIKE WE CAN STORE 200 URLS TOP AND CAN DELETE REST
-
-    final urlsList = collection.collection!.urls
-      ..removeWhere(
-        (url) => url == urlData.firestoreId,
+    if (urlIndexInRecents == -1) {
+      final recentUrlData = urlData.copyWith(
+        firestoreId: newRecentsUrlFirestoreId,
+        collectionId: recentsCollectionId,
+        parentUrlModelFirestoreId: urlData.firestoreId,
+      );
+      await _urlRepoImpl
+          .addRecentUrlData(
+        urlData: recentUrlData,
+        collection: collection.collection!,
+        userId: _globalUserCubit.state.globalUser!.id,
       )
-      ..insert(0, urlData.firestoreId);
-
-    if (urlsList.length > 200) {
-      urlsList.removeRange(200, urlsList.length);
-    }
-
-    final recentUpdatedCollection = collection.collection!.copyWith(
-      urls: urlsList,
-    );
-
-    // Logger.printLog(
-    //   '[RECENTS] : $newRecentsUrlFirestoreId adding ${StringUtils.getJsonFormat(recentUpdatedCollection.toJson())}',
-    // );
-
-    await _collectionsRepoImpl
-        .updateSubCollection(
-      subCollection: recentUpdatedCollection,
-      userId: _globalUserCubit.state.globalUser!.id,
-    )
-        .then(
-      (result) {
-        result.fold(
-          (failed) {},
-          (updatedCollection) {
-            // Logger.printLog('[RECENTS] : updating ${updatedCollection.id}');
-
-            _collectionsCubit
-              ..updateCollection(
-                updatedCollection: updatedCollection,
-                fetchSubCollIndexAdded: 0,
-              )
-              ..clearUrlsList(
-                collectionId: updatedCollection.id,
+          .then(
+        (result) async {
+          await result.fold(
+            (failed) {
+              // Logger.printLog('[RECENTS] : ERROR ADDING URL');
+              emit(
+                state.copyWith(
+                  urlCrudLoadingStates: UrlCrudLoadingStates.errorAdding,
+                ),
               );
-          },
-        );
-      },
-    );
+            },
+            (response) async {
+              final (urlData, updatedCollection) = response;
 
-    // await _urlRepoImpl
-    //     .addRecentUrlData(
-    //   urlData: recentUrlData,
-    //   collection: collection.collection!,
-    //   userId: _globalUserCubit.state.globalUser!.id,
-    // )
-    //     .then(
-    //   (result) async {
-    //     await result.fold(
-    //       (failed) {
-    //         emit(
-    //           state.copyWith(
-    //             urlCrudLoadingStates: UrlCrudLoadingStates.errorAdding,
-    //           ),
-    //         );
-    //       },
-    //       (response) async {
-    //         final (urlData, collection) = response;
+              _collectionsCubit
+                ..updateCollection(
+                  updatedCollection: updatedCollection,
+                  fetchSubCollIndexAdded: 0,
+                )
+                ..clearUrlsList(
+                  collectionId: updatedCollection.id,
+                );
 
-    //         _collectionsCubit
-    //           ..addUrl(url: urlData, collection: collection)
-    //           ..updateCollection(
-    //             updatedCollection: collection,
-    //             fetchSubCollIndexAdded: 0,
-    //           );
+              // Logger.printLog(
+              //   // ignore: lines_longer_than_80_chars
+              //   '[RECENTS] : addedurl $newRecentsUrlFirestoreId, ${updatedCollection.id}',
+              // );
 
-    //         Logger.printLog(
-    //           '[RECENTS] : addedurl ${urlData.firestoreId}, ${collection.id}',
-    //         );
-    //         emit(
-    //           state.copyWith(
-    //             urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,
-    //           ),
-    //         );
-    //       },
-    //     );
-    //   },
-    // );
+              emit(
+                state.copyWith(
+                  urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      final urlsList = collection.collection!.urls
+        ..removeAt(urlIndexInRecents)
+        ..insert(0, urlData.firestoreId);
+
+      if (urlsList.length > 200) {
+        urlsList.removeRange(200, urlsList.length);
+      }
+
+      final recentUpdatedCollection = collection.collection!.copyWith(
+        urls: urlsList,
+      );
+      await _collectionsRepoImpl
+          .updateSubCollection(
+        subCollection: recentUpdatedCollection,
+        userId: _globalUserCubit.state.globalUser!.id,
+      )
+          .then(
+        (result) {
+          result.fold(
+            (failed) {},
+            (updatedCollection) {
+              _collectionsCubit
+                ..updateCollection(
+                  updatedCollection: updatedCollection,
+                  fetchSubCollIndexAdded: 0,
+                )
+                ..clearUrlsList(
+                  collectionId: updatedCollection.id,
+                );
+            },
+          );
+        },
+      );
+    }
   }
 }

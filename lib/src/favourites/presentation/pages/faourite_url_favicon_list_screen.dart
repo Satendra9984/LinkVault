@@ -86,15 +86,12 @@ class _FavouritesUrlFaviconListScreenState
           0;
 
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-          _pageController.jumpToPage(pageIndex);
-        },
+        (_) => _pageController.jumpToPage(pageIndex),
       );
     } catch (e) {
       // Logger.printLog('error switching pages $e');
     }
   }
-
 
   void _onAddUrlPressed({String? url}) {
     Navigator.push(
@@ -112,6 +109,10 @@ class _FavouritesUrlFaviconListScreenState
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    // Logger.printLog(
+    //   'Favourites: ${widget.collectionModel.name}, ${widget.showAddUrlButton}',
+    // );
     return PageView(
       controller: _pageController,
       onPageChanged: (page) {},
@@ -765,7 +766,9 @@ class _FavouritesUrlFaviconListScreenState
       child: Column(
         children: [
           SvgPicture.asset(
-            MediaRes.webSurf1SVG,
+            // MediaRes.mobileAppsAmicoSVG,
+            // MediaRes.mobileAppsBroSVG,
+            MediaRes.mobileAppsPanaSVG,
           ),
           GestureDetector(
             onTap: () async {
@@ -780,23 +783,24 @@ class _FavouritesUrlFaviconListScreenState
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 6,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                     color: ColourPallette.error,
                   ),
                   child: const Icon(
                     Icons.play_arrow_rounded,
                     color: ColourPallette.white,
+                    size: 16,
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Watch How to Add URL',
+                  'How To Add Link',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
