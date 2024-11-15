@@ -28,14 +28,15 @@ class CollectionStorePage extends StatefulWidget {
   State<CollectionStorePage> createState() => _CollectionStorePageState();
 }
 
-class _CollectionStorePageState extends State<CollectionStorePage> {
+class _CollectionStorePageState extends State<CollectionStorePage>
+    with AutomaticKeepAliveClientMixin {
   // TODO : SEE THE POSSIBILITIES OF AUTOMATIC KEEP ALIVE BUT
   /* WEBVIEW WILL CREATE PROBLEM AS IT WILL COMSUME MEMORY
-         WE CAN MAKE THE KEEP-ALIVE DYNAMIC IN WEB-VIEW SCREEN
-         SO THAT WHEN THIS-SCREEN GOES OUT-OF-VISIBILITY SO WILL 
-         DISTROY THE WEBVIEW BUT CAN KEEP THE OTHER VIEWS LIKE 
-         URLFAVICONLIST, COLLECTIONSLIST SCREENS
-      */
+     WE CAN MAKE THE KEEP-ALIVE DYNAMIC IN WEB-VIEW SCREEN
+     SO THAT WHEN THIS-SCREEN GOES OUT-OF-VISIBILITY SO WILL 
+     DISTROY THE WEBVIEW BUT CAN KEEP THE OTHER VIEWS LIKE 
+     URLFAVICONLIST, COLLECTIONSLIST SCREENS
+  */
 
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
@@ -62,7 +63,7 @@ class _CollectionStorePageState extends State<CollectionStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavigationBar(),
@@ -274,4 +275,7 @@ class _CollectionStorePageState extends State<CollectionStorePage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

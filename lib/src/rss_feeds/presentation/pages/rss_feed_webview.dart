@@ -215,7 +215,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                               ],
                             );
                           } catch (e) {
-                            Logger.printLog('RSS Feed WebView error $e');
+                            // Logger.printLog('RSS Feed WebView error $e');
                           }
                         },
                         onReceivedError: (controller, request, error) {

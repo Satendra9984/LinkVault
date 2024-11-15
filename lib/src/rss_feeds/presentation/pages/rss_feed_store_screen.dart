@@ -33,7 +33,7 @@ class RssFeedCollectionStorePage extends StatefulWidget {
 }
 
 class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
-    with SingleTickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin {
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
 
@@ -59,6 +59,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavBar(),
@@ -282,4 +283,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       ),
     );
   }
+  
+  @override
+  bool get wantKeepAlive => true;
 }

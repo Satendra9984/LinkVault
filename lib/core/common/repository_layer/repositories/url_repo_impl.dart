@@ -29,6 +29,7 @@ class UrlRepoImpl {
   }) async {
     // [TODO] : Fetch urlData
     try {
+      // Logger.printLog('[URL] : fetching $urlId');
       final localUrl = await _urlLocalDataSourcesImpl.fetchUrl(urlId);
 
       final url = localUrl ??
@@ -38,12 +39,15 @@ class UrlRepoImpl {
           );
 
       if (localUrl == null) {
+        // Logger.printLog('[URL] : fetcherror adding to local');
         await _urlLocalDataSourcesImpl.addUrl(url);
       }
 
       // Now fetch subcollections
       return Right(url);
     } catch (e) {
+      Logger.printLog('[URL] : fetcherror $e');
+
       return Left(
         ServerFailure(
           message: 'Something Went Wrong',
@@ -239,7 +243,7 @@ class UrlRepoImpl {
           .updateCollection(updatedCollectionWithUrls);
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
-    } on ServerException catch (se){
+    } on ServerException catch (se) {
       // Logger.printLog('[RECENTS] : ERROR addUrlrepo : ${se.message}');
       return Left(
         ServerFailure(

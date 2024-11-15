@@ -110,7 +110,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
       _showBannerImage.value = widget.showBannerImage;
     }
 
-    // // Logger.printLog('$initials didUpdateWidget');
+    // Logger.printLog('$initials didUpdateWidget');
     if (widget.isSidewaysLayout != oldWidget.isSidewaysLayout ||
         widget.showDescription != oldWidget.showDescription) {
       // Detach the widgets to mark them for layout
@@ -144,12 +144,12 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
   }
 
   Future<void> _updateFeedBannerImageUrl() async {
-    // // Logger.printLog(
+    // Logger.printLog(
     //   '$initials ${StringUtils.getJsonFormat(widget.urlModel.metaData)}',
     // );
 
     if (widget.urlModel.metaData!.bannerImageUrl == null) {
-      // // Logger.printLog('[rss] : _updateBannerImageUrl');
+      // Logger.printLog('[rss] : _updateBannerImageUrl');
       widget.updateBannerImage();
     }
   }
@@ -287,7 +287,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
       // renderBox.detach();
       renderBox.markNeedsLayout();
       // renderBox.reassemble();
-      // // Logger.printLog('$initials detaching $key');
+      // Logger.printLog('$initials detaching $key');
     }
   }
 
@@ -314,7 +314,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
   }
 
   String _websiteName(String websiteName, int allowedLength) {
-    // // Logger.printLog('WebsiteName: $websiteName');
+    // Logger.printLog('WebsiteName: $websiteName');
     if (websiteName.length < allowedLength) {
       return websiteName;
     }
@@ -476,7 +476,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
           }
         } else {
           // Widget is not visible
-          // // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
+          // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
         }
       },
       child: ValueListenableBuilder(
@@ -649,7 +649,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                                 min(bannerWidth, bannerImageSize!.width);
                           }
 
-                          // // Logger.printLog(
+                          // Logger.printLog(
                           //   '$initials mgwidth: ${bannerImageSize?.width}, screenwidth: ${size.width * 0.35}, final $bannerWidth',
                           // );
 

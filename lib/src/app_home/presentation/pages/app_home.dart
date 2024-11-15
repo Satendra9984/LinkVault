@@ -207,37 +207,37 @@ class _AppHomePageState extends State<AppHomePage> {
                   ),
 
                   // RECENTS
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => RecentsStorePage(
-                            collectionId: '$globalUser$recents',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.recentSVG,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.recentSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Recents',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
-                    ),
-                  ),
+                  // ListTile(
+                  //   onTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (ctx) => RecentsStorePage(
+                  //           collectionId: '$globalUser$recents',
+                  //           isRootCollection: true,
+                  //           appBarLeadingIcon: SvgPicture.asset(
+                  //             MediaRes.recentSVG,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   leading: SvgPicture.asset(
+                  //     MediaRes.recentSVG,
+                  //     height: 20,
+                  //     width: 20,
+                  //   ),
+                  //   title: const Text(
+                  //     'Recents',
+                  //     style: TextStyle(
+                  //       fontSize: 18,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  //   trailing: const Icon(
+                  //     Icons.arrow_forward_ios_rounded,
+                  //     color: ColourPallette.darkTeal,
+                  //   ),
+                  // ),
 
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(

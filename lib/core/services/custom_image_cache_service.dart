@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -41,21 +42,28 @@ class CustomImagesCacheManager {
 
   // Method to fetch images from the cache or network for a specific collection
   Future<FileInfo?> getImageFile(String imageUrl, String cacheKey) async {
-    var cacheManager = _getCacheManager(cacheKey);
-    if (cacheManager == null) {
-      // Logger.printLog(
-      //   'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',
-      // );
+    try {
+      var cacheManager = _getCacheManager(cacheKey);
+      if (cacheManager == null) {
+        // Logger.printLog(
+        //   'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',
+        // );
 
-      initCacheManager(
-        cacheKey: cacheKey,
-        stalePeriod: const Duration(hours: rssFeedStalePeriodHours*3*7),
-        maxNrOfCacheObjects: maxNrOfCacheObjects,
-      );
+        initCacheManager(
+          cacheKey: cacheKey,
+          stalePeriod: const Duration(hours: rssFeedStalePeriodHours * 3 * 7),
+          maxNrOfCacheObjects: maxNrOfCacheObjects,
+        );
+      }
+      cacheManager = _getCacheManager(cacheKey);
+      final fileInfo = await cacheManager?.getFileFromCache(imageUrl) ??
+          await cacheManager?.downloadFile(imageUrl);
+
+      return fileInfo;
+    } catch (e) {
+      // throw const FileSystemException('Could not get image');
+      // Logger.printLog('[CACHE IMAGE] : $e');
     }
-    cacheManager = _getCacheManager(cacheKey);
-    return await cacheManager?.getFileFromCache(imageUrl) ??
-        await cacheManager?.downloadFile(imageUrl);
   }
 
   // Clear the cache for a specific collection using the collectionId (cacheKey)
@@ -101,7 +109,8 @@ class CustomImagesCacheManager {
     final cacheManager = _getCacheManager(cacheKey);
     if (cacheManager == null) {
       throw Exception(
-          'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',);
+        'CacheManager for cacheKey $cacheKey is not initialized. Please call initCacheManager first.',
+      );
     }
 
     final cacheDirectory = await getTemporaryDirectory();

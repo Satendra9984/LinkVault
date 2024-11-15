@@ -13,6 +13,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_po
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
@@ -82,6 +83,8 @@ class _CollectionsListScreenTemplateState
       SystemUiMode.edgeToEdge,
       overlays: [],
     );
+    _initializeAlphaFilter();
+    _initializeDateWiseFilter();
     super.initState();
   }
 
@@ -129,6 +132,53 @@ class _CollectionsListScreenTemplateState
     }
   }
 
+  void _initializeAlphaFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortAlphabaticallyCollection)) {
+        final sortalpha =
+            widget.collectionModel.settings![sortAlphabaticallyCollection] as bool?;
+        if (sortalpha == null) {
+          return;
+        }
+        if (sortalpha) {
+          _atozFilter.value = true;
+        } else {
+          _ztoaFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateSortAlpha() async {
+    // var sortAlphabaticallyCollection = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_atozFilter.value) {
+      settings[sortAlphabaticallyCollection] = true;
+    } else if (_ztoaFilter.value) {
+      settings[sortAlphabaticallyCollection] = false;
+    } else if (_atozFilter.value == false && _ztoaFilter.value == false) {
+      settings.remove(sortAlphabaticallyCollection);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -153,6 +203,54 @@ class _CollectionsListScreenTemplateState
               );
         },
       );
+  }
+
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortDateWiseCollection)) {
+        final sortDateWiseCollectionValue =
+            widget.collectionModel.settings![sortDateWiseCollection] as bool?;
+        if (sortDateWiseCollectionValue == null) {
+          return;
+        }
+        if (sortDateWiseCollectionValue) {
+          _updatedAtLatestFilter.value = true;
+        } else {
+          _updatedAtOldestFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabaticallyCollection = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_updatedAtLatestFilter.value) {
+      settings[sortDateWiseCollection] = true;
+    } else if (_updatedAtOldestFilter.value) {
+      settings[sortDateWiseCollection] = false;
+    } else if (_updatedAtLatestFilter.value == false &&
+        _updatedAtOldestFilter.value == false) {
+      settings.remove(sortDateWiseCollection);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _filterUpdatedLatest() {
@@ -382,6 +480,7 @@ class _CollectionsListScreenTemplateState
                 _ztoaFilter.value = false;
                 _filterAtoZ();
               }
+              _updateSortAlpha();
             },
           ),
           ListFilterPopupMenuItem(
@@ -393,6 +492,7 @@ class _CollectionsListScreenTemplateState
                 _atozFilter.value = false;
                 _filterZtoA();
               }
+              _updateSortAlpha();
             },
           ),
           ListFilterPopupMenuItem(
@@ -404,6 +504,7 @@ class _CollectionsListScreenTemplateState
                 _updatedAtOldestFilter.value = false;
                 _filterUpdatedLatest();
               }
+              _updateDateWiseFilter();
             },
           ),
           ListFilterPopupMenuItem(
@@ -415,6 +516,7 @@ class _CollectionsListScreenTemplateState
                 _updatedAtLatestFilter.value = false;
                 _filterUpdateOldest();
               }
+              _updateDateWiseFilter();
             },
           ),
         ];
@@ -480,6 +582,7 @@ class _CollectionsListScreenTemplateState
             MaterialPageRoute(
               builder: (ctx) => UpdateCollectionTemplateScreen(
                 collection: collectionModel,
+                isRootCollection: widget.isRootCollection,
               ),
             ),
           ).then(
@@ -523,6 +626,7 @@ class _CollectionsListScreenTemplateState
 
               await urlCrudCubit.deleteCollection(
                 collection: collectionModel,
+                isRootCollection: widget.isRootCollection,
               );
             },
             collectionModel: collectionModel,
@@ -600,6 +704,4 @@ class _CollectionsListScreenTemplateState
       },
     );
   }
-
-
 }

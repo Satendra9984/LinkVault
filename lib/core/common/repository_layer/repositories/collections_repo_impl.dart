@@ -8,6 +8,8 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
@@ -165,6 +167,7 @@ class CollectionsRepoImpl {
     required String collectionId,
     required String parentCollectionId,
     required String userId,
+    required bool isRootCollection,
   }) async {
     try {
       final collection = await _remoteDataSourcesImpl.fetchCollection(
@@ -176,6 +179,7 @@ class CollectionsRepoImpl {
         collectionId: parentCollectionId,
         userId: userId,
       );
+
       if (collection == null || parentCollection == null) {
         return Left(
           ServerFailure(
@@ -191,33 +195,72 @@ class CollectionsRepoImpl {
           collectionId: subCollId,
           parentCollectionId: collectionId,
           userId: userId,
+          isRootCollection: false,
         );
       }
 
-      // deleting urls
-      for (final urlIds in collection.urls) {
-        await _remoteDataSourcesImpl.deleteUrl(
-          urlIds,
-          userId: userId,
-        );
-      }
-
-      await _remoteDataSourcesImpl.deleteCollectionSingle(
-        collectionId: collectionId,
-        userId: userId,
+      // NOW DELETE CURRENT COLLECTION
+      await Future.wait(
+        [
+          // DELETING COLLECTION IN FIRESTORE
+          _remoteDataSourcesImpl.deleteCollectionSingle(
+            collectionId: collectionId,
+            userId: userId,
+          ),
+          // DELETING COLLECTION LOCALLY
+          _collectionLocalDataSourcesImpl.deleteCollection(
+            collectionId,
+          ),
+        ],
       );
-      await _collectionLocalDataSourcesImpl.deleteCollection(collectionId);
+
+      // DELETING SUBURLS OF THIS COLLECTION
+      for (final urlIds in collection.urls) {
+        await Future.wait(
+          [
+            // DELETING FIRESTORE URL
+            _remoteDataSourcesImpl.deleteUrl(
+              urlIds,
+              userId: userId,
+            ),
+            // DELETING URL FROM LOCALLY
+            _urlLocalDataSourcesImpl.deleteUrl(
+              urlIds,
+            ),
+          ],
+        );
+      }
+
       final subCollList = parentCollection.subcollections
         ..removeWhere(
           (subCollId) => subCollId == collection.id,
         );
 
-      final updatedParentColl = parentCollection.copyWith(
+      var updatedParentColl = parentCollection.copyWith(
         subcollections: subCollList,
       );
-      // await _collectionLocalDataSourcesImpl.deleteCollection(collection.id);
-      return Right((collection, updatedParentColl));
+
+      if (isRootCollection) {
+        updatedParentColl = CollectionModel.isEmpty(
+          userId: userId,
+          name: collection.name,
+          parentCollection: collection.parentCollection,
+          status: collection.status ?? {},
+          createdAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
+        );
+      }
+
+      // Logger.printLog(StringUtils.getJsonFormat(updatedParentColl));
+      
+      return Right(
+        (
+          collection,
+          updatedParentColl,
+        ),
+      );
     } catch (e) {
+      // Logger.printLog('[URL] : ${e}');
       return Left(
         ServerFailure(
           message: 'Could Not Deleted. Check internet and try again.',
@@ -294,8 +337,7 @@ class CollectionsRepoImpl {
     // required String userId,
   }) async {
     try {
-      final collection =
-          await _collectionLocalDataSourcesImpl.fetchCollection(
+      final collection = await _collectionLocalDataSourcesImpl.fetchCollection(
         collectionId,
       );
 

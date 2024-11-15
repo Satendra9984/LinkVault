@@ -16,9 +16,11 @@ import 'package:link_vault/core/utils/string_utils.dart';
 class UpdateCollectionTemplateScreen extends StatefulWidget {
   const UpdateCollectionTemplateScreen({
     required this.collection,
+    required this.isRootCollection,
     super.key,
   });
   final CollectionModel collection;
+  final bool isRootCollection;
 
   @override
   State<UpdateCollectionTemplateScreen> createState() =>
@@ -145,6 +147,7 @@ class _UpdateCollectionTemplateScreenState
             onPressed: () =>
                 context.read<CollectionCrudCubit>().deleteCollection(
                       collection: widget.collection,
+                      isRootCollection: widget.isRootCollection,
                     ),
             icon: const Icon(
               Icons.delete_rounded,

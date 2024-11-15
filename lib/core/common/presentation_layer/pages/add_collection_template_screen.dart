@@ -65,7 +65,7 @@ class _AddCollectionTemplateScreenState
         settings: settings,
       );
 
-      Logger.printLog(StringUtils.getJsonFormat(subCollection));
+      // Logger.printLog(StringUtils.getJsonFormat(subCollection));
 
       await collectionCubit.addCollection(collection: subCollection);
     }

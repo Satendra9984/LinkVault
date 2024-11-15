@@ -28,7 +28,7 @@ class FavouritesStorePage extends StatefulWidget {
 }
 
 class _FavouritesStorePageState extends State<FavouritesStorePage>
-    with SingleTickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
@@ -55,6 +55,7 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavigationBar(),
@@ -268,4 +269,7 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

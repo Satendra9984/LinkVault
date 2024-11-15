@@ -163,6 +163,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
   Future<void> deleteCollection({
     required CollectionModel collection,
+    required bool isRootCollection,
   }) async {
     // delete subcollection in db it will be cascade delete
     emit(
@@ -172,19 +173,22 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     );
 
     var parentCollection = _collectionsCubit.getCollection(
-      collectionId: collection.parentCollection,
+      collectionId:
+          isRootCollection ? collection.id : collection.parentCollection,
     );
 
-    if (parentCollection == null) {
+    if (parentCollection == null && !isRootCollection) {
       await _collectionsCubit.fetchCollection(
-        collectionId: collection.parentCollection,
+        collectionId:
+            isRootCollection ? collection.id : collection.parentCollection,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: false,
       );
     }
 
     parentCollection = _collectionsCubit.getCollection(
-      collectionId: collection.parentCollection,
+      collectionId:
+          isRootCollection ? collection.id : collection.parentCollection,
     );
 
     if (parentCollection == null) {
@@ -204,6 +208,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       collectionId: collection.id,
       parentCollectionId: parentCollection.collection!.id,
       userId: _globalUserCubit.getGlobalUser()!.id,
+      isRootCollection: isRootCollection,
     );
 
     await deletedCollection.fold(

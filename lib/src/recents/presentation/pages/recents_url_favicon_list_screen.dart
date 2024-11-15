@@ -282,7 +282,7 @@ class _RecentsUrlFaviconListScreenState
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
-        final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+        // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
 
@@ -347,13 +347,13 @@ class _RecentsUrlFaviconListScreenState
             }
         }
 
-        await Future.wait(
-          [
-            recentUrlCrudCubit.addRecentUrl(
-              urlData: urlModel,
-            ),
-          ],
-        );
+        // await Future.wait(
+        //   [
+        //     recentUrlCrudCubit.addRecentUrl(
+        //       urlData: urlModel,
+        //     ),
+        //   ],
+        // );
       },
       onLongPress: (urlMetaData) async {
         final urlc = urlModel.copyWith(metaData: urlMetaData);
@@ -775,6 +775,7 @@ class _RecentsUrlFaviconListScreenState
                     MaterialPageRoute(
                       builder: (ctx) => UpdateCollectionTemplateScreen(
                         collection: collectionModel,
+                        isRootCollection: widget.isRootCollection,
                       ),
                     ),
                   ).then(
@@ -816,8 +817,10 @@ class _RecentsUrlFaviconListScreenState
                     () async {
                       final urlCrudCubit = context.read<CollectionCrudCubit>();
 
+                      /// MOST IMPORTANT DON'T DELETE JUST UPDATE IT
                       await urlCrudCubit.deleteCollection(
                         collection: collectionModel,
+                        isRootCollection: widget.isRootCollection,
                       );
                     },
                     collectionModel: collectionModel,

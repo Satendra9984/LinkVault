@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
@@ -15,6 +17,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
@@ -94,6 +97,8 @@ class _UrlFaviconListTemplateScreenState
   @override
   void initState() {
     _scrollController = ScrollController()..addListener(_onScroll);
+    _initializeAlphaFilter();
+    _initializeDateWiseFilter();
     super.initState();
   }
 
@@ -207,6 +212,53 @@ class _UrlFaviconListTemplateScreenState
     }
   }
 
+  void _initializeAlphaFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortAlphabatically)) {
+        final sortalpha =
+            widget.collectionModel.settings![sortAlphabatically] as bool?;
+        if (sortalpha == null) {
+          return;
+        }
+        if (sortalpha) {
+          _atozFilter.value = true;
+        } else {
+          _ztoaFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateSortAlpha() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_atozFilter.value) {
+      settings[sortAlphabatically] = true;
+    } else if (_ztoaFilter.value) {
+      settings[sortAlphabatically] = false;
+    } else if (_atozFilter.value == false && _ztoaFilter.value == false) {
+      settings.remove(sortAlphabatically);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -231,6 +283,54 @@ class _UrlFaviconListTemplateScreenState
               );
         },
       );
+  }
+
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortDateWise)) {
+        final sortDateWiseValue =
+            widget.collectionModel.settings![sortDateWise] as bool?;
+        if (sortDateWiseValue == null) {
+          return;
+        }
+        if (sortDateWiseValue) {
+          _updatedAtLatestFilter.value = true;
+        } else {
+          _updatedAtOldestFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_updatedAtLatestFilter.value) {
+      settings[sortDateWise] = true;
+    } else if (_updatedAtOldestFilter.value) {
+      settings[sortDateWise] = false;
+    } else if (_updatedAtLatestFilter.value == false &&
+        _updatedAtOldestFilter.value == false) {
+      settings.remove(sortDateWise);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _filterUpdatedLatest() {
@@ -277,9 +377,9 @@ class _UrlFaviconListTemplateScreenState
                 return ValueListenableBuilder(
                   valueListenable: _showFullAddUrlButton,
                   builder: (context, showFullAddUrlButton, _) {
-                    Logger.printLog(
-                      'Favourites: template ${widget.collectionModel.name}, ${widget.showAddUrlButton}',
-                    );
+                    // Logger.printLog(
+                    //   'Favourites: template ${widget.collectionModel.name}, ${widget.showAddUrlButton}',
+                    // );
                     return FloatingActionButton.extended(
                       key: ValueKey(widget.collectionModel.id),
                       isExtended: showFullAddUrlButton,
@@ -355,21 +455,31 @@ class _UrlFaviconListTemplateScreenState
                     }
 
                     // TODO : HANDLE ERROR LOADING CASES IN ALL SCREENS
-
                     else if (url.loadingStates == LoadingStates.errorLoading ||
                         url.urlModel == null) {
                       // _fetchMoreUrls();
-                        return SizedBox(
-                          height: 56,
-                          width: 56,
-                          child: GestureDetector(
-                            onTap: _fetchMoreUrls,
-                            child: const Icon(
-                              Icons.restore,
-                              color: ColourPallette.black,
-                            ),
+                      return SizedBox(
+                        height: 56,
+                        width: 56,
+                        child: GestureDetector(
+                          onTap: _fetchMoreUrls,
+                          onLongPress: () {
+                            if (url.urlModel == null) return;
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => UpdateUrlTemplateScreen(
+                                  urlModel: url.urlModel!,
+                                  isRootCollection: widget.isRootCollection,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.restore,
+                            color: ColourPallette.black,
                           ),
-                        );
+                        ),
+                      );
                     }
 
                     if (widget.onUrlModelItemFetchedWidget == null) {
@@ -457,17 +567,16 @@ class _UrlFaviconListTemplateScreenState
                         ),
 
                         // OPEN IN BROWSER
-                        BottomSheetOption(
-                          leadingIcon: Icons.open_in_new_rounded,
-                          title: const Text(
-                            'Open In',
-                            style: titleTextStyle,
-                          ),
-                          trailing: // DROPDOWN OF BROWSER, WEBVIEW
-                              ValueListenableBuilder(
-                            valueListenable: urlLaunchTypeLocalNotifier,
-                            builder: (ctx, urlLaunchType, _) {
-                              return DropdownButton<UrlLaunchType>(
+                        ValueListenableBuilder(
+                          valueListenable: urlLaunchTypeLocalNotifier,
+                          builder: (ctx, urlLaunchType, _) {
+                            return BottomSheetOption(
+                              leadingIcon: Icons.open_in_new_rounded,
+                              title: const Text(
+                                'Open In',
+                                style: titleTextStyle,
+                              ),
+                              trailing: DropdownButton<UrlLaunchType>(
                                 value: urlLaunchType,
                                 onChanged: (urlLaunchType) {
                                   if (urlLaunchType == null) return;
@@ -506,84 +615,74 @@ class _UrlFaviconListTemplateScreenState
                                     ),
                                   ),
                                 ],
-                              );
-                            },
-                          ),
-                          onTap: () async {
-                            final recentUrlCrudCubit =
-                                context.read<RecentsUrlCubit>();
+                              ),
+                              onTap: () async {
+                                final recentUrlCrudCubit =
+                                    context.read<RecentsUrlCubit>();
 
-                            final urlLaunchTypeLocalNotifier =
-                                ValueNotifier(UrlLaunchType.customTabs);
-
-                            if (urlModel.settings != null &&
-                                urlModel.settings!.containsKey(urlLaunchType)) {
-                              urlLaunchTypeLocalNotifier.value =
-                                  UrlLaunchType.fromString(
-                                urlModel.settings![urlLaunchType].toString(),
-                              );
-                            }
-                            switch (urlLaunchTypeLocalNotifier.value) {
-                              case UrlLaunchType.customTabs:
-                                {
-                                  final theme = Theme.of(context);
-                                  await CustomTabsService.launchUrl(
-                                    url: urlModel.url,
-                                    theme: theme,
-                                  ).then(
-                                    (_) async {
-                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                      // JUST LIKE APPS IN BACKGROUND TYPE
-                                    },
-                                  );
-                                  break;
-                                }
-                              case UrlLaunchType.webView:
-                                {
-                                  await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (ctx) => DashboardWebView(
+                                switch (urlLaunchType) {
+                                  case UrlLaunchType.customTabs:
+                                    {
+                                      final theme = Theme.of(context);
+                                      await CustomTabsService.launchUrl(
                                         url: urlModel.url,
-                                      ),
-                                    ),
-                                  );
+                                        theme: theme,
+                                      ).then(
+                                        (_) async {
+                                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                          // JUST LIKE APPS IN BACKGROUND TYPE
+                                        },
+                                      );
+                                      break;
+                                    }
+                                  case UrlLaunchType.webView:
+                                    {
+                                      await Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (ctx) => DashboardWebView(
+                                            url: urlModel.url,
+                                          ),
+                                        ),
+                                      );
 
-                                  break;
-                                }
-                              case UrlLaunchType.readingMode:
-                                {
-                                  await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (ctx) => DashboardWebView(
+                                      break;
+                                    }
+                                  case UrlLaunchType.readingMode:
+                                    {
+                                      await Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (ctx) => DashboardWebView(
+                                            url: urlModel.url,
+                                          ),
+                                        ),
+                                      );
+
+                                      break;
+                                    }
+                                  case UrlLaunchType.separateBrowserWindow:
+                                    {
+                                      final theme = Theme.of(context);
+                                      await CustomTabsService.launchUrl(
                                         url: urlModel.url,
-                                      ),
+                                        theme: theme,
+                                      ).then(
+                                        (_) async {
+                                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                          // JUST LIKE APPS IN BACKGROUND TYPE
+                                        },
+                                      );
+                                      break;
+                                    }
+                                }
+
+                                await Future.wait(
+                                  [
+                                    recentUrlCrudCubit.addRecentUrl(
+                                      urlData: urlModel,
                                     ),
-                                  );
-
-                                  break;
-                                }
-                              case UrlLaunchType.separateBrowserWindow:
-                                {
-                                  final theme = Theme.of(context);
-                                  await CustomTabsService.launchUrl(
-                                    url: urlModel.url,
-                                    theme: theme,
-                                  ).then(
-                                    (_) async {
-                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                      // JUST LIKE APPS IN BACKGROUND TYPE
-                                    },
-                                  );
-                                  break;
-                                }
-                            }
-
-                            await Future.wait(
-                              [
-                                recentUrlCrudCubit.addRecentUrl(
-                                  urlData: urlModel,
-                                ),
-                              ],
+                                  ],
+                                );
+                              },
                             );
                           },
                         ),
@@ -833,6 +932,7 @@ class _UrlFaviconListTemplateScreenState
               _ztoaFilter.value = false;
               _filterAtoZ();
             }
+            _updateSortAlpha();
           },
         ),
         ListFilterPopupMenuItem(
@@ -844,6 +944,7 @@ class _UrlFaviconListTemplateScreenState
               _atozFilter.value = false;
               _filterZtoA();
             }
+            _updateSortAlpha();
           },
         ),
         ListFilterPopupMenuItem(
@@ -855,6 +956,7 @@ class _UrlFaviconListTemplateScreenState
               _updatedAtOldestFilter.value = false;
               _filterUpdatedLatest();
             }
+            _updateDateWiseFilter();
           },
         ),
         ListFilterPopupMenuItem(
@@ -866,6 +968,7 @@ class _UrlFaviconListTemplateScreenState
               _updatedAtLatestFilter.value = false;
               _filterUpdateOldest();
             }
+            _updateDateWiseFilter();
           },
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
@@ -16,9 +17,11 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
@@ -105,6 +108,8 @@ class _UrlPreviewListTemplateScreenState
 
   @override
   void initState() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -114,6 +119,11 @@ class _UrlPreviewListTemplateScreenState
       }
     });
     _selectedCategory.value = _predefinedCategories;
+    _initializeAlphaFilter();
+    _initializeDateWiseFilter();
+    _initializeIsSideWaysLayoutFilter();
+    _initializeShowBannerImageLayoutFilter();
+    _initializeShowFullDescriptionLayoutFilter();
     super.initState();
   }
 
@@ -228,6 +238,54 @@ class _UrlPreviewListTemplateScreenState
     }
   }
 
+  /// FILTER FOR SORTING URLS IN ALPHABATICAL ORDER
+  void _initializeAlphaFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortAlphabatically)) {
+        final sortalpha =
+            widget.collectionModel.settings![sortAlphabatically] as bool?;
+        if (sortalpha == null) {
+          return;
+        }
+        if (sortalpha) {
+          _atozFilter.value = true;
+        } else {
+          _ztoaFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateSortAlpha() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_atozFilter.value) {
+      settings[sortAlphabatically] = true;
+    } else if (_ztoaFilter.value) {
+      settings[sortAlphabatically] = false;
+    } else if (_atozFilter.value == false && _ztoaFilter.value == false) {
+      settings.remove(sortAlphabatically);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -254,6 +312,55 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  /// FILTER FOR SORTING URLS IN DATETIME ORDER
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortDateWise)) {
+        final sortDateWiseValue =
+            widget.collectionModel.settings![sortDateWise] as bool?;
+        if (sortDateWiseValue == null) {
+          return;
+        }
+        if (sortDateWiseValue) {
+          _updatedAtLatestFilter.value = true;
+        } else {
+          _updatedAtOldestFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_updatedAtLatestFilter.value) {
+      settings[sortDateWise] = true;
+    } else if (_updatedAtOldestFilter.value) {
+      settings[sortDateWise] = false;
+    } else if (_updatedAtLatestFilter.value == false &&
+        _updatedAtOldestFilter.value == false) {
+      settings.remove(sortDateWise);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterUpdatedLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -278,11 +385,122 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  /// FILTER FOR SIDEWAYS LAYOUT OPTION
+  void _initializeIsSideWaysLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(isSideWayLayout)) {
+        final isSideWayLayoutValue =
+            widget.collectionModel.settings![isSideWayLayout] as bool?;
+        if (isSideWayLayoutValue == null) {
+          return;
+        }
+
+        _isSideWays.value = isSideWayLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateIsSideWayLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[isSideWayLayout] = _isSideWays.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowFullDescriptionLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(showFullDescription)) {
+        final showFullDescriptionLayoutValue =
+            widget.collectionModel.settings![showFullDescription] as bool?;
+        if (showFullDescriptionLayoutValue == null) {
+          return;
+        }
+
+        _showDescriptions.value = showFullDescriptionLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowFullDescriptionLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showFullDescription] = _showDescriptions.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowBannerImageLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(showBannerImage)) {
+        final showBannerImageLayoutValue =
+            widget.collectionModel.settings![showBannerImage] as bool?;
+        if (showBannerImageLayoutValue == null) {
+          return;
+        }
+
+        _showBannerImage.value = showBannerImageLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowBannerImageLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showBannerImage] = _showBannerImage.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   Future<void> onTap({
     required UrlModel urlModel,
     required BuildContext context,
   }) async {
-    final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+    // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
     final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
 
     if (urlModel.settings != null &&
@@ -346,13 +564,13 @@ class _UrlPreviewListTemplateScreenState
         }
     }
 
-    await Future.wait(
-      [
-        recentUrlCrudCubit.addRecentUrl(
-          urlData: urlModel,
-        ),
-      ],
-    );
+    // await Future.wait(
+    //   [
+    //     recentUrlCrudCubit.addRecentUrl(
+    //       urlData: urlModel,
+    //     ),
+    //   ],
+    // );
   }
 
   Future<void> onLongPress(
@@ -438,17 +656,16 @@ class _UrlPreviewListTemplateScreenState
         ),
 
         // OPEN IN BROWSER
-        BottomSheetOption(
-          leadingIcon: Icons.open_in_new_rounded,
-          title: const Text(
-            'Open In',
-            style: titleTextStyle,
-          ),
-          trailing: // DROPDOWN OF BROWSER, WEBVIEW
-              ValueListenableBuilder(
-            valueListenable: urlLaunchTypeLocalNotifier,
-            builder: (ctx, urlLaunchType, _) {
-              return DropdownButton<UrlLaunchType>(
+        ValueListenableBuilder(
+          valueListenable: urlLaunchTypeLocalNotifier,
+          builder: (ctx, urlLaunchType, _) {
+            return BottomSheetOption(
+              leadingIcon: Icons.open_in_new_rounded,
+              title: const Text(
+                'Open In',
+                style: titleTextStyle,
+              ),
+              trailing: DropdownButton<UrlLaunchType>(
                 value: urlLaunchType,
                 onChanged: (urlLaunchType) {
                   if (urlLaunchType == null) return;
@@ -486,110 +703,76 @@ class _UrlPreviewListTemplateScreenState
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-          onTap: () async {
-            final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+              ),
+              onTap: () async {
+                // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
 
-            final globalUser =
-                context.read<GlobalUserCubit>().getGlobalUser()!.id;
-            final urlLaunchTypeLocalNotifier =
-                ValueNotifier(UrlLaunchType.customTabs);
-
-            if (urlModel.settings != null &&
-                urlModel.settings!.containsKey(urlLaunchType)) {
-              urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
-                urlModel.settings![urlLaunchType].toString(),
-              );
-            }
-            switch (urlLaunchTypeLocalNotifier.value) {
-              case UrlLaunchType.customTabs:
-                {
-                  final theme = Theme.of(context);
-                  await CustomTabsService.launchUrl(
-                    url: urlModel.url,
-                    theme: theme,
-                  ).then(
-                    (_) async {
-                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                      // JUST LIKE APPS IN BACKGROUND TYPE
-                    },
-                  );
-                  break;
-                }
-              case UrlLaunchType.webView:
-                {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => DashboardWebView(
+                switch (urlLaunchType) {
+                  case UrlLaunchType.customTabs:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
                         url: urlModel.url,
-                      ),
-                    ),
-                  );
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
+                  case UrlLaunchType.webView:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModel.url,
+                          ),
+                        ),
+                      );
 
-                  break;
-                }
-              case UrlLaunchType.readingMode:
-                {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => DashboardWebView(
+                      break;
+                    }
+                  case UrlLaunchType.readingMode:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModel.url,
+                          ),
+                        ),
+                      );
+
+                      break;
+                    }
+                  case UrlLaunchType.separateBrowserWindow:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
                         url: urlModel.url,
-                      ),
-                    ),
-                  );
-
-                  break;
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
                 }
-              case UrlLaunchType.separateBrowserWindow:
-                {
-                  final theme = Theme.of(context);
-                  await CustomTabsService.launchUrl(
-                    url: urlModel.url,
-                    theme: theme,
-                  ).then(
-                    (_) async {
-                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                      // JUST LIKE APPS IN BACKGROUND TYPE
-                    },
-                  );
-                  break;
-                }
-            }
 
-            await Future.wait(
-              [
-                recentUrlCrudCubit.addRecentUrl(
-                  urlData: urlModel,
-                ),
-              ],
+                // await Future.wait(
+                //   [
+                //     recentUrlCrudCubit.addRecentUrl(
+                //       urlData: urlModel,
+                //     ),
+                //   ],
+                // );
+              },
             );
           },
         ),
-
-        // OPEN IN WEBVIEW
-        // BottomSheetOption(
-        //   leadingIcon: Icons.open_in_new_rounded,
-        //   title: const Text(
-        //     'Open WebView(beta)',
-        //     style: titleTextStyle,
-        //   ),
-        //   onTap: () async {
-        //     await Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder: (ctx) => DashboardWebView(
-        //           url: urlModel.url,
-        //         ),
-        //       ),
-        //     ).then(
-        //       (_) async {
-        //         await Navigator.maybePop(context);
-        //       },
-        //     );
-        //   },
-        // ),
 
         // SHARE THE LINK TO OTHER APPS
         BottomSheetOption(
@@ -1035,6 +1218,7 @@ class _UrlPreviewListTemplateScreenState
               _ztoaFilter.value = false;
               _filterAtoZ();
             }
+            _updateSortAlpha();
           },
         ),
         ListFilterPopupMenuItem(
@@ -1046,6 +1230,7 @@ class _UrlPreviewListTemplateScreenState
               _atozFilter.value = false;
               _filterZtoA();
             }
+            _updateSortAlpha();
           },
         ),
         ListFilterPopupMenuItem(
@@ -1057,6 +1242,7 @@ class _UrlPreviewListTemplateScreenState
               _updatedAtOldestFilter.value = false;
               _filterUpdatedLatest();
             }
+            _updateDateWiseFilter();
           },
         ),
         ListFilterPopupMenuItem(
@@ -1068,6 +1254,7 @@ class _UrlPreviewListTemplateScreenState
               _updatedAtLatestFilter.value = false;
               _filterUpdateOldest();
             }
+            _updateDateWiseFilter();
           },
         ),
       ],
@@ -1104,17 +1291,26 @@ class _UrlPreviewListTemplateScreenState
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',
           notifier: _isSideWays,
-          onPress: () => _isSideWays.value = !_isSideWays.value,
+          onPress: () {
+            _isSideWays.value = !_isSideWays.value;
+            _updateIsSideWayLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Full Description',
           notifier: _showDescriptions,
-          onPress: () => _showDescriptions.value = !_showDescriptions.value,
+          onPress: () {
+            _showDescriptions.value = !_showDescriptions.value;
+            _updateShowFullDescriptionLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Show Images',
           notifier: _showBannerImage,
-          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+          onPress: () {
+            _showBannerImage.value = !_showBannerImage.value;
+            _updateShowBannerImageLayoutFilter();
+          },
         ),
       ],
     );

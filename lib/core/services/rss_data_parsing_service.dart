@@ -28,9 +28,9 @@ class RssXmlParsingService {
       if (response.statusCode == 200) {
         return XmlDocument.parse(response.body);
       } else {
-        Logger.printLog(
-          'HTTP error url = ${url}, ${response.statusCode}: ${response.reasonPhrase}',
-        );
+        // Logger.printLog(
+        //   'HTTP error url = ${url}, ${response.statusCode}: ${response.reasonPhrase}',
+        // );
       }
 
       // If the original URL failed and it was HTTP, try HTTPS

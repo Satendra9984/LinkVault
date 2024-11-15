@@ -46,9 +46,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
       if (fetch.collectionFetchingState == LoadingStates.loaded ||
           fetch.collectionFetchingState == LoadingStates.loading) {
-        Logger.printLog(
-          'cId: ${collectionId}, ${fetch.collectionFetchingState}',
-        );
+        // Logger.printLog(
+        //   'cId: ${collectionId}, ${fetch.collectionFetchingState}',
+        // );
         return;
       }
     }
@@ -217,7 +217,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
-    // // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
+    // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
   CollectionFetchModel? getCollection({
@@ -276,7 +276,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required int fetchSubCollIndexAdded,
     LoadingStates? collectionFetchState,
   }) {
-    final prevCollection = state.collections[updatedCollection.id]!;
+    final prevCollection = state.collections[updatedCollection.id];
+    if (prevCollection == null) return;
 
     final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
@@ -536,14 +537,13 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
- void clearUrlsList({
+  void clearUrlsList({
     required String collectionId,
   }) {
     // newState[updatedCollection.id] = updatedCollectionfetch;
     final newCollectionUrlssState = {
       ...state.collectionUrls,
     };
-
 
     newCollectionUrlssState[collectionId] = <UrlFetchStateModel>[];
 
@@ -553,7 +553,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
   }
-
 
   void deleteUrl({
     required UrlModel url,

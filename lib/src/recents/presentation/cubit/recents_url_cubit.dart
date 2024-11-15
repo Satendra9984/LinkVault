@@ -76,10 +76,10 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
         // Encode the existing URL in the list to match with the encoded Firestore ID
         final encodedUrlInList =
             urlFirestoreIds; // already encoded do not encode again to compare
-        Logger.printLog(
-          // ignore: lines_longer_than_80_chars
-          '[RECENTS] : cmpr $newRecentsUrlFirestoreId $encodedUrlInList, isMatched ${encodedUrlInList == newRecentsUrlFirestoreId}',
-        );
+        // Logger.printLog(
+        //   // ignore: lines_longer_than_80_chars
+        //   '[RECENTS] : cmpr $newRecentsUrlFirestoreId $encodedUrlInList, isMatched ${encodedUrlInList == newRecentsUrlFirestoreId}',
+        // );
         return encodedUrlInList == newRecentsUrlFirestoreId;
       },
     );
@@ -106,7 +106,6 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
         (result) async {
           await result.fold(
             (failed) {
-              // Logger.printLog('[RECENTS] : ERROR ADDING URL');
               emit(
                 state.copyWith(
                   urlCrudLoadingStates: UrlCrudLoadingStates.errorAdding,
@@ -126,7 +125,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
                 );
 
               // Logger.printLog(
-              //   // ignore: lines_longer_than_80_chars
+              // ignore: lines_longer_than_80_chars
               //   '[RECENTS] : addedurl $newRecentsUrlFirestoreId, ${updatedCollection.id}',
               // );
 
@@ -140,6 +139,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
         },
       );
     } else {
+      // TODO : SOME PROBLEM WITH DELETION
       final urlsList = collection.collection!.urls
         ..removeAt(urlIndexInRecents)
         ..insert(0, urlData.firestoreId);

@@ -82,7 +82,7 @@ class _UpdateRssFeedUrlPageState extends State<UpdateRssFeedUrlPage> {
       // while (_previewLoadingStates.value == LoadingStates.loading) {}
 
       if (_previewMetaData.value == null) {
-        Logger.printLog('_previewametadatavalue is null');
+        // Logger.printLog('_previewametadatavalue is null');
         await _loadPreview();
       }
 

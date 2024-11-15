@@ -7,6 +7,7 @@ import 'package:link_vault/core/common/presentation_layer/pages/add_url_template
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
@@ -74,6 +75,24 @@ class _FavouritesUrlFaviconListScreenState
 
       _switchPages();
     }
+  }
+
+  Future<void> _updateViewType() async {
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+    settings[urlsViewType] = _listViewType.value.label;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _switchPages() {
@@ -163,7 +182,7 @@ class _FavouritesUrlFaviconListScreenState
           ? UrlPreloadMethods.httpGet
           : UrlPreloadMethods.httpGet,
       onTap: () async {
-        final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+        // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
         final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!.id;
         final urlLaunchTypeLocalNotifier =
             ValueNotifier(UrlLaunchType.customTabs);
@@ -229,13 +248,13 @@ class _FavouritesUrlFaviconListScreenState
             }
         }
 
-        await Future.wait(
-          [
-            recentUrlCrudCubit.addRecentUrl(
-              urlData: urlModel,
-            ),
-          ],
-        );
+        // await Future.wait(
+        //   [
+        //     recentUrlCrudCubit.addRecentUrl(
+        //       urlData: urlModel,
+        //     ),
+        //   ],
+        // );
       },
 
       // [TODO] : THIS IS DYNAMIC FIELD
@@ -291,9 +310,10 @@ class _FavouritesUrlFaviconListScreenState
         PopupMenuItem<UrlViewType>(
           value: UrlViewType.favicons,
           onTap: () {
+            if (_listViewType.value == UrlViewType.favicons) return;
             _listViewType.value = UrlViewType.favicons;
-            _pageController.jumpToPage(0);
-            // Logger.printLog('currentpage: ${_pageController.page}');
+            _switchPages();
+            _updateViewType();
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -327,9 +347,10 @@ class _FavouritesUrlFaviconListScreenState
         PopupMenuItem<UrlViewType>(
           value: UrlViewType.previews,
           onTap: () {
+            if (_listViewType.value == UrlViewType.previews) return;
             _listViewType.value = UrlViewType.previews;
-            _pageController.jumpToPage(1);
-            // Logger.printLog('currentpage: ${_pageController.page}');
+            _switchPages();
+            _updateViewType();
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -653,14 +674,7 @@ class _FavouritesUrlFaviconListScreenState
                                 urlModel.parentUrlModelFirestoreId!,
                               );
 
-                              // Logger.printLog(
-                              //   '[option] : deleting ${urlModel.firestoreId}, parent ${urlModel.parentUrlModelFirestoreId}',
-                              // );
-
                               if (parentUrlModel == null) {
-                                // Logger.printLog(
-                                //   '[option] : deleting parentmodel is null',
-                                // );
                                 return;
                               }
 

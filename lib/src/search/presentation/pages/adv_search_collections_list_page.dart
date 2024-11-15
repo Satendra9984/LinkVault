@@ -346,6 +346,7 @@ class _SearchedCollectionsListWidgetState
                     MaterialPageRoute(
                       builder: (ctx) => UpdateCollectionTemplateScreen(
                         collection: collectionModel,
+                        isRootCollection: false,
                       ),
                     ),
                   ).then(
@@ -389,6 +390,7 @@ class _SearchedCollectionsListWidgetState
 
                       await urlCrudCubit.deleteCollection(
                         collection: collectionModel,
+                        isRootCollection: false,
                       );
                     },
                     collectionModel: collectionModel,

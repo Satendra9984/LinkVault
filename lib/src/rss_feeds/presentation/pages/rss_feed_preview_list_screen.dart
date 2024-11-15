@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
@@ -25,6 +26,7 @@ import 'package:link_vault/core/common/repository_layer/enums/url_preload_method
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
@@ -83,9 +85,10 @@ class _RssFeedUrlsPreviewListWidgetState
   void initState() {
     // _rssFeedCubit = context.read<RssFeedCubit>();
 
-    context.read<RssFeedCubit>().initializeNewFeed(
-          collectionId: widget.collectionFetchModel.collection!.id,
-        );
+    // TODO : THIS IS INITIALIZING IT AGAIN AND AGAIN
+    // context.read<RssFeedCubit>().initializeNewFeed(
+    //       collectionId: widget.collectionFetchModel.collection!.id,
+    //     );
     // Now updating all rss feed from the urls of this collection
     context.read<RssFeedCubit>().getAllRssFeedofCollection(
           collectionId: widget.collectionFetchModel.collection!.id,
@@ -101,6 +104,12 @@ class _RssFeedUrlsPreviewListWidgetState
     });
 
     _selectedCategory.value = _predefinedCategories;
+    // _initializeAlphaFilter();
+    _initializeDateWiseFilter();
+    _initializeIsSideWaysLayoutFilter();
+    _initializeShowBannerImageLayoutFilter();
+    _initializeShowFullDescriptionLayoutFilter();
+
     super.initState();
   }
 
@@ -115,6 +124,179 @@ class _RssFeedUrlsPreviewListWidgetState
       widget.showBottomNavBar.value = true;
     }
     _previousOffset = _scrollController.offset;
+  }
+
+  /// FILTER FOR SORTING URLS IN DATETIME ORDER
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(collectionModel.toJson()));
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(sortDateWise)) {
+        final sortDateWiseValue =
+            collectionModel.settings![sortDateWise] as bool?;
+        if (sortDateWiseValue == null) {
+          return;
+        }
+        if (sortDateWiseValue) {
+          _showLatestFirst.value = true;
+        } else {
+          _showOldestFirst.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    if (_showLatestFirst.value) {
+      settings[sortDateWise] = true;
+    } else if (_showOldestFirst.value) {
+      settings[sortDateWise] = false;
+    } else if (_showLatestFirst.value == false &&
+        _showOldestFirst.value == false) {
+      settings.remove(sortDateWise);
+    }
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SIDEWAYS LAYOUT OPTION
+  void _initializeIsSideWaysLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(isSideWayLayout)) {
+        final isSideWayLayoutValue =
+            collectionModel.settings![isSideWayLayout] as bool?;
+        if (isSideWayLayoutValue == null) {
+          return;
+        }
+
+        _isSideWays.value = isSideWayLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateIsSideWayLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[isSideWayLayout] = _isSideWays.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowFullDescriptionLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(showFullDescription)) {
+        final showFullDescriptionLayoutValue =
+            collectionModel.settings![showFullDescription] as bool?;
+        if (showFullDescriptionLayoutValue == null) {
+          return;
+        }
+
+        _showDescriptions.value = showFullDescriptionLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowFullDescriptionLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showFullDescription] = _showDescriptions.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowBannerImageLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(showBannerImage)) {
+        final showBannerImageLayoutValue =
+            collectionModel.settings![showBannerImage] as bool?;
+        if (showBannerImageLayoutValue == null) {
+          return;
+        }
+
+        _showBannerImage.value = showBannerImageLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowBannerImageLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showBannerImage] = _showBannerImage.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _onSearch(BuildContext context) {
@@ -308,14 +490,20 @@ class _RssFeedUrlsPreviewListWidgetState
                       children: [
                         rssFeedNewsWidget,
                         const SizedBox(height: 20),
-                        Text(
-                          'No Feed For Now.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ColourPallette.information,
+                        if (feeds.loadingStates == LoadingStates.loaded)
+                          Text(
+                            'No Feed For Now.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: ColourPallette.information,
+                            ),
                           ),
-                        ),
+                        if (feeds.loadingStates == LoadingStates.loading)
+                          const CircularProgressIndicator(
+                            color: ColourPallette.mountainMeadow,
+                            backgroundColor: ColourPallette.white,
+                          ),
                         const SizedBox(height: 20),
                         GestureDetector(
                           onTap: () {
@@ -385,6 +573,7 @@ class _RssFeedUrlsPreviewListWidgetState
 
                             final urlMetaData = url.metaData ??
                                 UrlMetaData.isEmpty(title: url.title);
+
                             return ValueListenableBuilder(
                               valueListenable: _isSideWays,
                               builder: (context, isSideWays, _) {
@@ -954,6 +1143,8 @@ class _RssFeedUrlsPreviewListWidgetState
                   (u1, u2) => u2.value.createdAt.compareTo(u1.value.createdAt),
                 ),
             ];
+
+            _updateDateWiseFilter();
           },
         ),
         ListFilterPopupMenuItem(
@@ -972,6 +1163,7 @@ class _RssFeedUrlsPreviewListWidgetState
                   (u1, u2) => u1.value.createdAt.compareTo(u2.value.createdAt),
                 ),
             ];
+            _updateDateWiseFilter();
           },
         ),
         _refreshFeedButton(),
@@ -989,19 +1181,28 @@ class _RssFeedUrlsPreviewListWidgetState
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',
           notifier: _isSideWays,
-          onPress: () => _isSideWays.value = !_isSideWays.value,
+          onPress: () {
+            _isSideWays.value = !_isSideWays.value;
+            _updateIsSideWayLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Full Description',
           notifier: _showDescriptions,
-          onPress: () => _showDescriptions.value = !_showDescriptions.value,
+          onPress: () {
+            _showDescriptions.value = !_showDescriptions.value;
+            _updateShowFullDescriptionLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Show Images',
           notifier: _showBannerImage,
-          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+          onPress: () {
+            _showBannerImage.value = !_showBannerImage.value;
+            _updateShowBannerImageLayoutFilter();
+          },
         ),
-        _feedSettingsButton(),
+        // _feedSettingsButton(),
       ],
     );
   }
@@ -1311,17 +1512,17 @@ class _RssFeedUrlsPreviewListWidgetState
               ),
 
               // OPEN RSS FEED URL IN DIFFERENT TYPES
-              BottomSheetOption(
-                leadingIcon: Icons.open_in_new_rounded,
-                title: const Text(
-                  'Open In',
-                  style: titleTextStyle,
-                ),
-                trailing: // DROPDOWN OF BROWSER, WEBVIEW
-                    ValueListenableBuilder(
-                  valueListenable: urlLaunchTypeLocalNotifier,
-                  builder: (ctx, urlLaunchType, _) {
-                    return DropdownButton<UrlLaunchType>(
+              ValueListenableBuilder(
+                valueListenable: urlLaunchTypeLocalNotifier,
+                builder: (ctx, urlLaunchType, _) {
+                  return BottomSheetOption(
+                    leadingIcon: Icons.open_in_new_rounded,
+                    title: const Text(
+                      'Open In',
+                      style: titleTextStyle,
+                    ),
+                    trailing: // DROPDOWN OF BROWSER, WEBVIEW
+                        DropdownButton<UrlLaunchType>(
                       value: urlLaunchType,
                       onChanged: (urlLaunchType) {
                         if (urlLaunchType == null) return;
@@ -1353,68 +1554,69 @@ class _RssFeedUrlsPreviewListWidgetState
                           ),
                         ),
                       ],
-                    );
-                  },
-                ),
-                onTap: () async {
-                  switch (urlLaunchTypeLocalNotifier.value) {
-                    case UrlLaunchType.customTabs:
-                      {
-                        final theme = Theme.of(context);
-                        await CustomTabsService.launchUrl(
-                          url: urlModel.url,
-                          theme: theme,
-                        ).then(
-                          (_) async {
-                            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                            // JUST LIKE APPS IN BACKGROUND TYPE
-                          },
-                        );
-                        break;
-                      }
-                    case UrlLaunchType.webView:
-                      {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => DashboardWebView(
+                    ),
+                    onTap: () async {
+                      switch (urlLaunchType) {
+                        case UrlLaunchType.customTabs:
+                          {
+                            final theme = Theme.of(context);
+                            await CustomTabsService.launchUrl(
+                              url: urlModel.url,
+                              theme: theme,
+                            ).then(
+                              (_) async {
+                                // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                // JUST LIKE APPS IN BACKGROUND TYPE
+                              },
+                            );
+                            break;
+                          }
+                        case UrlLaunchType.webView:
+                          {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => DashboardWebView(
+                                  url: urlModel.metaData?.rssFeedUrl ??
+                                      urlModel.url,
+                                ),
+                              ),
+                            );
+
+                            break;
+                          }
+                        case UrlLaunchType.readingMode:
+                          {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => RSSFeedWebView(
+                                  url: urlModel.metaData?.rssFeedUrl ??
+                                      urlModel.url,
+                                ),
+                              ),
+                            );
+
+                            break;
+                          }
+                        case UrlLaunchType.separateBrowserWindow:
+                          {
+                            final theme = Theme.of(context);
+                            await CustomTabsService.launchUrl(
                               url:
                                   urlModel.metaData?.rssFeedUrl ?? urlModel.url,
-                            ),
-                          ),
-                        );
-
-                        break;
+                              theme: theme,
+                            ).then(
+                              (_) async {
+                                // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                // JUST LIKE APPS IN BACKGROUND TYPE
+                              },
+                            );
+                            break;
+                          }
                       }
-                    case UrlLaunchType.readingMode:
-                      {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => RSSFeedWebView(
-                              url:
-                                  urlModel.metaData?.rssFeedUrl ?? urlModel.url,
-                            ),
-                          ),
-                        );
 
-                        break;
-                      }
-                    case UrlLaunchType.separateBrowserWindow:
-                      {
-                        final theme = Theme.of(context);
-                        await CustomTabsService.launchUrl(
-                          url: urlModel.metaData?.rssFeedUrl ?? urlModel.url,
-                          theme: theme,
-                        ).then(
-                          (_) async {
-                            // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                            // JUST LIKE APPS IN BACKGROUND TYPE
-                          },
-                        );
-                        break;
-                      }
-                  }
-
-                  await Navigator.maybePop(context);
+                      await Navigator.maybePop(context);
+                    },
+                  );
                 },
               ),
 
@@ -1567,7 +1769,7 @@ class _RssFeedUrlsPreviewListWidgetState
   }
 
   String _websiteName(String websiteName, int allowedLength) {
-    // // Logger.printLog('WebsiteName: $websiteName');
+    // Logger.printLog('WebsiteName: $websiteName');
     if (websiteName.length < allowedLength) {
       return websiteName;
     }
