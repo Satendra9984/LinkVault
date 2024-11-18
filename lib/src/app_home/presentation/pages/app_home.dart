@@ -169,7 +169,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -202,7 +202,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -235,7 +235,7 @@ class _AppHomePageState extends State<AppHomePage> {
                   //   ),
                   //   trailing: const Icon(
                   //     Icons.arrow_forward_ios_rounded,
-                  //     color: ColourPallette.darkTeal,
+                  //     color: ColourPallette.black,
                   //   ),
                   // ),
 
@@ -262,7 +262,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -295,7 +295,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -322,7 +322,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -349,7 +349,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.darkTeal,
+                      color: ColourPallette.black,
                     ),
                   ),
                 ],

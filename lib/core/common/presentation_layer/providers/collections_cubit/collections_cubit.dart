@@ -359,10 +359,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final urlIds = urlsList.sublist(start, end);
 
     final moreUrls = <UrlFetchStateModel>[];
-    for (final _ in urlIds) {
+    for (final urlId in urlIds) {
       final urlFetchModel = UrlFetchStateModel(
         collectionId: collectionId,
         loadingStates: LoadingStates.loading,
+        urlModelId: urlId,
       );
 
       moreUrls.add(urlFetchModel);
@@ -390,6 +391,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           final urlFetchModel = UrlFetchStateModel(
             collectionId: collectionId,
             loadingStates: LoadingStates.errorLoading,
+            urlModelId: urlId,
           );
 
           fetchedUrlsWithData.add(urlFetchModel);
@@ -399,6 +401,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
             collectionId: collectionId,
             loadingStates: LoadingStates.loaded,
             urlModel: url,
+            urlModelId: urlId,
           );
 
           fetchedUrlsWithData.add(urlFetchModel);

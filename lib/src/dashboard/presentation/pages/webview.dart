@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:permission_handler/permission_handler.dart'; // Add permission_handler dependency
 
@@ -38,9 +40,36 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   final _progress = ValueNotifier<double>(0);
   final urlController = TextEditingController();
   final _isDarkMode = ValueNotifier(false);
+  final userSwipedSystemStatusBar = ValueNotifier(0);
 
   @override
   void initState() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.top,
+        SystemUiOverlay.bottom,
+      ],
+    );
+
+    SystemChrome.setSystemUIChangeCallback(
+      (change) async {
+        if (userSwipedSystemStatusBar.value < 1) {
+          userSwipedSystemStatusBar.value++;
+          return;
+        }
+        // Logger.printLog('[setuicalled]');
+        // await SystemChrome.setEnabledSystemUIMode(
+        //   SystemUiMode.manual,
+        //   overlays: [
+        //     SystemUiOverlay.top,
+        //     SystemUiOverlay.bottom,
+        //   ],
+        // );
+        return;
+      },
+    );
+
     super.initState();
 
     pullToRefreshController = kIsWeb ||
@@ -52,6 +81,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
               color: Colors.blue,
             ),
             onRefresh: () async {
+              // TODO : COULD USE AS TRIGGER FOR OPTIONS
               if (defaultTargetPlatform == TargetPlatform.android) {
                 await webViewController?.reload();
               } else if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -74,49 +104,62 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   Future<void> _updateStatusBarColorFromTop() async {
     // Logger.printLog('[WEBVIEW] : _updateStatusBarColorFromTop');
 
-    if (_statusBarBgColorDefault.value != null) {
-      SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(
-          statusBarColor: _statusBarBgColorDefault.value,
-          statusBarIconBrightness:
-              _isDarkMode.value ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor:
-              _isDarkMode.value ? Colors.black : Colors.white,
-          systemNavigationBarIconBrightness:
-              _isDarkMode.value ? Brightness.light : Brightness.dark,
-        ),
-      );
-      return;
-    }
+    // if (_statusBarBgColorDefault.value != null) {
+    //   SystemChrome.setSystemUIOverlayStyle(
+    //     SystemUiOverlayStyle(
+    //       statusBarColor: _statusBarBgColorDefault.value,
+    //       statusBarIconBrightness:
+    //           _isDarkMode.value ? Brightness.light : Brightness.dark,
+    //       systemNavigationBarColor:
+    //           _isDarkMode.value ? Colors.black : Colors.white,
+    //       systemNavigationBarIconBrightness:
+    //           _isDarkMode.value ? Brightness.light : Brightness.dark,
+    //     ),
+    //   );
+    //   return;
+    // }
 
-    // JavaScript to sample colors at multiple points across the top
+    // final bgColor = await webViewController?.evaluateJavascript(
+    //   source: 'window.getComputedStyle(document.header, null).backgroundColor',
+    // );
+
+    // Logger.printLog('[bgcol] : ${bgColor}');
+    // Color.fromARGB(255, 227, 230, 230);
+
+    // Evaluate JavaScript and fetch background colors
     final colorValue = await webViewController?.evaluateJavascript(
       source: '''
-      (function() {
-        const samplePoints = [0, window.innerWidth * 0.25, window.innerWidth * 0.5, window.innerWidth * 0.75, window.innerWidth - 1];
-        const colors = samplePoints.map(x => {
-          const element = document.elementFromPoint(x, 0);
-          if (element) {
+(function() {
+    function getBackgroundColor(element) {
+        while (element) {
             const style = window.getComputedStyle(element);
-            return style.backgroundColor;
-          }
-          return null;
-        });
+            if (style.backgroundColor && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                return style.backgroundColor;
+            }
+            element = element.parentElement;
+        }
+        return null;
+    }
 
-        let prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const samplePoints = [0, window.innerWidth * 0.25, window.innerWidth * 0.5, window.innerWidth * 0.75, window.innerWidth - 1];
+    const colors = samplePoints.map(x => {
+        const element = document.elementFromPoint(x, 0);
+        return element ? getBackgroundColor(element) : null;
+    });
 
-        return JSON.stringify({
-          colors: colors,
-          prefersDarkMode: prefersDarkMode
-        });
-      })();
+    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    return JSON.stringify({
+        colors: colors,
+        prefersDarkMode: prefersDarkMode
+    });
+})();
     ''',
     );
 
     if (colorValue != null && colorValue != 'null') {
       // Parse the JSON result
-      final Map<String, dynamic> result =
-          jsonDecode(colorValue.toString()) as Map<String, dynamic>;
+      final result = jsonDecode(colorValue.toString()) as Map<String, dynamic>;
       final colors = result['colors'] as List<dynamic>;
       final prefersDarkMode = result['prefersDarkMode'] as bool;
 
@@ -134,11 +177,16 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
         // Option 2 (Alternative): Calculate an average color if multiple colors are available
         effectiveColor = _averageColor(parsedColors);
+        // Logger.printLog(
+        //   'statusbarcolor: $parsedColors $effectiveColor, mode: $prefersDarkMode',
+        // );
       }
 
       // If no valid color was detected, apply a fallback based on dark mode preference
       effectiveColor ??= prefersDarkMode ? Colors.black87 : Colors.white70;
-
+      // Logger.printLog(
+      //   'statusbarcoloe: $parsedColors, mode: $prefersDarkMode',
+      // );
       // Apply the effective color to the status bar
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
@@ -216,6 +264,10 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
+
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
@@ -249,173 +301,197 @@ class _DashboardWebViewState extends State<DashboardWebView> {
               },
               child: Scaffold(
                 // backgroundColor: Colors.transparent,
-                body: SafeArea(
-                  child: Stack(
-                    children: [
-                      Column(
-                        children: [
-                          // ValueListenableBuilder(
-                          //   valueListenable: _showAppBar,
-                          //   builder: (ctx, showAppBar, _) {
-                          //     if (!showAppBar) {
-                          //       return const SizedBox.shrink();
-                          //     }
-                          //     return ValueListenableBuilder(
-                          //       valueListenable: _statusBarBgColorDefault,
-                          //       builder: (ctx, statusBarBgColorDefault, _) {
-                          //         return Container(
-                          //           height: statusBarHeight,
-                          //           width: scrnsize.width,
-                          //           color: statusBarBgColorDefault,
-                          //         );
-                          //       },
-                          //     );
-                          //   },
-                          // ),
-                          Expanded(
-                            child: InAppWebView(
-                              key: webViewKey,
-                              initialUrlRequest:
-                                  URLRequest(url: WebUri(widget.url)),
-                              initialSettings: settings,
-                              pullToRefreshController: pullToRefreshController,
-                              onWebViewCreated: (controller) {
-                                webViewController = controller;
-                              },
-                              onScrollChanged: (controller, x, y) {
-                                if (y == 0) {
-                                  // _updateStatusBarColorFromTop();
-                                }
-                                if (y > statusBarHeight) {
-                                  _showAppBar.value = false;
-                                  // _updateSystemTheme();
-                                } else if (y < statusBarHeight &&
-                                    !_showAppBar.value) {
-                                  _showAppBar.value = true;
-                                }
-                                _previousScrollOffset = y;
-                              },
-                              onLoadStart: (controller, url) {
-                                _url.value = url.toString();
-                                urlController.text = _url.value;
-                              },
-                              onGeolocationPermissionsShowPrompt:
-                                  (controller, origin) async {
-                                // Request location permission
-                                // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
+                body: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        GestureDetector(
+                          onVerticalDragStart: (details) {
+                            if (details.globalPosition.dy >
+                                MediaQuery.of(context).size.height * 0.9) {
+                              // Detect swipe near the bottom of the screen
+                              userSwipedSystemStatusBar.value = 1;
+                            }
+                          },
+                          child: ValueListenableBuilder(
+                            valueListenable: _showAppBar,
+                            builder: (ctx, showAppBar, _) {
+                              // if (!showAppBar) {
+                              //   return SizedBox(height: statusBarHeight);
+                              // }
+                              return ValueListenableBuilder(
+                                valueListenable: _statusBarBgColorDefault,
+                                builder: (ctx, statusBarBgColorDefault, _) {
+                                  return Container(
+                                    height: statusBarHeight,
+                                    width: scrnsize.width,
+                                    color: statusBarBgColorDefault ??
+                                        ColourPallette.white,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: InAppWebView(
+                            key: webViewKey,
+                            initialUrlRequest:
+                                URLRequest(url: WebUri(widget.url)),
+                            initialSettings: settings,
+                            pullToRefreshController: pullToRefreshController,
+                            onWebViewCreated: (controller) {
+                              webViewController = controller;
+                            },
+                            onScrollChanged: (controller, x, y) async {
+                              if (y == 0) {
+                                // _updateStatusBarColorFromTop();
+                              }
+                              if (y > statusBarHeight) {
+                                _showAppBar.value = false;
+                                // _updateSystemTheme();
+                              } else if (y < statusBarHeight &&
+                                  !_showAppBar.value) {
+                                _showAppBar.value = true;
+                              }
+                              _previousScrollOffset = y;
+                              //  SystemChrome.setEnabledSystemUIMode(
+                              //   SystemUiMode.manual,
+                              //   overlays: [
+                              //     SystemUiOverlay.top,
+                              //   ],
+                              // );
+                            },
+                            onLoadStart: (controller, url) {
+                              _url.value = url.toString();
+                              urlController.text = _url.value;
+                            },
+                            onGeolocationPermissionsShowPrompt:
+                                (controller, origin) async {
+                              // Request location permission
+                              // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
 
-                                final locationGranted =
-                                    await _requestPermission(
+                              final locationGranted = await _requestPermission(
+                                Permission.location,
+                              );
+
+                              return GeolocationPermissionShowPromptResponse(
+                                origin: origin,
+                                allow: locationGranted,
+                                retain: true,
+                              );
+                            },
+                            onPermissionRequest: (controller, request) async {
+                              var granted = false;
+
+                              if (request.resources.contains(
+                                  PermissionResourceType.GEOLOCATION)) {
+                                granted = await _requestPermission(
                                   Permission.location,
                                 );
-
-                                return GeolocationPermissionShowPromptResponse(
-                                  origin: origin,
-                                  allow: locationGranted,
-                                  retain: true,
+                              }
+                              if (request.resources
+                                  .contains(PermissionResourceType.CAMERA)) {
+                                granted = await _requestPermission(
+                                  Permission.camera,
                                 );
-                              },
-                              onPermissionRequest: (controller, request) async {
-                                var granted = false;
-
-                                if (request.resources.contains(
-                                    PermissionResourceType.GEOLOCATION)) {
-                                  granted = await _requestPermission(
-                                    Permission.location,
-                                  );
-                                }
-                                if (request.resources
-                                    .contains(PermissionResourceType.CAMERA)) {
-                                  granted = await _requestPermission(
-                                    Permission.camera,
-                                  );
-                                }
-                                if (request.resources.contains(
-                                    PermissionResourceType.MICROPHONE)) {
-                                  granted = await _requestPermission(
-                                    Permission.microphone,
-                                  );
-                                }
-                                if (request.resources.contains(
-                                  PermissionResourceType.PROTECTED_MEDIA_ID,
-                                )) {
-                                  granted = await _requestPermission(
-                                    Permission.storage,
-                                  );
-                                }
-
-                                return PermissionResponse(
-                                  resources: request.resources,
-                                  action: granted
-                                      ? PermissionResponseAction.GRANT
-                                      : PermissionResponseAction.DENY,
+                              }
+                              if (request.resources.contains(
+                                  PermissionResourceType.MICROPHONE)) {
+                                granted = await _requestPermission(
+                                  Permission.microphone,
                                 );
-                              },
-                              shouldOverrideUrlLoading:
-                                  (controller, navigationAction) async {
-                                return NavigationActionPolicy.ALLOW;
-                              },
-                              onLoadStop: (controller, url) async {
-                                await pullToRefreshController
-                                    ?.endRefreshing()
-                                    .catchError(
-                                      (_) {},
-                                    );
-                                _url.value = url.toString();
-                                urlController.text = _url.value;
-                                await _updateCanBack();
-                                await _updateStatusBarColorFromTop();
-                              },
-                              onReceivedError: (controller, request, error) {
+                              }
+                              if (request.resources.contains(
+                                PermissionResourceType.PROTECTED_MEDIA_ID,
+                              )) {
+                                granted = await _requestPermission(
+                                  Permission.storage,
+                                );
+                              }
+
+                              return PermissionResponse(
+                                resources: request.resources,
+                                action: granted
+                                    ? PermissionResponseAction.GRANT
+                                    : PermissionResponseAction.DENY,
+                              );
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, navigationAction) async {
+                              return NavigationActionPolicy.ALLOW;
+                            },
+                            onLoadStop: (controller, url) async {
+                              await pullToRefreshController
+                                  ?.endRefreshing()
+                                  .catchError(
+                                    (_) {},
+                                  );
+                              _url.value = url.toString();
+                              urlController.text = _url.value;
+                              await _updateCanBack();
+                              await _updateStatusBarColorFromTop();
+                            },
+                            onReceivedError: (controller, request, error) {
+                              pullToRefreshController
+                                  ?.endRefreshing()
+                                  .catchError(
+                                (_) async {
+                                  final theme = Theme.of(context);
+                                  await CustomTabsService.launchUrl(
+                                    url: request.url.toString(),
+                                    theme: theme,
+                                  ).then(
+                                    (_) async {
+                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                      // JUST LIKE APPS IN BACKGROUND TYPE
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                            onProgressChanged: (controller, progress) {
+                              if (progress == 100) {
                                 pullToRefreshController
                                     ?.endRefreshing()
                                     .catchError(
                                       (_) {},
                                     );
-                              },
-                              onProgressChanged: (controller, progress) {
-                                if (progress == 100) {
-                                  pullToRefreshController
-                                      ?.endRefreshing()
-                                      .catchError(
-                                        (_) {},
-                                      );
-                                }
-                                _progress.value = progress / 100;
-                                urlController.text = _url.value;
-                              },
-                              onUpdateVisitedHistory:
-                                  (controller, url, androidIsReload) async {
-                                _url.value = url.toString();
-                                urlController.text = _url.value;
-                                await _updateCanBack();
-                              },
-                              onConsoleMessage: (controller, consoleMessage) {
-                                if (kDebugMode) {
-                                  print(consoleMessage);
-                                }
-                              },
-                            ),
+                              }
+                              _progress.value = progress / 100;
+                              urlController.text = _url.value;
+                            },
+                            onUpdateVisitedHistory:
+                                (controller, url, androidIsReload) async {
+                              _url.value = url.toString();
+                              urlController.text = _url.value;
+                              await _updateCanBack();
+                            },
+                            onConsoleMessage: (controller, consoleMessage) {
+                              if (kDebugMode) {
+                                print(consoleMessage);
+                              }
+                            },
                           ),
-                        ],
-                      ),
-                      ValueListenableBuilder(
-                        valueListenable: _progress,
-                        builder: (ctx, progress, _) {
-                          if (progress < 1.0) {
-                            return LinearProgressIndicator(
-                              value: progress,
-                              minHeight: 2,
-                              color: Colors.green,
-                              backgroundColor: Colors.grey.withOpacity(0.75),
-                            );
-                          } else {
-                            return Container();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: _progress,
+                      builder: (ctx, progress, _) {
+                        if (progress < 1.0) {
+                          return LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 2,
+                            color: Colors.green,
+                            backgroundColor: Colors.grey.withOpacity(0.75),
+                          );
+                        } else {
+                          return Container();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             );

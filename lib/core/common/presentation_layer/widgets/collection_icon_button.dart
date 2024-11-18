@@ -25,35 +25,43 @@ class FolderIconButton extends StatelessWidget {
       onLongPress: onLongPress,
       child: Column(
         children: [
-          ShaderMask(
-            shaderCallback: (Rect bounds) {
-              return LinearGradient(
-                colors: [
-                  folderColor.withOpacity(0.25),
-                  folderColor.withOpacity(0.55),
-                  folderColor.withOpacity(0.75),
-                  folderColor.withOpacity(0.85),
-                  // Add more colors if needed
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.3, 0.5, 0.65, 1],
-              ).createShader(bounds);
-            },
+          Padding(
+            padding: const EdgeInsets.all(4),
+            child: SvgPicture.asset(
+              MediaRes.folderSVG,
+              // MediaRes.folde,
 
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: SvgPicture.asset(
-                MediaRes.folderSVG,
-                height: 60,
-                width: 60,
-                // color: folderColor,
-              ),
+              height: 60,
+              width: 60,
+              // color: folderColor,
             ),
           ),
-
+          // ShaderMask(
+          //   shaderCallback: (Rect bounds) {
+          //     return LinearGradient(
+          //       colors: [
+          //         folderColor.withOpacity(0.25),
+          //         folderColor.withOpacity(0.55),
+          //         folderColor.withOpacity(0.75),
+          //         folderColor.withOpacity(0.85),
+          //         // Add more colors if needed
+          //       ],
+          //       begin: Alignment.topCenter,
+          //       end: Alignment.bottomCenter,
+          //       stops: const [0.3, 0.5, 0.65, 1],
+          //     ).createShader(bounds);
+          //   },
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(4),
+          //     child: SvgPicture.asset(
+          //       MediaRes.folderSVG,
+          //       height: 60,
+          //       width: 60,
+          //       // color: folderColor,
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 4),
-
           Text(
             collection.name,
             maxLines: 2,

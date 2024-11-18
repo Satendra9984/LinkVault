@@ -11,7 +11,7 @@ class MediaRes {
   static const String solidaritySVG = 'assets/images/solidarity.svg';
   static const String personSVG = 'assets/images/person.svg';
   static const String collectionSVG = 'assets/images/collections.svg';
-  static const String folderSVG = 'assets/images/folder_6.svg';
+  static const String folderSVG = 'assets/images/folder_2.svg';
   static const String webSurf1SVG = 'assets/images/web_surf_1.svg';
   static const String webSurf3SVG = 'assets/images/web_surf_3.svg';
   static const String linkVaultLogoSVG = 'assets/images/link_vault_logo.svg';

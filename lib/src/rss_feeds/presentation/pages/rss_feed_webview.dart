@@ -29,6 +29,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     allowsInlineMediaPlayback: true,
     iframeAllow: 'camera; microphone',
     iframeAllowFullscreen: true,
+    useWideViewPort: false,
   );
 
   PullToRefreshController? pullToRefreshController;
@@ -131,6 +132,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return ValueListenableBuilder(
       valueListenable: _isDarkMode,
       builder: (context, isDarkMode, _) {
@@ -156,89 +158,92 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                 body: SafeArea(
                   child: Stack(
                     children: [
-                      InAppWebView(
-                        key: webViewKey,
-                        initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                        initialSettings: settings,
-                        pullToRefreshController: pullToRefreshController,
-                        onWebViewCreated: (controller) {
-                          webViewController = controller;
-                        },
-                        onScrollChanged: (controller, x, y) {
-                          // Hide/show AppBar based on scroll direction
-                          // Logger.printLog('CanGoBack Scroll: $x, $y');
-                          if (y > _previousScrollOffset) {
-                            _showAppBar.value = false;
-                          } else if (y < _previousScrollOffset) {
-                            _showAppBar.value = true;
-                          }
-                          _previousScrollOffset = y;
-                        },
-                        onLoadStart: (controller, url) {
-                          _url.value = url.toString();
-                          urlController.text = _url.value;
-                        },
-                        onPermissionRequest: (controller, request) async {
-                          return PermissionResponse(
-                            resources: request.resources,
-                            action: PermissionResponseAction.PROMPT,
-                          );
-                        },
-                        shouldOverrideUrlLoading:
-                            (controller, navigationAction) async {
-                          return NavigationActionPolicy.ALLOW;
-                        },
-                        onLoadStop: (controller, url) async {
-                          try {
-                            if (readabilityScript != null) {
-                              // Inject Readability.js
-                              await webViewController?.evaluateJavascript(
-                                source: readabilityScript!,
-                              );
-
-                              // Inject the main script for distraction-free reading
-                              await webViewController?.evaluateJavascript(
-                                source: _getDistractionFreeScript(),
-                              );
+                      SizedBox(
+                        width: size.width,
+                        child: InAppWebView(
+                          key: webViewKey,
+                          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+                          initialSettings: settings,
+                          pullToRefreshController: pullToRefreshController,
+                          onWebViewCreated: (controller) {
+                            webViewController = controller;
+                          },
+                          onScrollChanged: (controller, x, y) {
+                            // Hide/show AppBar based on scroll direction
+                            // Logger.printLog('CanGoBack Scroll: $x, $y');
+                            if (y > _previousScrollOffset) {
+                              _showAppBar.value = false;
+                            } else if (y < _previousScrollOffset) {
+                              _showAppBar.value = true;
                             }
+                            _previousScrollOffset = y;
+                          },
+                          onLoadStart: (controller, url) {
                             _url.value = url.toString();
                             urlController.text = _url.value;
-
-                            await Future.wait(
-                              [
-                                Future(
-                                  () async => await pullToRefreshController
-                                      ?.endRefreshing(),
-                                ),
-                                _detectDarkMode(),
-                                _updateCanBack(),
-                              ],
+                          },
+                          onPermissionRequest: (controller, request) async {
+                            return PermissionResponse(
+                              resources: request.resources,
+                              action: PermissionResponseAction.PROMPT,
                             );
-                          } catch (e) {
-                            // Logger.printLog('RSS Feed WebView error $e');
-                          }
-                        },
-                        onReceivedError: (controller, request, error) {
-                          pullToRefreshController?.endRefreshing();
-                        },
-                        onProgressChanged: (controller, progress) {
-                          if (progress == 100) {
+                          },
+                          shouldOverrideUrlLoading:
+                              (controller, navigationAction) async {
+                            return NavigationActionPolicy.ALLOW;
+                          },
+                          onLoadStop: (controller, url) async {
+                            try {
+                              if (readabilityScript != null) {
+                                // Inject Readability.js
+                                await webViewController?.evaluateJavascript(
+                                  source: readabilityScript!,
+                                );
+                        
+                                // Inject the main script for distraction-free reading
+                                await webViewController?.evaluateJavascript(
+                                  source: _getDistractionFreeScript(),
+                                );
+                              }
+                              _url.value = url.toString();
+                              urlController.text = _url.value;
+                        
+                              await Future.wait(
+                                [
+                                  Future(
+                                    () async => await pullToRefreshController
+                                        ?.endRefreshing(),
+                                  ),
+                                  _detectDarkMode(),
+                                  _updateCanBack(),
+                                ],
+                              );
+                            } catch (e) {
+                              // Logger.printLog('RSS Feed WebView error $e');
+                            }
+                          },
+                          onReceivedError: (controller, request, error) {
                             pullToRefreshController?.endRefreshing();
-                          }
-                          _progress.value = progress / 100;
-                          urlController.text = _url.value;
-                        },
-                        onUpdateVisitedHistory:
-                            (controller, url, androidIsReload) async {
-                          _url.value = url.toString();
-                          urlController.text = _url.value;
-                          await _updateCanBack(); // Update canGoBack on history update
-                        },
-                        onConsoleMessage: (controller, consoleMessage) {
-                          if (kDebugMode) {
-                            print(consoleMessage);
-                          }
-                        },
+                          },
+                          onProgressChanged: (controller, progress) {
+                            if (progress == 100) {
+                              pullToRefreshController?.endRefreshing();
+                            }
+                            _progress.value = progress / 100;
+                            urlController.text = _url.value;
+                          },
+                          onUpdateVisitedHistory:
+                              (controller, url, androidIsReload) async {
+                            _url.value = url.toString();
+                            urlController.text = _url.value;
+                            await _updateCanBack(); // Update canGoBack on history update
+                          },
+                          onConsoleMessage: (controller, consoleMessage) {
+                            if (kDebugMode) {
+                              print(consoleMessage);
+                            }
+                          },
+                        ),
                       ),
                       ValueListenableBuilder(
                         valueListenable: _progress,

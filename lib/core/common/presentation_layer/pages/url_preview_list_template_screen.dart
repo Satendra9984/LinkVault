@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
@@ -19,12 +21,14 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
+import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -910,11 +914,23 @@ class _UrlPreviewListTemplateScreenState
                                 );
                               } else if (url.loadingStates ==
                                   LoadingStates.errorLoading) {
-                                return IconButton(
-                                  onPressed: _fetchMoreUrls,
-                                  icon: const Icon(
-                                    Icons.restore,
-                                    color: ColourPallette.black,
+                                return GestureDetector(
+                                  onTap: _fetchMoreUrls,
+                                  onLongPress: () async {
+                                    if (url.urlModelId == null) return;
+
+                                    await showDeleteErroreousUrlModel(
+                                      context,
+                                      urlModelId: url.urlModelId!,
+                                      urlOptions: [],
+                                    );
+                                  },
+                                  child: const SizedBox(
+                                    height: 120,
+                                    child: Icon(
+                                      Icons.restore,
+                                      color: ColourPallette.black,
+                                    ),
                                   ),
                                 );
                               }
@@ -1313,6 +1329,286 @@ class _UrlPreviewListTemplateScreenState
           },
         ),
       ],
+    );
+  }
+
+  Future<void> showDeleteErroreousUrlModel(
+    BuildContext context, {
+    required String urlModelId,
+    required List<Widget> urlOptions,
+  }) async {
+    final size = MediaQuery.of(context).size;
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
+
+    onPop() async {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
+      Navigator.pop(context);
+    }
+
+    final showLastUpdated = ValueNotifier(false);
+
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding:
+            const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: ColourPallette.mystic.withOpacity(0.25),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: SingleChildScrollView(
+              //     scrollDirection: Axis.horizontal,
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         Builder(
+              //           builder: (context) {
+              //             final urlModelData = urlModel;
+              //             final urlMetaData = urlModel.metaData!;
+              //             var name = '';
+              //             if (urlModelData.title.isNotEmpty) {
+              //               name = urlModelData.title;
+              //             } else if (urlMetaData.title != null &&
+              //                 urlMetaData.title!.isNotEmpty) {
+              //               name = urlMetaData.title!;
+              //             } else if (urlMetaData.websiteName != null &&
+              //                 urlMetaData.websiteName!.isNotEmpty) {
+              //               name = urlMetaData.websiteName!;
+              //             }
+              //             final placeHolder = Container(
+              //               padding: const EdgeInsets.all(2),
+              //               alignment: Alignment.center,
+              //               decoration: BoxDecoration(
+              //                 borderRadius: BorderRadius.circular(4),
+              //                 color: ColourPallette.black,
+              //                 // color: Colors.deepPurple
+              //               ),
+              //               child: Text(
+              //                 _websiteName(name, 5),
+              //                 maxLines: 1,
+              //                 textAlign: TextAlign.center,
+              //                 softWrap: true,
+              //                 overflow: TextOverflow.fade,
+              //                 style: const TextStyle(
+              //                   color: ColourPallette.white,
+              //                   fontWeight: FontWeight.w500,
+              //                   fontSize: 8,
+              //                 ),
+              //               ),
+              //             );
+
+              //             if (urlModel.metaData?.faviconUrl == null) {
+              //               return placeHolder;
+              //             }
+              //             final metaData = urlModel.metaData;
+
+              //             if (metaData?.faviconUrl != null) {
+              //               return ClipRRect(
+              //                 borderRadius: BorderRadius.circular(4),
+              //                 child: SizedBox(
+              //                   height: 24,
+              //                   width: 24,
+              //                   child: ClipRRect(
+              //                     borderRadius: BorderRadius.circular(8),
+              //                     child: NetworkImageBuilderWidget(
+              //                       imageUrl: urlMetaData.faviconUrl!,
+              //                       compressImage: false,
+              //                       errorWidgetBuilder: () {
+              //                         return placeHolder;
+              //                       },
+              //                       successWidgetBuilder: (imageData) {
+              //                         return ClipRRect(
+              //                           borderRadius: BorderRadius.circular(4),
+              //                           child: Builder(
+              //                             builder: (ctx) {
+              //                               final memoryImage = Image.memory(
+              //                                 imageData.imageBytesData!,
+              //                                 fit: BoxFit.contain,
+              //                                 errorBuilder: (ctx, _, __) {
+              //                                   return placeHolder;
+              //                                 },
+              //                               );
+              //                               // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+              //                               if (urlMetaData.faviconUrl!
+              //                                   .toLowerCase()
+              //                                   .endsWith('.svg')) {
+              //                                 // Try loading the SVG and handle errors
+              //                                 return FutureBuilder(
+              //                                   future: _loadSvgBytes(
+              //                                     imageData.imageBytesData!,
+              //                                   ),
+              //                                   builder: (context, snapshot) {
+              //                                     if (snapshot
+              //                                             .connectionState ==
+              //                                         ConnectionState.waiting) {
+              //                                       return const CircularProgressIndicator();
+              //                                     } else if (snapshot
+              //                                         .hasError) {
+              //                                       return memoryImage;
+              //                                     } else {
+              //                                       return snapshot.data!;
+              //                                     }
+              //                                   },
+              //                                 );
+              //                               } else {
+              //                                 return memoryImage;
+              //                               }
+              //                             },
+              //                           ),
+              //                         );
+              //                       },
+              //                     ),
+              //                   ),
+              //                 ),
+              //               );
+              //             } else {
+              //               return placeHolder;
+              //             }
+              //           },
+              //         ),
+              //         const SizedBox(width: 16),
+              //         Text(
+              //           StringUtils.capitalizeEachWord(urlModel.title),
+              //           style: const TextStyle(
+              //             fontSize: 18,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
+              // const SizedBox(height: 16),
+
+              // ...urlOptions,
+
+              // DELETE URL
+              BottomSheetOption(
+                leadingIcon: Icons.delete_rounded,
+                title: const Text('Delete', style: titleTextStyle),
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  final urls = widget.collectionModel.urls
+                    ..removeWhere((urlId) => urlId == urlModelId);
+
+                  final updatedCollectionModel =
+                      widget.collectionModel.copyWith(urls: urls);
+
+                  await context
+                      .read<CollectionCrudCubit>()
+                      .updateCollection(
+                        collection: updatedCollectionModel,
+                      )
+                      .then(
+                    (_) async {
+                      await navigator.maybePop();
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(
+      () async {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.edgeToEdge,
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    UrlModel urlModel,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${urlModel.title}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
