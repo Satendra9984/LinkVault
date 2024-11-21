@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:html/parser.dart' as html_parser;
+import 'package:http/http.dart' as http;
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/utils/logger.dart';
+import 'package:html/dom.dart' as dom;
 
 // Use this https://github.com/xaynetwork/xayn_readabilityc
 class RSSFeedWebView extends StatefulWidget {
@@ -41,9 +46,13 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
   String? readabilityScript;
 
+  final _extractedContent = ValueNotifier("Extracting content...");
+
   @override
   void initState() {
     super.initState();
+    _onlyContentExtraction();
+
     _loadReadabilityScript();
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
@@ -160,89 +169,136 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                     children: [
                       SizedBox(
                         width: size.width,
-                        child: InAppWebView(
-                          key: webViewKey,
-                          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                          initialSettings: settings,
-                          pullToRefreshController: pullToRefreshController,
-                          onWebViewCreated: (controller) {
-                            webViewController = controller;
-                          },
-                          onScrollChanged: (controller, x, y) {
-                            // Hide/show AppBar based on scroll direction
-                            // Logger.printLog('CanGoBack Scroll: $x, $y');
-                            if (y > _previousScrollOffset) {
-                              _showAppBar.value = false;
-                            } else if (y < _previousScrollOffset) {
-                              _showAppBar.value = true;
-                            }
-                            _previousScrollOffset = y;
-                          },
-                          onLoadStart: (controller, url) {
-                            _url.value = url.toString();
-                            urlController.text = _url.value;
-                          },
-                          onPermissionRequest: (controller, request) async {
-                            return PermissionResponse(
-                              resources: request.resources,
-                              action: PermissionResponseAction.PROMPT,
-                            );
-                          },
-                          shouldOverrideUrlLoading:
-                              (controller, navigationAction) async {
-                            return NavigationActionPolicy.ALLOW;
-                          },
-                          onLoadStop: (controller, url) async {
-                            try {
-                              if (readabilityScript != null) {
-                                // Inject Readability.js
-                                await webViewController?.evaluateJavascript(
-                                  source: readabilityScript!,
-                                );
-                        
-                                // Inject the main script for distraction-free reading
-                                await webViewController?.evaluateJavascript(
-                                  source: _getDistractionFreeScript(),
-                                );
-                              }
-                              _url.value = url.toString();
-                              urlController.text = _url.value;
-                        
-                              await Future.wait(
-                                [
-                                  Future(
-                                    () async => await pullToRefreshController
-                                        ?.endRefreshing(),
-                                  ),
-                                  _detectDarkMode(),
-                                  _updateCanBack(),
-                                ],
-                              );
-                            } catch (e) {
-                              // Logger.printLog('RSS Feed WebView error $e');
-                            }
-                          },
-                          onReceivedError: (controller, request, error) {
-                            pullToRefreshController?.endRefreshing();
-                          },
-                          onProgressChanged: (controller, progress) {
-                            if (progress == 100) {
-                              pullToRefreshController?.endRefreshing();
-                            }
-                            _progress.value = progress / 100;
-                            urlController.text = _url.value;
-                          },
-                          onUpdateVisitedHistory:
-                              (controller, url, androidIsReload) async {
-                            _url.value = url.toString();
-                            urlController.text = _url.value;
-                            await _updateCanBack(); // Update canGoBack on history update
-                          },
-                          onConsoleMessage: (controller, consoleMessage) {
-                            if (kDebugMode) {
-                              print(consoleMessage);
-                            }
-                          },
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 0.0,
+                              child: Expanded(
+                                child: InAppWebView(
+                                  key: webViewKey,
+                                  initialUrlRequest:
+                                      URLRequest(url: WebUri(widget.url)),
+                                  initialSettings: settings,
+                                  pullToRefreshController:
+                                      pullToRefreshController,
+                                  onWebViewCreated: (controller) {
+                                    webViewController = controller;
+                                  },
+                                  onScrollChanged: (controller, x, y) {
+                                    // Hide/show AppBar based on scroll direction
+                                    // Logger.printLog('CanGoBack Scroll: $x, $y');
+                                    if (y > _previousScrollOffset) {
+                                      _showAppBar.value = false;
+                                    } else if (y < _previousScrollOffset) {
+                                      _showAppBar.value = true;
+                                    }
+                                    _previousScrollOffset = y;
+                                  },
+                                  onLoadStart: (controller, url) {
+                                    _url.value = url.toString();
+                                    urlController.text = _url.value;
+                                  },
+                                  onPermissionRequest:
+                                      (controller, request) async {
+                                    return PermissionResponse(
+                                      resources: request.resources,
+                                      action: PermissionResponseAction.PROMPT,
+                                    );
+                                  },
+                                  shouldOverrideUrlLoading:
+                                      (controller, navigationAction) async {
+                                    return NavigationActionPolicy.ALLOW;
+                                  },
+                                  onLoadStop: (controller, url) async {
+                                    try {
+                                      await extractMainContent(widget.url);
+                                      // _onlyContentExtraction();
+                                      // Execute the JavaScript extraction script
+                                      // final content = await webViewController
+                                      //     ?.evaluateJavascript(
+                                      //   source: _extractContentScript(),
+                                      // );
+                                      // Update the extracted content
+                                      // if (content != null) {
+                                      //   setState(() {
+                                      //     extractedContent =
+                                      //         content.toString().replaceAll(
+                                      //               r'\u003C',
+                                      //               '<',
+                                      //             ); // Fix escaped HTML
+                                      //   });
+                                      // }
+                                      // if (readabilityScript != null) {
+                                      // Inject Readability.js
+                                      // await webViewController?.evaluateJavascript(
+                                      //   // source: readabilityScript!,
+                                      //   // source: _extractFullContentScript(),
+                                      //   source: _onlyContentExtraction(),
+                                      // );
+                              
+                                      // Inject the main script for distraction-free reading
+                                      // await webViewController?.evaluateJavascript(
+                                      //   source: _getDistractionFreeScript(),
+                                      // source: _extractFullContentScript(),
+                                      // );
+                                      // }
+                                      _url.value = url.toString();
+                                      urlController.text = _url.value;
+                              
+                                      await Future.wait(
+                                        [
+                                          Future(
+                                            () async =>
+                                                await pullToRefreshController
+                                                    ?.endRefreshing(),
+                                          ),
+                                          _detectDarkMode(),
+                                          _updateCanBack(),
+                                        ],
+                                      );
+                                    } catch (e) {
+                                      // Logger.printLog('RSS Feed WebView error $e');
+                                    }
+                                  },
+                                  onReceivedError: (controller, request, error) {
+                                    pullToRefreshController?.endRefreshing();
+                                  },
+                                  onProgressChanged: (controller, progress) {
+                                    if (progress == 100) {
+                                      pullToRefreshController?.endRefreshing();
+                                    }
+                                    _progress.value = progress / 100;
+                                    urlController.text = _url.value;
+                                  },
+                                  onUpdateVisitedHistory:
+                                      (controller, url, androidIsReload) async {
+                                    _url.value = url.toString();
+                                    urlController.text = _url.value;
+                                    await _updateCanBack(); // Update canGoBack on history update
+                                  },
+                                  onConsoleMessage: (controller, consoleMessage) {
+                                    if (kDebugMode) {
+                                      print(consoleMessage);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: ValueListenableBuilder(
+                                valueListenable: _extractedContent,
+                                builder: (context, extractedContent, _) {
+                                  return SingleChildScrollView(
+                                    padding: EdgeInsets.all(16),
+                                    child: HtmlWidget(
+                                      extractedContent,
+                                      // style: TextStyle(fontSize: 16),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       ValueListenableBuilder(
@@ -270,6 +326,157 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         );
       },
     );
+  }
+
+  String _onlyContentExtraction() {
+    return '''
+(function () {
+  // List of tags to extract meaningful content from the page
+  const meaningfulTags = [
+    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'li', 'blockquote', 'a', 'img'
+  ];
+
+  // Helper function to extract meaningful content
+  function extractMeaningfulContent(body) {
+    const extractedContent = [];
+
+    // Loop through each tag type and collect its content
+    meaningfulTags.forEach((tag) => {
+      const elements = body.getElementsByTagName(tag);
+      Array.from(elements).forEach((element) => {
+        if (tag === 'img') {
+          // For images, ensure there is a valid 'src' attribute
+          if (element.src.trim()) {
+            extractedContent.push(`<img src="\${element.src}" alt="\${element.alt || ''}" />`);
+          }
+        } else if (tag === 'a') {
+          // For links, include both href and innerText
+          if (element.href.trim() && element.innerText.trim()) {
+            extractedContent.push(
+              `<a href="\${element.href}">\${element.innerText.trim()}</a>`
+            );
+          }
+        } else {
+          // For text-containing elements, include non-empty innerText
+          if (element.innerText.trim()) {
+            extractedContent.push(element.outerHTML);
+          }
+        }
+      });
+    });
+
+    return extractedContent;
+  }
+
+  // Main function to extract and update the DOM
+  function processContent() {
+    try {
+      const body = document.body;
+
+      if (!body) {
+        return '<p>Content not available</p>';
+      }
+
+      // Extract content from meaningful tags
+      const extractedContent = extractMeaningfulContent(body);
+
+      // Update the DOM with only the extracted content
+      body.innerHTML = extractedContent.join('\n');
+
+      return 'Content extracted and DOM updated successfully';
+    } catch (error) {
+      console.error('Error processing content:', error);
+      return 'Error processing content';
+    }
+  }
+
+  // Execute and send the result back to Flutter
+  const result = processContent();
+  
+  // Replace document.body with the sanitized content
+  document.body.innerHTML = sanitizedContent;
+
+  // Optional: Notify Flutter about the completion
+  window.flutter_inappwebview.callHandler('onContentProcessed', result);
+})();
+
+''';
+  }
+
+  Future<String> extractMainContent(String url) async {
+    try {
+      // Fetch the HTML content of the page
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load page');
+      }
+
+      // Parse the HTML document
+      final document = html_parser.parse(utf8.decode(response.bodyBytes));
+      final body = document.body;
+
+      if (body == null) {
+        return '<p>Content not available</p>';
+      }
+
+      // Step 1: Remove unnecessary tags
+      void cleanBody(dom.Element body) {
+        const unnecessaryTags = [
+          'nav',
+          'footer',
+          'aside',
+          'header',
+          'script',
+          'style',
+          'form',
+          'input',
+        ];
+        for (final tag in unnecessaryTags) {
+          body.getElementsByTagName(tag).forEach((element) => element.remove());
+        }
+      }
+
+      // Step 2: Find main content
+      dom.Element findMainContent(dom.Element body) {
+        return body.querySelector('article') ??
+            body.querySelector(
+                'div[class*="content"], div[class*="main-content"]') ??
+            body.querySelector('section') ??
+            body;
+      }
+
+      // Step 3: Normalize content
+      void normalizeContent(dom.Element body, Uri baseUri) {
+        // Remove inline styles and event listeners
+        body
+            .querySelectorAll('[style], [onclick], [onmouseover]')
+            .forEach((element) {
+          element.attributes.remove('style');
+          element.attributes.remove('onclick');
+          element.attributes.remove('onmouseover');
+        });
+
+        // Normalize relative links
+        body.querySelectorAll('a[href]').forEach((link) {
+          final href = link.attributes['href'];
+          if (href != null && !href.startsWith('http')) {
+            link.attributes['href'] = baseUri.resolve(href).toString();
+          }
+        });
+      }
+
+      // Apply cleaning and normalization
+      cleanBody(body);
+      final mainContent = findMainContent(body);
+      normalizeContent(mainContent, Uri.parse(url));
+
+      // Return the sanitized HTML as a string
+      _extractedContent.value = mainContent.outerHtml;
+      return mainContent.outerHtml;
+    } catch (error) {
+      print('Error extracting content: $error');
+      return '<p>Error extracting content</p>';
+    }
   }
 
   String _getDistractionFreeScript() {
@@ -355,280 +562,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     })();
   ''';
   }
-
-//   String _getDistractionFreeScript() {
-//     return '''
-// (function() {
-//   // Function to find the most likely article container using content density analysis
-//   const findArticleContainer = () => {
-//     // Elements that typically contain the main article content
-//     const possibleContainers = Array.from(document.querySelectorAll(
-//       'article, [role="article"], [itemprop="articleBody"], .post-content, .article-content, ' +
-//       '.entry-content, .article-body, .post-body, main, #main-content, .main-content, .content, .post'
-//     ));
-
-//     let bestContainer = null;
-//     let highestScore = 0;
-
-//     possibleContainers.forEach(container => {
-//       // Skip invisible elements
-//       if (container.offsetParent === null) return;
-
-//       // Calculate content density score
-//       const paragraphs = container.getElementsByTagName('p');
-//       const links = container.getElementsByTagName('a');
-//       const images = container.getElementsByTagName('img');
-
-//       let score = 0;
-
-//       // Text content analysis
-//       const textDensity = container.textContent.length / Math.max(1, container.getElementsByTagName('*').length);
-//       score += textDensity * 0.3;
-
-//       // Paragraph analysis
-//       score += paragraphs.length * 2;
-
-//       // Image analysis (excluding small icons)
-//       const contentImages = Array.from(images).filter(img => {
-//         const rect = img.getBoundingClientRect();
-//         return rect.width > 100 || rect.height > 100;
-//       });
-//       score += contentImages.length * 1.5;
-
-//       // Link density penalty (to avoid navigation areas)
-//       const linkDensity = links.length / Math.max(1, paragraphs.length);
-//       score -= linkDensity * 0.5;
-
-//       // Boost score for elements with article-related identifiers
-//       const identifier = (container.className + ' ' + container.id).toLowerCase();
-//       if (identifier.includes('article') || identifier.includes('post')) {
-//         score *= 1.25;
-//       }
-
-//       if (score > highestScore) {
-//         highestScore = score;
-//         bestContainer = container;
-//       }
-//     });
-
-//     return bestContainer;
-//   };
-
-//   // Function to extract clean content while preserving essential interactive elements
-//   const extractCleanContent = (container) => {
-//     if (!container) return null;
-
-//     const article = document.createElement('article');
-//     article.className = 'extracted-content';
-
-//     // Helper to check if an element is likely to be part of the main content
-//     const isContentElement = (el) => {
-//       const tagName = el.tagName.toLowerCase();
-//       const classId = (el.className + ' ' + el.id).toLowerCase();
-
-//       // Skip elements that are likely to be peripheral
-//       if (classId.match(/comment|sidebar|footer|nav|menu|author|related|share|social|ad|promo|recommend/i)) {
-//         return false;
-//       }
-
-//       // Keep essential interactive elements
-//       if (['a', 'button', 'video', 'iframe', 'audio'].includes(tagName)) {
-//         return true;
-//       }
-
-//       // Keep content elements
-//       if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'ul', 'ol', 'li',
-//            'blockquote', 'pre', 'code', 'table', 'figure', 'figcaption'].includes(tagName)) {
-//         return true;
-//       }
-
-//       // Keep divs/sections that contain substantial content
-//       if (['div', 'section'].includes(tagName)) {
-//         const hasSubstantialText = el.textContent.trim().length > 50;
-//         const hasContentElements = el.querySelector('p, img, video, iframe');
-//         return hasSubstantialText || hasContentElements;
-//       }
-
-//       return false;
-//     };
-
-//     // Process a node and its children
-//     const processNode = (node) => {
-//       // Handle text nodes
-//       if (node.nodeType === Node.TEXT_NODE) {
-//         const text = node.textContent.trim();
-//         return text ? node.cloneNode(true) : null;
-//       }
-
-//       // Handle element nodes
-//       if (node.nodeType === Node.ELEMENT_NODE) {
-//         // Skip script and style elements
-//         if (['script', 'style', 'noscript'].includes(node.tagName.toLowerCase())) {
-//           return null;
-//         }
-
-//         // Special handling for images
-//         if (node.tagName === 'IMG') {
-//           const rect = node.getBoundingClientRect();
-//           // Keep only content images (exclude tiny icons)
-//           if (rect.width > 100 || rect.height > 100) {
-//             const img = node.cloneNode(true);
-//             img.setAttribute('loading', 'lazy');
-//             return img;
-//           }
-//           return null;
-//         }
-
-//         // Special handling for iframes (mainly for videos)
-//         if (node.tagName === 'IFRAME') {
-//           const src = node.src.toLowerCase();
-//           const videoSites = ['youtube.com', 'vimeo.com', 'dailymotion.com'];
-//           if (videoSites.some(site => src.includes(site))) {
-//             const wrapper = document.createElement('div');
-//             wrapper.className = 'video-wrapper';
-//             const iframe = node.cloneNode(true);
-//             wrapper.appendChild(iframe);
-//             return wrapper;
-//           }
-//           return null;
-//         }
-
-//         // Process other elements
-//         if (isContentElement(node)) {
-//           const newElement = document.createElement(node.tagName);
-
-//           // Copy essential attributes
-//           ['class', 'id', 'href', 'src', 'alt', 'title', 'target'].forEach(attr => {
-//             if (node.hasAttribute(attr)) {
-//               newElement.setAttribute(attr, node.getAttribute(attr));
-//             }
-//           });
-
-//           // Process child nodes
-//           node.childNodes.forEach(child => {
-//             const processedChild = processNode(child);
-//             if (processedChild) {
-//               newElement.appendChild(processedChild);
-//             }
-//           });
-
-//           // Only keep elements that have content after processing
-//           if (newElement.textContent.trim() || newElement.querySelector('img, video, iframe')) {
-//             return newElement;
-//           }
-//         }
-//       }
-
-//       return null;
-//     };
-
-//     // Process all children of the container
-//     container.childNodes.forEach(child => {
-//       const processedNode = processNode(child);
-//       if (processedNode) {
-//         article.appendChild(processedNode);
-//       }
-//     });
-
-//     return article;
-//   };
-
-//   // Apply clean, readable styles
-//   const applyStyles = () => {
-//     const style = document.createElement('style');
-//     style.textContent = `
-//       body {
-//         margin: 0 auto;
-//         padding: 20px;
-//         max-width: 800px;
-//         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-//         font-size: 18px;
-//         line-height: 1.6;
-//         color: #333;
-//         background: #fff;
-//       }
-//       .extracted-content {
-//         width: 100%;
-//       }
-//       p, ul, ol {
-//         margin-bottom: 1em;
-//       }
-//       img {
-//         max-width: 100%;
-//         height: auto;
-//         margin: 1em auto;
-//         display: block;
-//       }
-//       .video-wrapper {
-//         position: relative;
-//         padding-bottom: 56.25%;
-//         height: 0;
-//         overflow: hidden;
-//         margin: 1em 0;
-//       }
-//       .video-wrapper iframe {
-//         position: absolute;
-//         top: 0;
-//         left: 0;
-//         width: 100%;
-//         height: 100%;
-//       }
-//       a {
-//         color: #0066cc;
-//         text-decoration: none;
-//       }
-//       a:hover {
-//         text-decoration: underline;
-//       }
-//       pre, code {
-//         background: #f5f5f5;
-//         padding: 0.2em 0.4em;
-//         border-radius: 3px;
-//         font-family: monospace;
-//         overflow-x: auto;
-//       }
-//       blockquote {
-//         margin: 1em 0;
-//         padding-left: 1em;
-//         border-left: 4px solid #ddd;
-//         color: #666;
-//       }
-//       table {
-//         width: 100%;
-//         border-collapse: collapse;
-//         margin: 1em 0;
-//       }
-//       th, td {
-//         border: 1px solid #ddd;
-//         padding: 8px;
-//       }
-//     `;
-//     document.head.appendChild(style);
-//   };
-
-//   // Main execution
-//   try {
-//     // Find the main article container
-//     const articleContainer = findArticleContainer();
-
-//     if (articleContainer) {
-//       // Extract clean content
-//       const cleanContent = extractCleanContent(articleContainer);
-
-//       if (cleanContent && cleanContent.textContent.trim()) {
-//         // Clear the page and insert clean content
-//         document.body.innerHTML = '';
-//         document.body.appendChild(cleanContent);
-//         applyStyles();
-//         window.scrollTo(0, 0);
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error extracting content:', error);
-//   }
-// })();
-//     ''';
-//   }
 
   PreferredSize _getAppBar() {
     return PreferredSize(
