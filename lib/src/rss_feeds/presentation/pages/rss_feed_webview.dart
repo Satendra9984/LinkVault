@@ -9,6 +9,9 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import 'package:link_vault/core/res/colours.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:link_vault/core/services/rss_data_parsing_service.dart';
+import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 // Use this https://github.com/xaynetwork/xayn_readabilityc
 class RSSFeedWebView extends StatefulWidget {
@@ -51,9 +54,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   @override
   void initState() {
     super.initState();
-    _onlyContentExtraction();
 
-    _loadReadabilityScript();
+    // _loadReadabilityScript();
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
                 .contains(defaultTargetPlatform)
@@ -75,11 +77,11 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           );
   }
 
-  Future<void> _loadReadabilityScript() async {
-    // Load the Readability.js file from assets
-    readabilityScript = await rootBundle
-        .loadString('assets/js/readability/readabilityjs/Readability.js');
-  }
+  // Future<void> _loadReadabilityScript() async {
+  //   // Load the Readability.js file from assets
+  //   readabilityScript = await rootBundle
+  //       .loadString('assets/js/readability/readabilityjs/Readability.js');
+  // }
 
   Future<void> _updateCanBack() async {
     if (webViewController != null) {
@@ -235,7 +237,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                       //   // source: _extractFullContentScript(),
                                       //   source: _onlyContentExtraction(),
                                       // );
-                              
+
                                       // Inject the main script for distraction-free reading
                                       // await webViewController?.evaluateJavascript(
                                       //   source: _getDistractionFreeScript(),
@@ -244,7 +246,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                       // }
                                       _url.value = url.toString();
                                       urlController.text = _url.value;
-                              
+
                                       await Future.wait(
                                         [
                                           Future(
@@ -260,7 +262,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                       // Logger.printLog('RSS Feed WebView error $e');
                                     }
                                   },
-                                  onReceivedError: (controller, request, error) {
+                                  onReceivedError:
+                                      (controller, request, error) {
                                     pullToRefreshController?.endRefreshing();
                                   },
                                   onProgressChanged: (controller, progress) {
@@ -276,7 +279,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                     urlController.text = _url.value;
                                     await _updateCanBack(); // Update canGoBack on history update
                                   },
-                                  onConsoleMessage: (controller, consoleMessage) {
+                                  onConsoleMessage:
+                                      (controller, consoleMessage) {
                                     if (kDebugMode) {
                                       print(consoleMessage);
                                     }
@@ -328,98 +332,23 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     );
   }
 
-  String _onlyContentExtraction() {
-    return '''
-(function () {
-  // List of tags to extract meaningful content from the page
-  const meaningfulTags = [
-    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'li', 'blockquote', 'a', 'img'
-  ];
-
-  // Helper function to extract meaningful content
-  function extractMeaningfulContent(body) {
-    const extractedContent = [];
-
-    // Loop through each tag type and collect its content
-    meaningfulTags.forEach((tag) => {
-      const elements = body.getElementsByTagName(tag);
-      Array.from(elements).forEach((element) => {
-        if (tag === 'img') {
-          // For images, ensure there is a valid 'src' attribute
-          if (element.src.trim()) {
-            extractedContent.push(`<img src="\${element.src}" alt="\${element.alt || ''}" />`);
-          }
-        } else if (tag === 'a') {
-          // For links, include both href and innerText
-          if (element.href.trim() && element.innerText.trim()) {
-            extractedContent.push(
-              `<a href="\${element.href}">\${element.innerText.trim()}</a>`
-            );
-          }
-        } else {
-          // For text-containing elements, include non-empty innerText
-          if (element.innerText.trim()) {
-            extractedContent.push(element.outerHTML);
-          }
-        }
-      });
-    });
-
-    return extractedContent;
-  }
-
-  // Main function to extract and update the DOM
-  function processContent() {
-    try {
-      const body = document.body;
-
-      if (!body) {
-        return '<p>Content not available</p>';
-      }
-
-      // Extract content from meaningful tags
-      const extractedContent = extractMeaningfulContent(body);
-
-      // Update the DOM with only the extracted content
-      body.innerHTML = extractedContent.join('\n');
-
-      return 'Content extracted and DOM updated successfully';
-    } catch (error) {
-      console.error('Error processing content:', error);
-      return 'Error processing content';
-    }
-  }
-
-  // Execute and send the result back to Flutter
-  const result = processContent();
-  
-  // Replace document.body with the sanitized content
-  document.body.innerHTML = sanitizedContent;
-
-  // Optional: Notify Flutter about the completion
-  window.flutter_inappwebview.callHandler('onContentProcessed', result);
-})();
-
-''';
-  }
-
   Future<String> extractMainContent(String url) async {
     try {
-      // Fetch the HTML content of the page
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode != 200) {
-        throw Exception('Failed to load page');
-      }
+      // Extract the entire HTML content of the webpage
+      final currentwebpage = await webViewController?.evaluateJavascript(
+        source: 'document.documentElement.outerHTML;',
+      );
+
+      // Logger.printLog(currentwebpage.toString());
 
       // Parse the HTML document
-      final document = html_parser.parse(utf8.decode(response.bodyBytes));
+      final document = html_parser.parse(currentwebpage);
       final body = document.body;
 
       if (body == null) {
         return '<p>Content not available</p>';
       }
 
-      // Step 1: Remove unnecessary tags
       void cleanBody(dom.Element body) {
         const unnecessaryTags = [
           'nav',
@@ -430,51 +359,245 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           'style',
           'form',
           'input',
+          'noscript',
+          'iframe',
+          // 'advertisement',
+          'header',
+          'sidebar',
+          'navigation',
+          'nav',
+          'menu',
+          'comment',
+          'related',
+          'recommended',
+          'share',
+          'social',
+          'widget',
+          'promotional',
+          // 'advertisement',
+          // 'ad-',
+          'popup',
+          'modal',
         ];
         for (final tag in unnecessaryTags) {
           body.getElementsByTagName(tag).forEach((element) => element.remove());
         }
-      }
 
-      // Step 2: Find main content
-      dom.Element findMainContent(dom.Element body) {
-        return body.querySelector('article') ??
-            body.querySelector(
-                'div[class*="content"], div[class*="main-content"]') ??
-            body.querySelector('section') ??
-            body;
-      }
+        // Remove empty or invisible elements
+        body.querySelectorAll('*').forEach((element) {
+          final isEmpty = element.text.trim().isEmpty;
+          final isHidden =
+              element.attributes['style']?.contains('display:none') ?? false;
 
-      // Step 3: Normalize content
-      void normalizeContent(dom.Element body, Uri baseUri) {
-        // Remove inline styles and event listeners
-        body
-            .querySelectorAll('[style], [onclick], [onmouseover]')
-            .forEach((element) {
-          element.attributes.remove('style');
-          element.attributes.remove('onclick');
-          element.attributes.remove('onmouseover');
+          if (isEmpty || isHidden) {
+            element.remove();
+          }
         });
 
-        // Normalize relative links
+        // Remove elements with common ad-related classes
+        // body
+        //     .querySelectorAll('[class*="ad"], [id*="ad"], [class*="promo"]')
+        //     .forEach((element) {
+        //   element.remove();
+        // });
+      }
+
+      dom.Element findMainContent(dom.Element body) {
+        final selectors = [
+          // Primary semantic HTML5 elements
+          'main',
+          'article',
+
+          // ARIA roles
+          'div[role="main"]',
+          'div[role="article"]',
+          'main[role="main"]',
+
+          // Story/Article specific patterns
+          'div[class*="storyline"]',
+          'div[class*="story-content"]',
+          'div[class*="story-body"]',
+          'div[class*="article-body"]',
+          'div[class*="article-content"]',
+          'div[class*="article-text"]',
+          'div[class*="article__content"]',
+          'div[class*="article__body"]',
+
+          // Blog/Post patterns
+          'div[class*="post-content"]',
+          'div[class*="post-body"]',
+          'div[class*="post-text"]',
+          'div[class*="post__content"]',
+          'div[class*="blog-post"]',
+          'div[class*="blog-content"]',
+          'div[class*="entry-content"]',
+
+          // News specific patterns
+          'div[class*="news-content"]',
+          'div[class*="news-article"]',
+          'div[class*="news-text"]',
+          'div[class*="news__content"]',
+
+          // Main content patterns
+          'div[class*="main-content"]',
+          'div[class*="main-article"]',
+          'div[class*="page-content"]',
+          'div[class*="content-main"]',
+          'div[class*="content-body"]',
+          'div[class*="content-text"]',
+          'div[class*="content__main"]',
+
+          // Single content containers
+          'div[class*="single-content"]',
+          'div[class*="single-post"]',
+          'div[class*="single-article"]',
+
+          // Publisher specific patterns
+          'div[class*="rich-text"]',
+          'div[class*="markdown-body"]',
+          'div[class*="container-content"]',
+
+          // Generic content (lower priority)
+          'div[class*="content"]',
+
+          // Section based selectors (with qualifiers)
+          'section[class*="content"]',
+          'section[class*="article"]',
+          'section[class*="post"]',
+          'section[class*="story"]',
+          'section:not([class*="header"]):not([class*="footer"]):not([class*="sidebar"])',
+        ];
+
+        for (final selector in selectors) {
+          final content = body.querySelector(selector);
+          if (content != null) {
+            Logger.printLog('[SL] : $selector found $content');
+            return content;
+          }
+        }
+        return body; // Default fallback to the entire body
+      }
+
+      // String trimContent(dom.Element mainContent, {int maxLength = 5000}) {
+      //   final content = mainContent.outerHtml;
+      //   return content.length > maxLength
+      //       ? '${content.substring(0, maxLength)}...<p>Content trimmed for brevity</p>'
+      //       : content;
+      // }
+
+      void normalizeLinks(dom.Element body, Uri baseUri) {
         body.querySelectorAll('a[href]').forEach((link) {
           final href = link.attributes['href'];
-          if (href != null && !href.startsWith('http')) {
-            link.attributes['href'] = baseUri.resolve(href).toString();
+
+          if (href != null) {
+            try {
+              final resolvedUrl = baseUri.resolve(href).toString();
+              if (Uri.tryParse(resolvedUrl) != null) {
+                link.attributes['href'] = resolvedUrl;
+              } else {
+                link.remove();
+              }
+            } catch (e) {
+              link.remove(); // Remove invalid links
+            }
           }
         });
       }
 
-      // Apply cleaning and normalization
+      void enhanceParagraph(dom.Element body) {
+        // Define tags to enhance
+        const contentTags = [
+          'p',
+          'div',
+          'span',
+          'article',
+          'section',
+          'blockquote',
+          'li',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+        ];
+        const headerTags = ['h1', 'h2'];
+
+        // Helper function to add/update a specific CSS property
+        String addOrUpdateCss(
+            String currentStyle, String cssAttribute, String value) {
+          final regex = RegExp('$cssAttribute:[^;]+;');
+          if (regex.hasMatch(currentStyle)) {
+            return currentStyle.replaceAll(regex, '$cssAttribute: $value;');
+          } else {
+            return '$currentStyle$cssAttribute: $value;';
+          }
+        }
+
+        // Apply styles for generic content tags
+        for (final tag in contentTags) {
+          final elements = body.getElementsByTagName(tag);
+          for (final element in elements) {
+            if (element.text.trim().isNotEmpty) {
+              var existingStyle = element.attributes['style'] ?? '';
+
+              // Add common styles only if not already present
+              existingStyle =
+                  addOrUpdateCss(existingStyle, 'margin-bottom', '16px');
+              existingStyle =
+                  addOrUpdateCss(existingStyle, 'font-size', '18px');
+              existingStyle =
+                  addOrUpdateCss(existingStyle, 'line-height', '1.6');
+              existingStyle = addOrUpdateCss(existingStyle, 'color', '#333');
+
+              element.attributes['style'] = existingStyle;
+            }
+          }
+        }
+
+        // Apply specific styles for headers (h1 and h2)
+        for (final tag in headerTags) {
+          final elements = body.getElementsByTagName(tag);
+          for (final element in elements) {
+            if (element.text.trim().isNotEmpty) {
+              var existingStyle = element.attributes['style'] ?? '';
+
+              // Apply different styles based on header type
+              if (tag == 'h1') {
+                existingStyle =
+                    addOrUpdateCss(existingStyle, 'font-size', '24px');
+                existingStyle =
+                    addOrUpdateCss(existingStyle, 'margin-bottom', '16px');
+                existingStyle = addOrUpdateCss(existingStyle, 'color', '#111');
+              } else if (tag == 'h2') {
+                existingStyle =
+                    addOrUpdateCss(existingStyle, 'font-size', '20px');
+                existingStyle =
+                    addOrUpdateCss(existingStyle, 'margin-bottom', '12px');
+                existingStyle = addOrUpdateCss(existingStyle, 'color', '#222');
+              }
+
+              element.attributes['style'] = existingStyle;
+            }
+          }
+        }
+      }
+
       cleanBody(body);
       final mainContent = findMainContent(body);
-      normalizeContent(mainContent, Uri.parse(url));
+      normalizeLinks(mainContent, Uri.parse(url));
+      enhanceParagraph(mainContent);
+
+      // Optional: Trim long content
+      // final trimmedContent = (mainContent);
 
       // Return the sanitized HTML as a string
       _extractedContent.value = mainContent.outerHtml;
+      Logger.printLog(_extractedContent.value);
+
       return mainContent.outerHtml;
     } catch (error) {
-      print('Error extracting content: $error');
+      if (kDebugMode) {
+        print('Error extracting content: $error');
+      }
       return '<p>Error extracting content</p>';
     }
   }

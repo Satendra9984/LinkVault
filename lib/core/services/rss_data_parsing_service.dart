@@ -429,7 +429,7 @@ class RssXmlParsingService {
     // Search through media-specific elements for image URLs
     for (final mediaElement in mediaElements) {
       final url = mediaElement.getAttribute('url') ?? '';
-      if (_isImageUrl(url)) {
+      if (isImageUrl(url)) {
         // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
         return url;
       }
@@ -439,7 +439,7 @@ class RssXmlParsingService {
     for (final element in itemElement.descendants.whereType<XmlElement>()) {
       for (final attribute in element.attributes) {
         final url = attribute.value;
-        if (_isImageUrl(url)) {
+        if (isImageUrl(url)) {
           // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
           return url;
         }
@@ -451,7 +451,7 @@ class RssXmlParsingService {
   }
 
 // Helper function to check if a URL is likely an image
-  static bool _isImageUrl(String url) {
+  static bool isImageUrl(String url) {
     final lowerUrl = url.toLowerCase();
     return lowerUrl.contains('.jpg') ||
         lowerUrl.contains('.jpeg') ||
