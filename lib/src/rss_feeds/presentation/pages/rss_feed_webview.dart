@@ -4,11 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
@@ -44,17 +47,29 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   final _url = ValueNotifier('');
   final _progress = ValueNotifier<double>(0);
   final urlController = TextEditingController();
+  final _urlLoadState = ValueNotifier(LoadingStates.initial);
 
   final _isDarkMode = ValueNotifier(false);
 
   String? readabilityScript;
 
-  final _extractedContent = ValueNotifier("Extracting content...");
+  final _extractedContent = ValueNotifier('Extracting content...');
+  final _extractingContentLoadState = ValueNotifier(LoadingStates.initial);
+  InAppWebViewController? webViewControllerExtracted;
 
   @override
   void initState() {
     super.initState();
-
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.light,
+        // systemNavigationBarColor:
+        //     _isDarkMode.value ? Colors.black : Colors.white,
+        // systemNavigationBarIconBrightness:
+        //     _isDarkMode.value ? Brightness.light : Brightness.dark,
+      ),
+    );
     // _loadReadabilityScript();
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
@@ -78,7 +93,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   }
 
   // Future<void> _loadReadabilityScript() async {
-  //   // Load the Readability.js file from assets
+  // Load the Readability.js file from assets
   //   readabilityScript = await rootBundle
   //       .loadString('assets/js/readability/readabilityjs/Readability.js');
   // }
@@ -172,135 +187,244 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                       SizedBox(
                         width: size.width,
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          // crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              height: 0.0,
-                              child: Expanded(
-                                child: InAppWebView(
-                                  key: webViewKey,
-                                  initialUrlRequest:
-                                      URLRequest(url: WebUri(widget.url)),
-                                  initialSettings: settings,
-                                  pullToRefreshController:
-                                      pullToRefreshController,
-                                  onWebViewCreated: (controller) {
-                                    webViewController = controller;
-                                  },
-                                  onScrollChanged: (controller, x, y) {
-                                    // Hide/show AppBar based on scroll direction
-                                    // Logger.printLog('CanGoBack Scroll: $x, $y');
-                                    if (y > _previousScrollOffset) {
-                                      _showAppBar.value = false;
-                                    } else if (y < _previousScrollOffset) {
-                                      _showAppBar.value = true;
-                                    }
-                                    _previousScrollOffset = y;
-                                  },
-                                  onLoadStart: (controller, url) {
-                                    _url.value = url.toString();
-                                    urlController.text = _url.value;
-                                  },
-                                  onPermissionRequest:
-                                      (controller, request) async {
-                                    return PermissionResponse(
-                                      resources: request.resources,
-                                      action: PermissionResponseAction.PROMPT,
-                                    );
-                                  },
-                                  shouldOverrideUrlLoading:
-                                      (controller, navigationAction) async {
-                                    return NavigationActionPolicy.ALLOW;
-                                  },
-                                  onLoadStop: (controller, url) async {
-                                    try {
-                                      await extractMainContent(widget.url);
-                                      // _onlyContentExtraction();
-                                      // Execute the JavaScript extraction script
-                                      // final content = await webViewController
-                                      //     ?.evaluateJavascript(
-                                      //   source: _extractContentScript(),
-                                      // );
-                                      // Update the extracted content
-                                      // if (content != null) {
-                                      //   setState(() {
-                                      //     extractedContent =
-                                      //         content.toString().replaceAll(
-                                      //               r'\u003C',
-                                      //               '<',
-                                      //             ); // Fix escaped HTML
-                                      //   });
-                                      // }
-                                      // if (readabilityScript != null) {
-                                      // Inject Readability.js
-                                      // await webViewController?.evaluateJavascript(
-                                      //   // source: readabilityScript!,
-                                      //   // source: _extractFullContentScript(),
-                                      //   source: _onlyContentExtraction(),
-                                      // );
-
-                                      // Inject the main script for distraction-free reading
-                                      // await webViewController?.evaluateJavascript(
-                                      //   source: _getDistractionFreeScript(),
-                                      // source: _extractFullContentScript(),
-                                      // );
-                                      // }
+                            ValueListenableBuilder(
+                              valueListenable: _urlLoadState,
+                              builder: (context, urlLoadState, _) {
+                                if (urlLoadState == LoadingStates.loaded) {
+                                  return const SizedBox.shrink();
+                                }
+                                return SizedBox(
+                                  height: 0.0,
+                                  child: InAppWebView(
+                                    key: webViewKey,
+                                    initialUrlRequest:
+                                        URLRequest(url: WebUri(widget.url)),
+                                    initialSettings: settings,
+                                    pullToRefreshController:
+                                        pullToRefreshController,
+                                    onWebViewCreated: (controller) {
+                                      webViewController = controller;
+                                    },
+                                    onScrollChanged: (controller, x, y) {
+                                      // Hide/show AppBar based on scroll direction
+                                      // Logger.printLog('CanGoBack Scroll: $x, $y');
+                                      if (y > _previousScrollOffset) {
+                                        _showAppBar.value = false;
+                                      } else if (y < _previousScrollOffset) {
+                                        _showAppBar.value = true;
+                                      }
+                                      _previousScrollOffset = y;
+                                    },
+                                    onLoadStart: (controller, url) {
                                       _url.value = url.toString();
                                       urlController.text = _url.value;
-
-                                      await Future.wait(
-                                        [
-                                          Future(
-                                            () async =>
-                                                await pullToRefreshController
-                                                    ?.endRefreshing(),
-                                          ),
-                                          _detectDarkMode(),
-                                          _updateCanBack(),
-                                        ],
+                                      _urlLoadState.value =
+                                          LoadingStates.loading;
+                                    },
+                                    onPermissionRequest:
+                                        (controller, request) async {
+                                      return PermissionResponse(
+                                        resources: request.resources,
+                                        action: PermissionResponseAction.PROMPT,
                                       );
-                                    } catch (e) {
-                                      // Logger.printLog('RSS Feed WebView error $e');
-                                    }
-                                  },
-                                  onReceivedError:
-                                      (controller, request, error) {
-                                    pullToRefreshController?.endRefreshing();
-                                  },
-                                  onProgressChanged: (controller, progress) {
-                                    if (progress == 100) {
+                                    },
+                                    shouldOverrideUrlLoading:
+                                        (controller, navigationAction) async {
+                                      return NavigationActionPolicy.ALLOW;
+                                    },
+                                    onLoadStop: (controller, url) async {
+                                      try {
+                                        await extractMainContent(widget.url);
+
+                                        _url.value = url.toString();
+                                        urlController.text = _url.value;
+
+                                        await Future.wait(
+                                          [
+                                            Future(
+                                              () async =>
+                                                  await pullToRefreshController
+                                                      ?.endRefreshing(),
+                                            ),
+                                            _detectDarkMode(),
+                                            _updateCanBack(),
+                                          ],
+                                        );
+                                        _urlLoadState.value =
+                                            LoadingStates.loaded;
+                                      } catch (e) {
+                                        // Logger.printLog('RSS Feed WebView error $e');
+                                      }
+                                    },
+                                    onReceivedError:
+                                        (controller, request, error) {
                                       pullToRefreshController?.endRefreshing();
-                                    }
-                                    _progress.value = progress / 100;
-                                    urlController.text = _url.value;
-                                  },
-                                  onUpdateVisitedHistory:
-                                      (controller, url, androidIsReload) async {
-                                    _url.value = url.toString();
-                                    urlController.text = _url.value;
-                                    await _updateCanBack(); // Update canGoBack on history update
-                                  },
-                                  onConsoleMessage:
-                                      (controller, consoleMessage) {
-                                    if (kDebugMode) {
-                                      print(consoleMessage);
-                                    }
-                                  },
-                                ),
-                              ),
+                                    },
+                                    onProgressChanged: (controller, progress) {
+                                      if (progress == 100) {
+                                        pullToRefreshController
+                                            ?.endRefreshing();
+                                      }
+                                      _progress.value = progress / 100;
+                                      urlController.text = _url.value;
+                                    },
+                                    onUpdateVisitedHistory: (controller, url,
+                                        androidIsReload) async {
+                                      _url.value = url.toString();
+                                      urlController.text = _url.value;
+                                      await _updateCanBack(); // Update canGoBack on history update
+                                    },
+                                    onConsoleMessage:
+                                        (controller, consoleMessage) {
+                                      if (kDebugMode) {
+                                        print(consoleMessage);
+                                      }
+                                    },
+                                  ),
+                                );
+                              },
                             ),
-                            Expanded(
-                              child: ValueListenableBuilder(
-                                valueListenable: _extractedContent,
-                                builder: (context, extractedContent, _) {
-                                  return SingleChildScrollView(
-                                    padding: EdgeInsets.all(16),
-                                    child: HtmlWidget(
-                                      extractedContent,
-                                      // style: TextStyle(fontSize: 16),
+                            ValueListenableBuilder(
+                              valueListenable: _extractingContentLoadState,
+                              builder: (context, loadingState, _) {
+                                if (loadingState == LoadingStates.loading) {
+                                  return Expanded(
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            color: ColourPallette.salemgreen,
+                                            backgroundColor: ColourPallette
+                                                .mystic
+                                                .withOpacity(0.75),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          const Center(
+                                            child: Text('Loading Content...'),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   );
-                                },
-                              ),
+                                } else if (loadingState ==
+                                    LoadingStates.errorLoading) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: SvgPicture.asset(
+                                            MediaRes.errorANIMATION,
+                                          ),
+                                        ),
+                                        const Center(
+                                          child: Text('Loading Content...'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                            ValueListenableBuilder(
+                              valueListenable: _extractingContentLoadState,
+                              builder:
+                                  (context, extractingContentLoadState, _) {
+                                if (extractingContentLoadState !=
+                                    LoadingStates.loaded) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return Expanded(
+                                  child: Container(
+                                    width: size.width,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 0),
+                                    child: InAppWebView(
+                                      initialSettings: InAppWebViewSettings(
+                                        useOnLoadResource: true,
+                                        isInspectable: kDebugMode,
+                                        mediaPlaybackRequiresUserGesture: false,
+                                        allowsInlineMediaPlayback: true,
+                                        iframeAllow: 'camera; microphone',
+                                        iframeAllowFullscreen: true,
+                                        useWideViewPort: false,
+                                      ),
+                                      onWebViewCreated: (controller) async {
+                                        webViewControllerExtracted = controller;
+
+                                        final content = '''
+                                        <!DOCTYPE html>
+                                          <html>
+                                            <head>
+                                              <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+                                              <style>
+                                                /* Hide scrollbars */
+                                                body {
+                                                  margin: 0;
+                                                  padding: 0;
+                                                  overflow-x: hidden; /* Prevent horizontal scrolling */
+                                                }
+                                                ::-webkit-scrollbar {
+                                                  display: none;
+                                                }
+
+                                                /* Ensure tables and other large content fit within the viewport */
+                                                table, img {
+                                                  max-width: 100%;
+                                                  height: auto;
+                                                }
+
+                                                /* Make sure the overall layout adjusts to smaller screens */
+                                                * {
+                                                  box-sizing: border-box;
+                                                  word-wrap: break-word;
+                                                }
+
+                                                div {
+                                                  max-width: 100%;
+                                                  overflow: hidden;
+                                                    }
+                                                  </style>
+                                                </head>
+                                                <body>
+                                                  ${_extractedContent.value}
+                                                </body>
+                                            </html>
+                                        ''';
+
+                                        await webViewControllerExtracted
+                                            ?.loadData(
+                                          data: content,
+                                        );
+                                      },
+                                      onLoadStop: (controller, url) async {},
+                                      onReceivedError:
+                                          (controller, request, error) {
+                                        pullToRefreshController
+                                            ?.endRefreshing();
+                                      },
+                                      onConsoleMessage:
+                                          (controller, consoleMessage) {
+                                        if (kDebugMode) {
+                                          print(consoleMessage);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -333,6 +457,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   }
 
   Future<String> extractMainContent(String url) async {
+    _extractingContentLoadState.value = LoadingStates.loading;
     try {
       // Extract the entire HTML content of the webpage
       final currentwebpage = await webViewController?.evaluateJavascript(
@@ -355,6 +480,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           'footer',
           'aside',
           'header',
+          'button',
           'script',
           'style',
           'form',
@@ -523,7 +649,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
         // Helper function to add/update a specific CSS property
         String addOrUpdateCss(
-            String currentStyle, String cssAttribute, String value) {
+          String currentStyle,
+          String cssAttribute,
+          String value,
+        ) {
           final regex = RegExp('$cssAttribute:[^;]+;');
           if (regex.hasMatch(currentStyle)) {
             return currentStyle.replaceAll(regex, '$cssAttribute: $value;');
@@ -546,7 +675,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                   addOrUpdateCss(existingStyle, 'font-size', '18px');
               existingStyle =
                   addOrUpdateCss(existingStyle, 'line-height', '1.6');
-              existingStyle = addOrUpdateCss(existingStyle, 'color', '#333');
+              existingStyle = addOrUpdateCss(existingStyle, 'color', '#111');
 
               element.attributes['style'] = existingStyle;
             }
@@ -581,6 +710,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         }
       }
 
+      const Color(0xFF333333);
+      const Color(0xFF111111);
+      const Color(0xFF222222);
+
       cleanBody(body);
       final mainContent = findMainContent(body);
       normalizeLinks(mainContent, Uri.parse(url));
@@ -588,9 +721,11 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
       // Optional: Trim long content
       // final trimmedContent = (mainContent);
-
+      // ADD HIDE SCROLLBARS
       // Return the sanitized HTML as a string
       _extractedContent.value = mainContent.outerHtml;
+      _extractingContentLoadState.value = LoadingStates.loaded;
+      // await webViewController?.loadData(data: _extractedContent.value);
       Logger.printLog(_extractedContent.value);
 
       return mainContent.outerHtml;
@@ -598,114 +733,9 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       if (kDebugMode) {
         print('Error extracting content: $error');
       }
+      _extractingContentLoadState.value = LoadingStates.errorLoading;
+
       return '<p>Error extracting content</p>';
     }
-  }
-
-  String _getDistractionFreeScript() {
-    return '''
-    (function() {
-      // Remove unwanted elements
-      const selectorsToRemove = [
-        ".sidebar", ".advertisement", ".ad", ".promo", ".popup"
-      ];
-
-      selectorsToRemove.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => el.remove());
-      });
-
-      // Apply Readability if available
-      if (typeof Readability !== 'undefined') {
-        const article = new Readability(document).parse();
-        if (article && article.content) {
-          document.body.innerHTML = article.content;
-        }
-      } else {
-        // Fallback content extraction if Readability is not available
-        const mainContentSelectors = ["article", "main", ".content", ".post", ".article-body"];
-        let mainContent = null;
-
-        mainContentSelectors.some(selector => {
-          mainContent = document.querySelector(selector);
-          return mainContent !== null;
-        });
-
-        if (mainContent) {
-          document.body.innerHTML = mainContent.outerHTML;
-        }
-      }
-
-      // Inject basic CSS for readability and responsive images
-      const style = document.createElement('style');
-      style.innerHTML = \`
-        body {
-          margin: 0;
-          padding: 20px;
-          font-family: Arial, sans-serif;
-          font-size: 18px;
-          line-height: 1.6;
-          color: #333;
-          background-color: #f9f9f9;
-        }
-
-        p {
-          margin: 1em 0;
-        }
-
-        h1, h2, h3, h4 {
-          font-weight: bold;
-          color: #222;
-          margin-top: 1.5em;
-          margin-bottom: 0.5em;
-        }
-
-        img {
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 1em auto;
-        }
-
-        figure {
-          margin: 1em 0;
-        }
-
-        figure img {
-          max-width: 100%;
-          height: auto;
-        }
-
-        figcaption {
-          font-size: 0.9em;
-          color: #666;
-          text-align: center;
-        }
-      \`;
-      document.head.appendChild(style);
-    })();
-  ''';
-  }
-
-  PreferredSize _getAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: ValueListenableBuilder<bool>(
-        valueListenable: _showAppBar,
-        builder: (context, isVisible, child) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: isVisible ? kToolbarHeight + 16 : 0.0,
-            child: isVisible
-                ? AppBar(
-                    title: Text(
-                      widget.url,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          );
-        },
-      ),
-    );
   }
 }
