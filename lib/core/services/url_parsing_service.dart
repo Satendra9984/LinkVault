@@ -18,11 +18,11 @@ class UrlParsingService {
       if (response.statusCode == 200) {
         return response.body;
       } else {
-        // // Logger.printLog('error in "fetchWebpageContent" statuscode error');
+        // Logger.printLog('error in "fetchWebpageContent" statuscode error');
         return null;
       }
     } catch (e) {
-      // // Logger.printLog('error in "fetchWebpageContent" $e');
+      // Logger.printLog('error in "fetchWebpageContent" $e');
       return null;
     }
   }
@@ -33,7 +33,7 @@ class UrlParsingService {
 
     if (title == null) return null;
 
-    // // Logger.printLog('title: $title');
+    // Logger.printLog('title: $title');
     return StringUtils.getUnicodeString(title);
   }
 
@@ -107,7 +107,7 @@ class UrlParsingService {
       // If meta tags don't provide a suitable image, search in the body
       return _extractBodyImageUrl(document);
     } catch (e) {
-      // // Logger.printLog('Error in "extractImageUrl": $e');
+      // Logger.printLog('Error in "extractImageUrl": $e');
       return null;
     }
   }
@@ -655,29 +655,29 @@ class UrlParsingService {
         return UrlParsingService.extractImageUrl(htmlContent);
       } else if (response.statusCode == 404 || response.statusCode == 410) {
         // Permanent errors: return null as no further requests should be made
-        // // Logger.printLog(
+        // Logger.printLog(
         //     'Resource not found or gone (404/410). No further attempts.');
         return null;
       } else if (response.statusCode == 500 || response.statusCode == 503) {
         // Temporary errors: rethrow to allow retries
-        // // Logger.printLog('Server error (500/503). Retrying might be necessary.');
+        // Logger.printLog('Server error (500/503). Retrying might be necessary.');
         throw const HttpException('Temporary server issue. Retry recommended.');
       } else {
         // Other unhandled HTTP status codes: log and return null
-        // // Logger.printLog('Unhandled HTTP status code: ${response.statusCode}');
+        // Logger.printLog('Unhandled HTTP status code: ${response.statusCode}');
         return null;
       }
     } on SocketException {
-      // // Logger.printLog('Network issue in fetchParseAndExtractBanner: $e');
+      // Logger.printLog('Network issue in fetchParseAndExtractBanner: $e');
       rethrow; // Allowing retries
     } on HttpException {
-      // // Logger.printLog('HTTP issue in fetchParseAndExtractBanner: $e');
+      // Logger.printLog('HTTP issue in fetchParseAndExtractBanner: $e');
       rethrow; // Allowing handling based on HTTP status
     } on FormatException {
-      // // Logger.printLog('Parsing issue in fetchParseAndExtractBanner: $e');
+      // Logger.printLog('Parsing issue in fetchParseAndExtractBanner: $e');
       return null; // Parsing failure is final
     } catch (e) {
-      // // Logger.printLog(
+      // Logger.printLog(
       // 'Unexpected error in fetchParseAndExtractBanner: $e (${e.runtimeType})');
       return null;
     }

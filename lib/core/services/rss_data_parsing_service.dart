@@ -226,7 +226,7 @@ class RssXmlParsingService {
 
       return feedItems;
     } catch (e) {
-      // // Logger.printLog('error in "parseRssFeed" $e');
+      // Logger.printLog('error in "parseRssFeed" $e');
       return feedItems;
     }
   }
@@ -285,10 +285,10 @@ class RssXmlParsingService {
       final document = html_parser.parse(htmlString);
 
       final bannerImageUrl = UrlParsingService.extractImageUrl(document);
-      // // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
+      // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
       return bannerImageUrl;
     } catch (e) {
-      // // Logger.printLog('[rss] : BannerImgError from html $e');
+      // Logger.printLog('[rss] : BannerImgError from html $e');
       return null;
     }
   }
@@ -332,7 +332,7 @@ class RssXmlParsingService {
 
 // Helper to extract the best link from RSS/Atom feeds
   static String? extractFeedItemLink(XmlElement element) {
-    // // Logger.printLog('[link] : ${element.toString()}');
+    // Logger.printLog('[link] : ${element.toString()}');
 
     try {
       // Case 1: Standard <link> element (without attributes)
@@ -340,7 +340,7 @@ class RssXmlParsingService {
       if (linkTag != null && linkTag.text.isNotEmpty) {
         return linkTag.text.trim();
       }
-      // // Logger.printLog('[link] : now searching atom:link');
+      // Logger.printLog('[link] : now searching atom:link');
 
       // Case 2: <atom:link> element with href attribute
       final atomLinkTag = element.findElements('atom:link').firstOrNull;
@@ -358,7 +358,7 @@ class RssXmlParsingService {
       if (guidTag != null && guidTag.getAttribute('isPermaLink') == 'true') {
         return guidTag.text.trim();
       }
-      // // Logger.printLog('[link] : now searching link');
+      // Logger.printLog('[link] : now searching link');
 
       // Case 4: <link rel="alternate" href="..."> element
       final alternateLinkTag = element.findElements('link').firstOrNull;
@@ -379,12 +379,12 @@ class RssXmlParsingService {
           return href.trim();
         }
       }
-      // // Logger.printLog('[link] : returning null');
+      // Logger.printLog('[link] : returning null');
 
       // If no suitable link is found, return null
       return null;
     } catch (e) {
-      // // Logger.printLog('[link] : could not find link: $e');
+      // Logger.printLog('[link] : could not find link: $e');
       return null;
     }
   }
@@ -486,11 +486,11 @@ class RssXmlParsingService {
     try {
       // Common RSS date formats (RFC822 for example)
       final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss Z', 'en_US');
-      // // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
+      // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
 
       return rfc822Format.parse(dateString);
     } catch (e) {
-      // // Logger.printLog('[rss]: pubdate _parseDate: $e');
+      // Logger.printLog('[rss]: pubdate _parseDate: $e');
 
       return null;
     }
