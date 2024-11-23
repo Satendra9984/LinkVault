@@ -73,7 +73,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        // statusBarColor: Colors.transparent,
+        statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         systemStatusBarContrastEnforced: false,
         // systemNavigationBarColor:
@@ -195,7 +195,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                 }
               },
               child: Scaffold(
-                // appBar: _getAppBar(),
                 body: Stack(
                   children: [
                     SizedBox(
@@ -561,7 +560,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         for (final selector in selectors) {
           final content = body.querySelector(selector);
           if (content != null) {
-            Logger.printLog('[SL] : $selector found ${content.outerHtml}');
+            // Logger.printLog('[SL] : $selector found ${content.outerHtml}');
             // Logger.printLog('[SL] : $selector found $content');
             return content;
           }
@@ -609,7 +608,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         // Define tags to enhance
         const contentTags = [
           'p',
-          'div',
+          // 'div',
           'span',
           'article',
           'section',
@@ -628,7 +627,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           for (final element in elements) {
             if (element.text.trim().isNotEmpty) {
               var existingStyle = element.attributes['style'] ?? '';
-
               // Add common styles only if not already present
               existingStyle =
                   addOrUpdateCss(existingStyle, 'margin-bottom', '16px');
@@ -674,6 +672,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       void enhanceImages(dom.Element body, Uri baseUri) {
         // Select all images in the body
         body.querySelectorAll('img').forEach((image) {
+          Logger.printLog('[IMG] : ${image.outerHtml}');
+
           // Normalize the image src attribute
           final src = image.attributes['src'];
           if (src != null) {
@@ -704,49 +704,80 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         });
       }
 
-      Future<void> replaceImagesWithBase64(dom.Element body) async {
-        final images = body.querySelectorAll('img[src]');
-        Logger.printLog('[WEBIMG] : $images');
+      String extractAndAppendStyles(String htmlContent) {
+        try {
+          final RegExp styleTagRegExp =
+              RegExp(r'<style[^>]*>(.*?)<\/style>', dotAll: true);
+          final matches = styleTagRegExp.allMatches(htmlContent);
 
-        for (var image in images) {
-          final src = image.attributes['src'];
-          Logger.printLog('[WEBIMG] : $src');
-
-          if (src != null && Uri.tryParse(src)?.isAbsolute == true) {
-            try {
-              final response = await http.get(Uri.parse(src));
-              if (response.statusCode == 200) {
-                final base64Image = base64Encode(response.bodyBytes);
-                image.attributes['src'] = 'data:image/jpeg;base64,$base64Image';
-              }
-            } catch (e) {
-              Logger.printLog('[WEBIMG] : $e');
-              image.remove(); // Remove inaccessible images
-            }
+          // Extract all CSS inside <style> tags
+          final StringBuffer cssBuffer = StringBuffer();
+          for (final match in matches) {
+            cssBuffer
+                .writeln(match.group(1)); // Group 1 contains the CSS content
           }
+
+          return cssBuffer.toString();
+        } catch (e) {
+          return '';
         }
       }
 
-      // const Color(0xFF333333);
-      // const Color(0xFF111111);
-      // const Color(0xFF222222);
+      String filterConflictingCSS(
+          String extractedCss, List<String> restrictedProperties) {
+        final RegExp cssRuleRegExp =
+            RegExp(r'([^{]+)\{([^}]+)\}', dotAll: true);
+        final matches = cssRuleRegExp.allMatches(extractedCss);
 
-      // cleanBody(body);
-      // Logger.printLog('[FILE] : ${body.outerHtml}');
+        final StringBuffer filteredCssBuffer = StringBuffer();
 
-      // const fileloc =
-      //     'C:/Users/LENOVO/development/projects/web_link_store/lib/src/rss_feeds/presentation/pages/';
+        for (final match in matches) {
+          final selector = match.group(1)?.trim();
+          final propertiesBlock = match.group(2)?.trim();
 
-      // try {
-      //   await FileServicesCustom.writeToCustomLocation(
-      //       '${fileloc}cleaned.html', body.outerHtml);
-      // } catch (e) {}
+          if (selector != null && propertiesBlock != null) {
+            final filteredProperties =
+                propertiesBlock.split(';').where((property) {
+              final propertyName = property.split(':')[0].trim();
+              return !restrictedProperties.contains(propertyName);
+            }).join(';');
+
+            if (filteredProperties.isNotEmpty) {
+              filteredCssBuffer.writeln('$selector { $filteredProperties }');
+            }
+          }
+        }
+
+        return filteredCssBuffer.toString();
+      }
 
       final extractedImageUrl = UrlParsingService.extractImageUrl(document);
 
+      // final extractedCss = extractAndAppendStyles(document.outerHtml);
+      // // Restricted properties that are already defined in the predefined styles
+      // final List<String> restrictedProperties = [
+      //   'margin',
+      //   'padding',
+      //   'background-color',
+      //   'color',
+      //   'font-family',
+      //   'line-height',
+      //   'font-size',
+      //   'overflow-x',
+      // ];
+
+      // final filteredCss = filterConflictingCSS(
+      //   extractedCss,
+      //   restrictedProperties,
+      // );
+      // Logger.printLog('[CSS] : $filteredCss');
+
       final mainContent = findMainContent(body);
+      // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
 
       cleanBody(mainContent);
+      // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
+
       normalizeLinks(mainContent, Uri.parse(url));
       optimizeContent(mainContent); // Add this line
       enhanceParagraph(mainContent);
@@ -755,18 +786,13 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
       // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
 
-      // Optional: Trim long content
-      // final trimmedContent = (mainContent);
-      // ADD HIDE SCROLLBARS
-      // Return the sanitized HTML as a string
-      // _extractedContent.value = mainContent.outerHtml;
-
       _extractedContent.value = '''
         <!DOCTYPE html>
             <html>
               <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
                 <style>
+
                   body {
                     margin: 0;
                     padding: 0;
@@ -775,6 +801,14 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                     overflow-x: hidden; /* Prevent horizontal scrolling */
                     background-color: #f9f9f9; /* Light background for better contrast */
                     color: #333; /* Darker text for readability */
+                  }
+
+                  /* Add img styles at the end to ensure priority */
+                  img {
+                    max-width: 100%;
+                    height: auto;
+                    display: block;
+                    object-fit: cover; /* Ensures the image is cropped nicely */
                   }
 
                   /* Hide scrollbars */
@@ -787,6 +821,14 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                     max-width: 100%;
                     height: auto;
                   }
+
+                  .content-container {
+                    padding: 20px; /* Add padding around the body content */
+                    background-color: #ffffff; /* Background to differentiate content */
+                    border-radius: 8px; /* Rounded corners for a clean look */
+                    padding-bottom: 56px; /* Add spacing around the container */
+                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+                 }
 
                   /* Overall layout adjustments */
                   * {
@@ -805,17 +847,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                   width: 100%;
                   height: auto;
                   display: block;
-                  object-fit: cover; /* Ensures the image is cropped nicely */
+                  object-fit: contain; /* Ensures the image is cropped nicely */
                 }
 
-                .content-container {
-                  padding: 20px; /* Add padding around the body content */
-                  background-color: #ffffff; /* Background to differentiate content */
-                  border-radius: 8px; /* Rounded corners for a clean look */
-                  padding-bottom: 56px; /* Add spacing around the container */
-                  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-                }
-
+               
                 /* Enhance readability of paragraphs */
                 p {
                   margin: 10px 0;
@@ -830,6 +865,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                   a:hover {
                     text-decoration: underline;
                   }
+
                 </style>
               </head>
               <body>
@@ -864,7 +900,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         r'related|also|popular|trending|recommended|next|prev|'
         r'share|social|comment|discuss|subscribe|follow|'
         r'sponsor|partner|promotion|read-more|'
-        r'outbrain|taboola|more-from|suggested|links|footer',
+        r'more-from|suggested|links|footer',
         caseSensitive: false,
       );
 
@@ -875,8 +911,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
         // Check if element matches any low-value patterns
         if (lowValuePatterns.hasMatch(classList) ||
-            lowValuePatterns.hasMatch(id) ||
-            lowValuePatterns.hasMatch(text)) {
+                lowValuePatterns.hasMatch(id)
+            // lowValuePatterns.hasMatch(text)
+            ) {
+          // Logger.printLog('[boi] : ${element.outerHtml}');
           element.remove();
         }
       });
@@ -1002,7 +1040,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     }
 
     // Execute optimizations in sequence
-    // removeBoilerplate();
+    removeBoilerplate();
     cleanListsAndLinks();
     // mergeAdjacentElements();
     removeEmptyContainers();
