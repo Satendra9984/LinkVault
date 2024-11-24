@@ -235,6 +235,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                     _url.value = url.toString();
                                     urlController.text = _url.value;
                                     _urlLoadState.value = LoadingStates.loading;
+                                    _extractingContentLoadState.value =
+                                        LoadingStates.loading;
                                   },
                                   onPermissionRequest:
                                       (controller, request) async {
@@ -332,8 +334,17 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                       SizedBox(
                                         height: 20,
                                         width: 20,
-                                        child: SvgPicture.asset(
-                                          MediaRes.errorANIMATION,
+                                        // child: SvgPicture.asset(
+                                        //   MediaRes.errorANIMATION,
+                                        // placeholderBuilder: (context) {
+                                        //   return Icon(
+                                        //     Icons.error_rounded,
+                                        //     color: ColourPallette.error,
+                                        //   );
+                                        // },
+                                        child: Icon(
+                                          Icons.error_rounded,
+                                          color: ColourPallette.error,
                                         ),
                                       ),
                                       const Center(
@@ -491,82 +502,221 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         // });
       }
 
+      const double _minContentRatio = 0.3; // Minimum text-to-markup ratio
+      const int _minTextLength = 1000; // Minimum text content length
+
+      bool _shouldExcludeElement(dom.Element element) {
+        // Exclude hidden elements
+        if (element.attributes['style']?.contains('display: none') ?? false) {
+          return true;
+        }
+
+        // Exclude elements with minimal content
+        final text = element.text.trim();
+        if (text.length < _minTextLength) {
+          return true;
+        }
+
+        // Exclude common non-content areas
+        final classNames = element.classes.join(' ').toLowerCase();
+        return classNames.contains('comment') ||
+            classNames.contains('sidebar') ||
+            classNames.contains('footer') ||
+            classNames.contains('header') ||
+            classNames.contains('nav');
+      }
+
+      int _calculateContentScore(dom.Element element) {
+        int score = 0;
+
+        // Get text content length
+        final text = element.text.trim();
+        score += text.length;
+
+        // Bonus for semantic elements and ARIA roles
+        if (element.localName == 'main' || element.localName == 'article') {
+          score += 300;
+        }
+        if (element.attributes['role'] == 'main' ||
+            element.attributes['role'] == 'article') {
+          score += 200;
+        }
+
+        // Bonus for content-related classes
+        final classNames = element.classes.join(' ').toLowerCase();
+        if (classNames.contains('content') ||
+            classNames.contains('article') ||
+            classNames.contains('post')) {
+          score += 100;
+        }
+
+        // Penalize for deep nesting
+        int depth = 0;
+        dom.Node? parent = element;
+        while (parent != null) {
+          depth++;
+          parent = parent.parent;
+        }
+        score -= depth * 10;
+
+        // Check text-to-markup ratio
+        final markup = element.outerHtml.length;
+        if (markup > 0) {
+          final ratio = text.length / markup;
+          if (ratio > _minContentRatio) {
+            score += (ratio * 100).round();
+          }
+        }
+
+        return score;
+      }
+
       dom.Element findMainContent(dom.Element body) {
         final selectors = [
-          // Primary semantic HTML5 elements
+          // Primary semantic HTML5 elements (highest priority)
           'main',
           'article',
 
-          // ARIA roles
-          'div[role="main"]',
-          'div[role="article"]',
-          'main[role="main"]',
+          // ARIA roles (high priority)
+          '[role="main"]',
+          '[role="article"]',
 
-          // Story/Article specific patterns
-          'div[class*="storyline"]',
-          'div[class*="story-content"]',
-          'div[class*="story-body"]',
-          'div[class*="article-body"]',
-          'div[class*="article-content"]',
-          'div[class*="article-text"]',
-          'div[class*="article__content"]',
-          'div[class*="article__body"]',
+          // Story/Article patterns
+          'div[class*="storyline"], div[class*="story-content"], div[class*="story-body"]',
+          'div[class*="article-body"], div[class*="article-content"], div[class*="article-text"]',
+          'div[class*="article__content"], div[class*="article__body"]',
 
           // Blog/Post patterns
-          'div[class*="post-content"]',
-          'div[class*="post-body"]',
-          'div[class*="post-text"]',
-          'div[class*="post__content"]',
-          'div[class*="blog-post"]',
-          'div[class*="blog-content"]',
+          'div[class*="post-content"], div[class*="post-body"], div[class*="post-text"]',
+          'div[class*="post__content"], div[class*="blog-post"], div[class*="blog-content"]',
           'div[class*="entry-content"]',
 
-          // News specific patterns
-          'div[class*="news-content"]',
-          'div[class*="news-article"]',
-          'div[class*="news-text"]',
+          // News patterns
+          'div[class*="news-content"], div[class*="news-article"], div[class*="news-text"]',
           'div[class*="news__content"]',
 
           // Main content patterns
-          'div[class*="main-content"]',
-          'div[class*="main-article"]',
-          'div[class*="page-content"]',
-          'div[class*="content-main"]',
-          'div[class*="content-body"]',
-          'div[class*="content-text"]',
+          'div[class*="main-content"], div[class*="main-article"], div[class*="page-content"]',
+          'div[class*="content-main"], div[class*="content-body"], div[class*="content-text"]',
           'div[class*="content__main"]',
 
           // Single content containers
-          'div[class*="single-content"]',
-          'div[class*="single-post"]',
-          'div[class*="single-article"]',
+          'div[class*="single-content"], div[class*="single-post"], div[class*="single-article"]',
 
           // Publisher specific patterns
-          'div[class*="rich-text"]',
-          'div[class*="markdown-body"]',
-          'div[class*="container-content"]',
+          'div[class*="rich-text"], div[class*="markdown-body"], div[class*="container-content"]',
 
           // Generic content (lower priority)
           'div[class*="content"]',
 
-          // Section based selectors (with qualifiers)
-          'section[class*="content"]',
-          'section[class*="article"]',
-          'section[class*="post"]',
+          // Section based selectors (lowest priority)
+          'section[class*="content"], section[class*="article"], section[class*="post"]',
           'section[class*="story"]',
           'section:not([class*="header"]):not([class*="footer"]):not([class*="sidebar"])',
         ];
 
+        dom.Element? bestMatch;
+        var maxScore = 0;
+
         for (final selector in selectors) {
-          final content = body.querySelector(selector);
-          if (content != null) {
-            // Logger.printLog('[SL] : $selector found ${content.outerHtml}');
-            // Logger.printLog('[SL] : $selector found $content');
-            return content;
+          final elements = body.querySelectorAll(selector);
+
+          for (final element in elements) {
+            // if (_shouldExcludeElement(element)) continue;
+
+            final score = _calculateContentScore(element);
+            if (score > maxScore) {
+              maxScore = score;
+              bestMatch = element;
+            }
+          }
+
+          // If we found a high-scoring match with semantic elements, stop searching
+          if (maxScore > 1000 && selector.contains('main') ||
+              selector.contains('article')) {
+            break;
           }
         }
-        return body; // Default fallback to the entire body
+
+        return bestMatch ?? body;
       }
+
+      // dom.Element findMainContent(dom.Element body) {
+      //   final selectors = [
+      //     // Primary semantic HTML5 elements
+      //     'main',
+      //     'article',
+
+      //     // ARIA roles
+      //     'div[role="main"]',
+      //     'div[role="article"]',
+      //     'main[role="main"]',
+
+      //     // Story/Article specific patterns
+      //     'div[class*="storyline"]',
+      //     'div[class*="story-content"]',
+      //     'div[class*="story-body"]',
+      //     'div[class*="article-body"]',
+      //     'div[class*="article-content"]',
+      //     'div[class*="article-text"]',
+      //     'div[class*="article__content"]',
+      //     'div[class*="article__body"]',
+
+      //     // Blog/Post patterns
+      //     'div[class*="post-content"]',
+      //     'div[class*="post-body"]',
+      //     'div[class*="post-text"]',
+      //     'div[class*="post__content"]',
+      //     'div[class*="blog-post"]',
+      //     'div[class*="blog-content"]',
+      //     'div[class*="entry-content"]',
+
+      //     // News specific patterns
+      //     'div[class*="news-content"]',
+      //     'div[class*="news-article"]',
+      //     'div[class*="news-text"]',
+      //     'div[class*="news__content"]',
+
+      //     // Main content patterns
+      //     'div[class*="main-content"]',
+      //     'div[class*="main-article"]',
+      //     'div[class*="page-content"]',
+      //     'div[class*="content-main"]',
+      //     'div[class*="content-body"]',
+      //     'div[class*="content-text"]',
+      //     'div[class*="content__main"]',
+
+      //     // Single content containers
+      //     'div[class*="single-content"]',
+      //     'div[class*="single-post"]',
+      //     'div[class*="single-article"]',
+
+      //     // Publisher specific patterns
+      //     'div[class*="rich-text"]',
+      //     'div[class*="markdown-body"]',
+      //     'div[class*="container-content"]',
+
+      //     // Generic content (lower priority)
+      //     'div[class*="content"]',
+
+      //     // Section based selectors (with qualifiers)
+      //     'section[class*="content"]',
+      //     'section[class*="article"]',
+      //     'section[class*="post"]',
+      //     'section[class*="story"]',
+      //     'section:not([class*="header"]):not([class*="footer"]):not([class*="sidebar"])',
+      //   ];
+
+      //   for (final selector in selectors) {
+      //     final content = body.querySelector(selector);
+      //     if (content != null) {
+      //       Logger.printLog('[SL] : $selector found ${content.outerHtml}');
+      //       // Logger.printLog('[SL] : $selector found $content');
+      //       return content;
+      //     }
+      //   }
+      //   return body; // Default fallback to the entire body
+      // }
 
       void normalizeLinks(dom.Element body, Uri baseUri) {
         body.querySelectorAll('a[href]').forEach((link) {
@@ -608,7 +758,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         // Define tags to enhance
         const contentTags = [
           'p',
-          // 'div',
+          'div',
           'span',
           'article',
           'section',
@@ -754,7 +904,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       final extractedImageUrl = UrlParsingService.extractImageUrl(document);
 
       // final extractedCss = extractAndAppendStyles(document.outerHtml);
-      // // Restricted properties that are already defined in the predefined styles
+      // // // Restricted properties that are already defined in the predefined styles
       // final List<String> restrictedProperties = [
       //   'margin',
       //   'padding',
@@ -777,7 +927,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
       cleanBody(mainContent);
       // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
-
       normalizeLinks(mainContent, Uri.parse(url));
       optimizeContent(mainContent); // Add this line
       enhanceParagraph(mainContent);
@@ -881,6 +1030,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
       _extractingContentLoadState.value = LoadingStates.loaded;
 
+      // Logger.printLog('[HTML] : ${_extractedContent.value}');
       return mainContent.outerHtml;
     } catch (error) {
       if (kDebugMode) {
@@ -897,7 +1047,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     void removeBoilerplate() {
       // Common patterns for non-article content
       final lowValuePatterns = RegExp(
-        r'related|also|popular|trending|recommended|next|prev|'
+        r'related|also|popular|trending|recommended|prev|'
         r'share|social|comment|discuss|subscribe|follow|'
         r'sponsor|partner|promotion|read-more|'
         r'more-from|suggested|links|footer',
@@ -922,29 +1072,30 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
     // 2. Clean list items and links
     void cleanListsAndLinks() {
-      // Remove lists that are likely navigation or related content
       content.querySelectorAll('ul, ol').forEach((list) {
-        final links = list.getElementsByTagName('a');
-        final items = list.children.length;
+        final links = list.querySelectorAll('a');
+        final items = list.querySelectorAll('li');
 
-        // Remove lists that are mostly links (likely navigation/related articles)
-        if (items > 0 && links.length / items > 0.7) {
+        if (items.isNotEmpty && links.length / items.length > 0.4) {
+          // Logger.printLog('[REMOVED] Navigation list: ${list.outerHtml}');
           list.remove();
         }
       });
 
-      // Clean up remaining links
       content.querySelectorAll('a').forEach((link) {
-        // Remove empty links or links with just images
-        if (link.text.trim().isEmpty &&
-            link.getElementsByTagName('img').isEmpty) {
-          link.remove();
-        }
+        final visibleText = link.nodes
+            .where((node) => node.nodeType == dom.Node.TEXT_NODE)
+            .map((node) => node.text)
+            .join(' ')
+            .trim();
 
-        // Convert links that are likely article references to plain text
-        if (link.text.length > 100) {
+        if (visibleText.isEmpty && link.getElementsByTagName('img').isEmpty) {
+          Logger.printLog('[REMOVED] Empty link: ${link.outerHtml}');
+          link.remove();
+        } else if (visibleText.length > 100) {
+          Logger.printLog('[CONVERTED] Long link: ${link.outerHtml}');
           final span = dom.Element.tag('span');
-          span.text = link.text;
+          span.text = visibleText;
           link.replaceWith(span);
         }
       });
@@ -1042,8 +1193,319 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     // Execute optimizations in sequence
     removeBoilerplate();
     cleanListsAndLinks();
+    // ContentCleaner.cleanListsAndLinks(content);
     // mergeAdjacentElements();
     removeEmptyContainers();
     cleanInlineContent();
+  }
+}
+
+class ContentCleaner {
+  // Configuration constants
+  static const double _maxLinkDensity = 0.4;
+  static const int _maxLinkTextLength = 100;
+  static const int _minListItems = 2;
+  static const Set<String> _keepClasses = {
+    'content-list',
+    'article-list',
+    'references',
+    'citations',
+    'footnotes',
+  };
+
+  static void cleanListsAndLinks(dom.Element content) {
+    _cleanLists(content);
+    _cleanLinks(content);
+  }
+
+  static bool _shouldKeepList(dom.Element list) {
+    final classes = list.classes.map((c) => c.toLowerCase()).toSet();
+    return _keepClasses.any((keep) => classes.any((c) => c.contains(keep)));
+  }
+
+  static Map<String, dynamic> _calculateListMetrics(dom.Element list) {
+    int totalItems = 0;
+    int itemsWithLinks = 0;
+    int totalLinks = 0;
+    int totalTextLength = 0;
+    int totalLinkTextLength = 0;
+    bool hasImages = false;
+    bool hasNumbers = false;
+    bool hasDatePatterns = false;
+
+    list.children.forEach((item) {
+      totalItems++;
+      final itemText = item.text.trim();
+      totalTextLength += itemText.length;
+
+      final links = item.getElementsByTagName('a');
+      if (links.isNotEmpty) {
+        itemsWithLinks++;
+        totalLinks += links.length;
+
+        links.forEach((link) {
+          totalLinkTextLength += link.text.trim().length;
+        });
+      }
+
+      if (item.getElementsByTagName('img').isNotEmpty) {
+        hasImages = true;
+      }
+
+      // Check for numbered patterns (e.g., "1.", "[1]")
+      if (RegExp(r'^\d+[\.\]]').hasMatch(itemText)) {
+        hasNumbers = true;
+      }
+
+      // Check for date patterns
+      if (RegExp(r'\d{1,2}[-/]\d{1,2}[-/]\d{2,4}').hasMatch(itemText)) {
+        hasDatePatterns = true;
+      }
+    });
+
+    return {
+      'totalItems': totalItems,
+      'itemsWithLinks': itemsWithLinks,
+      'totalLinks': totalLinks,
+      'linkDensity': totalItems > 0 ? itemsWithLinks / totalItems : 0,
+      'textLinkRatio':
+          totalTextLength > 0 ? totalLinkTextLength / totalTextLength : 0,
+      'hasImages': hasImages,
+      'hasNumbers': hasNumbers,
+      'hasDatePatterns': hasDatePatterns,
+      'averageTextLength': totalItems > 0 ? totalTextLength / totalItems : 0,
+    };
+  }
+
+  static bool _shouldRemoveList(Map<String, dynamic> metrics) {
+    // Convert values to their proper types to avoid runtime errors
+    final bool hasNumbers = metrics['hasNumbers'] as bool;
+    final bool hasDatePatterns = metrics['hasDatePatterns'] as bool;
+    final bool hasImages = metrics['hasImages'] as bool;
+    final double linkDensity = (metrics['linkDensity'] as num).toDouble();
+    final double textLinkRatio = (metrics['textLinkRatio'] as num).toDouble();
+    final double averageTextLength =
+        (metrics['averageTextLength'] as num).toDouble();
+
+    // Keep numbered lists that look like references or citations
+    if (hasNumbers && linkDensity > 0) {
+      return false;
+    }
+
+    // Keep date-based lists (e.g., timelines)
+    if (hasDatePatterns) {
+      return false;
+    }
+
+    // Remove navigation-like lists
+    if (linkDensity > _maxLinkDensity && averageTextLength < 50) {
+      return true;
+    }
+
+    // Remove image galleries
+    if (hasImages && linkDensity > 0.8) {
+      return true;
+    }
+
+    // Remove low-value lists
+    return textLinkRatio > 0.8 && averageTextLength < 20;
+  }
+
+  static bool _shouldRemoveLink(dom.Element link) {
+    final text = link.text.trim();
+    final images = link.getElementsByTagName('img');
+
+    // Remove empty links
+    if (text.isEmpty && images.isEmpty) {
+      return true;
+    }
+
+    // Remove common unwanted links
+    final href = link.attributes['href']?.toLowerCase() ?? '';
+    if (href.contains('javascript:') || href.contains('#') || href == '') {
+      return true;
+    }
+
+    // Remove social media sharing links
+    final linkText = text.toLowerCase();
+    if (linkText.contains('share') ||
+        linkText.contains('tweet') ||
+        linkText.contains('follow')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  static bool _shouldConvertToText(dom.Element link) {
+    final text = link.text.trim();
+
+    // Convert long text links to plain text
+    if (text.length > _maxLinkTextLength) {
+      return true;
+    }
+
+    // Convert likely article excerpt links
+    if (text.length > 50 && text.contains('. ')) {
+      return true;
+    }
+
+    // Convert quoted links
+    if (text.startsWith('"') && text.endsWith('"')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  static void _cleanLists(dom.Element content) {
+    // Create a list of elements to remove
+    final listsToRemove = <dom.Element>[];
+
+    // First pass: identify lists to remove
+    content.querySelectorAll('ul, ol').forEach((list) {
+      if (!_shouldKeepList(list)) {
+        final metrics = _calculateListMetrics(list);
+        if (_shouldRemoveList(metrics)) {
+          listsToRemove.add(list);
+        }
+      }
+    });
+
+    // Second pass: remove identified lists
+    for (final list in listsToRemove) {
+      list.remove();
+    }
+  }
+
+  static void _cleanLinks(dom.Element content) {
+    // Create lists for different operations
+    final linksToRemove = <dom.Element>[];
+    final linksToConvert = <dom.Element>[];
+    final linksToClean = <dom.Element>[];
+
+    // First pass: categorize links
+    content.querySelectorAll('a').forEach((link) {
+      if (_shouldRemoveLink(link)) {
+        linksToRemove.add(link);
+      } else if (_shouldConvertToText(link)) {
+        linksToConvert.add(link);
+      } else {
+        linksToClean.add(link);
+      }
+    });
+
+    // Second pass: perform operations
+    for (final link in linksToRemove) {
+      link.remove();
+    }
+
+    for (final link in linksToConvert) {
+      _convertLinkToText(link);
+    }
+
+    for (final link in linksToClean) {
+      _cleanLinkContent(link);
+    }
+  }
+
+  static void _cleanListItems(dom.Element list) {
+    final itemsToRemove = <dom.Element>[];
+    final nestedListsToProcess = <dom.Element>[];
+
+    // First pass: identify items and nested lists to process
+    list.children.forEach((item) {
+      if (item.text.trim().isEmpty &&
+          item.getElementsByTagName('img').isEmpty) {
+        itemsToRemove.add(item);
+      }
+
+      item.querySelectorAll('ul, ol').forEach((nestedList) {
+        nestedListsToProcess.add(nestedList);
+      });
+    });
+
+    // Second pass: remove empty items
+    for (final item in itemsToRemove) {
+      item.remove();
+    }
+
+    // Third pass: process nested lists
+    for (final nestedList in nestedListsToProcess) {
+      final metrics = _calculateListMetrics(nestedList);
+      if (_shouldRemoveList(metrics)) {
+        nestedList.remove();
+      }
+    }
+  }
+
+  static void _cleanLinkContent(dom.Element link) {
+    // Store nodes to remove in a separate list
+    final nodesToRemove = <dom.Node>[];
+
+    link.nodes.forEach((node) {
+      if (node is dom.Text && node.text.trim().isEmpty) {
+        nodesToRemove.add(node);
+      }
+    });
+
+    // Remove nodes after iteration
+    for (final node in nodesToRemove) {
+      node.remove();
+    }
+
+    // Clean URL if present
+    final href = link.attributes['href'];
+    if (href != null) {
+      try {
+        final uri = Uri.parse(href);
+        final cleanParams = uri.queryParameters.keys
+            .where((key) =>
+                !key.contains('utm_') &&
+                !key.contains('source') &&
+                !key.contains('ref'))
+            .toList();
+
+        if (cleanParams.length != uri.queryParameters.length) {
+          final cleanUri = uri.replace(
+              queryParameters: Map.fromEntries(cleanParams
+                  .map((key) => MapEntry(key, uri.queryParameters[key]!))));
+          link.attributes['href'] = cleanUri.toString();
+        }
+      } catch (e) {
+        // If URL parsing fails, keep the original URL
+        print('Warning: Failed to clean URL $href: $e');
+      }
+    }
+  }
+
+  static void _convertLinkToText(dom.Element link) {
+    final span = dom.Element.tag('span');
+
+    // Copy classes safely
+    final classesToKeep = link.classes
+        .where((c) =>
+            c.contains('quote') || c.contains('excerpt') || c.contains('text'))
+        .toList();
+
+    if (classesToKeep.isNotEmpty) {
+      span.classes.addAll(classesToKeep);
+    }
+
+    // Copy nodes safely
+    final nodes = link.nodes.toList();
+    for (final node in nodes) {
+      if (node is dom.Element) {
+        if (['b', 'i', 'em', 'strong'].contains(node.localName)) {
+          span.append(node.clone(true));
+        } else {
+          span.text = (span.text ?? '') + node.text;
+        }
+      } else {
+        span.text = (span.text ?? '') + (node.text ?? '');
+      }
+    }
+
+    link.replaceWith(span);
   }
 }
