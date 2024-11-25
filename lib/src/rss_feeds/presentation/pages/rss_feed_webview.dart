@@ -447,85 +447,175 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       }
 
       void cleanBody(dom.Element body) {
-        const unnecessaryTags = [
-          'nav',
-          'footer',
-          'aside',
-          'header',
-          'button',
-          'script',
-          'style',
-          'form',
-          'input',
-          'noscript',
-          'iframe',
-          // 'advertisement',
-          'header',
-          'sidebar',
-          'navigation',
-          'nav',
-          'menu',
-          'comment',
-          'related',
-          'recommended',
-          'share',
-          'social',
-          'widget',
-          'promotional',
-          // 'advertisement',
-          // 'ad-',
-          'popup',
-          'modal',
-        ];
-        for (final tag in unnecessaryTags) {
-          body.getElementsByTagName(tag).forEach((element) => element.remove());
-        }
+        // Comprehensive patterns for removal
+        final removalPatterns = {
+          // Tags to remove
+          'tags': {
+            'nav',
+            'footer',
+            'aside',
+            'header',
+            'button',
+            'script',
+            'style',
+            'form',
+            'input',
+            'noscript',
+            'iframe',
+            'sidebar',
+            'navigation',
+            'menu',
+            'comment',
+            'related',
+            'recommended',
+            'share',
+            'social',
+            'widget',
+            'promotional',
+            'popup',
+            'modal',
+          },
 
-        // Remove empty or invisible elements
-        body.querySelectorAll('*').forEach((element) {
-          final isEmpty = element.text.trim().isEmpty;
-          final isHidden =
-              element.attributes['style']?.contains('display:none') ?? false;
+          // Class patterns to target
+          'classes': {
+            // r'ad',
+            r'promo',
+            // r'advertisement',
+            r'tracking',
+            r'analytics',
+            r'social-',
+            r'share-',
+            r'popup',
+            r'modal',
+            r'banner',
+            r'related',
+            r'also',
+            r'popular',
+            r'trending',
+            r'recommended',
+            r'prev',
+            r'share',
+            r'social',
+            r'comment',
+            r'discuss',
+            r'subscribe',
+            r'follow',
+            r'sponsor',
+            r'partner',
+            r'promotion',
+            r'read-more',
+            r'more-from',
+            r'suggested',
+            r'links',
+            r'footer',
+          },
 
-          if (isEmpty || isHidden) {
-            element.remove();
+          // ID patterns to target
+          'ids': {
+            // r'ad',
+            r'promo',
+            // r'advertisement',
+            r'tracking',
+            r'analytics',
+            r'social-',
+            r'share-',
+            r'popup',
+            r'modal',
+            r'banner',
+            r'related',
+            r'also',
+            r'popular',
+            r'trending',
+            r'recommended',
+            r'prev',
+            r'share',
+            r'social',
+            r'comment',
+            r'discuss',
+            r'subscribe',
+            r'follow',
+            r'sponsor',
+            r'partner',
+            r'promotion',
+            r'read-more',
+            r'more-from',
+            r'suggested',
+            r'links',
+            r'footer',
+          },
+        };
+
+        // Optimized removal strategy
+        void removeUnwantedElements() {
+          // Remove by tag names - most efficient first-pass filtering
+          for (final tag in removalPatterns['tags']!) {
+            body
+                .getElementsByTagName(tag)
+                .forEach((element) => element.remove());
           }
-        });
 
-        // Remove elements with common ad-related classes
-        // body
-        //     .querySelectorAll('[class*="ad"], [id*="ad"], [class*="promo"]')
-        //     .forEach((element) {
-        //   element.remove();
-        // });
-      }
+          // Remove elements with matching classes or IDs
+          body.querySelectorAll('*').forEach((element) {
+            final className = element.attributes['class'] ?? '';
+            final elementId = element.attributes['id'] ?? '';
 
-      const double _minContentRatio = 0.3; // Minimum text-to-markup ratio
-      const int _minTextLength = 1000; // Minimum text content length
+            // Check against class and ID patterns
+            final shouldRemove = removalPatterns['classes']!.any(
+                  (pattern) =>
+                      RegExp(pattern, caseSensitive: false).hasMatch(className),
+                ) ||
+                removalPatterns['ids']!.any((pattern) =>
+                    RegExp(pattern, caseSensitive: false).hasMatch(elementId));
 
-      bool _shouldExcludeElement(dom.Element element) {
-        // Exclude hidden elements
-        if (element.attributes['style']?.contains('display: none') ?? false) {
-          return true;
+            if (shouldRemove) {
+              element.remove();
+            }
+          });
         }
 
-        // Exclude elements with minimal content
-        final text = element.text.trim();
-        if (text.length < _minTextLength) {
-          return true;
+        // Helper method to check if element is structural
+        bool isStructuralElement(dom.Element element) {
+          final classList = element.attributes['class'] ?? '';
+          final id = element.attributes['id'] ?? '';
+
+          final structuralPatterns = RegExp(
+            r'content|main|article|story|post|body',
+            caseSensitive: false,
+          );
+
+          return structuralPatterns.hasMatch(classList) ||
+              structuralPatterns.hasMatch(id);
         }
 
-        // Exclude common non-content areas
-        final classNames = element.classes.join(' ').toLowerCase();
-        return classNames.contains('comment') ||
-            classNames.contains('sidebar') ||
-            classNames.contains('footer') ||
-            classNames.contains('header') ||
-            classNames.contains('nav');
+        // TODO : THIS IS THE MAIN REASON OF IMAGES GETTING REMOVED
+        // Remove empty or invisible elements
+        void removeEmptyElements() {
+          bool hasSignificantContent(dom.Element element) {
+            final text = element.text.trim();
+            final images = element.getElementsByTagName('img');
+            final iframes = element.getElementsByTagName('iframe');
+
+            return text.length > 30 || images.isNotEmpty || iframes.isNotEmpty;
+          }
+
+          body.querySelectorAll('div, section, article').forEach((container) {
+            if (!hasSignificantContent(container) &&
+                container != body &&
+                !isStructuralElement(container)) {
+              container.remove();
+            }
+          });
+        }
+
+        // Execute cleaning strategies
+        removeUnwantedElements();
+        removeEmptyElements();
       }
 
-      int _calculateContentScore(dom.Element element) {
-        int score = 0;
+      const minContentRatio = 0.3; // Minimum text-to-markup ratio
+
+      int calculateContentScore(dom.Element element) {
+        var score = 0;
 
         // Get text content length
         final text = element.text.trim();
@@ -549,7 +639,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         }
 
         // Penalize for deep nesting
-        int depth = 0;
+        var depth = 0;
         dom.Node? parent = element;
         while (parent != null) {
           depth++;
@@ -561,7 +651,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         final markup = element.outerHtml.length;
         if (markup > 0) {
           final ratio = text.length / markup;
-          if (ratio > _minContentRatio) {
+          if (ratio > minContentRatio) {
             score += (ratio * 100).round();
           }
         }
@@ -622,7 +712,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           for (final element in elements) {
             // if (_shouldExcludeElement(element)) continue;
 
-            final score = _calculateContentScore(element);
+            final score = calculateContentScore(element);
             if (score > maxScore) {
               maxScore = score;
               bestMatch = element;
@@ -638,83 +728,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
         return bestMatch ?? body;
       }
-
-      // dom.Element findMainContent(dom.Element body) {
-      //   final selectors = [
-      //     // Primary semantic HTML5 elements
-      //     'main',
-      //     'article',
-
-      //     // ARIA roles
-      //     'div[role="main"]',
-      //     'div[role="article"]',
-      //     'main[role="main"]',
-
-      //     // Story/Article specific patterns
-      //     'div[class*="storyline"]',
-      //     'div[class*="story-content"]',
-      //     'div[class*="story-body"]',
-      //     'div[class*="article-body"]',
-      //     'div[class*="article-content"]',
-      //     'div[class*="article-text"]',
-      //     'div[class*="article__content"]',
-      //     'div[class*="article__body"]',
-
-      //     // Blog/Post patterns
-      //     'div[class*="post-content"]',
-      //     'div[class*="post-body"]',
-      //     'div[class*="post-text"]',
-      //     'div[class*="post__content"]',
-      //     'div[class*="blog-post"]',
-      //     'div[class*="blog-content"]',
-      //     'div[class*="entry-content"]',
-
-      //     // News specific patterns
-      //     'div[class*="news-content"]',
-      //     'div[class*="news-article"]',
-      //     'div[class*="news-text"]',
-      //     'div[class*="news__content"]',
-
-      //     // Main content patterns
-      //     'div[class*="main-content"]',
-      //     'div[class*="main-article"]',
-      //     'div[class*="page-content"]',
-      //     'div[class*="content-main"]',
-      //     'div[class*="content-body"]',
-      //     'div[class*="content-text"]',
-      //     'div[class*="content__main"]',
-
-      //     // Single content containers
-      //     'div[class*="single-content"]',
-      //     'div[class*="single-post"]',
-      //     'div[class*="single-article"]',
-
-      //     // Publisher specific patterns
-      //     'div[class*="rich-text"]',
-      //     'div[class*="markdown-body"]',
-      //     'div[class*="container-content"]',
-
-      //     // Generic content (lower priority)
-      //     'div[class*="content"]',
-
-      //     // Section based selectors (with qualifiers)
-      //     'section[class*="content"]',
-      //     'section[class*="article"]',
-      //     'section[class*="post"]',
-      //     'section[class*="story"]',
-      //     'section:not([class*="header"]):not([class*="footer"]):not([class*="sidebar"])',
-      //   ];
-
-      //   for (final selector in selectors) {
-      //     final content = body.querySelector(selector);
-      //     if (content != null) {
-      //       Logger.printLog('[SL] : $selector found ${content.outerHtml}');
-      //       // Logger.printLog('[SL] : $selector found $content');
-      //       return content;
-      //     }
-      //   }
-      //   return body; // Default fallback to the entire body
-      // }
 
       void normalizeLinks(dom.Element body, Uri baseUri) {
         body.querySelectorAll('a[href]').forEach((link) {
@@ -852,86 +865,96 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         });
       }
 
-      String extractAndAppendStyles(String htmlContent) {
-        try {
-          final RegExp styleTagRegExp =
-              RegExp(r'<style[^>]*>(.*?)<\/style>', dotAll: true);
-          final matches = styleTagRegExp.allMatches(htmlContent);
-
-          // Extract all CSS inside <style> tags
-          final StringBuffer cssBuffer = StringBuffer();
-          for (final match in matches) {
-            cssBuffer
-                .writeln(match.group(1)); // Group 1 contains the CSS content
-          }
-
-          return cssBuffer.toString();
-        } catch (e) {
-          return '';
-        }
-      }
-
-      String filterConflictingCSS(
-          String extractedCss, List<String> restrictedProperties) {
-        final RegExp cssRuleRegExp =
-            RegExp(r'([^{]+)\{([^}]+)\}', dotAll: true);
-        final matches = cssRuleRegExp.allMatches(extractedCss);
-
-        final StringBuffer filteredCssBuffer = StringBuffer();
-
-        for (final match in matches) {
-          final selector = match.group(1)?.trim();
-          final propertiesBlock = match.group(2)?.trim();
-
-          if (selector != null && propertiesBlock != null) {
-            final filteredProperties =
-                propertiesBlock.split(';').where((property) {
-              final propertyName = property.split(':')[0].trim();
-              return !restrictedProperties.contains(propertyName);
-            }).join(';');
-
-            if (filteredProperties.isNotEmpty) {
-              filteredCssBuffer.writeln('$selector { $filteredProperties }');
-            }
-          }
-        }
-
-        return filteredCssBuffer.toString();
-      }
+      // Helper function to parse CSS text into individual rules
+      // List<String> parseCSS(String cssText) {
+      //   // Remove comments
+      //   final commentRemoved =
+      //       cssText.replaceAll(RegExp(r'/\*.*?\*/', multiLine: true), '');
+      //   // Split CSS into individual rules
+      //   final rules = commentRemoved
+      //       .split('}')
+      //       .where((rule) => rule.trim().isNotEmpty)
+      //       .map((rule) => '${rule.trim()}}'.replaceAll('\n', ' '))
+      //       .toList();
+      //   return rules;
+      // }
+      // Function to inject extracted CSS into HTML
+      // String injectNecessaryCss(String html, List<String> cssRules) {
+      //   // Convert the HTML string to a document
+      //   final document = html_parser.parse(html);
+      //   // Create a new style tag
+      //   final styleTag = dom.Element.tag('style')..text = cssRules.join('\n');
+      //   // Find the head tag
+      //   final headTag = document.head;
+      //   if (headTag != null) {
+      //     // Add the style tag to the head
+      //     headTag.append(styleTag);
+      //   }
+      //   // Convert back to HTML string
+      //   return document.outerHtml;
+      // }
+      // List<String> extractNecessaryCss(
+      //   dom.Document document,
+      //   dom.Element mainContent,
+      // ) {
+      //   // Set to store required CSS classes and IDs
+      //   final requiredClasses = <String>{};
+      //   final requiredIds = <String>{};
+      //   // Collect all classes and IDs used in main content
+      //   void collectClassesAndIds(dom.Element element) {
+      //     // Collect classes
+      //     requiredClasses.addAll(element.classes);
+      //     // Collect ID
+      //     if (element.id.isNotEmpty) {
+      //       requiredIds.add(element.id);
+      //     }
+      //     // Recursively collect from child elements
+      //     element.children.forEach(collectClassesAndIds);
+      //   }
+      //   // Start collecting from main content
+      //   collectClassesAndIds(mainContent);
+      //   // List to store extracted CSS rules
+      //   final necessaryCssRules = <String>[];
+      //   // Extract CSS from style tags From WebPageHTML
+      //   final styleTags = document.getElementsByTagName('style');
+      //   // ITERATING THROUGH ALL STYLETAGS
+      //   for (final styleTag in styleTags) {
+      //     final cssText = styleTag.text;
+      //     final cssRules = parseCSS(cssText);
+      //     // Filter CSS rules based on required classes and IDs
+      //     final filteredRules = cssRules.where((rule) {
+      //       // Check if the rule matches any required classes or IDs
+      //       return requiredClasses
+      //               .any((className) => rule.contains('.$className')) ||
+      //           requiredIds.any((id) => rule.contains('#$id'));
+      //     }).toList();
+      //     necessaryCssRules.addAll(filteredRules);
+      //   }
+      //   // Extract CSS from external stylesheets (if possible)
+      //   final linkTags = document.getElementsByTagName('link');
+      //   for (final linkTag in linkTags) {
+      //     final rel = linkTag.attributes['rel'];
+      //     final href = linkTag.attributes['href'];
+      //     // Only process stylesheet links
+      //     if (rel == 'stylesheet' && href != null) {
+      //       // In a real-world scenario, you'd fetch the external stylesheet
+      //       // For this example, we'll leave a placeholder
+      //       // Consider using a network request to fetch external stylesheets
+      //     }
+      //   }
+      //   return necessaryCssRules;
+      // }
 
       final extractedImageUrl = UrlParsingService.extractImageUrl(document);
-
-      // final extractedCss = extractAndAppendStyles(document.outerHtml);
-      // // // Restricted properties that are already defined in the predefined styles
-      // final List<String> restrictedProperties = [
-      //   'margin',
-      //   'padding',
-      //   'background-color',
-      //   'color',
-      //   'font-family',
-      //   'line-height',
-      //   'font-size',
-      //   'overflow-x',
-      // ];
-
-      // final filteredCss = filterConflictingCSS(
-      //   extractedCss,
-      //   restrictedProperties,
-      // );
-      // Logger.printLog('[CSS] : $filteredCss');
 
       final mainContent = findMainContent(body);
       // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
 
       cleanBody(mainContent);
-      // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
       normalizeLinks(mainContent, Uri.parse(url));
       optimizeContent(mainContent); // Add this line
       enhanceParagraph(mainContent);
       enhanceImages(mainContent, Uri.parse(url));
-      // await replaceImagesWithBase64(mainContent);
-
-      // Logger.printLog('[FILE] : ${mainContent.innerHtml}');
 
       _extractedContent.value = '''
         <!DOCTYPE html>
@@ -1092,72 +1115,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           link.remove();
         } else if (visibleText.length > 100) {
           Logger.printLog('[CONVERTED] Long link: ${link.outerHtml}');
-          final span = dom.Element.tag('span');
-          span.text = visibleText;
+          final span = dom.Element.tag('span')..text = visibleText;
           link.replaceWith(span);
-        }
-      });
-    }
-
-    // Helper method to check if elements have similar attributes
-    bool haveSimilarAttributes(dom.Element a, dom.Element b) {
-      final aClass = a.attributes['class'] ?? '';
-      final bClass = b.attributes['class'] ?? '';
-      final aStyle = a.attributes['style'] ?? '';
-      final bStyle = b.attributes['style'] ?? '';
-
-      return aClass == bClass || aStyle == bStyle;
-    }
-
-    // Helper method to check if element is structural
-    bool isStructuralElement(dom.Element element) {
-      final classList = element.attributes['class'] ?? '';
-      final id = element.attributes['id'] ?? '';
-
-      final structuralPatterns = RegExp(
-        r'content|main|article|story|post|body',
-        caseSensitive: false,
-      );
-
-      return structuralPatterns.hasMatch(classList) ||
-          structuralPatterns.hasMatch(id);
-    }
-
-    // 3. Merge adjacent similar elements
-    void mergeAdjacentElements() {
-      var elements = content.querySelectorAll('p, div');
-      dom.Element? previousElement;
-
-      for (var element in elements) {
-        if (previousElement != null &&
-            previousElement.localName == element.localName &&
-            element.text.trim().isNotEmpty) {
-          // Merge if they have similar styles or classes
-          if (haveSimilarAttributes(previousElement, element)) {
-            previousElement.text = '${previousElement.text} ${element.text}';
-            element.remove();
-            continue;
-          }
-        }
-        previousElement = element;
-      }
-    }
-
-    // 4. Remove empty containers
-    void removeEmptyContainers() {
-      bool hasSignificantContent(dom.Element element) {
-        final text = element.text.trim();
-        final images = element.getElementsByTagName('img');
-        final iframes = element.getElementsByTagName('iframe');
-
-        return text.length > 30 || images.isNotEmpty || iframes.isNotEmpty;
-      }
-
-      content.querySelectorAll('div, section, article').forEach((container) {
-        if (!hasSignificantContent(container) &&
-            container != content && // Don't remove the main content container
-            !isStructuralElement(container)) {
-          container.remove();
         }
       });
     }
@@ -1189,11 +1148,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     }
 
     // Execute optimizations in sequence
-    removeBoilerplate();
+    // removeBoilerplate();
     cleanListsAndLinks();
-    // ContentCleaner.cleanListsAndLinks(content);
-    // mergeAdjacentElements();
-    removeEmptyContainers();
     cleanInlineContent();
   }
 }
@@ -1222,14 +1178,14 @@ class ContentCleaner {
   }
 
   static Map<String, dynamic> _calculateListMetrics(dom.Element list) {
-    int totalItems = 0;
-    int itemsWithLinks = 0;
-    int totalLinks = 0;
-    int totalTextLength = 0;
-    int totalLinkTextLength = 0;
-    bool hasImages = false;
-    bool hasNumbers = false;
-    bool hasDatePatterns = false;
+    var totalItems = 0;
+    var itemsWithLinks = 0;
+    var totalLinks = 0;
+    var totalTextLength = 0;
+    var totalLinkTextLength = 0;
+    var hasImages = false;
+    var hasNumbers = false;
+    var hasDatePatterns = false;
 
     list.children.forEach((item) {
       totalItems++;
@@ -1277,13 +1233,12 @@ class ContentCleaner {
 
   static bool _shouldRemoveList(Map<String, dynamic> metrics) {
     // Convert values to their proper types to avoid runtime errors
-    final bool hasNumbers = metrics['hasNumbers'] as bool;
-    final bool hasDatePatterns = metrics['hasDatePatterns'] as bool;
-    final bool hasImages = metrics['hasImages'] as bool;
-    final double linkDensity = (metrics['linkDensity'] as num).toDouble();
-    final double textLinkRatio = (metrics['textLinkRatio'] as num).toDouble();
-    final double averageTextLength =
-        (metrics['averageTextLength'] as num).toDouble();
+    final hasNumbers = metrics['hasNumbers'] as bool;
+    final hasDatePatterns = metrics['hasDatePatterns'] as bool;
+    final hasImages = metrics['hasImages'] as bool;
+    final linkDensity = (metrics['linkDensity'] as num).toDouble();
+    final textLinkRatio = (metrics['textLinkRatio'] as num).toDouble();
+    final averageTextLength = (metrics['averageTextLength'] as num).toDouble();
 
     // Keep numbered lists that look like references or citations
     if (hasNumbers && linkDensity > 0) {
