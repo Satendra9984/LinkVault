@@ -139,6 +139,11 @@ class _CollectionStorePageState extends State<CollectionStorePage>
     return Container(
       padding: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: Colors.grey.shade100,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: ColourPallette.mystic.withOpacity(0.5),

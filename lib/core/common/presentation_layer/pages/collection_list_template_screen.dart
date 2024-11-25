@@ -289,7 +289,7 @@ class _CollectionsListScreenTemplateState
                   heroTag: '${widget.collectionModel.hashCode}',
                   isExtended: showFullAddUrlButton,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   backgroundColor: ColourPallette.salemgreen,
                   // [DYNAMIC] : THIS IS A DYNAMIC PART

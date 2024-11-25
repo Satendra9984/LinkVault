@@ -384,7 +384,7 @@ class _UrlFaviconListTemplateScreenState
                       key: ValueKey(widget.collectionModel.id),
                       isExtended: showFullAddUrlButton,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       backgroundColor: ColourPallette.salemgreen,
                       elevation: 4.0,
