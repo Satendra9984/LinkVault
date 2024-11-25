@@ -1008,14 +1008,15 @@ class _RssFeedUrlsPreviewListWidgetState
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      SvgPicture.asset(
-                        MediaRes.compassSVG,
-                        height: 18,
-                        width: 18,
-                      ),
-                      const SizedBox(width: 8),
+                      // SvgPicture.asset(
+                      //   MediaRes.compassSVG,
+                      //   height: 18,
+                      //   width: 18,
+                      // ),
+                      // const SizedBox(width: 8),
                       Text(
-                        '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}',
+                        widget.collectionFetchModel.collection?.name ??
+                            'My Feeds',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

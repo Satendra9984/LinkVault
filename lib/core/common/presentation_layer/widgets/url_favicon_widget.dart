@@ -87,18 +87,18 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
                 color: ColourPallette.white,
                 // color: ColourPallette.mystic.withOpacity(0.1),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1), // Softer shadow
-                    spreadRadius: 1, // Wider spread for a subtle shadow
-                    offset: const Offset(0, 2),
-                    blurRadius: 1, // Smoothens the shadow edges
-                  ),
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.06),
-                    spreadRadius: 1,
-                    offset: const Offset(0, 1), // Closer to the element
-                    blurRadius: 1, // Less blur for this shadow
-                  ),
+                  // BoxShadow(
+                  //   color: Colors.grey.withOpacity(0.1), // Softer shadow
+                  //   spreadRadius: 1, // Wider spread for a subtle shadow
+                  //   offset: const Offset(0, 2),
+                  //   blurRadius: 1, // Smoothens the shadow edges
+                  // ),
+                  // BoxShadow(
+                  //   color: Colors.grey.withOpacity(0.06),
+                  //   spreadRadius: 1,
+                  //   offset: const Offset(0, 1), // Closer to the element
+                  //   blurRadius: 1, // Less blur for this shadow
+                  // ),
                 ],
               ),
               child: _getLogoWidget(

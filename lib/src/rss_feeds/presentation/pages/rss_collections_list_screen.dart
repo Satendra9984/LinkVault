@@ -97,14 +97,14 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(
-            MediaRes.compassSVG,
-            height: 18,
-            width: 18,
-          ),
-          const SizedBox(width: 8),
+          // SvgPicture.asset(
+          //   MediaRes.compassSVG,
+          //   height: 18,
+          //   width: 18,
+          // ),
+          // const SizedBox(width: 8),
           Text(
-            widget.isRootCollection ? 'My Feeds' : widget.collectionModel.name,
+            widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

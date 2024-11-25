@@ -387,6 +387,7 @@ class _UrlFaviconListTemplateScreenState
                         borderRadius: BorderRadius.circular(50),
                       ),
                       backgroundColor: ColourPallette.salemgreen,
+                      elevation: 4.0,
                       onPressed: () => widget.onAddUrlPressed(url: url),
                       label: showFullAddUrlButton
                           ? const Text(

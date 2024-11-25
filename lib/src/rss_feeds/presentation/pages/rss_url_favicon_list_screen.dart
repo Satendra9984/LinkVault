@@ -271,12 +271,12 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
-          SvgPicture.asset(
-            MediaRes.compassSVG,
-            height: 18,
-            width: 18,
-          ),
-          const SizedBox(width: 8),
+          // SvgPicture.asset(
+          //   MediaRes.compassSVG,
+          //   height: 18,
+          //   width: 18,
+          // ),
+          // const SizedBox(width: 8),
           Expanded(
             child: Text(
               widget.collectionModel.name,

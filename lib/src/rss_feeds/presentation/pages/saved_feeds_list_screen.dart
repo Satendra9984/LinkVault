@@ -124,16 +124,14 @@ class _SavedFeedsPreviewListScreenState
               surfaceTintColor: ColourPallette.mystic,
               title: Row(
                 children: [
-                  SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: widget.appBarLeadingIcon,
-                  ),
-                  const SizedBox(width: 8),
+                  // SizedBox(
+                  //   height: 20,
+                  //   width: 20,
+                  //   child: widget.appBarLeadingIcon,
+                  // ),
+                  // const SizedBox(width: 8),
                   Text(
-                    widget.isRootCollection
-                        ? 'My Feeds'
-                        : fetchCollection.collection!.name,
+                    fetchCollection.collection!.name,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,

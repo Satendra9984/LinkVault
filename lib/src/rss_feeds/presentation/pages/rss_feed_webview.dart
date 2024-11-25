@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+// import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
@@ -88,9 +88,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                 .contains(defaultTargetPlatform)
         ? null
         : PullToRefreshController(
-            settings: PullToRefreshSettings(
-              color: Colors.blue,
-            ),
+            settings: PullToRefreshSettings(color: Colors.blue),
             onRefresh: () async {
               if (defaultTargetPlatform == TargetPlatform.android) {
                 await webViewController?.reload();
@@ -366,7 +364,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                               }
 
                               return Expanded(
-                                child: Container(
+                                child: SizedBox(
                                   width: size.width,
                                   // padding: const EdgeInsets.symmetric(
                                   //     horizontal: 16, vertical: 0),
