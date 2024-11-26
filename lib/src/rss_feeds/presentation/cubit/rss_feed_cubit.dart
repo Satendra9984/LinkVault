@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/data/repositories/rss_feed_repo.dart';
 
@@ -84,8 +85,8 @@ class RssFeedCubit extends Cubit<RssFeedState> {
     );
   }
 
-  // IMPROVE REFRESH LOGIC TO NOT DELETE SAME FEED
-  // WILL BE USEFUL WHEN IT HAS READ BOOKMARK OPTIONS TO STORE
+  /// IMPROVE REFRESH LOGIC TO NOT DELETE SAME FEED
+  /// WILL BE USEFUL WHEN IT HAS READ BOOKMARK OPTIONS TO STORE
   Future<void> refreshCollectionFeed({
     required String collectionId,
   }) async {
@@ -207,16 +208,13 @@ class RssFeedCubit extends Cubit<RssFeedState> {
         _collectionCubit.urlsFetchModelList(collectionId: collectionId) ?? [];
 
     // Extract UrlModels from the fetched URLs
-    final urlModelList = <UrlModel>[];
-    for (final urlModel in fetchedUrls) {
-      if (urlModel.urlModel != null) {
-        urlModelList.add(urlModel.urlModel!);
-      }
-    }
+    final urlModelList = fetchedUrls
+        .where((urlModel) => urlModel.urlModel != null)
+        .map((urlModel) => urlModel.urlModel!)
+        .toList();
 
     // Emit a loading state
     final currentCollectionFeed = state.feedCollections[collectionId]!;
-
     emit(
       state.copyWith(
         feedCollections: {
@@ -228,24 +226,54 @@ class RssFeedCubit extends Cubit<RssFeedState> {
       ),
     );
 
-    final allFeeds = <UrlModel>[]; // List to collect all feeds
+    const maxConcurrentFetches = 5; // Set a limit for concurrent requests
 
-    // for (final urlModel in urlModelList) {
-    await for (final result
-        in _rssFeedRepo.getAllFeeds(urlModels: urlModelList)) {
-      result.fold(
-        (failure) {
-          // Logger.printLog('Failed to fetch feeds for URL: ');
-        },
-        allFeeds.addAll,
+    // Initialize an empty list to collect all feeds
+    final allFeeds = <UrlModel>[];
+
+    // Divide urlModelList into batches based on maxConcurrentFetches
+    for (var i = 0; i < urlModelList.length; i += maxConcurrentFetches) {
+      final batch = urlModelList.skip(i).take(maxConcurrentFetches);
+
+      // Fetch feeds concurrently for the current batch
+      final fetchTasks = batch.map(
+        (urlModel) => _rssFeedRepo.getAllFeeds(urlModels: [urlModel]).first,
       );
+
+      // Wait for all fetches in the current batch to complete
+      final results = await Future.wait(fetchTasks);
+
+      // Process each result in the batch
+      for (final result in results) {
+        result.fold(
+          (failure) {
+            // Log the failure if needed
+            // Logger.printLog('Failed to fetch feeds for URL');
+          },
+          (feeds) {
+            // Add fetched feeds to allFeeds
+            allFeeds
+              ..addAll(feeds)
+              ..sort((u1, u2) => u2.createdAt.compareTo(u1.createdAt));
+
+            // Emit the updated state with the latest feeds
+            emit(
+              state.copyWith(
+                feedCollections: {
+                  ...state.feedCollections,
+                  collectionId: state.feedCollections[collectionId]!.copyWith(
+                    allFeeds: List<UrlModel>.from(allFeeds),
+                    loadingStates: LoadingStates.loading,
+                  ),
+                },
+              ),
+            );
+          },
+        );
+      }
     }
 
-    allFeeds.sort(
-      (u1, u2) => u2.createdAt.compareTo(u1.createdAt),
-    );
-
-    // Update the state with all feeds after all fetching is done
+    // Once all feeds have been fetched, update to loaded state
     emit(
       state.copyWith(
         feedCollections: {

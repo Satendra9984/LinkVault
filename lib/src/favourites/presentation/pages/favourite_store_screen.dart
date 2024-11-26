@@ -3,18 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/src/favourites/presentation/pages/faourite_url_favicon_list_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_collections_list_screen.dart';
-import 'package:link_vault/src/favourites/presentation/pages/favourite_urls_preview_list_screen.dart';
 import 'package:lottie/lottie.dart';
 
-class FavouriteFolderCollectionPage extends StatefulWidget {
-  const FavouriteFolderCollectionPage({
+class FavouritesStorePage extends StatefulWidget {
+  const FavouritesStorePage({
     required this.collectionId,
     required this.isRootCollection,
     required this.appBarLeadingIcon,
@@ -25,13 +24,11 @@ class FavouriteFolderCollectionPage extends StatefulWidget {
   final Widget appBarLeadingIcon;
 
   @override
-  State<FavouriteFolderCollectionPage> createState() =>
-      _FavouriteFolderCollectionPageState();
+  State<FavouritesStorePage> createState() => _FavouritesStorePageState();
 }
 
-class _FavouriteFolderCollectionPageState
-    extends State<FavouriteFolderCollectionPage>
-    with SingleTickerProviderStateMixin {
+class _FavouritesStorePageState extends State<FavouritesStorePage>
+    with AutomaticKeepAliveClientMixin {
   // late final ScrollController _scrollController;
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
@@ -58,6 +55,7 @@ class _FavouriteFolderCollectionPageState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavigationBar(),
@@ -92,7 +90,7 @@ class _FavouriteFolderCollectionPageState
               globalUserCubit: globalUserCubit,
             );
           }
-          // // Logger.printLog('Updated collection store page');
+          // Logger.printLog('Updated collection store page');
 
           final collection = fetchCollection.collection;
           if (collection == null) {
@@ -110,6 +108,7 @@ class _FavouriteFolderCollectionPageState
                 isRootCollection: widget.isRootCollection,
                 showAddUrlButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
+                showBottomNavBar: _showBottomNavBar,
               ),
               FavouritesCollectionsListScreen(
                 collectionModel: fetchCollection.collection!,
@@ -117,12 +116,12 @@ class _FavouriteFolderCollectionPageState
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
-              UrlsPreviewListScreen(
-                showBottomBar: _showBottomNavBar,
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-              ),
+              // UrlsPreviewListScreen(
+              //   showBottomBar: _showBottomNavBar,
+              //   collectionModel: fetchCollection.collection!,
+              //   isRootCollection: widget.isRootCollection,
+              //   appBarLeadingIcon: widget.appBarLeadingIcon,
+              // ),
             ],
           );
         },
@@ -190,13 +189,13 @@ class _FavouriteFolderCollectionPageState
                       selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      unSelectedIcon: Icons.dynamic_feed_outlined,
-                      selectedIcon: Icons.dynamic_feed,
-                      index: 2,
-                      label: 'Previews',
-                    ),
+                    // CustomBottomNavItem.create(
+                    //   currentPage: _currentPage,
+                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
+                    //   selectedIcon: Icons.dynamic_feed,
+                    //   index: 2,
+                    //   label: 'Previews',
+                    // ),
                   ],
                 );
               },
@@ -270,4 +269,7 @@ class _FavouriteFolderCollectionPageState
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

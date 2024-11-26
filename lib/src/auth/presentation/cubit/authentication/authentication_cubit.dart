@@ -28,7 +28,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String email,
     required String password,
   }) async {
-    emit(state.copyWith(authenticationStates: AuthenticationStates.signingUp));
+    emit(
+      state.copyWith(
+        authenticationStates: AuthenticationStates.signingUp,
+      ),
+    );
     final result = await _authRepositoryImpl.signUpWithEmailAndPassword(
       name: name,
       email: email,
@@ -59,7 +63,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String email,
     required String password,
   }) async {
-    emit(state.copyWith(authenticationStates: AuthenticationStates.signingIn));
+    emit(
+      state.copyWith(
+        authenticationStates: AuthenticationStates.signingIn,
+      ),
+    );
     final result = await _authRepositoryImpl.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -86,7 +94,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   Future<void> signOut() async {
-    emit(state.copyWith(authenticationStates: AuthenticationStates.signingOut));
+    emit(
+      state.copyWith(
+        authenticationStates: AuthenticationStates.signingOut,
+      ),
+    );
     final result = await _authRepositoryImpl.signOut();
 
     result.fold(
@@ -101,6 +113,33 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(
           state.copyWith(
             authenticationStates: AuthenticationStates.signedOut,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> deleteAccount() async {
+    emit(
+      state.copyWith(
+        authenticationStates: AuthenticationStates.deletingAccount,
+      ),
+    );
+
+    final result = await _authRepositoryImpl.deleteUserAccount();
+
+    result.fold(
+      (failed) {
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.errorDeleted,
+          ),
+        );
+      },
+      (result) {
+        emit(
+          state.copyWith(
+            authenticationStates: AuthenticationStates.deleted,
           ),
         );
       },

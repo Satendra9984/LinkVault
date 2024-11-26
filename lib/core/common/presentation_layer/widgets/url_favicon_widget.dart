@@ -1,11 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class UrlFaviconLogoWidget extends StatefulWidget {
@@ -81,18 +85,21 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: ColourPallette.white,
-                // color: ColourPallette.mystic.withOpacity(0.1),
+                // color: ColourPallette.mystic.withOpacity(0.15),
+                // border: Border.all(
+                //   color: ColourPallette.mystic.withOpacity(0.25),
+                // ),
                 boxShadow: [
+                  // BoxShadow(
+                  //   color: Colors.grey.shade50, // Softer shadow
+                  //   spreadRadius: 1, // Wider spread for a subtle shadow
+                  //   offset: const Offset(1, -1),
+                  //   blurRadius: 1, // Smoothens the shadow edges
+                  // ),
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1), // Softer shadow
-                    spreadRadius: 1, // Wider spread for a subtle shadow
-                    offset: const Offset(0, 2),
-                    blurRadius: 1, // Smoothens the shadow edges
-                  ),
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.06),
+                    color: Colors.grey.shade100,
                     spreadRadius: 1,
-                    offset: const Offset(0, 1), // Closer to the element
+                    offset: const Offset(1, 1), // Closer to the element
                     blurRadius: 1, // Less blur for this shadow
                   ),
                 ],
@@ -104,7 +111,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
             ),
             const SizedBox(height: 8),
             Text(
-              widget.urlModelData.title,
+              StringUtils.capitalizeEachWord(widget.urlModelData.title),
               maxLines: 2,
               textAlign: TextAlign.center,
               softWrap: true,
@@ -126,7 +133,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
     required BuildContext context,
     required UrlMetaData urlMetaData,
   }) {
-    // // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
+    // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
 
     var name = '';
 
@@ -160,22 +167,11 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
       ),
     );
 
-    if (urlMetaData.favicon != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Image.memory(
-          urlMetaData.favicon!,
-          fit: BoxFit.cover,
-          errorBuilder: (ctx, _, __) {
-            return placeHolder;
-          },
-        ),
-      );
-    } else if (urlMetaData.faviconUrl != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.all(4),
+    if (urlMetaData.faviconUrl != null) {
+      return Container(
+        padding: const EdgeInsets.all(4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
           child: NetworkImageBuilderWidget(
             imageUrl: urlMetaData.faviconUrl!,
             compressImage: false,
@@ -185,11 +181,39 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
             successWidgetBuilder: (imageData) {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.memory(
-                  imageData.imageBytesData!,
-                  fit: BoxFit.contain,
-                  errorBuilder: (ctx, _, __) {
-                    return placeHolder;
+                child: Builder(
+                  builder: (ctx) {
+                    final memoryImage = Image.memory(
+                      imageData.imageBytesData!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (ctx, _, __) {
+                        return placeHolder;
+                      },
+                    );
+                    // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                    if (urlMetaData.faviconUrl!
+                        .toLowerCase()
+                        .endsWith('.svg')) {
+                      // Try loading the SVG and handle errors
+                      return FutureBuilder(
+                        future: _loadSvg(imageData.imageBytesData!),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // Show a loading indicator while loading the SVG
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            // Fallback if SVG fails to load
+                            return memoryImage;
+                          } else {
+                            // Return the successfully loaded SVG
+                            return snapshot.data!;
+                          }
+                        },
+                      );
+                    } else {
+                      return memoryImage;
+                    }
                   },
                 ),
               );
@@ -199,6 +223,17 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
       );
     } else {
       return placeHolder;
+    }
+  }
+
+  Future<Widget> _loadSvg(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
     }
   }
 }

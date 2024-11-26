@@ -25,7 +25,7 @@ class GlobalAuthDataSourceImpl {
 
     final userData = firestoreUser.data();
     if (userData == null) {
-      debugPrint('[log] : user not found $userId');
+      // debugPrint('[log] : user not found $userId');
 
       throw AuthException(
         message: 'User not found',

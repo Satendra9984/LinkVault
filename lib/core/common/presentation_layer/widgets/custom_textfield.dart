@@ -12,7 +12,9 @@ class CustomCollTextField extends StatefulWidget {
     this.onTapOutside,
     this.errorText,
     this.style,
+    this.labelTextStyle,
     this.obscureText = false,
+    this.isRequired = false,
     this.keyboardType = TextInputType.text,
     this.maxLength,
     this.maxLines,
@@ -26,7 +28,9 @@ class CustomCollTextField extends StatefulWidget {
   final String? errorText;
   final String? labelText;
   final bool obscureText;
+  final bool isRequired;
   final TextInputType? keyboardType;
+  final TextStyle? labelTextStyle;
   final TextStyle? style;
   final int? maxLength;
   final int? maxLines;
@@ -57,11 +61,25 @@ class _CustomCollTextFieldState extends State<CustomCollTextField> {
         if (widget.labelText != null && widget.labelText!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: Text(
-              widget.labelText!,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
+            child: RichText(
+              text: TextSpan(
+                text: widget.labelText,
+                style: widget.labelTextStyle ??
+                    const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: ColourPallette.black,
+                    ),
+                children: [
+                  if (widget.isRequired)
+                    TextSpan(
+                      text: ' *',
+                      style: widget.labelTextStyle?.copyWith(
+                        color: ColourPallette.error,
+                        fontSize: (widget.labelTextStyle?.fontSize ?? 16) - 2,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

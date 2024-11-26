@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
     as custom_chrome_tabs;
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/services/custom_tabs_client_service.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class CustomTabsService {
   CustomTabsService._();
@@ -45,7 +44,7 @@ class CustomTabsService {
     }
 
     stopWatch.stop();
-    Logger.printLog('[customtabs] : stopped ${stopWatch.elapsedMilliseconds}');
+    // Logger.printLog('[customtabs] : stopped ${stopWatch.elapsedMilliseconds}');
   }
 
   static Future<void> openUrlInCustomTab({

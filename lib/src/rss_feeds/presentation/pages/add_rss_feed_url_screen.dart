@@ -1,22 +1,30 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_editor_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
-import 'package:link_vault/core/constants/coll_constants.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/core/utils/validators.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:xml/xml.dart';
 
 // https://youtu.be/jMi-VwEBJ70
@@ -44,29 +52,39 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
   final _rssFeedUrlErrorNotifier = ValueNotifier<String?>(null);
 
   // FOR WEBSITE BASEURL
-  final _websiteUrlAddressController = TextEditingController();
-
+  final _urlAddressController = TextEditingController();
   final _urlTitleController = TextEditingController();
-  final _descEditingController = TextEditingController();
+  final _urlDescriptionController = TextEditingController();
   final _isFavorite = ValueNotifier<bool>(false);
-  // Categories related data
+
+  // CATEGORIES RELATED DATA
+  final _showCategoryOptionsList = ValueNotifier(false);
   final _predefinedCategories = [...categories];
   final _selectedCategory = ValueNotifier<String>('');
 
   /// PREVIEW RELATED DATA
+  final _showPreview = ValueNotifier<bool>(false);
   final _previewMetaData =
       ValueNotifier<UrlMetaData?>(UrlMetaData.isEmpty(title: ''));
   final _previewLoadingStates =
       ValueNotifier<LoadingStates>(LoadingStates.initial);
   final _previewError = ValueNotifier<String?>(null);
+  final _allImagesUrlsList = ValueNotifier<List<String>>(<String>[]);
 
+  // SETTINGS
+  // OPEN IN
+  final _urlLaunchType = ValueNotifier<UrlLaunchType>(UrlLaunchType.customTabs);
+  final _feedUrlLaunchType =
+      ValueNotifier<UrlLaunchType>(UrlLaunchType.separateBrowserWindow);
+
+  /// FUNCTION TO ADD URL FOR RSS-WEBSTE
   Future<void> _addUrl({required UrlCrudCubit urlCrudCubit}) async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       // Check if RSS Feed Url is valid
       final rssFeedCubit = context.read<RssFeedCubit>();
 
-      while (_previewLoadingStates.value == LoadingStates.loading) {}
+      // while (_previewLoadingStates.value == LoadingStates.loading) {}
       if (_previewMetaData.value == null) {
         await _loadPreview();
       }
@@ -82,128 +100,147 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
               title: _urlTitleController.text.trim(),
             );
 
+      final settings = <String, dynamic>{};
+      settings[urlLaunchType] = _urlLaunchType.value.label;
+      settings[feedUrlLaunchType] = _feedUrlLaunchType.value.label;
+
       final createdAt = DateTime.now().toUtc();
 
       final urlModelData = UrlModel(
         firestoreId: '',
         collectionId: widget.parentCollection.id,
-        url: _websiteUrlAddressController.text.trim(),
+        url: _urlAddressController.text.trim(),
         title: _urlTitleController.text.trim(),
-        description: _descEditingController.text.trim(),
+        description: _urlDescriptionController.text.trim(),
         isFavourite: _isFavorite.value,
         tag: _selectedCategory.value,
         isOffline: false,
         createdAt: createdAt,
         updatedAt: createdAt,
         metaData: urlMetaData,
+        settings: settings,
       );
 
       // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
-
-      final collId = widget.parentCollection.id; // Capture ID before async call
 
       await urlCrudCubit
           .addUrl(
         urlData: urlModelData,
         isRootCollection: widget.isRootCollection,
       )
-          .then((_) {
-        rssFeedCubit.refreshCollectionFeed(collectionId: collId);
-      });
+          .then(
+        (_) {
+          rssFeedCubit.refreshCollectionFeed(
+            collectionId: widget.parentCollection.id,
+          );
+        },
+      );
     }
   }
 
   Future<void> _loadPreview() async {
-    if (_rssFeedUrlAddressController.text.trim().isEmpty) {
-      _rssFeedUrlErrorNotifier.value = 'Please enter URL';
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = 'Url Address is empty';
-      return;
-    }
-
-    _websiteUrlAddressController.text =
-        _rssFeedUrlAddressController.text.trim();
-
-    _previewMetaData.value =
-        (_previewMetaData.value ?? UrlMetaData.isEmpty(title: '')).copyWith(
-      rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
-    );
-
     try {
-      // FETCHING AND VERIFYING RSS LINK
-      _rssFeedUrlErrorNotifier.value = null;
-      _previewLoadingStates.value = LoadingStates.loading;
-      _previewError.value = null;
+      _formKey.currentState?.validate();
 
-      final rssData = await RssXmlParsingService.fetchRssFeed(
-        _rssFeedUrlAddressController.text.trim(),
+      if (_rssFeedUrlAddressController.text.trim().isEmpty) {
+        _rssFeedUrlErrorNotifier.value = 'Please enter URL';
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Url Address is empty';
+        return;
+      }
+
+      _rssFeedUrlAddressController.text =
+          Validator.formatUrl(_rssFeedUrlAddressController.text.trim());
+
+      _urlAddressController.text = _rssFeedUrlAddressController.text.trim();
+
+      _previewMetaData.value =
+          (_previewMetaData.value ?? UrlMetaData.isEmpty(title: '')).copyWith(
+        rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
       );
 
-      // EXTRACTING BASE-URL FROM RSS DATA
-      if (rssData == null) {
-        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
-        _previewLoadingStates.value = LoadingStates.errorLoading;
-        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-        return;
-      }
-
-      // Extract the main channel/ feed element
-      final channel = rssData.findAllElements('rdf:RDF').firstOrNull ??
-          rssData.findAllElements('channel').firstOrNull ??
-          rssData.findAllElements('feed').firstOrNull;
-
-      // IF THERE IS NO CHANNEL THEN IT IS NOT A RSS FEED LINK
-      if (channel == null) {
-        // // Logger.printLog('[addrss] : channel == null');
-        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
-        _previewLoadingStates.value = LoadingStates.errorLoading;
-        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-        return;
-      }
-
-      final baseUrl = RssXmlParsingService.getBaseUrlFromRssData(channel);
-
-      if (baseUrl == null || baseUrl.isEmpty) {
-        _previewLoadingStates.value = LoadingStates.errorLoading;
-        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
-        return;
-      }
-
-      _websiteUrlAddressController.text = baseUrl;
-
-      final (_, metaData) = await UrlParsingService.getWebsiteMetaData(baseUrl);
-
-      if (metaData != null) {
-        _previewLoadingStates.value = LoadingStates.loaded;
+      try {
+        // FETCHING AND VERIFYING RSS LINK
+        _rssFeedUrlErrorNotifier.value = null;
+        _previewLoadingStates.value = LoadingStates.loading;
         _previewError.value = null;
 
-        _previewMetaData.value = metaData.copyWith(
-          rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
+        final rssData = await RssXmlParsingService.fetchRssFeed(
+          _rssFeedUrlAddressController.text,
         );
-        // Initilializing default values
-        if (_urlTitleController.text.isEmpty && metaData.websiteName != null) {
-          _urlTitleController.text = metaData.websiteName!;
+
+        // EXTRACTING BASE-URL FROM RSS DATA
+        if (rssData == null) {
+          _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+          _previewLoadingStates.value = LoadingStates.errorLoading;
+          _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+          return;
         }
 
-        if (_descEditingController.text.isEmpty &&
-            metaData.description != null) {
-          _descEditingController.text = metaData.description!;
+        // Extract the main channel/ feed element
+        final channel = rssData.findAllElements('rdf:RDF').firstOrNull ??
+            rssData.findAllElements('channel').firstOrNull ??
+            rssData.findAllElements('feed').firstOrNull;
+
+        // IF THERE IS NO CHANNEL THEN IT IS NOT A RSS FEED LINK
+        if (channel == null) {
+          // Logger.printLog('[addrss] : channel == null');
+          _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+          _previewLoadingStates.value = LoadingStates.errorLoading;
+          _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+          return;
         }
-      } else {
+
+        final baseUrl = RssXmlParsingService.getBaseUrlFromRssData(channel);
+
+        if (baseUrl == null || baseUrl.isEmpty) {
+          _previewLoadingStates.value = LoadingStates.errorLoading;
+          _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+          _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+          return;
+        }
+
+        _urlAddressController.text = baseUrl;
+
+        final (websiteHtmlContent, metaData) =
+            await UrlParsingService.getWebsiteMetaData(baseUrl);
+
+        final allImageUrls = UrlParsingService.getAllImageUrlsAvailable(
+          null,
+          baseUrl,
+          webHtmlContent: websiteHtmlContent,
+        );
+
+        _allImagesUrlsList.value = allImageUrls;
+
+        if (metaData != null) {
+          _previewMetaData.value = metaData.copyWith(
+            rssFeedUrl: _rssFeedUrlAddressController.text.trim(),
+          );
+          // Initilializing default values
+          if (_urlTitleController.text.isEmpty &&
+              metaData.websiteName != null) {
+            _urlTitleController.text = metaData.websiteName!;
+          }
+
+          _previewLoadingStates.value = LoadingStates.loaded;
+          _previewError.value = null;
+          _showPreview.value = true;
+        } else {
+          _previewLoadingStates.value = LoadingStates.errorLoading;
+          _previewError.value = 'Could Not Fetch Preview Data. Try Again';
+          _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+        }
+      } on HttpException catch (e) {
+        _rssFeedUrlErrorNotifier.value = e.message;
         _previewLoadingStates.value = LoadingStates.errorLoading;
         _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-        _rssFeedUrlErrorNotifier.value = 'RSS Link Not Verified. Try Again';
+      } catch (e) {
+        _rssFeedUrlErrorNotifier.value = 'Something Went Wrong';
+        _previewLoadingStates.value = LoadingStates.errorLoading;
+        _previewError.value = 'Could Not Fetch Preview Data. Try Again';
       }
-    } on HttpException catch (e) {
-      _rssFeedUrlErrorNotifier.value = e.message;
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-    } catch (e) {
-      _rssFeedUrlErrorNotifier.value = 'Something Went Wrong';
-      _previewLoadingStates.value = LoadingStates.errorLoading;
-      _previewError.value = 'Could Not Fetch Preview Data. Try Again';
-    }
+    } catch (e) {}
   }
 
   @override
@@ -211,6 +248,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
     context.read<UrlCrudCubit>().cleanUp();
     _rssFeedUrlAddressController.text = widget.url ?? '';
     _selectedCategory.value = _predefinedCategories.first;
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
     super.initState();
   }
 
@@ -218,19 +262,30 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
   void dispose() {
     _rssFeedUrlAddressController.dispose();
     _urlTitleController.dispose();
-    _descEditingController.dispose();
+    _urlDescriptionController.dispose();
     _isFavorite.dispose();
     _selectedCategory.dispose();
     _previewMetaData.dispose();
     _previewLoadingStates.dispose();
     _previewError.dispose();
+    _urlLaunchType.dispose();
+    _allImagesUrlsList.dispose();
+    _feedUrlLaunchType.dispose();
+    _showCategoryOptionsList.dispose();
+    _showPreview.dispose();
+    _rssFeedUrlErrorNotifier.dispose();
+
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: [],
+    );
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (popInv) {
+      onPopInvokedWithResult: (popInv, _) {
         if (widget.url != null) {
           context.read<SharedInputsCubit>().removeUrlInput(widget.url);
         }
@@ -240,12 +295,23 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
         appBar: AppBar(
           backgroundColor: ColourPallette.white,
           surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
-          title: Text(
-            'Add RSS Feed Url',
-            style: TextStyle(
-              color: Colors.grey.shade800,
-              fontWeight: FontWeight.w400,
-            ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.rss_feed_rounded,
+                color: Colors.deepOrange.shade600,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Add RSS Link',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
         ),
         bottomNavigationBar: SafeArea(
@@ -306,6 +372,13 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                         labelText: 'RSS Feed URL',
                         hintText: 'https://www.thehindu.com/feeder/default.rss',
                         errorText: errorText,
+                        isRequired: true,
+                        keyboardType: TextInputType.url,
+                        labelTextStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: ColourPallette.black,
+                        ),
                         onTapOutside: (pointer) async {
                           if (_previewMetaData.value == null &&
                                   _previewLoadingStates.value !=
@@ -324,46 +397,80 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                             await _loadPreview();
                           }
                         },
-                        keyboardType: TextInputType.name,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter title';
+                          try {
+                            // Validate the URL
+                            final validationResult =
+                                Validator.validateUrl(value ?? '');
+
+                            if (validationResult != null) {
+                              return validationResult;
+                            }
+
+                            return null;
+                          } catch (e) {
+                            // Logger.printLog(e.toString());
+                            return 'Could not validate Link. Something Went Wrong';
                           }
-                          return null;
                         },
                       );
                     },
                   ),
                   const SizedBox(height: 16),
 
+                  // TITILE TEXTFIELD
+                  CustomCollTextField(
+                    controller: _urlTitleController,
+                    labelText: 'Title',
+                    hintText: ' eg. google ',
+                    keyboardType: TextInputType.name,
+                    isRequired: true,
+                    labelTextStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: ColourPallette.black,
+                    ),
+                    maxLength: 30,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter title';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // PREVIEW AND AUTOFILLL OPTION
                   ValueListenableBuilder<LoadingStates?>(
                     valueListenable: _previewLoadingStates,
                     builder: (context, previewMetaDataLoadingState, _) {
                       final trailingWidgetList = <Widget>[];
 
-                      final previewButton = IconButton(
-                        onPressed: () async {
-                          if (_previewMetaData.value != null) {
-                            await _showPreviewBottomSheet();
-                          } else {
-                            await _loadPreview().then(
-                              (_) async {
-                                if (_previewMetaData.value == null) return;
-                                await _showPreviewBottomSheet();
-                              },
-                            );
-                          }
+                      final previewButton = ValueListenableBuilder(
+                        valueListenable: _showPreview,
+                        builder: (ctx, showPreview, _) {
+                          return IconButton(
+                            onPressed: () async {
+                              if (previewMetaDataLoadingState ==
+                                  LoadingStates.loaded) {
+                                _showPreview.value = !_showPreview.value;
+                              } else {
+                                await _loadPreview();
+                              }
+                            },
+                            icon: Icon(
+                              !showPreview
+                                  ? Icons.image_rounded
+                                  : Icons.hide_image_rounded,
+                              color: ColourPallette.mountainMeadow,
+                            ),
+                          );
                         },
-                        icon: const Icon(
-                          Icons.preview_rounded,
-                          color: ColourPallette.black,
-                        ),
                       );
 
                       final loadAgain = IconButton(
-                        onPressed: () async => _loadPreview().then(
-                          (_) => _showPreviewBottomSheet(),
-                        ),
+                        onPressed: _loadPreview,
                         icon: const Icon(
                           Icons.restore_rounded,
                           color: ColourPallette.black,
@@ -383,14 +490,14 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                           ),
                         );
                       } else if (previewMetaDataLoadingState ==
-                              LoadingStates.loaded ||
-                          previewMetaDataLoadingState ==
-                              LoadingStates.errorLoading) {
+                          LoadingStates.loaded) {
                         trailingWidgetList.addAll(
                           [loadAgain, previewButton],
                         );
                       } else {
-                        trailingWidgetList.add(previewButton);
+                        trailingWidgetList.addAll(
+                          [loadAgain, previewButton],
+                        );
                       }
 
                       return Column(
@@ -403,8 +510,7 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                                 'Preview and Autofill',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: ColourPallette.black,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                               Row(
@@ -416,170 +522,429 @@ class _AddRssFeedUrlPageState extends State<AddRssFeedUrlPage> {
                           ),
                           if (previewMetaDataLoadingState ==
                               LoadingStates.errorLoading)
-                            ValueListenableBuilder<String?>(
-                              valueListenable: _previewError,
-                              builder: (context, previewError, _) {
-                                if (previewError == null) {
-                                  return const SizedBox.shrink();
-                                }
-                                return Text(
-                                  previewError,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: ColourPallette.error,
-                                  ),
-                                );
-                              },
+                            Text(
+                              '${_previewError.value}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: ColourPallette.error,
+                              ),
                             ),
                         ],
                       );
                     },
                   ),
 
-                  const SizedBox(height: 16),
+                  ValueListenableBuilder(
+                    valueListenable: _allImagesUrlsList,
+                    builder: (ctx, allImagesUrlsList, _) {
+                      return ValueListenableBuilder(
+                        valueListenable: _showPreview,
+                        builder: (ctx, showPreview, _) {
+                          if (!showPreview) {
+                            return const SizedBox.shrink();
+                          }
+                          return ValueListenableBuilder(
+                            valueListenable: _previewMetaData,
+                            builder: (ctx, urlMetaData, _) {
+                              if (urlMetaData == null) {
+                                return const SizedBox.shrink();
+                              }
+                              final date = DateTime.now().toUtc();
+                              final urlModelData = UrlModel(
+                                firestoreId: '',
+                                collectionId: '',
+                                url: _urlAddressController.text.trim(),
+                                title: _urlTitleController.text.trim(),
+                                description:
+                                    _urlDescriptionController.text.trim(),
+                                isFavourite: _showPreview.value,
+                                tag: _selectedCategory.value,
+                                isOffline: false,
+                                createdAt: date,
+                                updatedAt: date,
+                                metaData: urlMetaData,
+                              );
 
-                  CustomCollTextField(
-                    controller: _urlTitleController,
-                    labelText: 'Title',
-                    hintText: ' eg. The Hindustan Times ',
-                    keyboardType: TextInputType.name,
-                    maxLength: 30,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter title';
-                      }
-                      return null;
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: ColourPallette.white,
+                                  // color: ColourPallette.mystic.withOpacity(0.1),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: ColourPallette.mystic
+                                          .withOpacity(0.2),
+                                      spreadRadius: 2,
+                                      offset: const Offset(0, 2),
+                                      blurRadius:
+                                          4, // Smoothens the shadow edges
+                                    ),
+                                    BoxShadow(
+                                      color: ColourPallette.mystic
+                                          .withOpacity(0.4),
+                                      spreadRadius: 2,
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: URLPreviewEditorWidget(
+                                  urlModel: urlModelData,
+                                  metaDataNotifier: _previewMetaData,
+                                  allImageUrls: allImagesUrlsList,
+                                  urlPreloadMethod: UrlPreloadMethods.httpGet,
+                                  onTap: () async {
+                                    switch (_urlLaunchType.value) {
+                                      case UrlLaunchType.customTabs:
+                                        {
+                                          final theme = Theme.of(context);
+                                          await CustomTabsService.launchUrl(
+                                            url: urlModelData.url,
+                                            theme: theme,
+                                          ).then(
+                                            (_) async {
+                                              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                              // JUST LIKE APPS IN BACKGROUND TYPE
+                                            },
+                                          );
+                                          break;
+                                        }
+                                      case UrlLaunchType.webView:
+                                        {
+                                          await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (ctx) =>
+                                                  DashboardWebView(
+                                                url: urlModelData.url,
+                                              ),
+                                            ),
+                                          );
+
+                                          break;
+                                        }
+                                      case UrlLaunchType.readingMode:
+                                        {
+                                          await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (ctx) =>
+                                                  DashboardWebView(
+                                                url: urlModelData.url,
+                                              ),
+                                            ),
+                                          );
+
+                                          break;
+                                        }
+                                      case UrlLaunchType.separateBrowserWindow:
+                                        {
+                                          final theme = Theme.of(context);
+                                          await CustomTabsService.launchUrl(
+                                            url: urlModelData.url,
+                                            theme: theme,
+                                          ).then(
+                                            (_) async {
+                                              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                              // JUST LIKE APPS IN BACKGROUND TYPE
+                                            },
+                                          );
+                                          break;
+                                        }
+                                    }
+                                  },
+                                  onLongPress: () {},
+                                  onShareButtonTap: () {
+                                    final urlAddress =
+                                        _urlAddressController.text;
+                                    final urlTitle = _urlTitleController.text;
+                                    final urlDescription =
+                                        _urlDescriptionController.text;
+
+                                    Share.share(
+                                      '$urlAddress\n$urlTitle\n$urlDescription',
+                                    );
+                                  },
+                                  onLayoutOptionsButtontap: () {},
+                                  updateBannerImage: () {},
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
                     },
                   ),
-                  const SizedBox(height: 16),
-                  CustomCollTextField(
-                    controller: _descEditingController,
-                    labelText: 'Notes',
-                    hintText: ' Add your important detail here. ',
-                    maxLength: 1000,
-                    maxLines: 5,
-                    validator: (value) {
-                      return null;
+
+                  // SELECT CATEGORY
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Category',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: _showCategoryOptionsList,
+                        builder: (ctx, showCategoryOptionsList, _) {
+                          if (showCategoryOptionsList) {
+                            return IconButton(
+                              onPressed: () => _showCategoryOptionsList.value =
+                                  !_showCategoryOptionsList.value,
+                              icon: const Icon(
+                                Icons.arrow_upward_rounded,
+                              ),
+                            );
+                          }
+                          return IconButton(
+                            onPressed: () => _showCategoryOptionsList.value =
+                                !_showCategoryOptionsList.value,
+                            icon: const Icon(
+                              Icons.arrow_downward_rounded,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  ValueListenableBuilder(
+                    valueListenable: _showCategoryOptionsList,
+                    builder: (ctx, showCategoryOptionsList, _) {
+                      if (!showCategoryOptionsList) {
+                        return const SizedBox.shrink();
+                      }
+                      return ValueListenableBuilder<String>(
+                        valueListenable: _selectedCategory,
+                        builder: (context, selectedCategory, child) {
+                          return Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: List.generate(
+                              _predefinedCategories.length,
+                              (index) {
+                                final category = _predefinedCategories[index];
+                                final isSelected =
+                                    category == _selectedCategory.value;
+                                return GestureDetector(
+                                  onTap: () =>
+                                      _selectedCategory.value = category,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? ColourPallette.mountainMeadow
+                                          : Colors.white,
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? ColourPallette.mountainMeadow
+                                            : ColourPallette.grey,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.grey.shade700,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w500
+                                            : FontWeight.w400,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
                     },
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Selected Category
+                  // SETTINGS
                   const Text(
-                    'Category',
+                    'Settings',
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: ColourPallette.salemgreen,
                     ),
                   ),
-                  const SizedBox(height: 12),
 
-                  ValueListenableBuilder<String>(
-                    valueListenable: _selectedCategory,
-                    builder: (context, selectedCategory, child) {
-                      return Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        children: List.generate(
-                          _predefinedCategories.length,
-                          (index) {
-                            final category = _predefinedCategories[index];
-                            final isSelected =
-                                category == _selectedCategory.value;
-                            return GestureDetector(
-                              onTap: () => _selectedCategory.value = category,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                  const SizedBox(height: 16),
+
+                   // ALWAYS OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Open Url In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _urlLaunchType,
+                      builder: (ctx, urlLaunchType, _) {
+                        return DropdownButton<UrlLaunchType>(
+                          value: urlLaunchType,
+                          onChanged: (urlLaunchType) {
+                            if (urlLaunchType == null) return;
+                            _urlLaunchType.value = urlLaunchType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            DropdownMenuItem(
+                              value: UrlLaunchType.customTabs,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  'Browser', // UrlLaunchType.customTabs.label,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? ColourPallette.mountainMeadow
-                                      : Colors.white,
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? ColourPallette.mountainMeadow
-                                        : ColourPallette.grey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: UrlLaunchType.webView,
+                              child: Text(
+                                StringUtils.capitalize(
+                                  UrlLaunchType.webView.label,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // ALWAYS RSS FEED URL OPEN-IN SETTINGS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Open RSS Feed In',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+
+                    // DROPDOWN OF BROWSER, WEBVIEW
+                    ValueListenableBuilder(
+                      valueListenable: _feedUrlLaunchType,
+                      builder: (ctx, feedUrlLaunchType, _) {
+                        return DropdownButton<UrlLaunchType>(
+                          value: _feedUrlLaunchType.value,
+                          onChanged: (feedUrlLaunchType) {
+                            if (feedUrlLaunchType == null) return;
+                            _feedUrlLaunchType.value = feedUrlLaunchType;
+                          },
+                          isDense: true,
+                          iconEnabledColor: ColourPallette.black,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          underline: const SizedBox.shrink(),
+                          dropdownColor: ColourPallette.mystic,
+                          items: [
+                            ...UrlLaunchType.values.map(
+                              (urlLaunchType) => DropdownMenuItem(
+                                value: urlLaunchType,
                                 child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
+                                  StringUtils.capitalize(
+                                    urlLaunchType ==
+                                            UrlLaunchType.separateBrowserWindow
+                                        ? 'Browser'
+                                        : urlLaunchType
+                                            .label, // UrlLaunchType.customTabs.label,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      );
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                  const SizedBox(height: 24),
+
+                  // ADDITONAL OPTIONS
+                  const Text(
+                    'Additional',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: ColourPallette.salemgreen,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  CustomCollTextField(
+                    controller: _urlDescriptionController,
+                    labelText: 'Notes',
+                    hintText: ' Add your important detail here. ',
+                    maxLength: 1000,
+                    maxLines: 5,
+                    labelTextStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: ColourPallette.black,
+                    ),
+                    validator: (value) {
+                      return null;
                     },
                   ),
+
+                  const SizedBox(height: 120),
                 ],
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showPreviewBottomSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: ColourPallette.mystic,
-      isScrollControlled: true,
-      builder: (ctx) {
-        final date = DateTime.now().toUtc();
-        final urlModelData = UrlModel(
-          firestoreId: '',
-          collectionId: widget.parentCollection.id,
-          url: _websiteUrlAddressController.text.trim(),
-          title: _urlTitleController.text.trim(),
-          description: _descEditingController.text.trim(),
-          isFavourite: _isFavorite.value,
-          tag: _selectedCategory.value,
-          isOffline: false,
-          createdAt: date,
-          updatedAt: date,
-          metaData: _previewMetaData.value,
-        );
-
-        // // Logger.printLog(StringUtils.getJsonFormat(urlModelData.toJson()));
-
-        return Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          child: DraggableScrollableSheet(
-            expand: false,
-            builder: (context, scrollController) {
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: RssFeedPreviewWidget(
-                  urlPreloadMethod: UrlPreloadMethods.httpGet,
-                  onTap: () {},
-                  onLongPress: () {},
-                  onShareButtonTap: () {},
-                  onLayoutOptionsButtontap: () {},
-                  urlModel: urlModelData,
-                  updateBannerImage: () {},
-                ),
-              );
-            },
-          ),
-        );
-      },
     );
   }
 }

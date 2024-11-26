@@ -139,7 +139,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(height: 2 * gap),
                     BlocConsumer<AuthenticationCubit, AuthenticationState>(
                       listener: (context, state) {
-                        debugPrint('[log] : authstate $state');
+                        // debugPrint('[log] : authstate $state');
                         if (state.authenticationStates ==
                             AuthenticationStates.signedUp) {
                           context

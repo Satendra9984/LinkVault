@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/network_image_cache_cubit/network_image_cache_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/network_image_cache_model.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 
 class NetworkImageBuilderWidget extends StatelessWidget {
   const NetworkImageBuilderWidget({

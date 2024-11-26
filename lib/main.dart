@@ -15,7 +15,7 @@ import 'package:link_vault/core/common/data_layer/isar_db_models/collection_mode
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/network_image_cache_cubit/network_image_cache_cubit.dart';
@@ -28,7 +28,6 @@ import 'package:link_vault/core/common/repository_layer/repositories/url_repo_im
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/router.dart';
-import 'package:link_vault/dependency_provider.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
 import 'package:link_vault/firebase_options_test.dart' as development;
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
@@ -38,6 +37,7 @@ import 'package:link_vault/src/onboarding/data/data_sources/onboard_local_data_s
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/search/data/local_data_source.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
@@ -139,9 +139,8 @@ Future<void> _initializeIsar() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
- @override
+  @override
   Widget build(BuildContext context) {
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -204,6 +203,10 @@ class MyApp extends StatelessWidget {
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => RecentsUrlCubit(
             collectionRepoImpl: CollectionsRepoImpl(
               remoteDataSourceImpl: RemoteDataSourcesImpl(
                 firestore: FirebaseFirestore.instance,
@@ -212,6 +215,16 @@ class MyApp extends StatelessWidget {
                   CollectionLocalDataSourcesImpl(isar: null),
               urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
+            urlRepoImpl: UrlRepoImpl(
+              remoteDataSourceImpl: RemoteDataSourcesImpl(
+                firestore: FirebaseFirestore.instance,
+              ),
+              collectionLocalDataSourcesImpl:
+                  CollectionLocalDataSourcesImpl(isar: null),
+              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+            ),
+            collectionsCubit: context.read<CollectionsCubit>(),
+            globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
 
@@ -276,118 +289,5 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: generateRoute,
       ),
     );
-  } 
-
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MultiBlocProvider(
-  //     providers: [
-  //       // FOR MANAGING EXTERNAL DATA LIKE URL SHARED WITH APP
-  //       BlocProvider(create: (_) => SharedInputsCubit()),
-
-  //       // FOR ACCESSING USER-DETAILS THROUGH-OUT THE APP
-  //       BlocProvider(create: (_) => GlobalUserCubit()),
-
-  //       // STORING IMAGES-FETCHED FROM THE NETWORK(HTTP REQUESTS)
-  //       BlocProvider(create: (_) => NetworkImageCacheCubit()),
-
-  //       // STORING STATES OF PREFETCHING THE URL FOR CHECKING DATA LIKE
-  //       // DNS, TCP, TLS etc.
-  //       BlocProvider(create: (_) => UrlPreloadManagerCubit()),
-
-  //       // FOR MANAGING SUBSCRIPTION OR CREDIT RELATED DATA
-  //       BlocProvider(
-  //         create: (_) => SubscriptionCubit(
-  //           adRepoImpl: RewardedAdRepoImpl(
-  //             subsciptionRemoteDataSources: SubsciptionRemoteDataSources(),
-  //           ),
-  //         ),
-  //       ),
-
-  //       // FOR ON-BOARDING MANAGEMENT 
-  //       BlocProvider(
-  //         create: (_) => OnBoardCubit(
-  //           onBoardingRepoImpl: OnBoardingRepoImpl(
-  //             localDataSourceImpl: OnBoardingLocalDataSourceImpl(
-  //               auth: DependencyProvider.auth,
-  //               globalAuthDataSourceImpl:
-  //                   DependencyProvider.globalAuthDataSource,
-  //             ),
-  //           ),
-  //         )..checkIfLoggedIn(),
-  //       ),
-
-  //       // FOR MANAGING LOGIN AND LOGOUT
-  //       BlocProvider(
-  //         create: (_) => AuthenticationCubit(
-  //           authRepositoryImpl: DependencyProvider.authRepository,
-  //         ),
-  //       ),
-
-  //       // FOR MANAGING COLLECTION STATES OF URLS AND SUB-FOLDERS MAINLY
-  //       BlocProvider(
-  //         create: (_) => CollectionsCubit(
-  //           collectionsRepoImpl: DependencyProvider.collectionsRepo,
-  //           globalUserCubit: context.read<GlobalUserCubit>(),
-  //         ),
-  //       ),
-
-  //       // FOR MANAGING CRUD OPERATION ON SUB-FOLDERS ONLY
-  //       BlocProvider(
-  //         create: (_) => CollectionCrudCubit(
-  //           collectionRepoImpl: DependencyProvider.collectionsRepo,
-  //           collectionsCubit: context.read<CollectionsCubit>(),
-  //           globalUserCubit: context.read<GlobalUserCubit>(),
-  //         ),
-  //       ),
-
-  //      // FOR MANAGING CRUD OPERATION ON URLS ONLY
-  //       BlocProvider(
-  //         create: (_) => UrlCrudCubit(
-  //           urlRepoImpl: DependencyProvider.urlRepo,
-  //           collectionsCubit: context.read<CollectionsCubit>(),
-  //           globalUserCubit: context.read<GlobalUserCubit>(),
-  //           collectionRepoImpl: DependencyProvider.collectionsRepo,
-  //         ),
-  //       ),
-
-  //       // FOR MANAGING ADVANCE-SEARCH STATE
-  //       BlocProvider(
-  //         create: (_) => AdvanceSearchCubit(
-  //           searchingRepoImpl: SearchingRepoImpl(
-  //             searchLocalDataSourcesImpl:
-  //                 DependencyProvider.searchLocalDataSources,
-  //           ),
-  //         ),
-  //       ),
-
-  //       // FOR MANAGIN ALL RSS-FEED RELATED DATA
-  //       BlocProvider(
-  //         create: (_) => RssFeedCubit(
-  //           collectionCubit: context.read<CollectionsCubit>(),
-  //           collectionCrudCubit: context.read<CollectionCrudCubit>(),
-  //           globalUserCubit: context.read<GlobalUserCubit>(),
-  //           urlRepoImpl: DependencyProvider.urlRepo,
-  //         ),
-  //       ),
-  //     ],
-  //     child: MaterialApp(
-  //       title: 'link_vault',
-  //       debugShowCheckedModeBanner: false,
-  //       theme: ThemeData(
-  //         scaffoldBackgroundColor: Colors.white,
-  //         appBarTheme: const AppBarTheme(
-  //           backgroundColor: Colors.white,
-  //         ),
-  //         primarySwatch: Colors.green,
-  //       ),
-  //       initialRoute: OnBoardingHomePage.routeName,
-  //       onGenerateRoute: generateRoute,
-  //     ),
-  //   );
-  // }
-
-
-
+  }
 }

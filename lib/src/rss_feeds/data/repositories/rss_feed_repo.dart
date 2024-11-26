@@ -5,6 +5,8 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/local_data_source.dart';
 import 'package:link_vault/src/rss_feeds/data/data_sources/remote_data_source.dart';
 
@@ -18,56 +20,87 @@ class RssFeedRepo {
   final RemoteDataSource _remoteDataSource;
   final LocalDataSource _localDataSource;
   // final LocalImageDataSource _localImageDataSource = LocalImageDataSource();
-
   Stream<Either<Failure, List<UrlModel>>> getAllFeeds({
-    required List<UrlModel> urlModels, // it is required don't change this
+    required List<UrlModel> urlModels,
   }) async* {
     try {
-      // Iterate over each urlModel and fetch feeds in parallel (using async for each fetch)
-      for (final urlModel in urlModels) {
-        final ffeeds = await _localDataSource.fetchRssFeeds(
-          firestoreId: '${urlModel.firestoreId}rss',
-        );
+      // Run fetches in parallel with throttling
+      final feedResults = await Future.wait(
+        urlModels.map(fetchFeed),
+      );
 
-        if (ffeeds != null && ffeeds.isNotEmpty) {
-          // // Logger.printLog('got fees in repo local ${ffeeds}');
-          yield Right(ffeeds); // Emit local data if available
-        } else if (urlModel.metaData?.rssFeedUrl != null) {
-          // Fetch from the website source if no local data is available
-          final xmlRawData = await _remoteDataSource.fetchRssFeed(
-            urlModel.metaData!.rssFeedUrl!,
-          );
-
-          if (xmlRawData != null) {
-            final tfeeds = RssXmlParsingService.parseRssFeed(
-              xmlRawData,
-              collectionId: urlModel.collectionId,
-              firestoreId: '${urlModel.firestoreId}rss',
-            );
-
-            final faviconUrl = urlModel.metaData?.faviconUrl;
-            // Logger.printLog('copyingtitle: ${urlModel.title}');
-            // if (faviconUrl != null) {
-            for (var i = 0; i < tfeeds.length; i++) {
-              tfeeds[i] = tfeeds[i].copyWith(
-                metaData: tfeeds[i].metaData?.copyWith(
-                      faviconUrl: faviconUrl,
-                      websiteName: urlModel.title,
-                    ),
-              );
-              // }
-            }
-            yield Right(tfeeds); // Emit fetched data
-            await _localDataSource
-                .addAllRssFeeds(urlModels: tfeeds)
-                .catchError((_) => true);
-          }
-        }
+      // Emit each result as it arrives
+      for (final result in feedResults) {
+        yield result;
       }
     } catch (e) {
+      // Catch and yield a general error if something goes wrong
       yield Left(
         ServerFailure(
-          message: 'Something Went Wrong',
+          message: 'Something went wrong while fetching feeds',
+          statusCode: 402,
+        ),
+      );
+    }
+  }
+
+  // Helper to fetch feeds for each URL, allowing for concurrent execution
+  Future<Either<Failure, List<UrlModel>>> fetchFeed(
+    UrlModel urlModel,
+  ) async {
+    try {
+      // Attempt to load cached data first
+      final cachedFeeds = await _localDataSource.fetchRssFeeds(
+        firestoreId: '${urlModel.firestoreId}rss',
+      );
+
+      // Emit cached feeds immediately if they exist
+      if (cachedFeeds != null && cachedFeeds.isNotEmpty) {
+        return Right(cachedFeeds);
+      }
+
+      // Proceed to remote fetch if no local data is available and RSS URL exists
+      if (urlModel.metaData?.rssFeedUrl != null) {
+        final xmlRawData = await _remoteDataSource.fetchRssFeed(
+          urlModel.metaData!.rssFeedUrl!,
+        );
+
+        if (xmlRawData != null) {
+          // Parse and update metadata
+          final fetchedFeeds = RssXmlParsingService.parseRssFeed(
+            xmlRawData,
+            collectionId: urlModel.collectionId,
+            firestoreId: '${urlModel.firestoreId}rss',
+          );
+
+          // Update each feed with the favicon and settings from UrlModel metadata
+          final faviconUrl = urlModel.metaData?.faviconUrl;
+          for (var i = 0; i < fetchedFeeds.length; i++) {
+            fetchedFeeds[i] = fetchedFeeds[i].copyWith(
+              metaData: fetchedFeeds[i].metaData?.copyWith(
+                    faviconUrl: faviconUrl,
+                    websiteName: urlModel.title,
+                  ),
+              settings: urlModel.settings,
+            );
+          }
+
+          // Store the fetched feeds locally for future quick access
+          await _localDataSource
+              .addAllRssFeeds(urlModels: fetchedFeeds)
+              .catchError((_) => true);
+
+          return Right(fetchedFeeds);
+        }
+      }
+
+      // Return an empty list if nothing is available
+      return const Right([]);
+    } catch (e) {
+      // Capture and return failure per URL fetch to prevent termination of the entire process
+      return Left(
+        ServerFailure(
+          message: 'Failed to fetch feeds for ${urlModel.title}',
           statusCode: 402,
         ),
       );
@@ -109,6 +142,7 @@ class RssFeedRepo {
                   faviconUrl: faviconUrl,
                   websiteName: urlModel.title,
                 ),
+            settings: urlModel.settings,
           );
         }
 
@@ -130,7 +164,9 @@ class RssFeedRepo {
         // If the feed already exists, replace the existing feed in `newlyfectedfeeds`
         if (existingFeed.metaData?.rssFeedUrl ==
             newlyFetchedFeed.metaData?.rssFeedUrl) {
-          newlyfectedfeeds[i] = existingFeed;
+          newlyfectedfeeds[i] = existingFeed.copyWith(
+            settings: newlyfectedfeeds[i].settings,
+          );
         }
       }
 

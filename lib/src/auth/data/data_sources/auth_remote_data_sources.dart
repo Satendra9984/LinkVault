@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class AuthRemoteDataSourcesImpl {
   AuthRemoteDataSourcesImpl({
@@ -52,7 +55,7 @@ class AuthRemoteDataSourcesImpl {
 
       return globalUser;
     } on FirebaseAuthException catch (e) {
-      debugPrint('[log] auth: ${e.message}');
+      // debugPrint('[log] auth: ${e.message}');
       if (e.code == 'user-not-found') {
         throw LocalAuthException(
           message: 'No user found for that email.',
@@ -65,7 +68,7 @@ class AuthRemoteDataSourcesImpl {
         );
       }
     } catch (e) {
-      debugPrint('[log] auth: $e');
+      // debugPrint('[log] auth: $e');
 
       throw LocalAuthException(
         message: 'Could Not Authenticate',
@@ -90,7 +93,7 @@ class AuthRemoteDataSourcesImpl {
       final todayDate = DateTime.now().toUtc();
       final creditExpiryDate = todayDate.add(
         const Duration(
-          days: accountSingUpCreditLimit,  // [TODO] : WILL CHANGE TO DAYS
+          days: accountSingUpCreditLimit, // [TODO] : WILL CHANGE TO DAYS
         ),
       );
 
@@ -140,9 +143,62 @@ class AuthRemoteDataSourcesImpl {
     try {
       await _auth.sendPasswordResetEmail(email: emailAddress);
     } catch (e) {
-      debugPrint('[log] : $e');
+      // debugPrint('[log] : $e');
 
       throw AuthException(message: e.toString(), statusCode: 402);
     }
+  }
+
+  Future<void> deleteUser() async {
+    final auth = FirebaseAuth.instance;
+
+    // Logger.printLog('[deleting] : Current User: ${auth.currentUser?.uid}');
+    final user = auth.currentUser;
+    final firestore = FirebaseFirestore.instance;
+
+    if (user == null) {
+      throw AuthException(
+        message: 'Account Not Found. Something Went Wrong.',
+        statusCode: 402,
+      );
+    }
+    // Reference to the user's main document
+    final accountRef = firestore.collection(userCollection).doc(user.uid);
+
+    // Reference to the user's subcollections
+    final folderCollectionRef = accountRef.collection(folderCollections);
+    final urlsDataRef = accountRef.collection(urlDataCollection);
+
+
+    await Future.wait(
+      [
+        // Delete all documents in the folderCollections subcollection
+        _deleteCollection(folderCollectionRef),
+
+        // Delete all documents in the urlDataCollection subcollection
+        _deleteCollection(urlsDataRef),
+
+        // Delete the user's main document after subcollections are deleted
+        accountRef.delete(),
+
+        // Delete the Firebase Authentication user
+        // user.delete(), // Handle null user if not authenticated
+      ],
+    );
+    await user.delete(); // Handle null user if not authenticated
+
+  }
+
+  // Function to delete all documents in a collection
+  Future<void> _deleteCollection(CollectionReference collectionRef) async {
+    final batch = FirebaseFirestore.instance.batch();
+    final snapshot = await collectionRef.get();
+
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // Commit the batch deletion
+    await batch.commit();
   }
 }

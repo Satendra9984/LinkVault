@@ -114,5 +114,42 @@
 		<key>LSApplicationQueriesSchemes</key>
     <key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-9004947579124903~6181417192</string>
+	// <key>NSLocationWhenInUseUsageDescription</key>
+	// <string>Location Permissins are required when you open websites that uses location services.</string>
+	// <key>NSLocationAlwaysUsageDescription</key>
+	// <string>Location Permissins are required when you open websites that uses location services.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Allowing arbitrary loads for HTTP requests -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+
+	<!-- Permission to access the internet -->
+	<key>NSAllowsArbitraryLoadsInWebContent</key>
+	<true/>
+
+	<!-- Location permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to show your position on the map and for location-based services within the web content.</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is needed for continuous location-based services.</string>
+
+	<!-- Camera and Microphone access for web apps -->
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to use camera-based features in web content.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required to capture audio in web content.</string>
+
+	<!-- Photo library access for upload/download files -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Access to the photo library is needed to upload photos in web content.</string>
+
+	<!-- External storage access (in case your app needs file access) -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Permission is needed to save files from the web to your photo library.</string>
+
 </dict>
 </plist>

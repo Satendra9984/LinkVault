@@ -8,6 +8,7 @@ import 'package:intl/intl.dart'; // Required for date parsing
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/services/html_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:xml/xml.dart';
 
 class RssXmlParsingService {
@@ -27,8 +28,8 @@ class RssXmlParsingService {
       if (response.statusCode == 200) {
         return XmlDocument.parse(response.body);
       } else {
-        // // Logger.printLog(
-        //   'HTTP error ${response.statusCode}: ${response.reasonPhrase}',
+        // Logger.printLog(
+        //   'HTTP error url = ${url}, ${response.statusCode}: ${response.reasonPhrase}',
         // );
       }
 
@@ -45,7 +46,7 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          // // Logger.printLog(
+          // Logger.printLog(
           //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
           // );
         }
@@ -61,39 +62,39 @@ class RssXmlParsingService {
         if (response.statusCode == 200) {
           return XmlDocument.parse(response.body);
         } else {
-          // // Logger.printLog(
+          // Logger.printLog(
           //   'HTTPS error ${response.statusCode}: ${response.reasonPhrase}',
           // );
         }
       }
 
-      // // Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
+      // Logger.printLog('Failed to fetch RSS feed from both HTTP and HTTPS');
       return null;
     } catch (e) {
       if (e is TimeoutException) {
-        // // Logger.printLog(
+        // Logger.printLog(
         //   'Slow Internet.Try Using Wi-Fi sometimes mobile internet not work.',
         // );
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi if Using Mobile Internet.',
         );
       } else if (e is SocketException) {
-        // // Logger.printLog('Socket error: $e');
+        // Logger.printLog('Socket error: $e');
         throw const HttpException(
           'Slow Internet.Try Using Wi-Fi sometime mobile internet not work.',
         );
       } else if (e is FormatException) {
-        // // Logger.printLog('Invalid URL format: $e');
+        // Logger.printLog('Invalid URL format: $e');
         throw const HttpException(
           'Invalid RSS Feed Address.',
         );
       } else if (e is XmlParserException) {
-        // // Logger.printLog('XML parsing error: $e');
+        // Logger.printLog('XML parsing error: $e');
         throw const HttpException(
           'Invalid RSS Feed Address',
         );
       } else {
-        // // Logger.printLog('Unexpected error in fetchRssFeed: $e');
+        // Logger.printLog('Unexpected error in fetchRssFeed: $e');
         throw const HttpException(
           'Something Went Wrong.',
         );
@@ -225,7 +226,7 @@ class RssXmlParsingService {
 
       return feedItems;
     } catch (e) {
-      // // Logger.printLog('error in "parseRssFeed" $e');
+      // Logger.printLog('error in "parseRssFeed" $e');
       return feedItems;
     }
   }
@@ -284,10 +285,10 @@ class RssXmlParsingService {
       final document = html_parser.parse(htmlString);
 
       final bannerImageUrl = UrlParsingService.extractImageUrl(document);
-      // // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
+      // Logger.printLog('[rss] : BannerImg from htmldesc $bannerImageUrl');
       return bannerImageUrl;
     } catch (e) {
-      // // Logger.printLog('[rss] : BannerImgError from html $e');
+      // Logger.printLog('[rss] : BannerImgError from html $e');
       return null;
     }
   }
@@ -331,7 +332,7 @@ class RssXmlParsingService {
 
 // Helper to extract the best link from RSS/Atom feeds
   static String? extractFeedItemLink(XmlElement element) {
-    // // Logger.printLog('[link] : ${element.toString()}');
+    // Logger.printLog('[link] : ${element.toString()}');
 
     try {
       // Case 1: Standard <link> element (without attributes)
@@ -339,7 +340,7 @@ class RssXmlParsingService {
       if (linkTag != null && linkTag.text.isNotEmpty) {
         return linkTag.text.trim();
       }
-      // // Logger.printLog('[link] : now searching atom:link');
+      // Logger.printLog('[link] : now searching atom:link');
 
       // Case 2: <atom:link> element with href attribute
       final atomLinkTag = element.findElements('atom:link').firstOrNull;
@@ -357,7 +358,7 @@ class RssXmlParsingService {
       if (guidTag != null && guidTag.getAttribute('isPermaLink') == 'true') {
         return guidTag.text.trim();
       }
-      // // Logger.printLog('[link] : now searching link');
+      // Logger.printLog('[link] : now searching link');
 
       // Case 4: <link rel="alternate" href="..."> element
       final alternateLinkTag = element.findElements('link').firstOrNull;
@@ -378,12 +379,12 @@ class RssXmlParsingService {
           return href.trim();
         }
       }
-      // // Logger.printLog('[link] : returning null');
+      // Logger.printLog('[link] : returning null');
 
       // If no suitable link is found, return null
       return null;
     } catch (e) {
-      // // Logger.printLog('[link] : could not find link: $e');
+      // Logger.printLog('[link] : could not find link: $e');
       return null;
     }
   }
@@ -428,7 +429,7 @@ class RssXmlParsingService {
     // Search through media-specific elements for image URLs
     for (final mediaElement in mediaElements) {
       final url = mediaElement.getAttribute('url') ?? '';
-      if (_isImageUrl(url)) {
+      if (isImageUrl(url)) {
         // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
         return url;
       }
@@ -438,7 +439,7 @@ class RssXmlParsingService {
     for (final element in itemElement.descendants.whereType<XmlElement>()) {
       for (final attribute in element.attributes) {
         final url = attribute.value;
-        if (_isImageUrl(url)) {
+        if (isImageUrl(url)) {
           // // Logger.printLog('[rss] : BannerImg from _extractBannerImageUrl');
           return url;
         }
@@ -450,7 +451,7 @@ class RssXmlParsingService {
   }
 
 // Helper function to check if a URL is likely an image
-  static bool _isImageUrl(String url) {
+  static bool isImageUrl(String url) {
     final lowerUrl = url.toLowerCase();
     return lowerUrl.contains('.jpg') ||
         lowerUrl.contains('.jpeg') ||
@@ -485,11 +486,11 @@ class RssXmlParsingService {
     try {
       // Common RSS date formats (RFC822 for example)
       final rfc822Format = DateFormat('EEE, dd MMM yyyy HH:mm:ss Z', 'en_US');
-      // // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
+      // Logger.printLog('[rss]: pubdate rfc822Format: $rfc822Format');
 
       return rfc822Format.parse(dateString);
     } catch (e) {
-      // // Logger.printLog('[rss]: pubdate _parseDate: $e');
+      // Logger.printLog('[rss]: pubdate _parseDate: $e');
 
       return null;
     }

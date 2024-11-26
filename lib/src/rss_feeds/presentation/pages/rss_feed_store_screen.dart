@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_collections_list_screen.dart';
@@ -33,7 +33,7 @@ class RssFeedCollectionStorePage extends StatefulWidget {
 }
 
 class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
-    with SingleTickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin {
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
 
@@ -59,6 +59,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavBar(),
@@ -115,6 +116,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               RssFeedUrlsListWidget(
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
+                showBottomNavBar: _showBottomNavBar,
               ),
               RssFeedUrlsPreviewListWidget(
                 showBottomNavBar: _showBottomNavBar,
@@ -128,7 +130,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               ),
               SavedFeedsPreviewListScreen(
                 showBottomBar: _showBottomNavBar,
-                isRootCollection: widget.isRootCollection,
+                isRootCollection: true,
                 collectionId: fetchCollection.collection!.id + savedFeeds,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
@@ -281,4 +283,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       ),
     );
   }
+  
+  @override
+  bool get wantKeepAlive => true;
 }

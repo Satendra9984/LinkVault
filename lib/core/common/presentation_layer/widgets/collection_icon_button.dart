@@ -25,54 +25,43 @@ class FolderIconButton extends StatelessWidget {
       onLongPress: onLongPress,
       child: Column(
         children: [
-          ShaderMask(
-            shaderCallback: (Rect bounds) {
-              return LinearGradient(
-                colors: [
-                  folderColor.withOpacity(0.25),
-                  folderColor.withOpacity(0.55),
-                  folderColor.withOpacity(0.75),
-                  folderColor.withOpacity(0.85),
-                  // Add more colors if needed
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.3, 0.5, 0.65, 1],
-              ).createShader(bounds);
-            },
-            // child: Icon(
-            //   Icons.folder,
-            //   size: 80,
-            //   color: folderColor, // This color will be masked by the gradient
-            // ),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: SvgPicture.asset(
-                MediaRes.folderSVG,
-                height: 60,
-                width: 60,
-                // color: folderColor,
-              ),
+          Padding(
+            padding: const EdgeInsets.all(4),
+            child: SvgPicture.asset(
+              MediaRes.folderSVG,
+              // MediaRes.folde,
+
+              height: 60,
+              width: 60,
+              // color: folderColor,
             ),
           ),
-
-          // Icon(
-          //   Icons.folder,
-          //   size: 72,
-          //   color: folderColor.withOpacity(1), // This color will be masked by the gradient
-          // ),
-
-          // Padding(
-          //   padding: const EdgeInsets.all(4),
-          //   child: SvgPicture.asset(
-          //     'assets/images/folder_6.svg',
-          //     height: 56,
-          //     width: 56,
-          //     // color: folderColor,
+          // ShaderMask(
+          //   shaderCallback: (Rect bounds) {
+          //     return LinearGradient(
+          //       colors: [
+          //         folderColor.withOpacity(0.25),
+          //         folderColor.withOpacity(0.55),
+          //         folderColor.withOpacity(0.75),
+          //         folderColor.withOpacity(0.85),
+          //         // Add more colors if needed
+          //       ],
+          //       begin: Alignment.topCenter,
+          //       end: Alignment.bottomCenter,
+          //       stops: const [0.3, 0.5, 0.65, 1],
+          //     ).createShader(bounds);
+          //   },
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(4),
+          //     child: SvgPicture.asset(
+          //       MediaRes.folderSVG,
+          //       height: 60,
+          //       width: 60,
+          //       // color: folderColor,
+          //     ),
           //   ),
           // ),
           const SizedBox(height: 4),
-
           Text(
             collection.name,
             maxLines: 2,

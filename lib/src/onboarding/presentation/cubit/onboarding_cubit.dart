@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
-import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/data/repositories/models/loading_states.dart';
+import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 
 part 'onboarding_state.dart';
 
@@ -21,9 +21,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
   final OnBoardingRepoImpl _boardingRepoImpl;
 
   Future<void> checkIfLoggedIn() async {
-
     final result = await _boardingRepoImpl.isLoggedIn();
-    debugPrint('Current state before emit: $state');
+    // debugPrint('Current state before emit: $state');
 
     result.fold(
       (failed) {
@@ -45,7 +44,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
         }
       },
     );
-    debugPrint('Current state after emit: $state');
+    // debugPrint('Current state after emit: $state');
   }
 
   bool isCreditExpired() {
@@ -67,4 +66,6 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
     return false;
   }
+
+  Future<void> deleteUserForever() async {}
 }

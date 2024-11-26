@@ -4,25 +4,41 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_webview.dart';
+import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RssFeedUrlsPreviewListWidget extends StatefulWidget {
   const RssFeedUrlsPreviewListWidget({
@@ -69,9 +85,10 @@ class _RssFeedUrlsPreviewListWidgetState
   void initState() {
     // _rssFeedCubit = context.read<RssFeedCubit>();
 
-    context.read<RssFeedCubit>().initializeNewFeed(
-          collectionId: widget.collectionFetchModel.collection!.id,
-        );
+    // TODO : THIS IS INITIALIZING IT AGAIN AND AGAIN
+    // context.read<RssFeedCubit>().initializeNewFeed(
+    //       collectionId: widget.collectionFetchModel.collection!.id,
+    //     );
     // Now updating all rss feed from the urls of this collection
     context.read<RssFeedCubit>().getAllRssFeedofCollection(
           collectionId: widget.collectionFetchModel.collection!.id,
@@ -87,6 +104,12 @@ class _RssFeedUrlsPreviewListWidgetState
     });
 
     _selectedCategory.value = _predefinedCategories;
+    // _initializeAlphaFilter();
+    _initializeDateWiseFilter();
+    _initializeIsSideWaysLayoutFilter();
+    _initializeShowBannerImageLayoutFilter();
+    _initializeShowFullDescriptionLayoutFilter();
+
     super.initState();
   }
 
@@ -101,6 +124,179 @@ class _RssFeedUrlsPreviewListWidgetState
       widget.showBottomNavBar.value = true;
     }
     _previousOffset = _scrollController.offset;
+  }
+
+  /// FILTER FOR SORTING URLS IN DATETIME ORDER
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(collectionModel.toJson()));
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(sortDateWise)) {
+        final sortDateWiseValue =
+            collectionModel.settings![sortDateWise] as bool?;
+        if (sortDateWiseValue == null) {
+          return;
+        }
+        if (sortDateWiseValue) {
+          _showLatestFirst.value = true;
+        } else {
+          _showOldestFirst.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    if (_showLatestFirst.value) {
+      settings[sortDateWise] = true;
+    } else if (_showOldestFirst.value) {
+      settings[sortDateWise] = false;
+    } else if (_showLatestFirst.value == false &&
+        _showOldestFirst.value == false) {
+      settings.remove(sortDateWise);
+    }
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SIDEWAYS LAYOUT OPTION
+  void _initializeIsSideWaysLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(isSideWayLayout)) {
+        final isSideWayLayoutValue =
+            collectionModel.settings![isSideWayLayout] as bool?;
+        if (isSideWayLayoutValue == null) {
+          return;
+        }
+
+        _isSideWays.value = isSideWayLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateIsSideWayLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[isSideWayLayout] = _isSideWays.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowFullDescriptionLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(showFullDescription)) {
+        final showFullDescriptionLayoutValue =
+            collectionModel.settings![showFullDescription] as bool?;
+        if (showFullDescriptionLayoutValue == null) {
+          return;
+        }
+
+        _showDescriptions.value = showFullDescriptionLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowFullDescriptionLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showFullDescription] = _showDescriptions.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowBannerImageLayoutFilter() {
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    try {
+      if (collectionModel.settings != null &&
+          collectionModel.settings!.containsKey(showBannerImage)) {
+        final showBannerImageLayoutValue =
+            collectionModel.settings![showBannerImage] as bool?;
+        if (showBannerImageLayoutValue == null) {
+          return;
+        }
+
+        _showBannerImage.value = showBannerImageLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowBannerImageLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+    final collectionModel = widget.collectionFetchModel.collection;
+    if (collectionModel == null) return;
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showBannerImage] = _showBannerImage.value;
+
+    final updatedCollection = collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _onSearch(BuildContext context) {
@@ -179,15 +375,15 @@ class _RssFeedUrlsPreviewListWidgetState
     // _rssFeedCubit.clearCollectionFeed(
     //   collectionId: widget.collectionFetchModel.collection!.id,
     // );
-    // // Logger.printLog('[rss] : rssfeed preview list disposed');
+    // Logger.printLog('[rss] : rssfeed preview list disposed');
     super.dispose();
   }
 
   double getNavigationBarHeight(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     // return mediaQuery.viewPadding.bottom;
-    final physicalHeight = ui.window.physicalSize.height;
-    final devicePixelRatio = ui.window.devicePixelRatio;
+    final physicalHeight = View.of(context).physicalSize.height;
+    final devicePixelRatio = View.of(context).devicePixelRatio;
     final screenHeight = physicalHeight / devicePixelRatio;
 
     // Calculate the height of all known system UI elements
@@ -271,7 +467,9 @@ class _RssFeedUrlsPreviewListWidgetState
                 final feeds = state.feedCollections[
                     widget.collectionFetchModel.collection!.id];
 
-                if (feeds == null || feeds.allFeeds.isEmpty) {
+                if (feeds == null ||
+                    // feeds.loadingStates == LoadingStates.loading ||
+                    feeds.loadingStates == LoadingStates.initial) {
                   return Center(
                     child: Column(
                       children: [
@@ -280,6 +478,56 @@ class _RssFeedUrlsPreviewListWidgetState
                         const CircularProgressIndicator(
                           color: ColourPallette.mountainMeadow,
                           backgroundColor: ColourPallette.white,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (feeds.allFeeds.isEmpty) {
+                  return Center(
+                    child: Column(
+                      children: [
+                        rssFeedNewsWidget,
+                        const SizedBox(height: 20),
+                        if (feeds.loadingStates == LoadingStates.loaded)
+                          Text(
+                            'No Feed For Now.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: ColourPallette.information,
+                            ),
+                          ),
+                        if (feeds.loadingStates == LoadingStates.loading)
+                          const CircularProgressIndicator(
+                            color: ColourPallette.mountainMeadow,
+                            backgroundColor: ColourPallette.white,
+                          ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () {
+                            final collId =
+                                widget.collectionFetchModel.collection!.id;
+                            context
+                                .read<RssFeedCubit>()
+                                .refreshCollectionFeed(collectionId: collId);
+                          },
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Refresh',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: ColourPallette.black,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.refresh_rounded),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -310,7 +558,12 @@ class _RssFeedUrlsPreviewListWidgetState
                         if (index == 0) {
                           return const SizedBox(height: kToolbarHeight);
                         } else if (index > allLocalFeedsList.length) {
-                          return const SizedBox(height: 200);
+                          return feeds.loadingStates == LoadingStates.loading
+                              ? const CircularProgressIndicator(
+                                  color: ColourPallette.mountainMeadow,
+                                  backgroundColor: ColourPallette.white,
+                                )
+                              : const SizedBox(height: 200);
                         }
 
                         return ValueListenableBuilder(
@@ -320,6 +573,7 @@ class _RssFeedUrlsPreviewListWidgetState
 
                             final urlMetaData = url.metaData ??
                                 UrlMetaData.isEmpty(title: url.title);
+
                             return ValueListenableBuilder(
                               valueListenable: _isSideWays,
                               builder: (context, isSideWays, _) {
@@ -408,22 +662,109 @@ class _RssFeedUrlsPreviewListWidgetState
                                                   urlModelDataForBookmark;
                                             },
                                             onTap: () async {
-                                              final theme = Theme.of(context);
-                                              // CUSTOM CHROME PREFETCHES AND STORES THE WEBPAGE
-                                              // FOR FASTER WEBPAGE LOADING
-                                              await CustomTabsService.launchUrl(
-                                                url: url.metaData?.rssFeedUrl ??
-                                                    url.url,
-                                                theme: theme,
-                                              ).then(
-                                                (_) async {
-                                                  // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                                  // JUST LIKE APPS IN BACKGROUND TYPE
-                                                },
+                                              final urlModel = url;
+                                              final urlLaunchTypeLocalNotifier =
+                                                  ValueNotifier(
+                                                UrlLaunchType.customTabs,
                                               );
+
+                                              if (urlModel.settings != null &&
+                                                  urlModel.settings!
+                                                      .containsKey(
+                                                    feedUrlLaunchType,
+                                                  )) {
+                                                urlLaunchTypeLocalNotifier
+                                                        .value =
+                                                    UrlLaunchType.fromString(
+                                                  urlModel.settings![
+                                                          feedUrlLaunchType]
+                                                      .toString(),
+                                                );
+                                              }
+                                              switch (urlLaunchTypeLocalNotifier
+                                                  .value) {
+                                                case UrlLaunchType.customTabs:
+                                                  {
+                                                    final theme =
+                                                        Theme.of(context);
+                                                    await CustomTabsService
+                                                        .launchUrl(
+                                                      url: urlModel.metaData
+                                                              ?.rssFeedUrl ??
+                                                          urlModel.url,
+                                                      theme: theme,
+                                                    ).then(
+                                                      (_) async {
+                                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                                        // JUST LIKE APPS IN BACKGROUND TYPE
+                                                      },
+                                                    );
+                                                    break;
+                                                  }
+                                                case UrlLaunchType.webView:
+                                                  {
+                                                    await Navigator.of(context)
+                                                        .push(
+                                                      MaterialPageRoute(
+                                                        builder: (ctx) =>
+                                                            DashboardWebView(
+                                                          url: urlModel.metaData
+                                                                  ?.rssFeedUrl ??
+                                                              urlModel.url,
+                                                        ),
+                                                      ),
+                                                    );
+
+                                                    break;
+                                                  }
+                                                case UrlLaunchType.readingMode:
+                                                  {
+                                                    await Navigator.of(context)
+                                                        .push(
+                                                      MaterialPageRoute(
+                                                        builder: (ctx) =>
+                                                            RSSFeedWebView(
+                                                          url: urlModel.metaData
+                                                                  ?.rssFeedUrl ??
+                                                              urlModel.url,
+                                                        ),
+                                                      ),
+                                                    );
+
+                                                    break;
+                                                  }
+                                                case UrlLaunchType
+                                                      .separateBrowserWindow:
+                                                  {
+                                                    final theme =
+                                                        Theme.of(context);
+                                                    await CustomTabsService
+                                                        .launchUrl(
+                                                      url: urlModel.metaData
+                                                              ?.rssFeedUrl ??
+                                                          urlModel.url,
+                                                      theme: theme,
+                                                    ).then(
+                                                      (_) async {
+                                                        // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                                        // JUST LIKE APPS IN BACKGROUND TYPE
+                                                      },
+                                                    );
+                                                    break;
+                                                  }
+                                              }
                                             },
-                                            onLongPress: () {
-                                              // [TODO] : SHOW MORE OPTIONS
+                                            onLongPress: () async {
+                                              // SHOW MORE OPTIONS
+                                              final urlc = url.copyWith(
+                                                metaData: urlMetaData,
+                                              );
+
+                                              await showUrlOptionsBottomSheet(
+                                                context,
+                                                urlModel: urlc,
+                                                urlOptions: [],
+                                              );
                                             },
                                             updateBannerImage: () async {
                                               final urlModel = await context
@@ -667,14 +1008,15 @@ class _RssFeedUrlsPreviewListWidgetState
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      SvgPicture.asset(
-                        MediaRes.compassSVG,
-                        height: 18,
-                        width: 18,
-                      ),
-                      const SizedBox(width: 8),
+                      // SvgPicture.asset(
+                      //   MediaRes.compassSVG,
+                      //   height: 18,
+                      //   width: 18,
+                      // ),
+                      // const SizedBox(width: 8),
                       Text(
-                        '${widget.isRootCollection ? 'My Feeds' : widget.collectionFetchModel.collection?.name}',
+                        widget.collectionFetchModel.collection?.name ??
+                            'My Feeds',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -802,6 +1144,8 @@ class _RssFeedUrlsPreviewListWidgetState
                   (u1, u2) => u2.value.createdAt.compareTo(u1.value.createdAt),
                 ),
             ];
+
+            _updateDateWiseFilter();
           },
         ),
         ListFilterPopupMenuItem(
@@ -820,6 +1164,7 @@ class _RssFeedUrlsPreviewListWidgetState
                   (u1, u2) => u1.value.createdAt.compareTo(u2.value.createdAt),
                 ),
             ];
+            _updateDateWiseFilter();
           },
         ),
         _refreshFeedButton(),
@@ -837,21 +1182,609 @@ class _RssFeedUrlsPreviewListWidgetState
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',
           notifier: _isSideWays,
-          onPress: () => _isSideWays.value = !_isSideWays.value,
+          onPress: () {
+            _isSideWays.value = !_isSideWays.value;
+            _updateIsSideWayLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Full Description',
           notifier: _showDescriptions,
-          onPress: () => _showDescriptions.value = !_showDescriptions.value,
+          onPress: () {
+            _showDescriptions.value = !_showDescriptions.value;
+            _updateShowFullDescriptionLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Show Images',
           notifier: _showBannerImage,
-          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+          onPress: () {
+            _showBannerImage.value = !_showBannerImage.value;
+            _updateShowBannerImageLayoutFilter();
+          },
         ),
-        _feedSettingsButton(),
+        // _feedSettingsButton(),
       ],
     );
+  }
+
+  Future<void> showUrlOptionsBottomSheet(
+    BuildContext context, {
+    required UrlModel urlModel,
+    required List<Widget> urlOptions,
+  }) async {
+    // Logger.printLog('showUrlOptionsBottomSheet, ${urlModel.title}');
+    // debugPrint(urlModel.title);
+
+    final size = MediaQuery.of(context).size;
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
+
+    onPop() async {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
+      Navigator.pop(context);
+    }
+
+    // final showLastUpdated = ValueNotifier(false);
+    final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
+
+    // final urlModel = url.urlModel!;
+    // Logger.printLog(StringUtils.getJsonFormat(urlModel.toJson()));
+
+    if (urlModel.settings != null &&
+        urlModel.settings!.containsKey(feedUrlLaunchType)) {
+      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+        urlModel.settings![feedUrlLaunchType].toString(),
+      );
+    }
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding:
+            const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: ColourPallette.mystic.withOpacity(0.25),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Builder(
+                      builder: (context) {
+                        final urlModelData = urlModel;
+                        final urlMetaData = urlModel.metaData!;
+
+                        var name = '';
+
+                        if (urlModelData.title.isNotEmpty) {
+                          name = urlModelData.title;
+                        } else if (urlMetaData.title != null &&
+                            urlMetaData.title!.isNotEmpty) {
+                          name = urlMetaData.title!;
+                        } else if (urlMetaData.websiteName != null &&
+                            urlMetaData.websiteName!.isNotEmpty) {
+                          name = urlMetaData.websiteName!;
+                        }
+
+                        final placeHolder = Container(
+                          padding: const EdgeInsets.all(2),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: ColourPallette.black,
+                            // color: Colors.deepPurple
+                          ),
+                          child: Text(
+                            _websiteName(name, 5),
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            softWrap: true,
+                            overflow: TextOverflow.fade,
+                            style: const TextStyle(
+                              color: ColourPallette.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 8,
+                            ),
+                          ),
+                        );
+
+                        if (urlModel.metaData?.faviconUrl == null) {
+                          return placeHolder;
+                        }
+                        final metaData = urlModel.metaData;
+
+                        if (metaData?.faviconUrl != null) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: NetworkImageBuilderWidget(
+                                  imageUrl: urlMetaData.faviconUrl!,
+                                  compressImage: false,
+                                  errorWidgetBuilder: () {
+                                    return placeHolder;
+                                  },
+                                  successWidgetBuilder: (imageData) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Builder(
+                                        builder: (ctx) {
+                                          final memoryImage = Image.memory(
+                                            imageData.imageBytesData!,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (ctx, _, __) {
+                                              return placeHolder;
+                                            },
+                                          );
+                                          // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                          if (urlMetaData.faviconUrl!
+                                              .toLowerCase()
+                                              .endsWith('.svg')) {
+                                            // Try loading the SVG and handle errors
+                                            return FutureBuilder(
+                                              future: _loadSvgBytes(
+                                                imageData.imageBytesData!,
+                                              ),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const CircularProgressIndicator();
+                                                } else if (snapshot.hasError) {
+                                                  return memoryImage;
+                                                } else {
+                                                  return snapshot.data!;
+                                                }
+                                              },
+                                            );
+                                          } else {
+                                            return memoryImage;
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return placeHolder;
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            Text(
+                              StringUtils.capitalizeEachWord(
+                                urlModel.metaData?.title ?? urlModel.title,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ...urlOptions,
+
+              // SAVE THE FEED
+              BottomSheetOption(
+                leadingIcon: Icons.bookmark,
+                title: const Text('Save', style: titleTextStyle),
+                trailing: Builder(
+                  builder: (ctx) {
+                    if (urlModel.isOffline == false) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Icon(
+                      Icons.check_circle_rounded,
+                      color: ColourPallette.salemgreen.withOpacity(0.5),
+                    );
+                  },
+                ),
+                onTap: () async {
+                  final rssFeedCubit = context.read<RssFeedCubit>();
+
+                  final urlModelDataForBookmark = urlModel.copyWith(
+                    collectionId:
+                        widget.collectionFetchModel.collection!.id + savedFeeds,
+                    isOffline: !urlModel.isOffline,
+                    url: urlModel.metaData?.rssFeedUrl,
+                  );
+
+                  if (urlModelDataForBookmark.isOffline == false) {
+                    /// TOO COMPLEX DELETE FROM SAVED FEEDS
+                    /// USERS WILL DIRECTLY DELETE FROM
+                    /// SAVEDFEEDS
+
+                    // await context
+                    //     .read<UrlCrudCubit>()
+                    //     .deleteUrl(
+                    //       urlData:
+                    //           urlModelDataForBookmark,
+                    //           isRootCollection: widget.isRootCollection,
+                    //     );
+                    return;
+                  } else {
+                    await context.read<UrlCrudCubit>().addUrl(
+                          urlData: urlModelDataForBookmark,
+                          isRootCollection: widget.isRootCollection,
+                        );
+                  }
+
+                  await rssFeedCubit.updateRSSFeed(
+                    feedUrlModel: urlModelDataForBookmark.copyWith(
+                      collectionId: widget.collectionFetchModel.collection!.id,
+                    ),
+                  );
+
+                  final indexB = _list.value.indexWhere(
+                    (feed) => feed.value == urlModel,
+                  );
+
+                  if (indexB < 0) return;
+
+                  _list.value[indexB].value = urlModelDataForBookmark;
+                },
+              ),
+
+              // COPY TO CLIPBOARD
+              BlocBuilder<SharedInputsCubit, SharedInputsState>(
+                builder: (ctx, state) {
+                  final sharedInputCubit = context.read<SharedInputsCubit>();
+
+                  final firstCopiedUrl = sharedInputCubit.getTopUrl();
+
+                  return BottomSheetOption(
+                    leadingIcon: Icons.copy_all_rounded,
+                    title: const Text(
+                      'Copy Link',
+                      style: titleTextStyle,
+                    ),
+                    trailing: firstCopiedUrl != null &&
+                            firstCopiedUrl == urlModel.url
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: ColourPallette.salemgreen.withOpacity(0.5),
+                          )
+                        : null,
+                    onTap: () async {
+                      await Future.wait(
+                        [
+                          Future(
+                            () async {
+                              await ClipboardService.instance.copyText(
+                                urlModel.metaData?.rssFeedUrl ?? urlModel.url,
+                              );
+                            },
+                          ),
+                          Future(
+                            () => sharedInputCubit.addUrlInput(
+                              urlModel.metaData?.rssFeedUrl ?? urlModel.url,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+
+              // OPEN RSS FEED URL IN DIFFERENT TYPES
+              ValueListenableBuilder(
+                valueListenable: urlLaunchTypeLocalNotifier,
+                builder: (ctx, urlLaunchType, _) {
+                  return BottomSheetOption(
+                    leadingIcon: Icons.open_in_new_rounded,
+                    title: const Text(
+                      'Open In',
+                      style: titleTextStyle,
+                    ),
+                    trailing: // DROPDOWN OF BROWSER, WEBVIEW
+                        DropdownButton<UrlLaunchType>(
+                      value: urlLaunchType,
+                      onChanged: (urlLaunchType) {
+                        if (urlLaunchType == null) return;
+                        urlLaunchTypeLocalNotifier.value = urlLaunchType;
+                      },
+                      isDense: true,
+                      iconEnabledColor: ColourPallette.black,
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(8),
+                      underline: const SizedBox.shrink(),
+                      dropdownColor: ColourPallette.mystic,
+                      items: [
+                        ...UrlLaunchType.values.map(
+                          (urlLaunchType) => DropdownMenuItem(
+                            value: urlLaunchType,
+                            child: Text(
+                              StringUtils.capitalize(
+                                urlLaunchType ==
+                                        UrlLaunchType.separateBrowserWindow
+                                    ? 'Browser'
+                                    : urlLaunchType
+                                        .label, // UrlLaunchType.customTabs.label,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    onTap: () async {
+                      switch (urlLaunchType) {
+                        case UrlLaunchType.customTabs:
+                          {
+                            final theme = Theme.of(context);
+                            await CustomTabsService.launchUrl(
+                              url: urlModel.url,
+                              theme: theme,
+                            ).then(
+                              (_) async {
+                                // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                // JUST LIKE APPS IN BACKGROUND TYPE
+                              },
+                            );
+                            break;
+                          }
+                        case UrlLaunchType.webView:
+                          {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => DashboardWebView(
+                                  url: urlModel.metaData?.rssFeedUrl ??
+                                      urlModel.url,
+                                ),
+                              ),
+                            );
+
+                            break;
+                          }
+                        case UrlLaunchType.readingMode:
+                          {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => RSSFeedWebView(
+                                  url: urlModel.metaData?.rssFeedUrl ??
+                                      urlModel.url,
+                                ),
+                              ),
+                            );
+
+                            break;
+                          }
+                        case UrlLaunchType.separateBrowserWindow:
+                          {
+                            final theme = Theme.of(context);
+                            await CustomTabsService.launchUrl(
+                              url:
+                                  urlModel.metaData?.rssFeedUrl ?? urlModel.url,
+                              theme: theme,
+                            ).then(
+                              (_) async {
+                                // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                // JUST LIKE APPS IN BACKGROUND TYPE
+                              },
+                            );
+                            break;
+                          }
+                      }
+
+                      await Navigator.maybePop(context);
+                    },
+                  );
+                },
+              ),
+
+              // OPEN RSS FEED URL IN WEBVIEW
+              // BottomSheetOption(
+              //   leadingIcon: Icons.open_in_new_rounded,
+              //   title: const Text(
+              //     'Open WebView(beta)',
+              //     style: titleTextStyle,
+              //   ),
+              //   onTap: () async {
+              //     await Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (ctx) => DashboardWebView(
+              //           url: urlModel.url,
+              //         ),
+              //       ),
+              //     ).then(
+              //       (_) async {
+              //         await Navigator.maybePop(context);
+              //       },
+              //     );
+              //   },
+              // ),
+
+              // SHARE THE LINK TO OTHER APPS
+              BottomSheetOption(
+                leadingIcon: Icons.share,
+                title: const Text('Share Link', style: titleTextStyle),
+                onTap: () async {
+                  await Future.wait(
+                    [
+                      Share.share(
+                        urlModel.metaData?.rssFeedUrl ?? urlModel.url,
+                      ),
+                      Future(() => Navigator.maybePop(context)),
+                    ],
+                  );
+                  // Add functionality here
+                },
+              ),
+
+              // DELETE URL
+              // BottomSheetOption(
+              //   leadingIcon: Icons.delete_rounded,
+              //   title: const Text('Delete', style: titleTextStyle),
+              //   onTap: () async {
+              //     await showDeleteConfirmationDialog(
+              //       context,
+              //       urlModel,
+              //       () => context.read<UrlCrudCubit>().deleteUrl(
+              //             urlData: urlModel,
+              //             isRootCollection: widget.isRootCollection,
+              //           ),
+              //     ).then(
+              //       (_) {
+              //         Navigator.maybePop(context);
+              //       },
+              //     );
+              //   },
+              // ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(
+      () async {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.edgeToEdge,
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    UrlModel urlModel,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${urlModel.title}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<Widget> _loadSvgBytes(Uint8List svgImageBytes) async {
+    try {
+      return SvgPicture.memory(
+        svgImageBytes,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    } catch (e) {
+      throw Exception('Failed to load SVG: $e');
+    }
+  }
+
+  String _websiteName(String websiteName, int allowedLength) {
+    // Logger.printLog('WebsiteName: $websiteName');
+    if (websiteName.length < allowedLength) {
+      return websiteName;
+    }
+
+    final spaced = websiteName.trim().split(' ');
+    final initials = StringBuffer();
+
+    for (final ele in spaced) {
+      if (ele.isNotEmpty) {
+        initials.write(ele[0]);
+      }
+    }
+
+    return initials.toString();
   }
 
   @override

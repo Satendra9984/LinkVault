@@ -11,7 +11,7 @@ class MediaRes {
   static const String solidaritySVG = 'assets/images/solidarity.svg';
   static const String personSVG = 'assets/images/person.svg';
   static const String collectionSVG = 'assets/images/collections.svg';
-  static const String folderSVG = 'assets/images/folder_6.svg';
+  static const String folderSVG = 'assets/images/folder_2.svg';
   static const String webSurf1SVG = 'assets/images/web_surf_1.svg';
   static const String webSurf3SVG = 'assets/images/web_surf_3.svg';
   static const String linkVaultLogoSVG = 'assets/images/link_vault_logo.svg';
@@ -28,9 +28,9 @@ class MediaRes {
   static const String rssFeedSVG = 'assets/images/rss_feed.svg';
   static const String feedListSVG = 'assets/images/feed_list.svg';
   static const String newsBroSVG = 'assets/images/News-bro.svg';
-  // static const String SVG= 'assets/images/.svg';
-  // static const String SVG= 'assets/images/.svg';
-  // static const String SVG= 'assets/images/.svg';
+  static const String mobileAppsAmicoSVG= 'assets/images/mobile_apps_amico.svg';
+  static const String mobileAppsBroSVG= 'assets/images/mobile_apps_bro.svg';
+  static const String mobileAppsPanaSVG= 'assets/images/mobile_apps_pana.svg';
   // static const String SVG= 'assets/images/.svg';
   // static const String SVG= 'assets/images/.svg';
 

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
 
 class AdvanceSearchFiltersPage extends StatefulWidget {

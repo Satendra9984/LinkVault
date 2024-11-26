@@ -3,17 +3,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:lottie/lottie.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
   const CollectionsListScreenTemplate({
+    required this.isRootCollection,
     required this.collectionModel,
     required this.showAddCollectionButton,
     required this.onCollectionItemFetchedWidget,
@@ -23,6 +31,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
     super.key,
   });
 
+  final bool isRootCollection;
   final CollectionModel collectionModel;
   final bool showAddCollectionButton;
 
@@ -31,6 +40,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
   final Widget? Function({
     required List<Widget> actions,
     required ValueNotifier<List<CollectionFetchModel>> list,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   }) appBar;
 
   final Widget Function({
@@ -41,6 +51,7 @@ class CollectionsListScreenTemplate extends StatefulWidget {
   final Widget Function({
     required ValueNotifier<List<CollectionFetchModel>> list,
     required int index,
+    required List<Widget> Function(CollectionModel) collectionOptions,
   })? onCollectionItemFetchedWidget;
 
   @override
@@ -72,6 +83,8 @@ class _CollectionsListScreenTemplateState
       SystemUiMode.edgeToEdge,
       overlays: [],
     );
+    _initializeAlphaFilter();
+    _initializeDateWiseFilter();
     super.initState();
   }
 
@@ -119,6 +132,53 @@ class _CollectionsListScreenTemplateState
     }
   }
 
+  void _initializeAlphaFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortAlphabaticallyCollection)) {
+        final sortalpha =
+            widget.collectionModel.settings![sortAlphabaticallyCollection] as bool?;
+        if (sortalpha == null) {
+          return;
+        }
+        if (sortalpha) {
+          _atozFilter.value = true;
+        } else {
+          _ztoaFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateSortAlpha() async {
+    // var sortAlphabaticallyCollection = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_atozFilter.value) {
+      settings[sortAlphabaticallyCollection] = true;
+    } else if (_ztoaFilter.value) {
+      settings[sortAlphabaticallyCollection] = false;
+    } else if (_atozFilter.value == false && _ztoaFilter.value == false) {
+      settings.remove(sortAlphabaticallyCollection);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -143,6 +203,54 @@ class _CollectionsListScreenTemplateState
               );
         },
       );
+  }
+
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortDateWiseCollection)) {
+        final sortDateWiseCollectionValue =
+            widget.collectionModel.settings![sortDateWiseCollection] as bool?;
+        if (sortDateWiseCollectionValue == null) {
+          return;
+        }
+        if (sortDateWiseCollectionValue) {
+          _updatedAtLatestFilter.value = true;
+        } else {
+          _updatedAtOldestFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabaticallyCollection = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_updatedAtLatestFilter.value) {
+      settings[sortDateWiseCollection] = true;
+    } else if (_updatedAtOldestFilter.value) {
+      settings[sortDateWiseCollection] = false;
+    } else if (_updatedAtLatestFilter.value == false &&
+        _updatedAtOldestFilter.value == false) {
+      settings.remove(sortDateWiseCollection);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
   }
 
   void _filterUpdatedLatest() {
@@ -181,7 +289,7 @@ class _CollectionsListScreenTemplateState
                   heroTag: '${widget.collectionModel.hashCode}',
                   isExtended: showFullAddUrlButton,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   backgroundColor: ColourPallette.salemgreen,
                   // [DYNAMIC] : THIS IS A DYNAMIC PART
@@ -219,10 +327,6 @@ class _CollectionsListScreenTemplateState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  // if (widget.collectionModel == null) {
-                  //   return Container();
-                  // }
-
                   final fetchCollection =
                       state.collections[widget.collectionModel.id];
 
@@ -313,6 +417,11 @@ class _CollectionsListScreenTemplateState
                           return widget.onCollectionItemFetchedWidget!(
                             index: index,
                             list: _list,
+                            collectionOptions: (collectionModel) =>
+                                showCollectionModelOptionsBottomSheet(
+                              context,
+                              collectionModel: collectionModel,
+                            ),
                           );
                         },
                       );
@@ -338,6 +447,11 @@ class _CollectionsListScreenTemplateState
               actions: [
                 _filterOptions(),
               ],
+              collectionOptions: (collectionModel) =>
+                  showCollectionModelOptionsBottomSheet(
+                context,
+                collectionModel: collectionModel,
+              ),
             ),
           );
         },
@@ -366,6 +480,7 @@ class _CollectionsListScreenTemplateState
                 _ztoaFilter.value = false;
                 _filterAtoZ();
               }
+              _updateSortAlpha();
             },
           ),
           ListFilterPopupMenuItem(
@@ -377,6 +492,7 @@ class _CollectionsListScreenTemplateState
                 _atozFilter.value = false;
                 _filterZtoA();
               }
+              _updateSortAlpha();
             },
           ),
           ListFilterPopupMenuItem(
@@ -388,6 +504,7 @@ class _CollectionsListScreenTemplateState
                 _updatedAtOldestFilter.value = false;
                 _filterUpdatedLatest();
               }
+              _updateDateWiseFilter();
             },
           ),
           ListFilterPopupMenuItem(
@@ -399,9 +516,191 @@ class _CollectionsListScreenTemplateState
                 _updatedAtLatestFilter.value = false;
                 _filterUpdateOldest();
               }
+              _updateDateWiseFilter();
             },
           ),
         ];
+      },
+    );
+  }
+
+  // FOR THE COLLECTION-MODEL
+  List<Widget> showCollectionModelOptionsBottomSheet(
+    BuildContext context, {
+    required CollectionModel collectionModel,
+  }) {
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    final showLastUpdated = ValueNotifier(false);
+
+    return [
+      // UPDATE URL
+      BottomSheetOption(
+        // leadingIcon: Icons.access_time_filled_rounded,
+        leadingIcon: Icons.replay_circle_filled_outlined,
+        title: const Text('Update', style: titleTextStyle),
+        trailing: ValueListenableBuilder(
+          valueListenable: showLastUpdated,
+          builder: (ctx, showLastUpdatedVal, _) {
+            if (!showLastUpdatedVal) {
+              return GestureDetector(
+                onTap: () => showLastUpdated.value = !showLastUpdated.value,
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                ),
+              );
+            }
+
+            final updatedAt = collectionModel.updatedAt;
+            // Format to get hour with am/pm notation
+            final formattedTime = DateFormat('h:mma').format(updatedAt);
+            // Combine with the date
+            final lastSynced =
+                'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+            return GestureDetector(
+              onTap: () => showLastUpdated.value = !showLastUpdated.value,
+              child: Text(
+                lastSynced,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ColourPallette.salemgreen.withOpacity(0.75),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
+        ),
+
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => UpdateCollectionTemplateScreen(
+                collection: collectionModel,
+                isRootCollection: widget.isRootCollection,
+              ),
+            ),
+          ).then(
+            (_) {
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
+
+      // SYNC WITH REMOTE DATABASE
+      BottomSheetOption(
+        leadingIcon: Icons.cloud_sync,
+        title: const Text('Sync', style: titleTextStyle),
+        onTap: () async {
+          final collCubit = context.read<CollectionCrudCubit>();
+          await Navigator.maybePop(context).then(
+            (_) async {
+              await collCubit
+                  .syncCollection(
+                    collectionModel: collectionModel,
+                    isRootCollection: false,
+                  )
+                  .then(
+                    (_) {},
+                  );
+            },
+          );
+        },
+      ),
+
+      // DELETE URL
+      BottomSheetOption(
+        leadingIcon: Icons.delete_rounded,
+        title: const Text('Delete', style: titleTextStyle),
+        onTap: () async {
+          await showDeleteCollectionConfirmationDialog(
+            context,
+            () async {
+              final urlCrudCubit = context.read<CollectionCrudCubit>();
+
+              await urlCrudCubit.deleteCollection(
+                collection: collectionModel,
+                isRootCollection: widget.isRootCollection,
+              );
+            },
+            collectionModel: collectionModel,
+          ).then(
+            (_) {
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
+    ];
+  }
+
+  Future<void> showDeleteCollectionConfirmationDialog(
+    BuildContext context,
+    VoidCallback onConfirm, {
+    required CollectionModel? collectionModel,
+  }) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${collectionModel?.name}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

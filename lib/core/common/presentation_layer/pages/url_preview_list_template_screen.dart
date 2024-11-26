@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
+import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
+import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/services/clipboard_service.dart';
+import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
+import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
+import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
+import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,6 +40,7 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
     required this.urlsEmptyWidget,
     // required this.onUrlModelItemFetchedWidget,
     required this.showBottomNavBar,
+    required this.isRootCollection,
     required this.appBar,
     required this.onLongPress,
     this.onBookmarkButtonTap,
@@ -33,6 +50,7 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
 
   // final String title;
   final bool showAddUrlButton;
+  final bool isRootCollection;
   final ValueNotifier<bool> showBottomNavBar;
 
   final CollectionModel collectionModel;
@@ -40,7 +58,10 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
   // Dynamic Widgets
   final void Function({String? url}) onAddUrlPressed;
 
-  final void Function(UrlModel) onLongPress;
+  final void Function(
+    UrlModel, {
+    required List<Widget> urlOptions,
+  }) onLongPress;
 
   final void Function({
     required ValueNotifier<List<ValueNotifier<UrlFetchStateModel>>> list,
@@ -65,7 +86,8 @@ class UrlPreviewListTemplateScreen extends StatefulWidget {
 }
 
 class _UrlPreviewListTemplateScreenState
-    extends State<UrlPreviewListTemplateScreen> {
+    extends State<UrlPreviewListTemplateScreen>
+    with AutomaticKeepAliveClientMixin {
   final _showAppBar = ValueNotifier(true);
   final _showSearchFilterBottomSheet = ValueNotifier(false);
   final _searchTextEditingController = TextEditingController();
@@ -90,6 +112,8 @@ class _UrlPreviewListTemplateScreenState
 
   @override
   void initState() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -99,6 +123,11 @@ class _UrlPreviewListTemplateScreenState
       }
     });
     _selectedCategory.value = _predefinedCategories;
+    _initializeAlphaFilter();
+    _initializeDateWiseFilter();
+    _initializeIsSideWaysLayoutFilter();
+    _initializeShowBannerImageLayoutFilter();
+    _initializeShowFullDescriptionLayoutFilter();
     super.initState();
   }
 
@@ -114,7 +143,7 @@ class _UrlPreviewListTemplateScreenState
     }
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
-      // // Logger.printLog('[scroll] Called on scroll in urlslist');
+      // Logger.printLog('[scroll] Called on scroll in urlslist');
       _fetchMoreUrls();
     }
     _previousOffset = _scrollController.offset;
@@ -213,6 +242,54 @@ class _UrlPreviewListTemplateScreenState
     }
   }
 
+  /// FILTER FOR SORTING URLS IN ALPHABATICAL ORDER
+  void _initializeAlphaFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortAlphabatically)) {
+        final sortalpha =
+            widget.collectionModel.settings![sortAlphabatically] as bool?;
+        if (sortalpha == null) {
+          return;
+        }
+        if (sortalpha) {
+          _atozFilter.value = true;
+        } else {
+          _ztoaFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateSortAlpha() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_atozFilter.value) {
+      settings[sortAlphabatically] = true;
+    } else if (_ztoaFilter.value) {
+      settings[sortAlphabatically] = false;
+    } else if (_atozFilter.value == false && _ztoaFilter.value == false) {
+      settings.remove(sortAlphabatically);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterAtoZ() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -239,6 +316,55 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  /// FILTER FOR SORTING URLS IN DATETIME ORDER
+  void _initializeDateWiseFilter() {
+    // Logger.printLog(StringUtils.getJsonFormat(widget.collectionModel.toJson()));
+
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(sortDateWise)) {
+        final sortDateWiseValue =
+            widget.collectionModel.settings![sortDateWise] as bool?;
+        if (sortDateWiseValue == null) {
+          return;
+        }
+        if (sortDateWiseValue) {
+          _updatedAtLatestFilter.value = true;
+        } else {
+          _updatedAtOldestFilter.value = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateDateWiseFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    if (_updatedAtLatestFilter.value) {
+      settings[sortDateWise] = true;
+    } else if (_updatedAtOldestFilter.value) {
+      settings[sortDateWise] = false;
+    } else if (_updatedAtLatestFilter.value == false &&
+        _updatedAtOldestFilter.value == false) {
+      settings.remove(sortDateWise);
+    }
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
   void _filterUpdatedLatest() {
     _list.value = [..._list.value]..sort(
         (a, b) {
@@ -263,8 +389,416 @@ class _UrlPreviewListTemplateScreenState
       );
   }
 
+  /// FILTER FOR SIDEWAYS LAYOUT OPTION
+  void _initializeIsSideWaysLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(isSideWayLayout)) {
+        final isSideWayLayoutValue =
+            widget.collectionModel.settings![isSideWayLayout] as bool?;
+        if (isSideWayLayoutValue == null) {
+          return;
+        }
+
+        _isSideWays.value = isSideWayLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateIsSideWayLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[isSideWayLayout] = _isSideWays.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowFullDescriptionLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(showFullDescription)) {
+        final showFullDescriptionLayoutValue =
+            widget.collectionModel.settings![showFullDescription] as bool?;
+        if (showFullDescriptionLayoutValue == null) {
+          return;
+        }
+
+        _showDescriptions.value = showFullDescriptionLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowFullDescriptionLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showFullDescription] = _showDescriptions.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  /// FILTER FOR SHOW FULL DESCRIPTION LAYOUT OPTION
+  void _initializeShowBannerImageLayoutFilter() {
+    try {
+      if (widget.collectionModel.settings != null &&
+          widget.collectionModel.settings!.containsKey(showBannerImage)) {
+        final showBannerImageLayoutValue =
+            widget.collectionModel.settings![showBannerImage] as bool?;
+        if (showBannerImageLayoutValue == null) {
+          return;
+        }
+
+        _showBannerImage.value = showBannerImageLayoutValue;
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _updateShowBannerImageLayoutFilter() async {
+    // var sortAlphabatically = _atozFilter.value;
+
+    final updatedAt = DateTime.now().toUtc();
+
+    final settings = widget.collectionModel.settings ?? <String, dynamic>{};
+
+    settings[showBannerImage] = _showBannerImage.value;
+
+    final updatedCollection = widget.collectionModel.copyWith(
+      updatedAt: updatedAt,
+      settings: settings,
+    );
+
+    // Logger.printLog(StringUtils.getJsonFormat(updatedCollection.toJson()));
+
+    await context.read<CollectionCrudCubit>().updateCollection(
+          collection: updatedCollection,
+        );
+  }
+
+  Future<void> onTap({
+    required UrlModel urlModel,
+    required BuildContext context,
+  }) async {
+    // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+    final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
+
+    if (urlModel.settings != null &&
+        urlModel.settings!.containsKey(urlLaunchType)) {
+      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+        urlModel.settings![urlLaunchType].toString(),
+      );
+    }
+    switch (urlLaunchTypeLocalNotifier.value) {
+      case UrlLaunchType.customTabs:
+        {
+          final theme = Theme.of(context);
+          await CustomTabsService.launchUrl(
+            url: urlModel.url,
+            theme: theme,
+          ).then(
+            (_) async {
+              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+              // JUST LIKE APPS IN BACKGROUND TYPE
+            },
+          );
+          break;
+        }
+      case UrlLaunchType.webView:
+        {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => DashboardWebView(
+                url: urlModel.url,
+              ),
+            ),
+          );
+
+          break;
+        }
+      case UrlLaunchType.readingMode:
+        {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => DashboardWebView(
+                url: urlModel.url,
+              ),
+            ),
+          );
+
+          break;
+        }
+      case UrlLaunchType.separateBrowserWindow:
+        {
+          final theme = Theme.of(context);
+          await CustomTabsService.launchUrl(
+            url: urlModel.url,
+            theme: theme,
+          ).then(
+            (_) async {
+              // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+              // JUST LIKE APPS IN BACKGROUND TYPE
+            },
+          );
+          break;
+        }
+    }
+
+    // await Future.wait(
+    //   [
+    //     recentUrlCrudCubit.addRecentUrl(
+    //       urlData: urlModel,
+    //     ),
+    //   ],
+    // );
+  }
+
+  Future<void> onLongPress(
+    UrlModel urlModel,
+    BuildContext context,
+  ) async {
+    final urlLaunchTypeLocalNotifier = ValueNotifier(UrlLaunchType.customTabs);
+
+    if (urlModel.settings != null &&
+        urlModel.settings!.containsKey(urlLaunchType)) {
+      urlLaunchTypeLocalNotifier.value = UrlLaunchType.fromString(
+        urlModel.settings![urlLaunchType].toString(),
+      );
+    }
+
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+    widget.onLongPress(
+      urlModel,
+      urlOptions: [
+        // SYNC WITH REMOTE DATABASE
+        BottomSheetOption(
+          leadingIcon: Icons.cloud_sync,
+          title: const Text(
+            'Sync',
+            style: titleTextStyle,
+          ),
+          onTap: () async {
+            // ADD SYNCING FUNCTIONALITY
+            final urlCrudCubit = context.read<UrlCrudCubit>();
+            Navigator.pop(context);
+            await urlCrudCubit.syncUrl(
+              urlModel: urlModel,
+              isRootCollection: widget.isRootCollection,
+            );
+            // Add functionality here
+          },
+        ),
+
+        // COPY TO CLIPBOARD
+        BlocBuilder<SharedInputsCubit, SharedInputsState>(
+          builder: (ctx, state) {
+            final sharedInputCubit = context.read<SharedInputsCubit>();
+
+            final firstCopiedUrl = sharedInputCubit.getTopUrl();
+
+            return BottomSheetOption(
+              leadingIcon: Icons.copy_all_rounded,
+              title: const Text(
+                'Copy Link',
+                style: titleTextStyle,
+              ),
+              trailing: firstCopiedUrl != null && firstCopiedUrl == urlModel.url
+                  ? Icon(
+                      Icons.check_circle_rounded,
+                      color: ColourPallette.salemgreen.withOpacity(
+                        0.5,
+                      ),
+                    )
+                  : null,
+              onTap: () async {
+                await Future.wait(
+                  [
+                    Future(
+                      () async {
+                        await ClipboardService.instance.copyText(
+                          urlModel.url,
+                        );
+                      },
+                    ),
+                    Future(
+                      () => sharedInputCubit.addUrlInput(
+                        urlModel.url,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+
+        // OPEN IN BROWSER
+        ValueListenableBuilder(
+          valueListenable: urlLaunchTypeLocalNotifier,
+          builder: (ctx, urlLaunchType, _) {
+            return BottomSheetOption(
+              leadingIcon: Icons.open_in_new_rounded,
+              title: const Text(
+                'Open In',
+                style: titleTextStyle,
+              ),
+              trailing: DropdownButton<UrlLaunchType>(
+                value: urlLaunchType,
+                onChanged: (urlLaunchType) {
+                  if (urlLaunchType == null) return;
+                  urlLaunchTypeLocalNotifier.value = urlLaunchType;
+                },
+                isDense: true,
+                iconEnabledColor: ColourPallette.black,
+                elevation: 4,
+                borderRadius: BorderRadius.circular(8),
+                underline: const SizedBox.shrink(),
+                dropdownColor: ColourPallette.mystic,
+                items: [
+                  DropdownMenuItem(
+                    value: UrlLaunchType.customTabs,
+                    child: Text(
+                      StringUtils.capitalize(
+                        'Browser', // UrlLaunchType.customTabs.label,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: UrlLaunchType.webView,
+                    child: Text(
+                      StringUtils.capitalize(
+                        UrlLaunchType.webView.label,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () async {
+                // final recentUrlCrudCubit = context.read<RecentsUrlCubit>();
+
+                switch (urlLaunchType) {
+                  case UrlLaunchType.customTabs:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
+                        url: urlModel.url,
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
+                  case UrlLaunchType.webView:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModel.url,
+                          ),
+                        ),
+                      );
+
+                      break;
+                    }
+                  case UrlLaunchType.readingMode:
+                    {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DashboardWebView(
+                            url: urlModel.url,
+                          ),
+                        ),
+                      );
+
+                      break;
+                    }
+                  case UrlLaunchType.separateBrowserWindow:
+                    {
+                      final theme = Theme.of(context);
+                      await CustomTabsService.launchUrl(
+                        url: urlModel.url,
+                        theme: theme,
+                      ).then(
+                        (_) async {
+                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                          // JUST LIKE APPS IN BACKGROUND TYPE
+                        },
+                      );
+                      break;
+                    }
+                }
+
+                // await Future.wait(
+                //   [
+                //     recentUrlCrudCubit.addRecentUrl(
+                //       urlData: urlModel,
+                //     ),
+                //   ],
+                // );
+              },
+            );
+          },
+        ),
+
+        // SHARE THE LINK TO OTHER APPS
+        BottomSheetOption(
+          leadingIcon: Icons.share,
+          title: const Text('Share Link', style: titleTextStyle),
+          onTap: () async {
+            await Future.wait(
+              [
+                Share.share(urlModel.url),
+                Future(() => Navigator.pop(context)),
+              ],
+            );
+            // Add functionality here
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -380,11 +914,23 @@ class _UrlPreviewListTemplateScreenState
                                 );
                               } else if (url.loadingStates ==
                                   LoadingStates.errorLoading) {
-                                return IconButton(
-                                  onPressed: _fetchMoreUrls,
-                                  icon: const Icon(
-                                    Icons.restore,
-                                    color: ColourPallette.black,
+                                return GestureDetector(
+                                  onTap: _fetchMoreUrls,
+                                  onLongPress: () async {
+                                    if (url.urlModelId == null) return;
+
+                                    await showDeleteErroreousUrlModel(
+                                      context,
+                                      urlModelId: url.urlModelId!,
+                                      urlOptions: [],
+                                    );
+                                  },
+                                  child: const SizedBox(
+                                    height: 120,
+                                    child: Icon(
+                                      Icons.restore,
+                                      color: ColourPallette.black,
+                                    ),
                                   ),
                                 );
                               }
@@ -413,7 +959,7 @@ class _UrlPreviewListTemplateScreenState
                                                 ),
                                               ),
                                             ),
-                                            child: RssFeedPreviewWidget(
+                                            child: URLPreviewWidget(
                                               key: ValueKey(
                                                 urlModel.firestoreId,
                                               ),
@@ -435,15 +981,14 @@ class _UrlPreviewListTemplateScreenState
                                                             url: urlModel,
                                                           );
                                                         },
-                                              onTap: () async {
-                                                final uri =
-                                                    Uri.parse(urlModel.url);
-                                                if (await canLaunchUrl(uri)) {
-                                                  await launchUrl(uri);
-                                                }
-                                              },
-                                              onLongPress: () =>
-                                                  widget.onLongPress(urlModel),
+                                              onTap: () async => onTap(
+                                                urlModel: urlModel,
+                                                context: context,
+                                              ),
+                                              onLongPress: () => onLongPress(
+                                                urlModel,
+                                                context,
+                                              ),
                                               onShareButtonTap: () {
                                                 Share.share(
                                                   '${urlModel.url}\n${urlMetaData.title}\n${urlMetaData.description}',
@@ -483,7 +1028,6 @@ class _UrlPreviewListTemplateScreenState
             child: widget.appBar(
               list: _list,
               actions: [
-                // _refreshFeedButton(),
                 _searchFeedButton(),
                 _layoutFilterOptions(),
                 _filterOptions(),
@@ -675,78 +1219,61 @@ class _UrlPreviewListTemplateScreenState
     );
   }
 
-  Widget _refreshFeedButton() {
-    return IconButton(
-      onPressed: () {
-        // [TODO] : ADD REFRESH BUTTON
-        // final collId = widget.collectionFetchModel.collection!.id;
-        // context
-        //     .read<CollectionsCubit>()
-        //     . (collectionId: collId);
-      },
-      padding: const EdgeInsets.all(8),
-      icon: const Icon(Icons.refresh_rounded),
-    );
-  }
-
   Widget _filterOptions() {
-    return PopupMenuButton(
-      color: ColourPallette.white,
-      padding: const EdgeInsets.only(right: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return FilterPopupMenuButton(
       icon: const Icon(
         Icons.filter_alt_rounded,
       ),
-      itemBuilder: (ctx) {
-        return [
-          ListFilterPopupMenuItem(
-            title: 'A to Z',
-            notifier: _atozFilter,
-            onPress: () {
-              _atozFilter.value = !_atozFilter.value;
-              if (_atozFilter.value) {
-                _ztoaFilter.value = false;
-                _filterAtoZ();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Z to A',
-            notifier: _ztoaFilter,
-            onPress: () {
-              _ztoaFilter.value = !_ztoaFilter.value;
-              if (_ztoaFilter.value) {
-                _atozFilter.value = false;
-                _filterZtoA();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Latest First',
-            notifier: _updatedAtLatestFilter,
-            onPress: () {
-              _updatedAtLatestFilter.value = !_updatedAtLatestFilter.value;
-              if (_updatedAtLatestFilter.value) {
-                _updatedAtOldestFilter.value = false;
-                _filterUpdatedLatest();
-              }
-            },
-          ),
-          ListFilterPopupMenuItem(
-            title: 'Oldest First',
-            notifier: _updatedAtOldestFilter,
-            onPress: () {
-              _updatedAtOldestFilter.value = !_updatedAtOldestFilter.value;
-              if (_updatedAtOldestFilter.value) {
-                _updatedAtLatestFilter.value = false;
-                _filterUpdateOldest();
-              }
-            },
-          ),
-        ];
-      },
+      menuItems: [
+        ListFilterPopupMenuItem(
+          title: 'A to Z',
+          notifier: _atozFilter,
+          onPress: () {
+            _atozFilter.value = !_atozFilter.value;
+            if (_atozFilter.value) {
+              _ztoaFilter.value = false;
+              _filterAtoZ();
+            }
+            _updateSortAlpha();
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Z to A',
+          notifier: _ztoaFilter,
+          onPress: () {
+            _ztoaFilter.value = !_ztoaFilter.value;
+            if (_ztoaFilter.value) {
+              _atozFilter.value = false;
+              _filterZtoA();
+            }
+            _updateSortAlpha();
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Latest First',
+          notifier: _updatedAtLatestFilter,
+          onPress: () {
+            _updatedAtLatestFilter.value = !_updatedAtLatestFilter.value;
+            if (_updatedAtLatestFilter.value) {
+              _updatedAtOldestFilter.value = false;
+              _filterUpdatedLatest();
+            }
+            _updateDateWiseFilter();
+          },
+        ),
+        ListFilterPopupMenuItem(
+          title: 'Oldest First',
+          notifier: _updatedAtOldestFilter,
+          onPress: () {
+            _updatedAtOldestFilter.value = !_updatedAtOldestFilter.value;
+            if (_updatedAtOldestFilter.value) {
+              _updatedAtLatestFilter.value = false;
+              _filterUpdateOldest();
+            }
+            _updateDateWiseFilter();
+          },
+        ),
+      ],
     );
   }
 
@@ -763,7 +1290,7 @@ class _UrlPreviewListTemplateScreenState
             _showSearchFilterBottomSheet.value =
                 !_showSearchFilterBottomSheet.value;
           },
-          padding: const EdgeInsets.all(8),
+          // padding: const EdgeInsets.all(8),
           icon: const Icon(Icons.search_rounded),
         );
       },
@@ -774,25 +1301,317 @@ class _UrlPreviewListTemplateScreenState
     return FilterPopupMenuButton(
       icon: const Icon(
         Icons.format_shapes_rounded,
-        size: 20,
+        // size: 20,
       ),
       menuItems: [
         ListFilterPopupMenuItem(
           title: 'SideWay Layout',
           notifier: _isSideWays,
-          onPress: () => _isSideWays.value = !_isSideWays.value,
+          onPress: () {
+            _isSideWays.value = !_isSideWays.value;
+            _updateIsSideWayLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Full Description',
           notifier: _showDescriptions,
-          onPress: () => _showDescriptions.value = !_showDescriptions.value,
+          onPress: () {
+            _showDescriptions.value = !_showDescriptions.value;
+            _updateShowFullDescriptionLayoutFilter();
+          },
         ),
         ListFilterPopupMenuItem(
           title: 'Show Images',
           notifier: _showBannerImage,
-          onPress: () => _showBannerImage.value = !_showBannerImage.value,
+          onPress: () {
+            _showBannerImage.value = !_showBannerImage.value;
+            _updateShowBannerImageLayoutFilter();
+          },
         ),
       ],
     );
   }
+
+  Future<void> showDeleteErroreousUrlModel(
+    BuildContext context, {
+    required String urlModelId,
+    required List<Widget> urlOptions,
+  }) async {
+    final size = MediaQuery.of(context).size;
+    const titleTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w500,
+    );
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [
+        SystemUiOverlay.bottom,
+        SystemUiOverlay.top,
+      ],
+    );
+
+    onPop() async {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
+      Navigator.pop(context);
+    }
+
+    final showLastUpdated = ValueNotifier(false);
+
+    await showModalBottomSheet<Widget>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints.loose(
+        Size(size.width, size.height * 0.45),
+      ),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding:
+            const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: ColourPallette.mystic.withOpacity(0.25),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: SingleChildScrollView(
+              //     scrollDirection: Axis.horizontal,
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         Builder(
+              //           builder: (context) {
+              //             final urlModelData = urlModel;
+              //             final urlMetaData = urlModel.metaData!;
+              //             var name = '';
+              //             if (urlModelData.title.isNotEmpty) {
+              //               name = urlModelData.title;
+              //             } else if (urlMetaData.title != null &&
+              //                 urlMetaData.title!.isNotEmpty) {
+              //               name = urlMetaData.title!;
+              //             } else if (urlMetaData.websiteName != null &&
+              //                 urlMetaData.websiteName!.isNotEmpty) {
+              //               name = urlMetaData.websiteName!;
+              //             }
+              //             final placeHolder = Container(
+              //               padding: const EdgeInsets.all(2),
+              //               alignment: Alignment.center,
+              //               decoration: BoxDecoration(
+              //                 borderRadius: BorderRadius.circular(4),
+              //                 color: ColourPallette.black,
+              //                 // color: Colors.deepPurple
+              //               ),
+              //               child: Text(
+              //                 _websiteName(name, 5),
+              //                 maxLines: 1,
+              //                 textAlign: TextAlign.center,
+              //                 softWrap: true,
+              //                 overflow: TextOverflow.fade,
+              //                 style: const TextStyle(
+              //                   color: ColourPallette.white,
+              //                   fontWeight: FontWeight.w500,
+              //                   fontSize: 8,
+              //                 ),
+              //               ),
+              //             );
+
+              //             if (urlModel.metaData?.faviconUrl == null) {
+              //               return placeHolder;
+              //             }
+              //             final metaData = urlModel.metaData;
+
+              //             if (metaData?.faviconUrl != null) {
+              //               return ClipRRect(
+              //                 borderRadius: BorderRadius.circular(4),
+              //                 child: SizedBox(
+              //                   height: 24,
+              //                   width: 24,
+              //                   child: ClipRRect(
+              //                     borderRadius: BorderRadius.circular(8),
+              //                     child: NetworkImageBuilderWidget(
+              //                       imageUrl: urlMetaData.faviconUrl!,
+              //                       compressImage: false,
+              //                       errorWidgetBuilder: () {
+              //                         return placeHolder;
+              //                       },
+              //                       successWidgetBuilder: (imageData) {
+              //                         return ClipRRect(
+              //                           borderRadius: BorderRadius.circular(4),
+              //                           child: Builder(
+              //                             builder: (ctx) {
+              //                               final memoryImage = Image.memory(
+              //                                 imageData.imageBytesData!,
+              //                                 fit: BoxFit.contain,
+              //                                 errorBuilder: (ctx, _, __) {
+              //                                   return placeHolder;
+              //                                 },
+              //                               );
+              //                               // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+              //                               if (urlMetaData.faviconUrl!
+              //                                   .toLowerCase()
+              //                                   .endsWith('.svg')) {
+              //                                 // Try loading the SVG and handle errors
+              //                                 return FutureBuilder(
+              //                                   future: _loadSvgBytes(
+              //                                     imageData.imageBytesData!,
+              //                                   ),
+              //                                   builder: (context, snapshot) {
+              //                                     if (snapshot
+              //                                             .connectionState ==
+              //                                         ConnectionState.waiting) {
+              //                                       return const CircularProgressIndicator();
+              //                                     } else if (snapshot
+              //                                         .hasError) {
+              //                                       return memoryImage;
+              //                                     } else {
+              //                                       return snapshot.data!;
+              //                                     }
+              //                                   },
+              //                                 );
+              //                               } else {
+              //                                 return memoryImage;
+              //                               }
+              //                             },
+              //                           ),
+              //                         );
+              //                       },
+              //                     ),
+              //                   ),
+              //                 ),
+              //               );
+              //             } else {
+              //               return placeHolder;
+              //             }
+              //           },
+              //         ),
+              //         const SizedBox(width: 16),
+              //         Text(
+              //           StringUtils.capitalizeEachWord(urlModel.title),
+              //           style: const TextStyle(
+              //             fontSize: 18,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
+              // const SizedBox(height: 16),
+
+              // ...urlOptions,
+
+              // DELETE URL
+              BottomSheetOption(
+                leadingIcon: Icons.delete_rounded,
+                title: const Text('Delete', style: titleTextStyle),
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  final urls = widget.collectionModel.urls
+                    ..removeWhere((urlId) => urlId == urlModelId);
+
+                  final updatedCollectionModel =
+                      widget.collectionModel.copyWith(urls: urls);
+
+                  await context
+                      .read<CollectionCrudCubit>()
+                      .updateCollection(
+                        collection: updatedCollectionModel,
+                      )
+                      .then(
+                    (_) async {
+                      await navigator.maybePop();
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(
+      () async {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.edgeToEdge,
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteConfirmationDialog(
+    BuildContext context,
+    UrlModel urlModel,
+    VoidCallback onConfirm,
+  ) async {
+    await showDialog<Widget>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog.adaptive(
+          backgroundColor: ColourPallette.white,
+          shadowColor: ColourPallette.mystic,
+          title: Row(
+            children: [
+              LottieBuilder.asset(
+                MediaRes.errorANIMATION,
+                height: 28,
+                width: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Confirm Deletion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete "${urlModel.title}"?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(
+                'CANCEL',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onConfirm(); // Call the confirm callback
+              },
+              child: Text(
+                'DELETE',
+                style: TextStyle(
+                  color: ColourPallette.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

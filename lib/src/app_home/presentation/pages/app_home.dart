@@ -3,13 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
+import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
+import 'package:link_vault/src/recents/presentation/pages/recents_store_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
@@ -32,7 +34,7 @@ class _AppHomePageState extends State<AppHomePage> {
         ReceiveSharingIntent.instance.getMediaStream().listen(
           context.read<SharedInputsCubit>().addInputFiles,
           onError: (err) {
-            debugPrint('getMediaStream error: $err');
+            // debugPrint('getMediaStream error: $err');
           },
         );
 
@@ -60,14 +62,16 @@ class _AppHomePageState extends State<AppHomePage> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Row(
+          centerTitle: true,
+          toolbarHeight: 128,
+          title: Column(
             children: [
               SvgPicture.asset(
                 MediaRes.linkVaultLogoSVG,
-                height: 32,
-                width: 32,
+                height: 60,
+                width: 60,
               ),
-              const SizedBox(width: 16),
+              // const SizedBox(width: 16),
               const Text(
                 'LinkVault',
                 style: TextStyle(
@@ -79,17 +83,14 @@ class _AppHomePageState extends State<AppHomePage> {
           ),
         ),
         body: ListView(
-          // padding: EdgeInsets.symmetric(horizontal: 8),
           children: [
-            const SizedBox(height: 8),
-
             // Some Profile Details
             BlocBuilder<GlobalUserCubit, GlobalUserState>(
               builder: (context, state) {
                 return ListTile(
                   onTap: () {},
                   leading: CircleAvatar(
-                    radius: 32,
+                    radius: 28,
                     backgroundColor:
                         ColourPallette.mountainMeadow.withOpacity(0.5),
                     child: SvgPicture.asset(
@@ -149,7 +150,6 @@ class _AppHomePageState extends State<AppHomePage> {
                             appBarLeadingIcon: const Icon(
                               Icons.dashboard_rounded,
                               color: ColourPallette.mountainMeadow,
-                              size: 16,
                             ),
                           ),
                         ),
@@ -158,7 +158,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     leading: const Icon(
                       Icons.dashboard_rounded,
                       color: ColourPallette.mountainMeadow,
-                      size: 24,
+                      size: 20,
                     ),
                     title: const Text(
                       'Dashboard',
@@ -169,42 +169,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
-                    ),
-                  ),
-
-                  // DISCOVER
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => RssFeedCollectionStorePage(
-                            collectionId: '$globalUser$RssFeed',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.compassSVG,
-                              height: 16,
-                              width: 16,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.compassSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'My Feeds',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -213,13 +178,11 @@ class _AppHomePageState extends State<AppHomePage> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => FavouriteFolderCollectionPage(
+                          builder: (ctx) => FavouritesStorePage(
                             collectionId: '$globalUser$favourites',
                             isRootCollection: true,
                             appBarLeadingIcon: SvgPicture.asset(
                               MediaRes.favouriteSVG,
-                              height: 16,
-                              width: 16,
                             ),
                           ),
                         ),
@@ -227,8 +190,8 @@ class _AppHomePageState extends State<AppHomePage> {
                     },
                     leading: SvgPicture.asset(
                       MediaRes.favouriteSVG,
-                      height: 20,
-                      width: 20,
+                      height: 18,
+                      width: 18,
                     ),
                     title: const Text(
                       'Favourite',
@@ -239,36 +202,42 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.black,
                     ),
                   ),
 
-                  // NEWSLETTERS
-                  ListTile(
-                    onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.recentSVG ,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Recents',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
-                    ),
-                  ),
+                  // RECENTS
+                  // ListTile(
+                  //   onTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (ctx) => RecentsStorePage(
+                  //           collectionId: '$globalUser$recents',
+                  //           isRootCollection: true,
+                  //           appBarLeadingIcon: SvgPicture.asset(
+                  //             MediaRes.recentSVG,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   leading: SvgPicture.asset(
+                  //     MediaRes.recentSVG,
+                  //     height: 20,
+                  //     width: 20,
+                  //   ),
+                  //   title: const Text(
+                  //     'Recents',
+                  //     style: TextStyle(
+                  //       fontSize: 18,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  //   trailing: const Icon(
+                  //     Icons.arrow_forward_ios_rounded,
+                  //     color: ColourPallette.black,
+                  //   ),
+                  // ),
 
                   // SEARCH COLLECTIONS/URLS STORE
                   ListTile(
@@ -293,7 +262,40 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.salemgreen,
+                      color: ColourPallette.black,
+                    ),
+                  ),
+
+                  // MY FEEDS
+                  ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => RssFeedCollectionStorePage(
+                            collectionId: '$globalUser$RssFeed',
+                            isRootCollection: true,
+                            appBarLeadingIcon: SvgPicture.asset(
+                              MediaRes.compassSVG,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    leading: SvgPicture.asset(
+                      MediaRes.compassSVG,
+                      height: 20,
+                      width: 20,
+                    ),
+                    title: const Text(
+                      'My Feeds',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.black,
                     ),
                   ),
 
@@ -320,38 +322,34 @@ class _AppHomePageState extends State<AppHomePage> {
                     ),
                     trailing: const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.mountainMeadow,
+                      color: ColourPallette.black,
                     ),
                   ),
 
+                  // PROFILE
                   ListTile(
                     onTap: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => const AdvanceSearchPage(),
-                      //   ),
-                      // );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const ProfileHome(),
+                        ),
+                      );
                     },
-                    leading: const Icon(
-                      Icons.change_circle,
-                      color: ColourPallette.salemgreen,
-                      size: 24,
+                    leading: SvgPicture.asset(
+                      MediaRes.personSVG,
+                      height: 24,
+                      width: 24,
                     ),
                     title: const Text(
-                      'Sync Devices',
+                      'Profile',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    // trailing: const Icon(
-                    //   Icons.arrow_forward_ios_rounded,
-                    //   color: ColourPallette.salemgreen,
-                    // ),
-                    trailing: SvgPicture.asset(
-                      MediaRes.comingSoonSVG,
-                      height: 24,
-                      width: 24,
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: ColourPallette.black,
                     ),
                   ),
                 ],

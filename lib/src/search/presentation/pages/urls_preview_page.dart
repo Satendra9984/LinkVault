@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/url_previewbytes_widget.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_widget.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -198,7 +198,7 @@ class _SearchedUrlsPreviewListWidgetState
                                 Container(
                                   margin:
                                       const EdgeInsets.symmetric(vertical: 4),
-                                  child: UrlPreviewWidget(
+                                  child: UrlPreviewBytesWidget(
                                     urlMetaData: urlMetaData,
                                     onTap: () async {
                                       final uri = Uri.parse(url.url);

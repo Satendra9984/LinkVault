@@ -34,10 +34,15 @@ class SharedInputsCubit extends Cubit<SharedInputsState> {
   }
 
   void addUrlInput(String url) {
-    final updatedInputs = List<UrlInput>.from(state.inputs)..add(UrlInput(url));
+    final updatedInputs = List<UrlInput>.from(state.inputs)
+      ..insert(0, UrlInput(url));
     emit(state.copyWith(inputs: updatedInputs));
+  }
 
-    // // Logger.printLog('[intents]: ${state.inputs.length.toString()}');
+  String? getTopUrl() {
+    final urls = state.inputs;
+
+    return urls.firstOrNull?.url;
   }
 
   // Method to add a PDF input

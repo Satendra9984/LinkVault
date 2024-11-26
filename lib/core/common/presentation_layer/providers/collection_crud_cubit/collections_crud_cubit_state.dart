@@ -1,4 +1,4 @@
-part of 'collections_crud_cubit_cubit.dart';
+part of 'collections_crud_cubit.dart';
 
 
 class CollectionCrudCubitState extends Equatable {

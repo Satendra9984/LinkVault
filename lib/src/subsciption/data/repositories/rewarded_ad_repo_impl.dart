@@ -46,9 +46,9 @@ class RewardedAdRepoImpl {
           }
         },
         onAdFailedToLoad: (onAdFailedToLoad) {
-          debugPrint(
-            '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
-          );
+          // debugPrint(
+          //   '[log] : error loading ad ${onAdFailedToLoad.domain} ${onAdFailedToLoad.code} ${onAdFailedToLoad.message} ${onAdFailedToLoad.responseInfo?.responseExtras}',
+          // );
           if (!completer.isCompleted) {
             completer.complete(
               Left(
@@ -100,7 +100,7 @@ class RewardedAdRepoImpl {
       await _rewardedAd?.show(
         onUserEarnedReward: (adWithoutView, reward) {
           rewardAmount = reward.amount;
-          debugPrint('[log] : user earned $rewardAmount');
+          // debugPrint('[log] : user earned $rewardAmount');
         },
       );
 
@@ -120,7 +120,7 @@ class RewardedAdRepoImpl {
 
       return Right(newGlobalUser);
     } on ServerException catch (e) {
-      debugPrint('[log] : showad ${e.message}');
+      // debugPrint('[log] : showad ${e.message}');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong. Check Internet and try again.',
@@ -128,7 +128,7 @@ class RewardedAdRepoImpl {
         ),
       );
     } catch (e) {
-      debugPrint('[log] : showad $e');
+      // debugPrint('[log] : showad $e');
       return Left(
         ServerFailure(
           message: 'Something Went Wrong. Check Internet and try again.',

@@ -5,12 +5,13 @@ import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/queue_manager.dart';
 
 part 'collections_state.dart';
@@ -45,6 +46,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
       if (fetch.collectionFetchingState == LoadingStates.loaded ||
           fetch.collectionFetchingState == LoadingStates.loading) {
+        // Logger.printLog(
+        //   'cId: ${collectionId}, ${fetch.collectionFetchingState}',
+        // );
         return;
       }
     }
@@ -150,10 +154,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
     final moreSubcollectionIds = [...subCollections.sublist(start, end)];
 
-    // // Logger.printLog(
-    //   'FetchedMoreBefore: ${state.collections.keys.length}, ids: $moreSubcollectionIds',
-    // );
-
     final moreCollections = <String, CollectionFetchModel>{};
     for (final subCollId in moreSubcollectionIds) {
       const fetchCollectionModel = CollectionFetchModel(
@@ -217,7 +217,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       ),
     );
 
-    // // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
+    // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
   CollectionFetchModel? getCollection({
@@ -255,47 +255,70 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   void deleteCollection({
     required CollectionModel collection,
   }) {
-    // [TODO] : delete subcollection in db it will be cascade delete
-    // Logger.printLog(
-    //   'collection before deletion ${state.collections.keys.length}',
-    // );
     final newCollMap = {...state.collections}..removeWhere(
+        (key, value) => key == collection.id,
+      );
+
+    final newCollUrlsMap = {...state.collectionUrls}..removeWhere(
         (key, value) => key == collection.id,
       );
 
     emit(
       state.copyWith(
         collections: newCollMap,
+        collectionUrls: newCollUrlsMap,
       ),
     );
-    // Logger.printLog(
-    //   'collection after  deletion ${state.collections.keys.length}',
-    // );
   }
 
   void updateCollection({
     required CollectionModel updatedCollection,
     required int fetchSubCollIndexAdded,
+    LoadingStates? collectionFetchState,
   }) {
-    final prevCollection = state.collections[updatedCollection.id]!;
+    final prevCollection = state.collections[updatedCollection.id];
+    if (prevCollection == null) return;
 
     final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
+      collectionFetchingState: collectionFetchState,
       subCollectionFetchedIndex:
           prevCollection.subCollectionFetchedIndex + fetchSubCollIndexAdded,
     );
 
-    final newState = {...state.collections};
-    newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionsState = {
+      ...state.collections,
+    };
+    newCollectionsState[updatedCollection.id] = updatedCollectionfetch;
 
     emit(
       state.copyWith(
-        collections: newState,
+        collections: newCollectionsState,
       ),
     );
   }
 
   // <--------------------------------- URLS ---------------------------------->
+
+  Future<UrlModel?> fetchSingleUrlModel(String urlModelId) async {
+    UrlModel? fetchedUrlModel;
+
+    await _collectionsRepoImpl
+        .fetchUrl(
+      urlId: urlModelId,
+      userId: _globalUserCubit.getGlobalUser()!.id,
+    )
+        .then(
+      (res) {
+        res.fold(
+          (_) {},
+          (urlmodel) => fetchedUrlModel = urlmodel,
+        );
+      },
+    );
+
+    return fetchedUrlModel;
+  }
 
   Future<void> fetchMoreUrls({
     required String collectionId,
@@ -336,10 +359,11 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final urlIds = urlsList.sublist(start, end);
 
     final moreUrls = <UrlFetchStateModel>[];
-    for (final _ in urlIds) {
+    for (final urlId in urlIds) {
       final urlFetchModel = UrlFetchStateModel(
         collectionId: collectionId,
         loadingStates: LoadingStates.loading,
+        urlModelId: urlId,
       );
 
       moreUrls.add(urlFetchModel);
@@ -367,6 +391,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
           final urlFetchModel = UrlFetchStateModel(
             collectionId: collectionId,
             loadingStates: LoadingStates.errorLoading,
+            urlModelId: urlId,
           );
 
           fetchedUrlsWithData.add(urlFetchModel);
@@ -376,6 +401,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
             collectionId: collectionId,
             loadingStates: LoadingStates.loaded,
             urlModel: url,
+            urlModelId: urlId,
           );
 
           fetchedUrlsWithData.add(urlFetchModel);
@@ -423,7 +449,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     }
 
     final updatedUrlsState = {...state.collectionUrls};
-    // [TODO] : [important] changed url.collectionId to collection.id
+
     final updatedUrlsList = [
       fetchedUrl,
       ...updatedUrlsState[collection.id]!,
@@ -438,7 +464,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  void updateUrl({required UrlModel url}) {
+  void updateUrl({
+    required UrlModel url,
+    LoadingStates? urlLoadinState,
+  }) {
     final fetchedUrlList = state.collectionUrls[url.collectionId];
 
     if (fetchedUrlList == null) {
@@ -460,6 +489,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     if (index != -1) {
       updatedList[index] = updatedList[index].copyWith(
         urlModel: url,
+        loadingStates: urlLoadinState,
       );
     }
 
@@ -474,22 +504,68 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
+  void updateUrlsList({
+    required CollectionModel updatedCollection,
+  }) {
+    // newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionUrlssState = {
+      ...state.collectionUrls,
+    };
+
+    final previousUrlsMap = <String, UrlFetchStateModel>{};
+
+    if (state.collectionUrls.containsKey(updatedCollection.id)) {
+      final urlsList =
+          state.collectionUrls[updatedCollection.id] ?? <UrlFetchStateModel>[];
+      for (final urlf in urlsList) {
+        if (urlf.urlModel == null) continue;
+        previousUrlsMap[urlf.urlModel!.firestoreId] = urlf;
+      }
+    }
+
+    final newUrlsList = <UrlFetchStateModel>[];
+
+    for (final urlId in updatedCollection.urls) {
+      if (previousUrlsMap.containsKey(urlId) == false) continue;
+
+      newUrlsList.add(previousUrlsMap[urlId]!);
+    }
+
+    newCollectionUrlssState[updatedCollection.id] = newUrlsList;
+
+    emit(
+      state.copyWith(
+        collectionUrls: newCollectionUrlssState,
+      ),
+    );
+  }
+
+  void clearUrlsList({
+    required String collectionId,
+  }) {
+    // newState[updatedCollection.id] = updatedCollectionfetch;
+    final newCollectionUrlssState = {
+      ...state.collectionUrls,
+    };
+
+    newCollectionUrlssState[collectionId] = <UrlFetchStateModel>[];
+
+    emit(
+      state.copyWith(
+        collectionUrls: newCollectionUrlssState,
+      ),
+    );
+  }
+
   void deleteUrl({
     required UrlModel url,
     required CollectionModel collectionModel,
   }) {
-    // Logger.printLog(
-    //   'deleting in state: ${url.collectionId}, ',
-    // );
     final fetchedUrlList = state.collectionUrls[collectionModel.id];
 
     if (fetchedUrlList == null) {
       return;
     }
-
-    // Logger.printLog(
-    //   'deleting in state: ${url.collectionId}, $fetchedUrlList',
-    // );
 
     final updatedList = [...fetchedUrlList]..removeWhere(
         (element) {

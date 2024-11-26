@@ -98,14 +98,14 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  width: double.infinity,
-                  child: CustomElevatedButton(
-                    text: 'Open Email App',
-                    onPressed: OpenOtherApps.openGmailApp,
-                  ),
-                ),
-                const SizedBox(height: 20),
+                // const SizedBox(
+                //   width: double.infinity,
+                //   child: CustomElevatedButton(
+                //     text: 'Open Email App',
+                //     onPressed: OpenOtherApps.openGmailApp,
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
                 RichText(
                   text: TextSpan(
                     text: 'You remember your password? ',

@@ -3,15 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_collections_list_screen.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_url_favicon_list_screen.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard_urls_preview_list_screen.dart';
 import 'package:lottie/lottie.dart';
 
 class CollectionStorePage extends StatefulWidget {
@@ -30,7 +29,15 @@ class CollectionStorePage extends StatefulWidget {
 }
 
 class _CollectionStorePageState extends State<CollectionStorePage>
-    with SingleTickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin {
+  // TODO : SEE THE POSSIBILITIES OF AUTOMATIC KEEP ALIVE BUT
+  /* WEBVIEW WILL CREATE PROBLEM AS IT WILL COMSUME MEMORY
+     WE CAN MAKE THE KEEP-ALIVE DYNAMIC IN WEB-VIEW SCREEN
+     SO THAT WHEN THIS-SCREEN GOES OUT-OF-VISIBILITY SO WILL 
+     DISTROY THE WEBVIEW BUT CAN KEEP THE OTHER VIEWS LIKE 
+     URLFAVICONLIST, COLLECTIONSLIST SCREENS
+  */
+
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
@@ -56,6 +63,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: ColourPallette.white,
       bottomNavigationBar: _getBottomNavigationBar(),
@@ -104,6 +112,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                 collectionModel: fetchCollection.collection!,
                 isRootCollection: widget.isRootCollection,
                 showAddUrlButton: true,
+                showBottomNavBar: _showBottomNavBar,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
               DashboardCollectionsListScreen(
@@ -112,12 +121,12 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
-              UrlsPreviewListScreen(
-                showBottomBar: _showBottomNavBar,
-                collectionModel: fetchCollection.collection!,
-                isRootCollection: widget.isRootCollection,
-                appBarLeadingIcon: widget.appBarLeadingIcon,
-              ),
+              // UrlsPreviewListScreen(
+              //   showBottomBar: _showBottomNavBar,
+              //   collectionModel: fetchCollection.collection!,
+              //   isRootCollection: widget.isRootCollection,
+              //   appBarLeadingIcon: widget.appBarLeadingIcon,
+              // ),
             ],
           );
         },
@@ -130,6 +139,11 @@ class _CollectionStorePageState extends State<CollectionStorePage>
     return Container(
       padding: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: Colors.grey.shade100,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: ColourPallette.mystic.withOpacity(0.5),
@@ -186,13 +200,13 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                       selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      unSelectedIcon: Icons.dynamic_feed_outlined,
-                      selectedIcon: Icons.dynamic_feed,
-                      index: 2,
-                      label: 'Previews',
-                    ),
+                    // CustomBottomNavItem.create(
+                    //   currentPage: _currentPage,
+                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
+                    //   selectedIcon: Icons.dynamic_feed,
+                    //   index: 2,
+                    //   label: 'Previews',
+                    // ),
                   ],
                 );
               },
@@ -266,4 +280,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

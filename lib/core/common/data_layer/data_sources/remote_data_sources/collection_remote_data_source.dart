@@ -4,6 +4,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class RemoteDataSourcesImpl {
   RemoteDataSourcesImpl({
@@ -166,6 +167,8 @@ class RemoteDataSourcesImpl {
           .collection(folderCollections)
           .doc(collectionId)
           .delete();
+
+
     } catch (e) {
       throw ServerException(
         message: 'Something went wrong.',
@@ -179,7 +182,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('fetchUrl : urlId $urlId');
+      // Logger.printLog('fetchUrl : urlId $urlId');
 
       final response = await _firestore
           .collection(userCollection)
@@ -187,7 +190,9 @@ class RemoteDataSourcesImpl {
           .collection(urlDataCollection)
           .doc(urlId)
           .get();
+
       final data = response.data();
+      
       if (data == null) {
         // Logger.printLog('Url data is null');
         throw ServerException(
@@ -213,8 +218,8 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('UrlModel length');
-      // // Logger.printLog(urlModel.toJson().toString().length.toString());
+      // Logger.printLog('UrlModel length');
+      // Logger.printLog(urlModel.toJson().toString().length.toString());
       // await  _firestore.enableNetwork();
       final response = await _firestore
           .collection(userCollection)
@@ -238,7 +243,7 @@ class RemoteDataSourcesImpl {
     required UrlModel urlModel,
     required String userId,
   }) async {
-    // [TODO] : Add subcollection in db
+    // Add subcollection in db
     try {
       await _firestore
           .collection(userCollection)
@@ -251,7 +256,7 @@ class RemoteDataSourcesImpl {
 
       return urlModelUp;
     } catch (e) {
-      // Logger.printLog('updateUrl : $e urlId: ${urlModel.firestoreId}');
+      // Logger.printLog('[RECENTS] : updateUrl : $e urlId: ${urlModel.firestoreId}');
 
       throw ServerException(
         message: 'Something Went Wrong',
@@ -265,7 +270,7 @@ class RemoteDataSourcesImpl {
     required String userId,
   }) async {
     try {
-      // // Logger.printLog('UrlModel length');
+      // Logger.printLog('UrlModel length');
       // Logger.printLog(urlId);
 
       await _firestore

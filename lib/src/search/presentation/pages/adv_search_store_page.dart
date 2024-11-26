@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
+import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_collections_list_page.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_urls_list_page.dart';
 import 'package:link_vault/src/search/presentation/pages/search_filters_page.dart';
@@ -87,20 +87,20 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
                     label: 'Urls',
                     unSelectedIcon: Icons.webhook_outlined,
                     selectedIcon: Icons.webhook_rounded,
-                    index: 0,
+                    index: 1,
                   ),
                   CustomBottomNavItem.create(
                     currentPage: _currentPage,
                     label: 'Collections',
                     unSelectedIcon: Icons.folder_outlined,
                     selectedIcon: Icons.folder_rounded,
-                    index: 1,
+                    index: 2,
                   ),
                   CustomBottomNavItem.create(
                     currentPage: _currentPage,
                     unSelectedIcon: Icons.dynamic_feed_outlined,
                     selectedIcon: Icons.dynamic_feed,
-                    index: 2,
+                    index: 3,
                     label: 'Previews',
                   ),
                 ],

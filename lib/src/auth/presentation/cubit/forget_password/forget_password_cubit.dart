@@ -31,7 +31,7 @@ class ForgetPasswordCubit extends Cubit<ForgetPasswordState> {
     final result =
         await _authRepositoryImpl.sendPasswordResetLink(emailAddress: email);
 
-    debugPrint('[log] : $result');
+    // debugPrint('[log] : $result');
 
     result.fold(
       (failed) => {
