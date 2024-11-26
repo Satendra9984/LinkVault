@@ -1,24 +1,38 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
+import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
+import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 
 class AuthRepositoryImpl {
   AuthRepositoryImpl({
     required AuthRemoteDataSourcesImpl authRemoteDataSourcesImpl,
-  }) : _authRemoteDataSourcesImpl = authRemoteDataSourcesImpl;
+    required GlobalUserRepositoryImpl globalUserRepositoryImpl,
+  })  : _authRemoteDataSourcesImpl = authRemoteDataSourcesImpl,
+        _globalUserRepositoryImpl = globalUserRepositoryImpl;
+
   final AuthRemoteDataSourcesImpl _authRemoteDataSourcesImpl;
+  final GlobalUserRepositoryImpl _globalUserRepositoryImpl;
 
-  Either<Failure, bool> isLoggedIn() {
+  Future<Either<Failure, GlobalUser?>> isLoggedIn() async {
     try {
-      final result = _authRemoteDataSourcesImpl.isLoggedIn() != null;
+      final user = _authRemoteDataSourcesImpl.isLoggedIn();
 
-      return Right(result);
+      if (user == null) {
+        return Left(
+          AuthFailure(
+            message: 'Something Went Wrong.',
+            statusCode: 402,
+          ),
+        );
+      }
+
+      return await _globalUserRepositoryImpl.getUserById(user.uid);
     } catch (e) {
       return Left(
-        CacheFailure(
+        AuthFailure(
           message: 'Something Went Wrong.',
           statusCode: 402,
         ),
@@ -26,18 +40,18 @@ class AuthRepositoryImpl {
     }
   }
 
-  Future<Either<Failure, GlobalUser>> signInWithEmailAndPassword({
+  Future<Either<Failure, GlobalUser?>> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
-      final result =
+      final userId =
           await _authRemoteDataSourcesImpl.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (result == null) {
+      if (userId == null) {
         return Left(
           AuthFailure(
             message: 'Could Not Authenticate. Something Went Wrong',
@@ -46,9 +60,15 @@ class AuthRepositoryImpl {
         );
       }
 
-      // [TODO] : Return a Global User
+      GlobalUser? globalUser;
+      await _globalUserRepositoryImpl.getUserById(userId).then(
+            (result) => result.fold(
+              (failure) {},
+              (globalUserR) => globalUser = globalUserR,
+            ),
+          );
 
-      return Right(result);
+      return Right(globalUser);
     } on LocalAuthException catch (e) {
       return Left(
         AuthFailure(
@@ -72,14 +92,14 @@ class AuthRepositoryImpl {
     required String password,
   }) async {
     try {
-      final globalUser =
+      final credential =
           await _authRemoteDataSourcesImpl.signUpWithEmailAndPassword(
         name: name,
         email: email,
         password: password,
       );
 
-      if (globalUser == null) {
+      if (credential == null) {
         return Left(
           AuthFailure(
             message: 'Could Not Sign Up. Something Went Wrong',
@@ -87,9 +107,25 @@ class AuthRepositoryImpl {
           ),
         );
       }
+      final todayDate = DateTime.now().toUtc();
+      final creditExpiryDate = todayDate.add(
+        const Duration(
+          days: accountSingUpCreditLimit, // [TODO] : WILL CHANGE TO DAYS
+        ),
+      );
+
+      final globalUser = GlobalUser(
+        id: credential.user!.uid,
+        name: name,
+        email: email,
+        createdAt: todayDate,
+        creditExpiryDate: creditExpiryDate,
+      );
+
+      await _globalUserRepositoryImpl.addUser(globalUser);
 
       return Right(globalUser);
-    } on LocalAuthException catch (e) {
+    } on AuthException catch (e) {
       return Left(
         AuthFailure(
           message: e.message,
@@ -97,7 +133,6 @@ class AuthRepositoryImpl {
         ),
       );
     } catch (e) {
-      // debugPrint()
       return Left(
         AuthFailure(
           message: 'Could Not Authenticate. Something Went Wrong',
@@ -120,9 +155,6 @@ class AuthRepositoryImpl {
     required String emailAddress,
   }) async {
     try {
-      // return Left(AuthFailure(message: 'Could Not Process ', statusCode: 402));
-      // return Right(unit);
-
       await _authRemoteDataSourcesImpl.sendPasswordResetLink(
         emailAddress: emailAddress,
       );
@@ -152,4 +184,5 @@ class AuthRepositoryImpl {
       );
     }
   }
+  
 }

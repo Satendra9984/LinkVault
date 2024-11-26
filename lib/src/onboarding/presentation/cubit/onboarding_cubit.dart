@@ -1,9 +1,10 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/onboarding/data/repositories/models/loading_states.dart';
 import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 
@@ -11,27 +12,28 @@ part 'onboarding_state.dart';
 
 class OnBoardCubit extends Cubit<OnBoardState> {
   OnBoardCubit({
-    required OnBoardingRepoImpl onBoardingRepoImpl,
-  })  : _boardingRepoImpl = onBoardingRepoImpl,
+    required AuthRepositoryImpl authRepoImpl,
+  })  : _authRepoImpl = authRepoImpl,
         super(
           const OnBoardState(
             onBoardingStates: OnBoardingStates.initial,
           ),
         );
-  final OnBoardingRepoImpl _boardingRepoImpl;
+  final AuthRepositoryImpl _authRepoImpl;
 
   Future<void> checkIfLoggedIn() async {
-    final result = await _boardingRepoImpl.isLoggedIn();
-    // debugPrint('Current state before emit: $state');
+    final stopwatch = Stopwatch()..start();
+    Logger.printLog(
+        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}');
+
+    final result = await _authRepoImpl.isLoggedIn();
 
     result.fold(
       (failed) {
-        // debugPrint('Emitting notLoggedIn');
         emit(state.copyWith(onBoardingStates: OnBoardingStates.notLoggedIn));
       },
       (globalUser) {
         if (globalUser != null) {
-          // debugPrint('Emitting isLoggedIn');
           emit(
             state.copyWith(
               onBoardingStates: OnBoardingStates.isLoggedIn,
@@ -39,26 +41,24 @@ class OnBoardCubit extends Cubit<OnBoardState> {
             ),
           );
         } else {
-          // debugPrint('Emitting notLoggedIn false');
           emit(state.copyWith(onBoardingStates: OnBoardingStates.notLoggedIn));
         }
       },
     );
-    // debugPrint('Current state after emit: $state');
+
+    stopwatch.stop();
+    Logger.printLog(
+        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}');
   }
 
   bool isCreditExpired() {
-    // debugPrint('[log] : listening isCreditExpired called');
-
     if (state.globalUser == null) {
-      // debugPrint('[log] : state.global == null returning true');
       return true;
     }
 
     final todayDate = DateTime.now().toUtc();
 
     final userCreditExpiryDate = state.globalUser!.creditExpiryDate.toUtc();
-    // Testing check the dates
 
     if (userCreditExpiryDate.compareTo(todayDate) < 0) {
       return true;

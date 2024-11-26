@@ -26,6 +26,7 @@ class CustomBottomNavItem {
               isSelected ? ColourPallette.mountainMeadow : ColourPallette.black,
         ),
       ),
+      
       label: label,
     );
   }

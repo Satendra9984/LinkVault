@@ -6,11 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/collection_local_data_source.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/global_user_local_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/url_local_data_sources.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/global_user_remote_data_source.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
@@ -22,11 +25,13 @@ import 'package:link_vault/core/common/presentation_layer/providers/network_imag
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/router.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
 import 'package:link_vault/firebase_options_test.dart' as development;
@@ -91,14 +96,33 @@ void main() async {
 }
 
 Future<void> _initializeApp() async {
+  final stopwatch = Stopwatch()..start();
+
+  Logger.printLog('[INITAPP] : ${stopwatch.elapsedMilliseconds}');
+
   await Future.wait([
     _initializeFirebase(),
-    MobileAds.instance.initialize(),
+    Future(() async {
+      final stopwatch = Stopwatch()..start();
+      Logger.printLog(
+          '[INITAPP][MOBILEADS] : ${stopwatch.elapsedMilliseconds}');
+
+      await MobileAds.instance.initialize();
+
+      stopwatch.stop();
+      Logger.printLog(
+          '[INITAPP][MOBILEADS] : ${stopwatch.elapsedMilliseconds}');
+    }),
     _initializeIsar(),
   ]);
+  stopwatch.stop();
+  Logger.printLog('[INITAPP] : ${stopwatch.elapsedMilliseconds}');
 }
 
 Future<void> _initializeFirebase() async {
+  final stopwatch = Stopwatch()..start();
+  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
+
   const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
   var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
 
@@ -113,15 +137,22 @@ Future<void> _initializeFirebase() async {
     name: 'LinkVault Singleton',
     options: firebaseOptions,
   );
+  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
     cacheSizeBytes: 5 * 1024 * 1024,
   );
   await FirebaseFirestore.instance.enableNetwork();
+
+  stopwatch.stop();
+  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
 }
 
 Future<void> _initializeIsar() async {
+  final stopwatch = Stopwatch()..start();
+  Logger.printLog('[INITAPP][ISAR] : ${stopwatch.elapsedMilliseconds}');
+
   if (Isar.instanceNames.isEmpty) {
     final dir = await getApplicationDocumentsDirectory();
     await Isar.open(
@@ -130,10 +161,14 @@ Future<void> _initializeIsar() async {
         UrlImageSchema,
         ImagesByteDataSchema,
         UrlModelOfflineSchema,
+        GlobalUserSchema,
       ],
       directory: dir.path,
     );
   }
+
+  stopwatch.stop();
+  Logger.printLog('[INITAPP][ISAR] : ${stopwatch.elapsedMilliseconds}');
 }
 
 class MyApp extends StatelessWidget {
@@ -156,10 +191,15 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => OnBoardCubit(
-            onBoardingRepoImpl: OnBoardingRepoImpl(
-              localDataSourceImpl: OnBoardingLocalDataSourceImpl(
+            authRepoImpl: AuthRepositoryImpl(
+              globalUserRepositoryImpl: GlobalUserRepositoryImpl(
+                remoteDataSource: FirebaseAuthDataSourceImpl(
+                  firestore: FirebaseFirestore.instance,
+                ),
+                localDataSource: IsarAuthDataSourceImpl(null),
+              ),
+              authRemoteDataSourcesImpl: AuthRemoteDataSourcesImpl(
                 auth: FirebaseAuth.instance,
-                globalAuthDataSourceImpl: GlobalAuthDataSourceImpl(),
               ),
             ),
           )..checkIfLoggedIn(),
@@ -172,7 +212,12 @@ class MyApp extends StatelessWidget {
             authRepositoryImpl: AuthRepositoryImpl(
               authRemoteDataSourcesImpl: AuthRemoteDataSourcesImpl(
                 auth: FirebaseAuth.instance,
-                globalAuthDataSourceImpl: GlobalAuthDataSourceImpl(),
+              ),
+              globalUserRepositoryImpl: GlobalUserRepositoryImpl(
+                remoteDataSource: FirebaseAuthDataSourceImpl(
+                  firestore: FirebaseFirestore.instance,
+                ),
+                localDataSource: IsarAuthDataSourceImpl(null),
               ),
             ),
           ),
@@ -284,6 +329,9 @@ class MyApp extends StatelessWidget {
             backgroundColor: Colors.white,
           ),
           primarySwatch: Colors.green, // Change to your desired primary color
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          textTheme: GoogleFonts.interTextTheme(),
         ),
         initialRoute: OnBoardingHomePage.routeName,
         onGenerateRoute: generateRoute,

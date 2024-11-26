@@ -155,7 +155,6 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
                   currentIndex: _currentPage.value,
                   onTap: (currentIndex) {
                     _currentPage.value = currentIndex;
-                    // _pageController.jumpToPage(currentIndex);
                     _pageController.jumpToPage(currentIndex);
                   },
                   enableFeedback: false,
@@ -164,14 +163,14 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
                   elevation: 0,
                   selectedItemColor: ColourPallette.black,
                   selectedLabelStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                     color: Colors.black,
                   ),
                   unselectedItemColor: ColourPallette.black,
                   unselectedLabelStyle: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: ColourPallette.black,
                   ),
                   items: [
@@ -189,13 +188,6 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
                       selectedIcon: Icons.folder_rounded,
                       index: 1,
                     ),
-                    // CustomBottomNavItem.create(
-                    //   currentPage: _currentPage,
-                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
-                    //   selectedIcon: Icons.dynamic_feed,
-                    //   index: 2,
-                    //   label: 'Previews',
-                    // ),
                   ],
                 );
               },

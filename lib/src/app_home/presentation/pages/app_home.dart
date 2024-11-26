@@ -49,7 +49,15 @@ class _AppHomePageState extends State<AppHomePage> {
   @override
   Widget build(BuildContext context) {
     final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
+    const sectionTextStyle = TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w700,
+    );
 
+    final trailingIcon = Icon(
+      Icons.arrow_forward_ios_rounded,
+      color: ColourPallette.mountainMeadow.withOpacity(0.75),
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: ColourPallette.white,
@@ -59,6 +67,9 @@ class _AppHomePageState extends State<AppHomePage> {
           backgroundColor: Colors.white,
         ),
         splashFactory: NoSplash.splashFactory,
+        primarySwatch: Colors.green, // Change to your desired primary color
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
       ),
       home: Scaffold(
         appBar: AppBar(
@@ -76,286 +87,275 @@ class _AppHomePageState extends State<AppHomePage> {
                 'LinkVault',
                 style: TextStyle(
                   fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Your All In One URLs Manager',
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
-        body: ListView(
-          children: [
-            // Some Profile Details
-            BlocBuilder<GlobalUserCubit, GlobalUserState>(
-              builder: (context, state) {
-                return ListTile(
-                  onTap: () {},
-                  leading: CircleAvatar(
-                    radius: 28,
-                    backgroundColor:
-                        ColourPallette.mountainMeadow.withOpacity(0.5),
-                    child: SvgPicture.asset(
-                      MediaRes.personSVG,
-                    ),
-                  ),
-                  title: Text(
-                    '${state.globalUser?.name}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '@${state.globalUser?.email}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  trailing: IconButton(
-                    onPressed: () async {
-                      await context.read<AuthenticationCubit>().signOut().then(
-                        (value) {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (ctx) => const LoginPage(),
-                            ),
-                            (route) => false,
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.logout,
-                      // color: ColourPallette.mountainMeadow,
-                    ),
-                  ),
-                );
-              },
-            ),
+        body: Center(
+          child: ListView(
+            // shrinkWrap: true,
+            children: [
+              // Some Profile Details
+              // BlocBuilder<GlobalUserCubit, GlobalUserState>(
+              //   builder: (context, state) {
+              //     return ListTile(
+              //       onTap: () {},
+              //       leading: CircleAvatar(
+              //         radius: 20,
+              //         backgroundColor:
+              //             ColourPallette.mountainMeadow.withOpacity(0.5),
+              //         child: SvgPicture.asset(
+              //           MediaRes.personSVG,
+              //         ),
+              //       ),
+              //       title: Text(
+              //         '${state.globalUser?.name}',
+              //         style: const TextStyle(
+              //           fontSize: 18,
+              //           fontWeight: FontWeight.w500,
+              //         ),
+              //       ),
+              //       subtitle: Text(
+              //         '@${state.globalUser?.email}',
+              //         style: const TextStyle(
+              //           fontSize: 13,
+              //           fontWeight: FontWeight.w500,
+              //         ),
+              //       ),
+              //       trailing: IconButton(
+              //         onPressed: () async {
+              //           await context.read<AuthenticationCubit>().signOut().then(
+              //             (value) {
+              //               Navigator.of(context).pushAndRemoveUntil(
+              //                 MaterialPageRoute(
+              //                   builder: (ctx) => const LoginPage(),
+              //                 ),
+              //                 (route) => false,
+              //               );
+              //             },
+              //           );
+              //         },
+              //         icon: const Icon(
+              //           Icons.arrow_forward_rounded,
+              //           // color: ColourPallette.mountainMeadow,
+              //         ),
+              //       ),
+              //     );
+              //   },
+              // ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  // Dashboard
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => CollectionStorePage(
-                            collectionId: globalUser,
-                            isRootCollection: true,
-                            appBarLeadingIcon: const Icon(
-                              Icons.dashboard_rounded,
-                              color: ColourPallette.mountainMeadow,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    leading: const Icon(
-                      Icons.dashboard_rounded,
-                      color: ColourPallette.mountainMeadow,
-                      size: 20,
-                    ),
-                    title: const Text(
-                      'Dashboard',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
-                    ),
-                  ),
-
-                  // FAVOURITE COLLECTIONS STORE
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => FavouritesStorePage(
-                            collectionId: '$globalUser$favourites',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.favouriteSVG,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    // Dashboard
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => CollectionStorePage(
+                              collectionId: globalUser,
+                              isRootCollection: true,
+                              appBarLeadingIcon: const Icon(
+                                Icons.dashboard_rounded,
+                                color: ColourPallette.mountainMeadow,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.favouriteSVG,
-                      height: 18,
-                      width: 18,
-                    ),
-                    title: const Text(
-                      'Favourite',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                        );
+                      },
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
-                    ),
-                  ),
-
-                  // RECENTS
-                  // ListTile(
-                  //   onTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(
-                  //         builder: (ctx) => RecentsStorePage(
-                  //           collectionId: '$globalUser$recents',
-                  //           isRootCollection: true,
-                  //           appBarLeadingIcon: SvgPicture.asset(
-                  //             MediaRes.recentSVG,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     );
-                  //   },
-                  //   leading: SvgPicture.asset(
-                  //     MediaRes.recentSVG,
-                  //     height: 20,
-                  //     width: 20,
-                  //   ),
-                  //   title: const Text(
-                  //     'Recents',
-                  //     style: TextStyle(
-                  //       fontSize: 18,
-                  //       fontWeight: FontWeight.w500,
-                  //     ),
-                  //   ),
-                  //   trailing: const Icon(
-                  //     Icons.arrow_forward_ios_rounded,
-                  //     color: ColourPallette.black,
-                  //   ),
-                  // ),
-
-                  // SEARCH COLLECTIONS/URLS STORE
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => const AdvanceSearchPage(),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.searchSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Search',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                      // tileColor: ColourPallette.mountainMeadow.withOpacity(0.1),
+                      leading: const Icon(
+                        Icons.dashboard_rounded,
+                        color: ColourPallette.mountainMeadow,
+                        size: 20,
                       ),
+                      title: const Text(
+                        'Dashboard',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
                     ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
-                    ),
-                  ),
 
-                  // MY FEEDS
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => RssFeedCollectionStorePage(
-                            collectionId: '$globalUser$RssFeed',
-                            isRootCollection: true,
-                            appBarLeadingIcon: SvgPicture.asset(
-                              MediaRes.compassSVG,
+                    // const SizedBox(height: 8),
+
+                    // FAVOURITE COLLECTIONS STORE
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => FavouritesStorePage(
+                              collectionId: '$globalUser$favourites',
+                              isRootCollection: true,
+                              appBarLeadingIcon: SvgPicture.asset(
+                                MediaRes.favouriteSVG,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.compassSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'My Feeds',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                        );
+                      },
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
-                    ),
-                  ),
+                      // tileColor: ColourPallette.mountainMeadow.withOpacity(0.1),
 
-                  // SUPPORT US
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => const SubscriptionPage(),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.collaborateSVG,
-                      height: 20,
-                      width: 20,
-                    ),
-                    title: const Text(
-                      'Support Us',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                      leading: SvgPicture.asset(
+                        MediaRes.favouriteSVG,
+                        height: 18,
+                        width: 18,
+                        color: ColourPallette.mountainMeadow,
                       ),
+                      title: const Text(
+                        'Favourite',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
                     ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
-                    ),
-                  ),
 
-                  // PROFILE
-                  ListTile(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => const ProfileHome(),
-                        ),
-                      );
-                    },
-                    leading: SvgPicture.asset(
-                      MediaRes.personSVG,
-                      height: 24,
-                      width: 24,
-                    ),
-                    title: const Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                    // RECENTS
+                    // ListTile(
+                    //   onTap: () {
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (ctx) => RecentsStorePage(
+                    //           collectionId: '$globalUser$recents',
+                    //           isRootCollection: true,
+                    //           appBarLeadingIcon: SvgPicture.asset(
+                    //             MediaRes.recentSVG,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   leading: SvgPicture.asset(
+                    //     MediaRes.recentSVG,
+                    //     height: 20,
+                    //     width: 20,
+                    //   ),
+                    //   title: const Text(
+                    //     'Recents',
+                    //     style: TextStyle(
+                    //       fontSize: 18,
+                    //       fontWeight: FontWeight.w500,
+                    //     ),
+                    //   ),
+                    //   trailing: const Icon(
+                    //     Icons.arrow_forward_ios_rounded,
+                    //     color: ColourPallette.black,
+                    //   ),
+                    // ),
+
+                    // SEARCH COLLECTIONS/URLS STORE
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const AdvanceSearchPage(),
+                          ),
+                        );
+                      },
+                      leading: SvgPicture.asset(
+                        MediaRes.searchSVG,
+                        height: 20,
+                        width: 20,
+                        color: ColourPallette.mountainMeadow,
+                        colorBlendMode: BlendMode.srcIn,
                       ),
+                      title: const Text(
+                        'Search',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
                     ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: ColourPallette.black,
+
+                    // MY FEEDS
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => RssFeedCollectionStorePage(
+                              collectionId: '$globalUser$RssFeed',
+                              isRootCollection: true,
+                              appBarLeadingIcon: SvgPicture.asset(
+                                MediaRes.compassSVG,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      leading: const Icon(
+                        Icons.rss_feed_rounded,
+                        color: ColourPallette.mountainMeadow,
+                      ),
+                      title: const Text(
+                        'My Feeds',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
                     ),
-                  ),
-                ],
+
+                    // SUPPORT US
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const SubscriptionPage(),
+                          ),
+                        );
+                      },
+                      leading: SvgPicture.asset(
+                        MediaRes.collaborateSVG,
+                        height: 20,
+                        width: 20,
+                        color: ColourPallette.mountainMeadow,
+                      ),
+                      title: const Text(
+                        'Support Us',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
+                    ),
+
+                    // PROFILE
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const ProfileHome(),
+                          ),
+                        );
+                      },
+                      leading: const Icon(
+                        Icons.person_3_rounded,
+                        color: ColourPallette.mountainMeadow,
+                        size: 24,
+                      ),
+                      title: const Text(
+                        'Profile',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

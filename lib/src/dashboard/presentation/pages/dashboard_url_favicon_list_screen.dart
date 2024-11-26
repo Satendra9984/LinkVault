@@ -226,7 +226,7 @@ class _DashboardUrlFaviconListScreenState
                 UrlViewType.favicons.label,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: ColourPallette.black,
                 ),
               ),
@@ -263,7 +263,7 @@ class _DashboardUrlFaviconListScreenState
                 UrlViewType.previews.label,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: ColourPallette.black,
                 ),
               ),

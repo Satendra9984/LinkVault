@@ -75,16 +75,12 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
   final _isSideWayLayout = ValueNotifier(false);
   final _upperDescriptionIndex = ValueNotifier(0);
 
-//   final desc =
-//       '''It would be impossible to overestimate the importance of photosynthesis in the maintenance of life on Earth. If photosynthesis ceased, there would soon be little food or other organic matter on Earth. Most organisms would disappear, and in time Earth’s atmosphere would become nearly devoid of gaseous oxygen. The only organisms able to exist under such conditions would be the chemosynthetic bacteria, which can utilize the chemical energy of certain inorganic compounds and thus are not dependent on the conversion of light energy.
-// How are plant cells different from animal cells?''';
-
   final upperDescTextStyle = TextStyle(
-    color: Colors.grey.shade800,
+    color: Colors.grey.shade900,
     fontSize: 14,
   );
   final titleTextStyle = TextStyle(
-    color: Colors.grey.shade800,
+    color: Colors.grey.shade900,
     fontWeight: FontWeight.w500,
     fontSize: 16,
   );
@@ -431,66 +427,66 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
       );
     }
 
-    return VisibilityDetector(
-      key: _mainWidgetKey,
-      onVisibilityChanged: (VisibilityInfo info) async {
-        // Logger.printLog('$initials ${info.visibleFraction}');
-        if (info.visibleFraction > 0) {
-          // Widget is at least partially visible
-          if (_showBannerImage.value &&
-              (_bannerImageSize.value == null ||
-                  _bannerImageSize.value!.width < 1.0 ||
-                  _bannerImageSize.value!.height < 1.0)) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _getDescriptionContainerSize(
-                context: context,
-                textStyle: upperDescTextStyle,
-                titleTextStyle: titleTextStyle,
-              );
-            });
-          }
+    return GestureDetector(
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: VisibilityDetector(
+        key: _mainWidgetKey,
+        onVisibilityChanged: (VisibilityInfo info) async {
+          // Logger.printLog('$initials ${info.visibleFraction}');
+          if (info.visibleFraction > 0) {
+            // Widget is at least partially visible
+            if (_showBannerImage.value &&
+                (_bannerImageSize.value == null ||
+                    _bannerImageSize.value!.width < 1.0 ||
+                    _bannerImageSize.value!.height < 1.0)) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _getDescriptionContainerSize(
+                  context: context,
+                  textStyle: upperDescTextStyle,
+                  titleTextStyle: titleTextStyle,
+                );
+              });
+            }
 
-          if (widget.urlPreloadMethod != UrlPreloadMethods.none &&
-              _preloadUrl == false) {
-            // Logger.printLog(
-            //   '[customtabs] : calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
-            // );
-            final urlPreloadCubit = context.read<UrlPreloadManagerCubit>();
-            // CALL CUBIT FOR THIS REQUEST
-            await Future.wait(
-              [
-                Future(
-                  () {
-                    urlPreloadCubit.preloadUrl(
-                      widget.urlModel.url,
-                      urlPreloadMethod: widget.urlPreloadMethod,
-                    );
-                  },
-                ),
-                Future(
-                  CustomTabsClientService.warmUp,
-                ),
-              ],
-            );
-            _preloadUrl = true;
+            if (widget.urlPreloadMethod != UrlPreloadMethods.none &&
+                _preloadUrl == false) {
+              // Logger.printLog(
+              //   '[customtabs] : calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
+              // );
+              final urlPreloadCubit = context.read<UrlPreloadManagerCubit>();
+              // CALL CUBIT FOR THIS REQUEST
+              await Future.wait(
+                [
+                  Future(
+                    () {
+                      urlPreloadCubit.preloadUrl(
+                        widget.urlModel.url,
+                        urlPreloadMethod: widget.urlPreloadMethod,
+                      );
+                    },
+                  ),
+                  Future(
+                    CustomTabsClientService.warmUp,
+                  ),
+                ],
+              );
+              _preloadUrl = true;
+            }
+          } else {
+            // Widget is not visible
+            // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
           }
-        } else {
-          // Widget is not visible
-          // Logger.printLog('RssFeedPreviewWidget is not visible: ${initials}');
-        }
-      },
-      child: ValueListenableBuilder(
-        valueListenable: _isSideWayLayout,
-        builder: (context, isSideWays, _) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // TOP BANNERIMAGE WHEN NOT IN SIDEWAYS
-              if (imageBuilder != null && !isSideWays)
-                GestureDetector(
-                  onTap: widget.onTap,
-                  onLongPress: widget.onLongPress,
-                  child: ValueListenableBuilder(
+        },
+        child: ValueListenableBuilder(
+          valueListenable: _isSideWayLayout,
+          builder: (context, isSideWays, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // TOP BANNERIMAGE WHEN NOT IN SIDEWAYS
+                if (imageBuilder != null && !isSideWays)
+                  ValueListenableBuilder(
                     valueListenable: _bannerImageSize,
                     builder: (context, bannerImageSize, _) {
                       final bannerImageHeight =
@@ -523,15 +519,11 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                       );
                     },
                   ),
-                ),
-              if (imageBuilder != null && !isSideWays)
-                const SizedBox(height: 8),
+                if (imageBuilder != null && !isSideWays)
+                  const SizedBox(height: 8),
 
-              // TITLE, SIDEWAY UPPER DESCRIPTION, BANNERIMAGE
-              GestureDetector(
-                onTap: widget.onTap,
-                onLongPress: widget.onLongPress,
-                child: Row(
+                // TITLE, SIDEWAY UPPER DESCRIPTION, BANNERIMAGE
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // TITLE AND UPPERDESCRIPTION
@@ -539,18 +531,14 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          GestureDetector(
-                            onTap: widget.onTap,
-                            onLongPress: widget.onLongPress,
-                            child: Text(
-                              widget.urlModel.metaData?.title ??
-                                  widget.urlModel.title,
-                              style: TextStyle(
-                                // fontWeight: FontWeight.w500,
-                                fontSize: isSideWays ? 16 : 18,
-                              ),
-                              key: _urlTitleKey,
+                          Text(
+                            widget.urlModel.metaData?.title ??
+                                widget.urlModel.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: isSideWays ? 16 : 18,
                             ),
+                            key: _urlTitleKey,
                           ),
                           if (descriptionAvailable && isSideWays)
                             ValueListenableBuilder(
@@ -584,18 +572,13 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                                           _urlTitleSize.value!.height;
                                     }
 
-                                    final descTextStyle = TextStyle(
-                                      color: Colors.grey.shade800,
-                                      fontSize: 14,
-                                    );
-
                                     final textPainter = TextPainter(
                                       textDirection: TextDirection.ltr,
                                     )
                                       ..maxLines = 1
                                       ..text = TextSpan(
                                         text: 'M',
-                                        style: descTextStyle,
+                                        style: upperDescTextStyle,
                                       )
                                       ..layout(maxWidth: upperDescWidth);
 
@@ -624,7 +607,7 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
 
                                     return Text(
                                       description,
-                                      style: descTextStyle,
+                                      style: upperDescTextStyle,
                                       maxLines: maxLines,
                                     );
                                   },
@@ -685,222 +668,225 @@ class _URLPreviewWidgetState extends State<URLPreviewWidget> {
                       ),
                   ],
                 ),
-              ),
 
-              if (descriptionAvailable)
-                ValueListenableBuilder(
-                  valueListenable: _showFullDescription,
-                  builder: (context, showFullDescription, _) {
-                    if (!showFullDescription) {
-                      return Container();
-                    }
+                if (descriptionAvailable)
+                  ValueListenableBuilder(
+                    valueListenable: _showFullDescription,
+                    builder: (context, showFullDescription, _) {
+                      if (!showFullDescription) {
+                        return Container();
+                      }
 
-                    return ValueListenableBuilder(
-                      valueListenable: _upperDescriptionIndex,
-                      builder: (context, upperDescriptionIndex, _) {
-                        var description =
-                            widget.urlModel.metaData?.description?.trim() ??
-                                widget.urlModel.description ??
-                                '';
+                      return ValueListenableBuilder(
+                        valueListenable: _upperDescriptionIndex,
+                        builder: (context, upperDescriptionIndex, _) {
+                          var description =
+                              widget.urlModel.metaData?.description?.trim() ??
+                                  widget.urlModel.description ??
+                                  '';
 
-                        final start = min(
-                          !isSideWays ? 0 : upperDescriptionIndex,
-                          description.length,
-                        );
-                        final endIndex = description.length;
+                          final start = min(
+                            !isSideWays ? 0 : upperDescriptionIndex,
+                            description.length,
+                          );
+                          final endIndex = description.length;
 
-                        description = description
-                            .substring(
-                              start,
-                              endIndex,
-                            )
-                            .trim();
-                        if (description.isEmpty) {
-                          return Container();
-                        }
-                        return Text(
-                          description,
-                          style: upperDescTextStyle,
-                        );
-                      },
-                    );
-                  },
-                ),
+                          description = description
+                              .substring(
+                                start,
+                                endIndex,
+                              )
+                              .trim();
+                          if (description.isEmpty) {
+                            return Container();
+                          }
+                          return Text(
+                            description,
+                            style: upperDescTextStyle,
+                          );
+                        },
+                      );
+                    },
+                  ),
 
-              /// Website details and other option
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 8,
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            // LAUNCH IN CUSTOM TAB
-                            final uri = Uri.parse(widget.urlModel.url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri);
-                            }
-                          },
-                          onLongPress: widget.onLongPress,
-                          child: Row(
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  final urlModelData = widget.urlModel;
-                                  final urlMetaData = widget.urlModel.metaData!;
+                /// Website details and other option
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      flex: 8,
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              // LAUNCH IN CUSTOM TAB
+                              final uri = Uri.parse(widget.urlModel.url);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              }
+                            },
+                            onLongPress: widget.onLongPress,
+                            child: Row(
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    final urlModelData = widget.urlModel;
+                                    final urlMetaData =
+                                        widget.urlModel.metaData!;
 
-                                  var name = '';
+                                    var name = '';
 
-                                  if (urlModelData.title.isNotEmpty) {
-                                    name = urlModelData.title;
-                                  } else if (urlMetaData.title != null &&
-                                      urlMetaData.title!.isNotEmpty) {
-                                    name = urlMetaData.title!;
-                                  } else if (urlMetaData.websiteName != null &&
-                                      urlMetaData.websiteName!.isNotEmpty) {
-                                    name = urlMetaData.websiteName!;
-                                  }
+                                    if (urlModelData.title.isNotEmpty) {
+                                      name = urlModelData.title;
+                                    } else if (urlMetaData.title != null &&
+                                        urlMetaData.title!.isNotEmpty) {
+                                      name = urlMetaData.title!;
+                                    } else if (urlMetaData.websiteName !=
+                                            null &&
+                                        urlMetaData.websiteName!.isNotEmpty) {
+                                      name = urlMetaData.websiteName!;
+                                    }
 
-                                  final placeHolder = Container(
-                                    padding: const EdgeInsets.all(2),
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      color: ColourPallette.black,
-                                      // color: Colors.deepPurple
-                                    ),
-                                    child: Text(
-                                      _websiteName(name, 5),
-                                      maxLines: 1,
-                                      textAlign: TextAlign.center,
-                                      softWrap: true,
-                                      overflow: TextOverflow.fade,
-                                      style: const TextStyle(
-                                        color: ColourPallette.white,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 8,
+                                    final placeHolder = Container(
+                                      padding: const EdgeInsets.all(2),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: ColourPallette.black,
+                                        // color: Colors.deepPurple
                                       ),
-                                    ),
-                                  );
+                                      child: Text(
+                                        _websiteName(name, 5),
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                        softWrap: true,
+                                        overflow: TextOverflow.fade,
+                                        style: const TextStyle(
+                                          color: ColourPallette.white,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    );
 
-                                  if (widget.urlModel.metaData?.faviconUrl ==
-                                      null) {
-                                    return placeHolder;
-                                  }
-                                  final metaData = widget.urlModel.metaData;
+                                    if (widget.urlModel.metaData?.faviconUrl ==
+                                        null) {
+                                      return placeHolder;
+                                    }
+                                    final metaData = widget.urlModel.metaData;
 
-                                  return SizedBox(
-                                    height: 14,
-                                    width: 14,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: NetworkImageBuilderWidget(
-                                        imageUrl: urlMetaData.faviconUrl!,
-                                        compressImage: false,
-                                        errorWidgetBuilder: () {
-                                          return placeHolder;
-                                        },
-                                        successWidgetBuilder: (imageData) {
-                                          return ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            child: Builder(
-                                              builder: (ctx) {
-                                                final memoryImage =
-                                                    Image.memory(
-                                                  imageData.imageBytesData!,
-                                                  fit: BoxFit.contain,
-                                                  errorBuilder: (ctx, _, __) {
-                                                    return placeHolder;
-                                                  },
-                                                );
-                                                // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                                                if (urlMetaData.faviconUrl!
-                                                    .toLowerCase()
-                                                    .endsWith('.svg')) {
-                                                  // Try loading the SVG and handle errors
-                                                  return FutureBuilder(
-                                                    future: _loadSvgBytes(
-                                                      imageData.imageBytesData!,
-                                                    ),
-                                                    builder:
-                                                        (context, snapshot) {
-                                                      if (snapshot
-                                                              .connectionState ==
-                                                          ConnectionState
-                                                              .waiting) {
-                                                        return const CircularProgressIndicator();
-                                                      } else if (snapshot
-                                                          .hasError) {
-                                                        return memoryImage;
-                                                      } else {
-                                                        return snapshot.data!;
-                                                      }
+                                    return SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: NetworkImageBuilderWidget(
+                                          imageUrl: urlMetaData.faviconUrl!,
+                                          compressImage: false,
+                                          errorWidgetBuilder: () {
+                                            return placeHolder;
+                                          },
+                                          successWidgetBuilder: (imageData) {
+                                            return ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              child: Builder(
+                                                builder: (ctx) {
+                                                  final memoryImage =
+                                                      Image.memory(
+                                                    imageData.imageBytesData!,
+                                                    fit: BoxFit.contain,
+                                                    errorBuilder: (ctx, _, __) {
+                                                      return placeHolder;
                                                     },
                                                   );
-                                                } else {
-                                                  return memoryImage;
-                                                }
-                                              },
-                                            ),
-                                          );
-                                        },
+                                                  // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                                  if (urlMetaData.faviconUrl!
+                                                      .toLowerCase()
+                                                      .endsWith('.svg')) {
+                                                    // Try loading the SVG and handle errors
+                                                    return FutureBuilder(
+                                                      future: _loadSvgBytes(
+                                                        imageData
+                                                            .imageBytesData!,
+                                                      ),
+                                                      builder:
+                                                          (context, snapshot) {
+                                                        if (snapshot
+                                                                .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return const CircularProgressIndicator();
+                                                        } else if (snapshot
+                                                            .hasError) {
+                                                          return memoryImage;
+                                                        } else {
+                                                          return snapshot.data!;
+                                                        }
+                                                      },
+                                                    );
+                                                  } else {
+                                                    return memoryImage;
+                                                  }
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  StringUtils.capitalizeEachWord(
+                                    _websiteName(
+                                      widget.urlModel.metaData?.websiteName ??
+                                          widget.urlModel.title,
+                                      15,
                                     ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                StringUtils.capitalizeEachWord(
-                                  _websiteName(
-                                    widget.urlModel.metaData?.websiteName ??
-                                        widget.urlModel.title,
-                                    15,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _getTimeDifferenceOfFeed(),
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
+                          const SizedBox(width: 8),
+                          Text(
+                            _getTimeDifferenceOfFeed(),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        _layoutFilterOptions(),
+                        IconButton(
+                          onPressed: widget.onShareButtonTap,
+                          icon: Icon(
+                            Icons.share_rounded,
+                            size: 16,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Row(
-                    children: [
-                      _layoutFilterOptions(),
-                      IconButton(
-                        onPressed: widget.onShareButtonTap,
-                        icon: Icon(
-                          Icons.share_rounded,
-                          size: 16,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

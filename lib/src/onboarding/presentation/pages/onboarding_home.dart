@@ -10,61 +10,54 @@ import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.da
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 
 class OnBoardingHomePage extends StatelessWidget {
-  OnBoardingHomePage({super.key});
+  const OnBoardingHomePage({super.key});
   static const routeName = '/';
-
-  final ValueNotifier<bool> _isRendererChecked = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: ValueListenableBuilder<bool>(
-          valueListenable: _isRendererChecked,
-          builder: (context, isRendererChecked, child) {
-            return BlocConsumer<OnBoardCubit, OnBoardState>(
-              listener: (context, state) {
-                // if (isRendererChecked) {
-                final onBoardCubit = context.read<OnBoardCubit>();
-                if (state.onBoardingStates == OnBoardingStates.isLoggedIn) {
-                  context
-                      .read<GlobalUserCubit>()
-                      .initializeGlobalUser(state.globalUser!);
+        child: BlocConsumer<OnBoardCubit, OnBoardState>(
+          listener: (context, state) {
+            final onBoardCubit = context.read<OnBoardCubit>();
 
-                  if (onBoardCubit.isCreditExpired()) {
-                    Navigator.pushReplacementNamed(
-                      context,
-                      SubscriptionPage.routeName,
-                    );
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => const AppHomePage(),
-                      ),
-                    );
-                  }
-                }
-                if (state.onBoardingStates == OnBoardingStates.notLoggedIn) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => const AuthenticationHomePage(),
-                    ),
-                  );
-                }
-                // }
-              },
-              builder: (context, state) {
-                return const Text(
-                  'LinkVault',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+            if (state.onBoardingStates == OnBoardingStates.isLoggedIn) {
+              context
+                  .read<GlobalUserCubit>()
+                  .initializeGlobalUser(state.globalUser!);
+
+              if (onBoardCubit.isCreditExpired()) {
+                Navigator.pushReplacementNamed(
+                  context,
+                  SubscriptionPage.routeName,
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => const AppHomePage(),
                   ),
                 );
-              },
+              }
+            }
+            if (state.onBoardingStates == OnBoardingStates.notLoggedIn) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => const AuthenticationHomePage(),
+                ),
+              );
+            }
+            // }
+          },
+          builder: (context, state) {
+            return const Text(
+              'LinkVault',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             );
           },
         ),

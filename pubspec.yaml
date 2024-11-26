@@ -50,6 +50,7 @@ dependencies:
   visibility_detector: ^0.4.0+2
   flutter_custom_tabs: ^2.1.0
   flutter_inappwebview: ^6.0.0
+  google_fonts: ^6.2.1
   # flutter_widget_from_html: ^0.15.3
   # archive: ^3.6.1
 
@@ -78,11 +79,10 @@ flutter:
 
   assets:
      - assets/images/
-     - assets/logo/
      - assets/animations/
 
-     - assets/js/readability/readabilityjs/
-     - assets/js/readability/readabilityjs/Readability.js
+    #  - assets/js/readability/readabilityjs/
+    #  - assets/js/readability/readabilityjs/Readability.js
 
 # Specify the supported platforms (remove windows)
 platform:

@@ -176,13 +176,13 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
                 selectedItemColor: ColourPallette.black,
                 selectedLabelStyle: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: Colors.black,
                 ),
                 unselectedItemColor: ColourPallette.black,
                 unselectedLabelStyle: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: ColourPallette.black,
                 ),
                 items: [
@@ -283,7 +283,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       ),
     );
   }
-  
+
   @override
   bool get wantKeepAlive => true;
 }
