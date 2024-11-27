@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
@@ -24,10 +23,8 @@ import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
-import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/add_rss_feed_url_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/update_rss_url_page.dart';
 import 'package:lottie/lottie.dart';
@@ -694,7 +691,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
                 UrlViewType.favicons.label,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: ColourPallette.black,
                 ),
               ),
@@ -731,7 +728,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
                 UrlViewType.previews.label,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: ColourPallette.black,
                 ),
               ),

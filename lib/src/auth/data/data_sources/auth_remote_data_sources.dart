@@ -2,27 +2,15 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
-import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
-import 'package:link_vault/core/utils/logger.dart';
 
 class AuthRemoteDataSourcesImpl {
   AuthRemoteDataSourcesImpl({
     required FirebaseAuth auth,
-    // required FirebaseFirestore firestore,
-    required GlobalAuthDataSourceImpl globalAuthDataSourceImpl,
-  })  : _auth = auth,
-        // _firestore = firestore,
-        _globalAuthDataSourceImpl = globalAuthDataSourceImpl;
+  }) : _auth = auth;
 
   final FirebaseAuth _auth;
-  // final FirebaseFirestore _firestore;
-
-  final GlobalAuthDataSourceImpl _globalAuthDataSourceImpl;
 
   User? isLoggedIn() {
     try {
@@ -37,7 +25,7 @@ class AuthRemoteDataSourcesImpl {
     }
   }
 
-  Future<GlobalUser?> signInWithEmailAndPassword({
+  Future<String?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
@@ -48,12 +36,8 @@ class AuthRemoteDataSourcesImpl {
       );
 
       final userId = response.user!.uid;
-      // await _globalAuthDataSourceImpl.getUserFromFirestore(userId);
 
-      final globalUser =
-          await _globalAuthDataSourceImpl.getUserFromFirestore(userId);
-
-      return globalUser;
+      return userId;
     } on FirebaseAuthException catch (e) {
       // debugPrint('[log] auth: ${e.message}');
       if (e.code == 'user-not-found') {
@@ -68,8 +52,6 @@ class AuthRemoteDataSourcesImpl {
         );
       }
     } catch (e) {
-      // debugPrint('[log] auth: $e');
-
       throw LocalAuthException(
         message: 'Could Not Authenticate',
         statusCode: 400,
@@ -78,7 +60,7 @@ class AuthRemoteDataSourcesImpl {
     return null;
   }
 
-  Future<GlobalUser?> signUpWithEmailAndPassword({
+  Future<UserCredential?> signUpWithEmailAndPassword({
     required String name,
     required String email,
     required String password,
@@ -90,38 +72,21 @@ class AuthRemoteDataSourcesImpl {
         password: password,
       );
 
-      final todayDate = DateTime.now().toUtc();
-      final creditExpiryDate = todayDate.add(
-        const Duration(
-          days: accountSingUpCreditLimit, // [TODO] : WILL CHANGE TO DAYS
-        ),
-      );
-
-      final globalUser = GlobalUser(
-        id: credential.user!.uid,
-        name: name,
-        email: email,
-        createdAt: todayDate,
-        creditExpiryDate: creditExpiryDate,
-      );
-
-      await _globalAuthDataSourceImpl.addUserToFirestore(globalUser);
-
-      return globalUser;
+      return credential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        throw LocalAuthException(
+        throw AuthException(
           message: 'The password provided is too weak.',
           statusCode: 402,
         );
       } else if (e.code == 'email-already-in-use') {
-        throw LocalAuthException(
+        throw AuthException(
           message: 'The account already exists for that email.',
           statusCode: 402,
         );
       }
     } catch (e) {
-      throw LocalAuthException(
+      throw AuthException(
         message: 'Cannot Authenticate.Something Went Wrong.',
         statusCode: 402,
       );
@@ -143,8 +108,6 @@ class AuthRemoteDataSourcesImpl {
     try {
       await _auth.sendPasswordResetEmail(email: emailAddress);
     } catch (e) {
-      // debugPrint('[log] : $e');
-
       throw AuthException(message: e.toString(), statusCode: 402);
     }
   }
@@ -169,7 +132,6 @@ class AuthRemoteDataSourcesImpl {
     final folderCollectionRef = accountRef.collection(folderCollections);
     final urlsDataRef = accountRef.collection(urlDataCollection);
 
-
     await Future.wait(
       [
         // Delete all documents in the folderCollections subcollection
@@ -186,7 +148,6 @@ class AuthRemoteDataSourcesImpl {
       ],
     );
     await user.delete(); // Handle null user if not authenticated
-
   }
 
   // Function to delete all documents in a collection

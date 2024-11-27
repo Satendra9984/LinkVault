@@ -166,7 +166,6 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                   currentIndex: _currentPage.value,
                   onTap: (currentIndex) {
                     _currentPage.value = currentIndex;
-                    // _pageController.jumpToPage(currentIndex);
                     _pageController.jumpToPage(currentIndex);
                   },
                   enableFeedback: false,
@@ -176,13 +175,13 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                   selectedItemColor: ColourPallette.black,
                   selectedLabelStyle: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: Colors.black,
                   ),
                   unselectedItemColor: ColourPallette.black,
                   unselectedLabelStyle: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: ColourPallette.black,
                   ),
                   items: [

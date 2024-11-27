@@ -29,8 +29,6 @@ class UrlLocalDataSourcesImpl {
         );
       }
     } catch (e) {
-      // Logger.printLog('urloffline: initialize $e');
-
       return;
     }
   }
@@ -49,7 +47,7 @@ class UrlLocalDataSourcesImpl {
       if (urlModelOffline == null) {
         return null;
       }
-      // // Logger.printLog('urloffline: fetchedUrl');
+      // Logger.printLog('urloffline: fetchedUrl');
       return urlModelOffline.toUrlModel();
     } catch (e) {
       // Logger.printLog('fetchUrlLocal : $e');

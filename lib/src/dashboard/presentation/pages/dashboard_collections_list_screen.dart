@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_collection_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/collection_list_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/collection_icon_button.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
@@ -15,7 +10,6 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
-import 'package:lottie/lottie.dart';
 
 class DashboardCollectionsListScreen extends StatefulWidget {
   const DashboardCollectionsListScreen({

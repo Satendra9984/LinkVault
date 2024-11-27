@@ -10,7 +10,6 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
-import 'package:lottie/lottie.dart';
 
 class RecentsCollectionsListScreen extends StatefulWidget {
   const RecentsCollectionsListScreen({

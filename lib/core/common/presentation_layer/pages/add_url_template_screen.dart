@@ -18,7 +18,6 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/core/utils/validators.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';

@@ -8,10 +8,6 @@ import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/src/favourites/presentation/pages/faourite_url_favicon_list_screen.dart';
-import 'package:link_vault/src/favourites/presentation/pages/favourite_collections_list_screen.dart';
-import 'package:link_vault/src/recents/presentation/pages/recents_collections_list_screen.dart';
 import 'package:link_vault/src/recents/presentation/pages/recents_url_favicon_list_screen.dart';
 import 'package:lottie/lottie.dart';
 

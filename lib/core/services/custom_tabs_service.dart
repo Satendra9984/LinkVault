@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
     as custom_chrome_tabs;
 import 'package:http/http.dart' as http;
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class CustomTabsService {

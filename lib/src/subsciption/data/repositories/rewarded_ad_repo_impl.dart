@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
@@ -119,7 +118,7 @@ class RewardedAdRepoImpl {
           globalUser.copyWith(creditExpiryDate: nextExpiryDate);
 
       return Right(newGlobalUser);
-    } on ServerException catch (e) {
+    } on ServerException {
       // debugPrint('[log] : showad ${e.message}');
       return Left(
         ServerFailure(

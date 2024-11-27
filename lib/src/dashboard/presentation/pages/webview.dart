@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:permission_handler/permission_handler.dart'; // Add permission_handler dependency
 
 class DashboardWebView extends StatefulWidget {
@@ -223,7 +222,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
     final colorCount = colors.length;
     return Color.fromARGB(
-        255, red ~/ colorCount, green ~/ colorCount, blue ~/ colorCount);
+        255, red ~/ colorCount, green ~/ colorCount, blue ~/ colorCount,);
   }
 
   Color? _parseColor(String colorValue) {
@@ -385,7 +384,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                               var granted = false;
 
                               if (request.resources.contains(
-                                  PermissionResourceType.GEOLOCATION)) {
+                                  PermissionResourceType.GEOLOCATION,)) {
                                 granted = await _requestPermission(
                                   Permission.location,
                                 );
@@ -397,7 +396,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                                 );
                               }
                               if (request.resources.contains(
-                                  PermissionResourceType.MICROPHONE)) {
+                                  PermissionResourceType.MICROPHONE,)) {
                                 granted = await _requestPermission(
                                   Permission.microphone,
                                 );

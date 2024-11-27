@@ -1,39 +1,68 @@
-// ignore_for_file: public_member_api_docs
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/global_user_local_data_source.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/global_user_remote_data_source.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
-class GlobalAuthDataSourceImpl {
-  GlobalAuthDataSourceImpl({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+class GlobalUserRepositoryImpl {
 
-  final FirebaseFirestore _firestore;
+  const GlobalUserRepositoryImpl({
+    required FirebaseAuthDataSourceImpl remoteDataSource,
+    required IsarAuthDataSourceImpl localDataSource,
+  })  : _remoteDataSource = remoteDataSource,
+        _localDataSource = localDataSource;
+  final FirebaseAuthDataSourceImpl _remoteDataSource;
+  final IsarAuthDataSourceImpl _localDataSource;
 
-  Future<void> addUserToFirestore(GlobalUser globalUser) async {
-    await _firestore.collection(userCollection).doc(globalUser.id).set(
-          globalUser.toJson(),
-        );
-  }
+  Future<Either<Failure, GlobalUser?>> getUserById(String userId) async {
+    try {
+      // First, try to get user from local cache
+      try {
+        final cachedUser =
+            await _localDataSource.getCachedUserFromLocalDB(userId);
+        if (cachedUser == null) {
+          // If no cached user, fetch from remote and cache
+          final remoteUser =
+              await _remoteDataSource.getUserFromRemoteDatabase(userId);
+          await _localDataSource.cacheUserInLocalDB(remoteUser);
+          return Right(remoteUser);
+        }
 
-  Future<GlobalUser> getUserFromFirestore(String userId) async {
-    final firestoreUser =
-        await _firestore.collection(userCollection).doc(userId).get();
-
-    final userData = firestoreUser.data();
-    if (userData == null) {
-      // debugPrint('[log] : user not found $userId');
-
-      throw AuthException(
-        message: 'User not found',
-        statusCode: 500,
+        return Right(cachedUser);
+      } on LocalAuthException catch (e) {
+        Logger.printLog('[AUTH] : NO USER FOUND $e');
+        final remoteUser =
+            await _remoteDataSource.getUserFromRemoteDatabase(userId);
+        await _localDataSource.cacheUserInLocalDB(remoteUser);
+        return Right(remoteUser);
+      } catch (_) {
+        // If no cached user, fetch from remote and cache
+        return const Right(null);
+      }
+    } catch (e) {
+      return Left(
+        AuthFailure(
+          message: e.toString(),
+          statusCode: 400,
+        ),
       );
     }
+  }
 
-    final globalUser = GlobalUser.fromJson(userData);
-    return globalUser;
+  Future<Either<Failure, void>> addUser(GlobalUser user) async {
+    try {
+      await _remoteDataSource.addUserToRemoteDatabase(user);
+      await _localDataSource.cacheUserInLocalDB(user);
+      return const Right(null);
+    } catch (e) {
+      return Left(
+        CacheFailure(
+          message: e.toString(),
+          statusCode: 400,
+        ),
+      );
+    }
   }
 }

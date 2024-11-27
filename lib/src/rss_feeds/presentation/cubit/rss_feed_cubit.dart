@@ -9,7 +9,6 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:link_vault/src/rss_feeds/data/repositories/rss_feed_repo.dart';
 

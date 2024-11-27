@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/page_under_construction.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
@@ -9,22 +8,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case OnBoardingHomePage.routeName:
       {
-        return _pageRouteBuilder(
-          (_) => OnBoardingHomePage(),
+        return MaterialPageRoute(
+          builder: (context) => const OnBoardingHomePage(),
           settings: settings,
         );
       }
     case SubscriptionPage.routeName:
       {
-        return _pageRouteBuilder(
-          (_) => const SubscriptionPage(),
+        return MaterialPageRoute(
+          builder: (context) => const SubscriptionPage(),
           settings: settings,
         );
       }
     default:
       {
-        return _pageRouteBuilder(
-          (_) => const PageUnderConstructionPage(),
+        return MaterialPageRoute(
+          builder: (context) => const PageUnderConstructionPage(),
           settings: settings,
         );
       }

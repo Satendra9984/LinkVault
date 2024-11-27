@@ -9,9 +9,7 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
-import 'package:lottie/lottie.dart';
 
 class FavouritesCollectionsListScreen extends StatefulWidget {
   const FavouritesCollectionsListScreen({

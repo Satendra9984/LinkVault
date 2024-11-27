@@ -1,6 +1,6 @@
-import 'package:bloc/bloc.dart';
 import 'dart:convert';
 
+import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
@@ -9,8 +9,6 @@ import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/core/utils/logger.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 
 part 'recents_url_state.dart';
 
@@ -25,7 +23,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
         _collectionsCubit = collectionsCubit,
         _globalUserCubit = globalUserCubit,
         super(
-          RecentsUrlState(
+          const RecentsUrlState(
             urlCrudLoadingStates: UrlCrudLoadingStates.initial,
           ),
         );
