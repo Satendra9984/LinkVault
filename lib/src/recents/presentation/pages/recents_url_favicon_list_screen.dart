@@ -5,32 +5,26 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/add_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_collection_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_favicon_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/url_preview_list_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/bottom_sheet_option_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_menu_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_favicon_widget.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
-import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -62,10 +56,6 @@ class _RecentsUrlFaviconListScreenState
   final _listViewType = ValueNotifier(UrlViewType.favicons);
   final PageController _pageController = PageController();
 
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _onAddUrlPressed({String? url}) {
     Navigator.push(
@@ -716,7 +706,7 @@ class _RecentsUrlFaviconListScreenState
                     const SizedBox(width: 16),
                     Text(
                       StringUtils.capitalizeEachWord(
-                        collectionModel?.name ?? '--',
+                        collectionModel.name ?? '--',
                       ),
                       style: const TextStyle(
                         fontSize: 18,

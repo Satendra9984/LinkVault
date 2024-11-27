@@ -6,22 +6,9 @@ part 'global_user_model.g.dart';
 
 @collection
 class GlobalUser {
-  Id? isarId; // Isar internal ID
-
-  @Index(unique: true)
-  final String id;
-  final String name;
-  final String email;
-  final DateTime createdAt;
-  final DateTime creditExpiryDate;
 
   GlobalUser({
-    this.isarId,
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.createdAt,
-    required this.creditExpiryDate,
+    required this.id, required this.name, required this.email, required this.createdAt, required this.creditExpiryDate, this.isarId,
   });
 
   // Convert from JSON (for remote data)
@@ -36,6 +23,14 @@ class GlobalUser {
       ),
     );
   }
+  Id? isarId; // Isar internal ID
+
+  @Index(unique: true)
+  final String id;
+  final String name;
+  final String email;
+  final DateTime createdAt;
+  final DateTime creditExpiryDate;
 
   // Convert to JSON (for remote data)
   Map<String, dynamic> toJson() {

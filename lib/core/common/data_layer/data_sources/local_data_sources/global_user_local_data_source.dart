@@ -8,9 +8,9 @@ import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:path_provider/path_provider.dart';
 
 class IsarAuthDataSourceImpl {
-  Isar? _isar;
 
   IsarAuthDataSourceImpl(this._isar);
+  Isar? _isar;
 
   Future<void> _initializeIsar() async {
     try {
@@ -35,7 +35,7 @@ class IsarAuthDataSourceImpl {
     }
   }
 
-  Future<void> cacheUser(GlobalUser user) async {
+  Future<void> cacheUserInLocalDB(GlobalUser user) async {
     await _initializeIsar();
     if (_isar == null) return;
 
@@ -53,7 +53,7 @@ class IsarAuthDataSourceImpl {
     });
   }
 
-  Future<GlobalUser?> getCachedUser(String userId) async {
+  Future<GlobalUser?> getCachedUserFromLocalDB(String userId) async {
     await _initializeIsar();
     if (_isar == null) return null;
 

@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/collection_local_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/global_user_local_data_source.dart';
@@ -31,15 +31,12 @@ import 'package:link_vault/core/common/repository_layer/repositories/global_auth
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/router.dart';
 import 'package:link_vault/firebase_options.dart' as prod;
 import 'package:link_vault/firebase_options_test.dart' as development;
 import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/onboarding/data/data_sources/onboard_local_data_source_impl.dart';
-import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/onboarding/presentation/pages/onboarding_home.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
@@ -96,33 +93,16 @@ void main() async {
 }
 
 Future<void> _initializeApp() async {
-  final stopwatch = Stopwatch()..start();
-
-  Logger.printLog('[INITAPP] : ${stopwatch.elapsedMilliseconds}');
-
   await Future.wait([
     _initializeFirebase(),
-    Future(() async {
-      final stopwatch = Stopwatch()..start();
-      Logger.printLog(
-          '[INITAPP][MOBILEADS] : ${stopwatch.elapsedMilliseconds}');
-
-      await MobileAds.instance.initialize();
-
-      stopwatch.stop();
-      Logger.printLog(
-          '[INITAPP][MOBILEADS] : ${stopwatch.elapsedMilliseconds}');
-    }),
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    ),
     _initializeIsar(),
   ]);
-  stopwatch.stop();
-  Logger.printLog('[INITAPP] : ${stopwatch.elapsedMilliseconds}');
 }
 
 Future<void> _initializeFirebase() async {
-  final stopwatch = Stopwatch()..start();
-  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
-
   const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
   var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
 
@@ -137,22 +117,16 @@ Future<void> _initializeFirebase() async {
     name: 'LinkVault Singleton',
     options: firebaseOptions,
   );
-  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
+  // Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
     cacheSizeBytes: 5 * 1024 * 1024,
   );
   await FirebaseFirestore.instance.enableNetwork();
-
-  stopwatch.stop();
-  Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
 }
 
 Future<void> _initializeIsar() async {
-  final stopwatch = Stopwatch()..start();
-  Logger.printLog('[INITAPP][ISAR] : ${stopwatch.elapsedMilliseconds}');
-
   if (Isar.instanceNames.isEmpty) {
     final dir = await getApplicationDocumentsDirectory();
     await Isar.open(
@@ -166,9 +140,6 @@ Future<void> _initializeIsar() async {
       directory: dir.path,
     );
   }
-
-  stopwatch.stop();
-  Logger.printLog('[INITAPP][ISAR] : ${stopwatch.elapsedMilliseconds}');
 }
 
 class MyApp extends StatelessWidget {
@@ -189,6 +160,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+
         BlocProvider(
           create: (context) => OnBoardCubit(
             authRepoImpl: AuthRepositoryImpl(
@@ -204,9 +176,11 @@ class MyApp extends StatelessWidget {
             ),
           )..checkIfLoggedIn(),
         ),
+
         BlocProvider(
           create: (context) => GlobalUserCubit(),
         ),
+
         BlocProvider(
           create: (context) => AuthenticationCubit(
             authRepositoryImpl: AuthRepositoryImpl(
@@ -222,6 +196,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
+
         BlocProvider(
           create: (BuildContext context) => CollectionsCubit(
             collectionsRepoImpl: CollectionsRepoImpl(
@@ -250,6 +225,7 @@ class MyApp extends StatelessWidget {
             globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
+
         BlocProvider(
           create: (BuildContext context) => RecentsUrlCubit(
             collectionRepoImpl: CollectionsRepoImpl(
@@ -291,6 +267,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (BuildContext context) => NetworkImageCacheCubit(),
         ),
+
         BlocProvider(
           create: (BuildContext context) => AdvanceSearchCubit(
             searchingRepoImpl: SearchingRepoImpl(

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/global_user_local_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/global_user_remote_data_source.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
@@ -12,7 +11,6 @@ import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.d
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
 import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
-import 'package:link_vault/src/rss_feeds/data/data_sources/remote_data_source.dart';
 
 class AuthenticationHomePage extends StatefulWidget {
   const AuthenticationHomePage({super.key});

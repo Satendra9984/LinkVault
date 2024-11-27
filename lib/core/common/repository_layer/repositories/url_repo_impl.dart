@@ -243,7 +243,7 @@ class UrlRepoImpl {
           .updateCollection(updatedCollectionWithUrls);
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
-    } on ServerException catch (se) {
+    } on ServerException {
       // Logger.printLog('[RECENTS] : ERROR addUrlrepo : ${se.message}');
       return Left(
         ServerFailure(

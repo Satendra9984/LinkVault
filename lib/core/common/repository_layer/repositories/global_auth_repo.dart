@@ -7,34 +7,35 @@ import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/utils/logger.dart';
 
 class GlobalUserRepositoryImpl {
-  final FirebaseAuthDataSourceImpl _remoteDataSource;
-  final IsarAuthDataSourceImpl _localDataSource;
 
   const GlobalUserRepositoryImpl({
     required FirebaseAuthDataSourceImpl remoteDataSource,
     required IsarAuthDataSourceImpl localDataSource,
   })  : _remoteDataSource = remoteDataSource,
         _localDataSource = localDataSource;
+  final FirebaseAuthDataSourceImpl _remoteDataSource;
+  final IsarAuthDataSourceImpl _localDataSource;
 
   Future<Either<Failure, GlobalUser?>> getUserById(String userId) async {
     try {
       // First, try to get user from local cache
       try {
-        final cachedUser = await _localDataSource.getCachedUser(userId);
-
+        final cachedUser =
+            await _localDataSource.getCachedUserFromLocalDB(userId);
         if (cachedUser == null) {
           // If no cached user, fetch from remote and cache
           final remoteUser =
-              await _remoteDataSource.getUserFromDatabase(userId);
-          await _localDataSource.cacheUser(remoteUser);
+              await _remoteDataSource.getUserFromRemoteDatabase(userId);
+          await _localDataSource.cacheUserInLocalDB(remoteUser);
           return Right(remoteUser);
         }
 
         return Right(cachedUser);
       } on LocalAuthException catch (e) {
         Logger.printLog('[AUTH] : NO USER FOUND $e');
-        final remoteUser = await _remoteDataSource.getUserFromDatabase(userId);
-        await _localDataSource.cacheUser(remoteUser);
+        final remoteUser =
+            await _remoteDataSource.getUserFromRemoteDatabase(userId);
+        await _localDataSource.cacheUserInLocalDB(remoteUser);
         return Right(remoteUser);
       } catch (_) {
         // If no cached user, fetch from remote and cache
@@ -52,8 +53,8 @@ class GlobalUserRepositoryImpl {
 
   Future<Either<Failure, void>> addUser(GlobalUser user) async {
     try {
-      await _remoteDataSource.addUserToDatabase(user);
-      await _localDataSource.cacheUser(user);
+      await _remoteDataSource.addUserToRemoteDatabase(user);
+      await _localDataSource.cacheUserInLocalDB(user);
       return const Right(null);
     } catch (e) {
       return Left(

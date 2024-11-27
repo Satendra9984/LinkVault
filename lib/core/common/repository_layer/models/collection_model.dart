@@ -64,7 +64,6 @@ class CollectionModel {
       sharedWith: [],
       createdAt: createdAt,
       updatedAt: updatedAt,
-      settings: null, // Ensure settings is nullable
     );
   }
 

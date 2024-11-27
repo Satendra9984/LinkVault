@@ -7,7 +7,6 @@ import 'package:link_vault/core/common/presentation_layer/providers/shared_input
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_textfield.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/rss_feed_preview_widget.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_preview_editor_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';

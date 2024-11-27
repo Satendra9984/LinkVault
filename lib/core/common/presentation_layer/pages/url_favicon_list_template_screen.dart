@@ -16,13 +16,11 @@ import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.da
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
@@ -387,7 +385,7 @@ class _UrlFaviconListTemplateScreenState
                         borderRadius: BorderRadius.circular(16),
                       ),
                       backgroundColor: ColourPallette.salemgreen,
-                      elevation: 4.0,
+                      elevation: 4,
                       onPressed: () => widget.onAddUrlPressed(url: url),
                       label: showFullAddUrlButton
                           ? const Text(

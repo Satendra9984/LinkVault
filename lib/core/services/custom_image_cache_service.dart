@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/rss_feeds/data/constants/rss_feed_constants.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -64,6 +63,7 @@ class CustomImagesCacheManager {
       // throw const FileSystemException('Could not get image');
       // Logger.printLog('[CACHE IMAGE] : $e');
     }
+    return null;
   }
 
   // Clear the cache for a specific collection using the collectionId (cacheKey)

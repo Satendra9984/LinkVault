@@ -2,13 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
-import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
-import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
-import 'package:link_vault/core/utils/logger.dart';
 
 class AuthRemoteDataSourcesImpl {
   AuthRemoteDataSourcesImpl({

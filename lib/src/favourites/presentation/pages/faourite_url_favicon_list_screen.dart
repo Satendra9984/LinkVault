@@ -20,15 +20,12 @@ import 'package:link_vault/core/common/repository_layer/enums/url_view_type.dart
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/app_tutorials.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
-import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 

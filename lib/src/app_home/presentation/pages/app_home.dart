@@ -6,12 +6,9 @@ import 'package:link_vault/core/common/presentation_layer/providers/shared_input
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
 import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
-import 'package:link_vault/src/recents/presentation/pages/recents_store_screen.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
@@ -274,7 +271,6 @@ class _AppHomePageState extends State<AppHomePage> {
                         height: 20,
                         width: 20,
                         color: ColourPallette.mountainMeadow,
-                        colorBlendMode: BlendMode.srcIn,
                       ),
                       title: const Text(
                         'Search',

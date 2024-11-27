@@ -1,7 +1,7 @@
 part of 'recents_url_cubit.dart';
 
 class RecentsUrlState extends Equatable {
-  RecentsUrlState({
+  const RecentsUrlState({
     required this.urlCrudLoadingStates,
   });
 

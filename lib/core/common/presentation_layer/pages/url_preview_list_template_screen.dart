@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
@@ -18,19 +17,15 @@ import 'package:link_vault/core/common/repository_layer/enums/url_preload_method
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/services/clipboard_service.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
-import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/webview.dart';
-import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class UrlPreviewListTemplateScreen extends StatefulWidget {
   const UrlPreviewListTemplateScreen({

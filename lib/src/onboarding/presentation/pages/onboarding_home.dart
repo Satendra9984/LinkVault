@@ -9,9 +9,23 @@ import 'package:link_vault/src/onboarding/data/repositories/models/loading_state
 import 'package:link_vault/src/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 
-class OnBoardingHomePage extends StatelessWidget {
+class OnBoardingHomePage extends StatefulWidget {
   const OnBoardingHomePage({super.key});
   static const routeName = '/';
+
+  @override
+  State<OnBoardingHomePage> createState() => _OnBoardingHomePageState();
+}
+
+class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
+  
+  // @override
+  // void initState() {
+  //   SystemChrome.setEnabledSystemUIMode(
+  //     SystemUiMode.edgeToEdge,
+  //   );
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {

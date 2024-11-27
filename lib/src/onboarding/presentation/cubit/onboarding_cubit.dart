@@ -6,7 +6,6 @@ import 'package:link_vault/core/common/repository_layer/models/global_user_model
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/onboarding/data/repositories/models/loading_states.dart';
-import 'package:link_vault/src/onboarding/data/repositories/on_boarding_repo_impl.dart';
 
 part 'onboarding_state.dart';
 
@@ -24,7 +23,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
   Future<void> checkIfLoggedIn() async {
     final stopwatch = Stopwatch()..start();
     Logger.printLog(
-        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}');
+        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
 
     final result = await _authRepoImpl.isLoggedIn();
 
@@ -48,7 +47,7 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
     stopwatch.stop();
     Logger.printLog(
-        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}');
+        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
   }
 
   bool isCreditExpired() {

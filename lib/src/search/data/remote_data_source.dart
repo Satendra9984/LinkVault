@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
-import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
@@ -133,7 +131,7 @@ class ProfileHome extends StatelessWidget {
                         );
                       },
                       contentPadding: EdgeInsets.zero,
-                      minVerticalPadding: 0.0,
+                      minVerticalPadding: 0,
                       dense: true,
                       leading: SvgPicture.asset(
                         MediaRes.collaborateSVG,
@@ -232,7 +230,7 @@ class ProfileHome extends StatelessWidget {
                         );
                       },
                       contentPadding: EdgeInsets.zero,
-                      minVerticalPadding: 0.0,
+                      minVerticalPadding: 0,
                       dense: true,
                       leading: Icon(
                         Icons.logout,

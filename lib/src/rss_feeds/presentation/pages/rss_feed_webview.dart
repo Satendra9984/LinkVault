@@ -1,21 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:html/dom.dart' as dom;
 // import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:html/parser.dart' as html_parser;
-import 'package:http/http.dart' as http;
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/services/file_service.dart';
-import 'package:link_vault/core/services/rss_data_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
 
@@ -208,7 +199,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                 return const SizedBox.shrink();
                               }
                               return SizedBox(
-                                height: 0.0,
+                                height: 0,
                                 child: InAppWebView(
                                   key: webViewKey,
                                   initialUrlRequest:
@@ -479,69 +470,69 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           // Class patterns to target
           'classes': {
             // r'ad',
-            r'promo',
+            'promo',
             // r'advertisement',
-            r'tracking',
-            r'analytics',
-            r'social-',
-            r'share-',
-            r'popup',
-            r'modal',
-            r'banner',
-            r'related',
-            r'also',
-            r'popular',
-            r'trending',
-            r'recommended',
-            r'prev',
-            r'share',
-            r'social',
-            r'comment',
-            r'discuss',
-            r'subscribe',
-            r'follow',
-            r'sponsor',
-            r'partner',
-            r'promotion',
-            r'read-more',
-            r'more-from',
-            r'suggested',
-            r'links',
-            r'footer',
+            'tracking',
+            'analytics',
+            'social-',
+            'share-',
+            'popup',
+            'modal',
+            'banner',
+            'related',
+            'also',
+            'popular',
+            'trending',
+            'recommended',
+            'prev',
+            'share',
+            'social',
+            'comment',
+            'discuss',
+            'subscribe',
+            'follow',
+            'sponsor',
+            'partner',
+            'promotion',
+            'read-more',
+            'more-from',
+            'suggested',
+            'links',
+            'footer',
           },
 
           // ID patterns to target
           'ids': {
             // r'ad',
-            r'promo',
+            'promo',
             // r'advertisement',
-            r'tracking',
-            r'analytics',
-            r'social-',
-            r'share-',
-            r'popup',
-            r'modal',
-            r'banner',
-            r'related',
-            r'also',
-            r'popular',
-            r'trending',
-            r'recommended',
-            r'prev',
-            r'share',
-            r'social',
-            r'comment',
-            r'discuss',
-            r'subscribe',
-            r'follow',
-            r'sponsor',
-            r'partner',
-            r'promotion',
-            r'read-more',
-            r'more-from',
-            r'suggested',
-            r'links',
-            r'footer',
+            'tracking',
+            'analytics',
+            'social-',
+            'share-',
+            'popup',
+            'modal',
+            'banner',
+            'related',
+            'also',
+            'popular',
+            'trending',
+            'recommended',
+            'prev',
+            'share',
+            'social',
+            'comment',
+            'discuss',
+            'subscribe',
+            'follow',
+            'sponsor',
+            'partner',
+            'promotion',
+            'read-more',
+            'more-from',
+            'suggested',
+            'links',
+            'footer',
           },
         };
 
@@ -565,7 +556,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                       RegExp(pattern, caseSensitive: false).hasMatch(className),
                 ) ||
                 removalPatterns['ids']!.any((pattern) =>
-                    RegExp(pattern, caseSensitive: false).hasMatch(elementId));
+                    RegExp(pattern, caseSensitive: false).hasMatch(elementId),);
 
             if (shouldRemove) {
               element.remove();
@@ -579,7 +570,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           final id = element.attributes['id'] ?? '';
 
           final structuralPatterns = RegExp(
-            r'content|main|article|story|post|body',
+            'content|main|article|story|post|body',
             caseSensitive: false,
           );
 
@@ -1068,10 +1059,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     void removeBoilerplate() {
       // Common patterns for non-article content
       final lowValuePatterns = RegExp(
-        r'related|also|popular|trending|recommended|prev|'
-        r'share|social|comment|discuss|subscribe|follow|'
-        r'sponsor|partner|promotion|read-more|'
-        r'more-from|suggested|links|footer',
+        'related|also|popular|trending|recommended|prev|'
+        'share|social|comment|discuss|subscribe|follow|'
+        'sponsor|partner|promotion|read-more|'
+        'more-from|suggested|links|footer',
         caseSensitive: false,
       );
 
@@ -1143,7 +1134,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
             className.contains('track') ||
             className.contains('analytics') ||
             className.contains('ga-') ||
-            className.contains('data-'));
+            className.contains('data-'),);
       });
     }
 
@@ -1187,7 +1178,7 @@ class ContentCleaner {
     var hasNumbers = false;
     var hasDatePatterns = false;
 
-    list.children.forEach((item) {
+    for (final item in list.children) {
       totalItems++;
       final itemText = item.text.trim();
       totalTextLength += itemText.length;
@@ -1197,9 +1188,9 @@ class ContentCleaner {
         itemsWithLinks++;
         totalLinks += links.length;
 
-        links.forEach((link) {
+        for (final link in links) {
           totalLinkTextLength += link.text.trim().length;
-        });
+        }
       }
 
       if (item.getElementsByTagName('img').isNotEmpty) {
@@ -1215,7 +1206,7 @@ class ContentCleaner {
       if (RegExp(r'\d{1,2}[-/]\d{1,2}[-/]\d{2,4}').hasMatch(itemText)) {
         hasDatePatterns = true;
       }
-    });
+    }
 
     return {
       'totalItems': totalItems,
@@ -1367,16 +1358,14 @@ class ContentCleaner {
     final nestedListsToProcess = <dom.Element>[];
 
     // First pass: identify items and nested lists to process
-    list.children.forEach((item) {
+    for (final item in list.children) {
       if (item.text.trim().isEmpty &&
           item.getElementsByTagName('img').isEmpty) {
         itemsToRemove.add(item);
       }
 
-      item.querySelectorAll('ul, ol').forEach((nestedList) {
-        nestedListsToProcess.add(nestedList);
-      });
-    });
+      item.querySelectorAll('ul, ol').forEach(nestedListsToProcess.add);
+    }
 
     // Second pass: remove empty items
     for (final item in itemsToRemove) {
@@ -1396,11 +1385,11 @@ class ContentCleaner {
     // Store nodes to remove in a separate list
     final nodesToRemove = <dom.Node>[];
 
-    link.nodes.forEach((node) {
+    for (final node in link.nodes) {
       if (node is dom.Text && node.text.trim().isEmpty) {
         nodesToRemove.add(node);
       }
-    });
+    }
 
     // Remove nodes after iteration
     for (final node in nodesToRemove) {
@@ -1416,13 +1405,13 @@ class ContentCleaner {
             .where((key) =>
                 !key.contains('utm_') &&
                 !key.contains('source') &&
-                !key.contains('ref'))
+                !key.contains('ref'),)
             .toList();
 
         if (cleanParams.length != uri.queryParameters.length) {
           final cleanUri = uri.replace(
               queryParameters: Map.fromEntries(cleanParams
-                  .map((key) => MapEntry(key, uri.queryParameters[key]!))));
+                  .map((key) => MapEntry(key, uri.queryParameters[key])),),);
           link.attributes['href'] = cleanUri.toString();
         }
       } catch (e) {
@@ -1438,7 +1427,7 @@ class ContentCleaner {
     // Copy classes safely
     final classesToKeep = link.classes
         .where((c) =>
-            c.contains('quote') || c.contains('excerpt') || c.contains('text'))
+            c.contains('quote') || c.contains('excerpt') || c.contains('text'),)
         .toList();
 
     if (classesToKeep.isNotEmpty) {

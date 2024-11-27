@@ -16,7 +16,6 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:lottie/lottie.dart';
 
 class CollectionsListScreenTemplate extends StatefulWidget {
