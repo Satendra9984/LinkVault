@@ -22,10 +22,7 @@ class RSSFeedWebView extends StatefulWidget {
 
 class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   final GlobalKey webViewKey = GlobalKey();
-  final _showAppBar = ValueNotifier(true);
-  int _previousScrollOffset = 0;
   InAppWebViewController? webViewController;
-  final _canWebviewGoBack = ValueNotifier(false);
 
   InAppWebViewSettings settings = InAppWebViewSettings(
     useOnLoadResource: true,
@@ -38,15 +35,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   );
 
   PullToRefreshController? pullToRefreshController;
-  final _url = ValueNotifier('');
-  final _progress = ValueNotifier<double>(0);
-  final urlController = TextEditingController();
   final _urlLoadState = ValueNotifier(LoadingStates.initial);
-
-  final _isDarkMode = ValueNotifier(false);
-
-  String? readabilityScript;
-
   final _extractedContent = ValueNotifier('Extracting content...');
   final _extractingContentLoadState = ValueNotifier(LoadingStates.initial);
   InAppWebViewController? webViewControllerExtracted;
@@ -55,25 +44,14 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   void initState() {
     super.initState();
 
-    // SystemChrome.setEnabledSystemUIMode(
-    //   SystemUiMode.immersive,
-    //   overlays: [
-    //     SystemUiOverlay.top,
-    //   ],
-    // );
-
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         systemStatusBarContrastEnforced: false,
-        // systemNavigationBarColor:
-        //     _isDarkMode.value ? Colors.black : Colors.white,
-        // systemNavigationBarIconBrightness:
-        //     _isDarkMode.value ? Brightness.light : Brightness.dark,
       ),
     );
-    // _loadReadabilityScript();
+
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
                 .contains(defaultTargetPlatform)
@@ -93,56 +71,48 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           );
   }
 
-  // Future<void> _loadReadabilityScript() async {
-  // Load the Readability.js file from assets
-  //   readabilityScript = await rootBundle
-  //       .loadString('assets/js/readability/readabilityjs/Readability.js');
+  // Future<void> _updateCanBack() async {
+  //   if (webViewController != null) {
+  //     final webviewCanGoBack = await webViewController!.canGoBack();
+  //     _canWebviewGoBack.value = webviewCanGoBack;
+  //     // Logger.printLog('CanGoBack updated: $canWebviewGoBack');
+  //   }
   // }
 
-  Future<void> _updateCanBack() async {
-    if (webViewController != null) {
-      final webviewCanGoBack = await webViewController!.canGoBack();
-      _canWebviewGoBack.value = webviewCanGoBack;
-      // Logger.printLog('CanGoBack updated: $canWebviewGoBack');
-    }
-  }
+  // Future<void> _detectDarkMode() async {
+  //   // JavaScript to detect background color
+  //   final bgColor = webViewController
+  //       ?.evaluateJavascript(
+  //         source:
+  //             'window.getComputedStyle(document.body, null).backgroundColor',
+  //       )
+  //       .toString();
+  //   if (bgColor != null) {
+  //     // Here, we are assuming dark mode if background is dark (you might refine this with specific colors)
+  //     final isDark =
+  //         bgColor.contains('rgb(0, 0, 0)') || bgColor.contains('rgba(0, 0, 0');
+  //     if (isDark != _isDarkMode.value) {
+  //       // setState(() {
+  //       _isDarkMode.value = isDark;
+  //       _updateSystemTheme();
+  //       // });
+  //     }
+  //   }
+  // }
 
-  Future<void> _detectDarkMode() async {
-    // JavaScript to detect background color
-    final bgColor = webViewController
-        ?.evaluateJavascript(
-          source:
-              'window.getComputedStyle(document.body, null).backgroundColor',
-        )
-        .toString();
-
-    if (bgColor != null) {
-      // Here, we are assuming dark mode if background is dark (you might refine this with specific colors)
-      final isDark =
-          bgColor.contains('rgb(0, 0, 0)') || bgColor.contains('rgba(0, 0, 0');
-
-      if (isDark != _isDarkMode.value) {
-        // setState(() {
-        _isDarkMode.value = isDark;
-        _updateSystemTheme();
-        // });
-      }
-    }
-  }
-
-  void _updateSystemTheme() {
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: _isDarkMode.value ? Colors.black : Colors.white,
-        statusBarIconBrightness:
-            _isDarkMode.value ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor:
-            _isDarkMode.value ? Colors.black : Colors.white,
-        systemNavigationBarIconBrightness:
-            _isDarkMode.value ? Brightness.light : Brightness.dark,
-      ),
-    );
-  }
+  // void _updateSystemTheme() {
+  //   SystemChrome.setSystemUIOverlayStyle(
+  //     SystemUiOverlayStyle(
+  //       statusBarColor: _isDarkMode.value ? Colors.black : Colors.white,
+  //       statusBarIconBrightness:
+  //           _isDarkMode.value ? Brightness.light : Brightness.dark,
+  //       systemNavigationBarColor:
+  //           _isDarkMode.value ? Colors.black : Colors.white,
+  //       systemNavigationBarIconBrightness:
+  //           _isDarkMode.value ? Brightness.light : Brightness.dark,
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -154,275 +124,190 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
-    // SystemChrome.setEnabledSystemUIMode(
-    //   SystemUiMode.edgeToEdge,
-    // );
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return ValueListenableBuilder(
-      valueListenable: _isDarkMode,
-      builder: (context, isDarkMode, _) {
-        return ValueListenableBuilder(
-          valueListenable: _canWebviewGoBack,
-          builder: (context, canWebviewGoBack, _) {
-            return PopScope(
-              canPop: !canWebviewGoBack,
-              onPopInvokedWithResult: (pop, _) async {
-                // Logger.printLog('CanGoBack popsc: $canWebviewGoBack');
-                if (canWebviewGoBack) {
-                  // Logger.printLog(
-                  //     '${await webViewController?.canGoBack()} WebView can go back, navigating back');
-
-                  await webViewController?.goBack();
-                } else {
-                  // Logger.printLog('CanGoBack WebView cannot go back, popping screen');
-                  // await Navigator.of(context).maybePop();
-                }
-              },
-              child: Scaffold(
-                body: Stack(
-                  children: [
-                    SizedBox(
-                      width: size.width,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        // crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ValueListenableBuilder(
-                            valueListenable: _urlLoadState,
-                            builder: (context, urlLoadState, _) {
-                              if (urlLoadState == LoadingStates.loaded) {
-                                return const SizedBox.shrink();
-                              }
-                              return SizedBox(
-                                height: 0,
-                                child: InAppWebView(
-                                  key: webViewKey,
-                                  initialUrlRequest:
-                                      URLRequest(url: WebUri(widget.url)),
-                                  initialSettings: settings,
-                                  pullToRefreshController:
-                                      pullToRefreshController,
-                                  onWebViewCreated: (controller) {
-                                    webViewController = controller;
-                                  },
-                                  onScrollChanged: (controller, x, y) {
-                                    // Hide/show AppBar based on scroll direction
-                                    // Logger.printLog('CanGoBack Scroll: $x, $y');
-                                    if (y > _previousScrollOffset) {
-                                      _showAppBar.value = false;
-                                    } else if (y < _previousScrollOffset) {
-                                      _showAppBar.value = true;
-                                    }
-                                    _previousScrollOffset = y;
-                                  },
-                                  onLoadStart: (controller, url) {
-                                    _url.value = url.toString();
-                                    urlController.text = _url.value;
-                                    _urlLoadState.value = LoadingStates.loading;
-                                    _extractingContentLoadState.value =
-                                        LoadingStates.loading;
-                                  },
-                                  onPermissionRequest:
-                                      (controller, request) async {
-                                    return PermissionResponse(
-                                      resources: request.resources,
-                                      action: PermissionResponseAction.PROMPT,
-                                    );
-                                  },
-                                  shouldOverrideUrlLoading:
-                                      (controller, navigationAction) async {
-                                    return NavigationActionPolicy.ALLOW;
-                                  },
-                                  onLoadStop: (controller, url) async {
-                                    try {
-                                      await extractMainContent(widget.url);
-
-                                      _url.value = url.toString();
-                                      urlController.text = _url.value;
-
-                                      await Future.wait(
-                                        [
-                                          Future(
-                                            () async =>
-                                                await pullToRefreshController
-                                                    ?.endRefreshing(),
-                                          ),
-                                          _detectDarkMode(),
-                                          _updateCanBack(),
-                                        ],
-                                      );
-                                      _urlLoadState.value =
-                                          LoadingStates.loaded;
-                                    } catch (e) {
-                                      // Logger.printLog('RSS Feed WebView error $e');
-                                    }
-                                  },
-                                  onReceivedError:
-                                      (controller, request, error) {
-                                    pullToRefreshController?.endRefreshing();
-                                  },
-                                  onProgressChanged: (controller, progress) {
-                                    if (progress == 100) {
-                                      pullToRefreshController?.endRefreshing();
-                                    }
-                                    _progress.value = progress / 100;
-                                    urlController.text = _url.value;
-                                  },
-                                  onUpdateVisitedHistory:
-                                      (controller, url, androidIsReload) async {
-                                    _url.value = url.toString();
-                                    urlController.text = _url.value;
-                                    await _updateCanBack(); // Update canGoBack on history update
-                                  },
-                                  onConsoleMessage:
-                                      (controller, consoleMessage) {
-                                    if (kDebugMode) {
-                                      print(consoleMessage);
-                                    }
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _extractingContentLoadState,
-                            builder: (context, loadingState, _) {
-                              if (loadingState == LoadingStates.loading) {
-                                return Expanded(
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircularProgressIndicator(
-                                          color: ColourPallette.salemgreen,
-                                          backgroundColor: ColourPallette.mystic
-                                              .withOpacity(0.75),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        const Center(
-                                          child: Text('Loading Content...'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              } else if (loadingState ==
-                                  LoadingStates.errorLoading) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        // child: SvgPicture.asset(
-                                        //   MediaRes.errorANIMATION,
-                                        // placeholderBuilder: (context) {
-                                        //   return Icon(
-                                        //     Icons.error_rounded,
-                                        //     color: ColourPallette.error,
-                                        //   );
-                                        // },
-                                        child: Icon(
-                                          Icons.error_rounded,
-                                          color: ColourPallette.error,
-                                        ),
-                                      ),
-                                      const Center(
-                                        child: Text('Loading Content...'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _extractingContentLoadState,
-                            builder: (context, extractingContentLoadState, _) {
-                              if (extractingContentLoadState !=
-                                  LoadingStates.loaded) {
-                                return const SizedBox.shrink();
-                              }
-
-                              return Expanded(
-                                child: SizedBox(
-                                  width: size.width,
-                                  // padding: const EdgeInsets.symmetric(
-                                  //     horizontal: 16, vertical: 0),
-                                  child: InAppWebView(
-                                    initialSettings: InAppWebViewSettings(
-                                      useOnLoadResource: true,
-                                      isInspectable: kDebugMode,
-                                      mediaPlaybackRequiresUserGesture: false,
-                                      allowsInlineMediaPlayback: true,
-                                      iframeAllow: 'camera; microphone',
-                                      iframeAllowFullscreen: true,
-                                      useWideViewPort: false,
-                                    ),
-                                    onWebViewCreated: (controller) async {
-                                      webViewControllerExtracted = controller;
-
-                                      await webViewControllerExtracted
-                                          ?.loadData(
-                                        data: _extractedContent.value,
-                                      );
-                                    },
-                                    onLoadStop: (controller, url) async {},
-                                    onReceivedError:
-                                        (controller, request, error) {
-                                      // Logger.printLog(
-                                      //   '[WEBVIEW] : ${error.description}',
-                                      // );
-                                      // pullToRefreshController
-                                      //     ?.endRefreshing();
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _progress,
-                      builder: (ctx, progress, _) {
-                        if (progress < 1.0) {
-                          return LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 2,
-                            color: ColourPallette.salemgreen,
-                            backgroundColor:
-                                ColourPallette.mystic.withOpacity(0.75),
+    return Scaffold(
+      
+      body: Stack(
+        children: [
+          SizedBox(
+            width: size.width,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // USING THIS WEBVIEW FOR FETCHING THE WEBPAGE
+                // IT IS MORE OPTIMIZED THAN HEADLESS MODE
+                ValueListenableBuilder(
+                  valueListenable: _urlLoadState,
+                  builder: (context, urlLoadState, _) {
+                    if (urlLoadState == LoadingStates.loaded) {
+                      return const SizedBox.shrink();
+                    }
+                    return SizedBox(
+                      height: 0,
+                      child: InAppWebView(
+                        key: webViewKey,
+                        initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+                        initialSettings: settings,
+                        pullToRefreshController: pullToRefreshController,
+                        onWebViewCreated: (controller) {
+                          webViewController = controller;
+                        },
+                        onLoadStart: (controller, url) {
+                          _urlLoadState.value = LoadingStates.loading;
+                          _extractingContentLoadState.value =
+                              LoadingStates.loading;
+                        },
+                        onPermissionRequest: (controller, request) async {
+                          return PermissionResponse(
+                            resources: request.resources,
+                            action: PermissionResponseAction.PROMPT,
                           );
-                        } else {
-                          return Container();
-                        }
-                      },
-                    ),
-                  ],
+                        },
+                        shouldOverrideUrlLoading:
+                            (controller, navigationAction) async {
+                          return NavigationActionPolicy.ALLOW;
+                        },
+                        onLoadStop: (controller, url) async {
+                          try {
+                            await extractMainContent(widget.url);
+
+                            await Future.wait(
+                              [
+                                Future(
+                                  () async => await pullToRefreshController
+                                      ?.endRefreshing(),
+                                ),
+                                // _detectDarkMode(),
+                                // _updateCanBack(),
+                              ],
+                            );
+
+                            _urlLoadState.value = LoadingStates.loaded;
+                          } catch (e) {
+                            // Logger.printLog('RSS Feed WebView error $e');
+                          }
+                        },
+                        onReceivedError: (controller, request, error) {
+                          pullToRefreshController?.endRefreshing();
+                        },
+                        onProgressChanged: (controller, progress) {
+                          if (progress == 100) {
+                            pullToRefreshController?.endRefreshing();
+                          }
+                          // _progress.value = progress / 100;
+                          // urlController.text = _url.value;
+                        },
+                      ),
+                    );
+                  },
                 ),
-              ),
-            );
-          },
-        );
-      },
+
+                // WEBVIEW FOR DISPLAYING EXTRACTED CONTENT
+                ValueListenableBuilder(
+                  valueListenable: _extractingContentLoadState,
+                  builder: (context, extractingContentLoadState, _) {
+                    if (extractingContentLoadState == LoadingStates.initial ||
+                        extractingContentLoadState == LoadingStates.loading) {
+                      return Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                color: ColourPallette.salemgreen,
+                                backgroundColor:
+                                    ColourPallette.mystic.withOpacity(0.75),
+                              ),
+                              const SizedBox(height: 12),
+                              const Center(
+                                child: Text('Loading Content...'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else if (extractingContentLoadState ==
+                        LoadingStates.errorLoading) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 20,
+                              width: 20,
+                              // child: SvgPicture.asset(
+                              //   MediaRes.errorANIMATION,
+                              // placeholderBuilder: (context) {
+                              //   return Icon(
+                              //     Icons.error_rounded,
+                              //     color: ColourPallette.error,
+                              //   );
+                              // },
+                              child: Icon(
+                                Icons.error_rounded,
+                                color: ColourPallette.error,
+                              ),
+                            ),
+                            const Center(
+                              child: Text('Loading Content...'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Expanded(
+                      child: SizedBox(
+                        width: size.width,
+                        child: InAppWebView(
+                          initialSettings: InAppWebViewSettings(
+                            useOnLoadResource: true,
+                            isInspectable: kDebugMode,
+                            mediaPlaybackRequiresUserGesture: false,
+                            allowsInlineMediaPlayback: true,
+                            iframeAllow: 'camera; microphone',
+                            iframeAllowFullscreen: true,
+                            useWideViewPort: false,
+                          ),
+                          onWebViewCreated: (controller) async {
+                            webViewControllerExtracted = controller;
+
+                            await webViewControllerExtracted?.loadData(
+                              data: _extractedContent.value,
+                            );
+                          },
+                          onLoadStop: (controller, url) async {},
+                          onReceivedError: (controller, request, error) {
+                            // Logger.printLog(
+                            //   '[WEBVIEW] : ${error.description}',
+                            // );
+                            // pullToRefreshController
+                            //     ?.endRefreshing();
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Future<String> extractMainContent(String url) async {
     _extractingContentLoadState.value = LoadingStates.loading;
-    _progress.value = 1.0;
+
     try {
       // Extract the entire HTML content of the webpage
       final currentwebpage = await webViewController?.evaluateJavascript(
@@ -555,8 +440,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                   (pattern) =>
                       RegExp(pattern, caseSensitive: false).hasMatch(className),
                 ) ||
-                removalPatterns['ids']!.any((pattern) =>
-                    RegExp(pattern, caseSensitive: false).hasMatch(elementId),);
+                removalPatterns['ids']!.any(
+                  (pattern) =>
+                      RegExp(pattern, caseSensitive: false).hasMatch(elementId),
+                );
 
             if (shouldRemove) {
               element.remove();
@@ -1050,11 +937,13 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
         // Remove common tracking classes
         final classList = element.classes.toList();
-        element.classes.removeWhere((className) =>
-            className.contains('track') ||
-            className.contains('analytics') ||
-            className.contains('ga-') ||
-            className.contains('data-'),);
+        element.classes.removeWhere(
+          (className) =>
+              className.contains('track') ||
+              className.contains('analytics') ||
+              className.contains('ga-') ||
+              className.contains('data-'),
+        );
       });
     }
 
@@ -1322,16 +1211,20 @@ class ContentCleaner {
       try {
         final uri = Uri.parse(href);
         final cleanParams = uri.queryParameters.keys
-            .where((key) =>
-                !key.contains('utm_') &&
-                !key.contains('source') &&
-                !key.contains('ref'),)
+            .where(
+              (key) =>
+                  !key.contains('utm_') &&
+                  !key.contains('source') &&
+                  !key.contains('ref'),
+            )
             .toList();
 
         if (cleanParams.length != uri.queryParameters.length) {
           final cleanUri = uri.replace(
-              queryParameters: Map.fromEntries(cleanParams
-                  .map((key) => MapEntry(key, uri.queryParameters[key])),),);
+            queryParameters: Map.fromEntries(
+              cleanParams.map((key) => MapEntry(key, uri.queryParameters[key])),
+            ),
+          );
           link.attributes['href'] = cleanUri.toString();
         }
       } catch (e) {
@@ -1346,8 +1239,12 @@ class ContentCleaner {
 
     // Copy classes safely
     final classesToKeep = link.classes
-        .where((c) =>
-            c.contains('quote') || c.contains('excerpt') || c.contains('text'),)
+        .where(
+          (c) =>
+              c.contains('quote') ||
+              c.contains('excerpt') ||
+              c.contains('text'),
+        )
         .toList();
 
     if (classesToKeep.isNotEmpty) {
@@ -1371,3 +1268,192 @@ class ContentCleaner {
     link.replaceWith(span);
   }
 }
+
+/// NOT PERFORMANT TO USE HEADLESS MODE AS IT RUNS IN BACKGROUND
+/// THUS NOT FETCHING CONTENT OPTIMALLY
+/// USE ONLY INAPPWEBVIEW
+
+// class _RSSFeedWebViewState extends State<RSSFeedWebView> {
+//   InAppWebViewController? webViewController;
+//   HeadlessInAppWebView? _headlessInAppWebView;
+
+//   PullToRefreshController? pullToRefreshController;
+//   final _extractedContent = ValueNotifier('Extracting content...');
+//   final _extractingContentLoadState = ValueNotifier(LoadingStates.initial);
+//   InAppWebViewController? webViewControllerExtracted;
+
+//   InAppWebViewSettings settings = InAppWebViewSettings(
+//     useOnLoadResource: true,
+//     isInspectable: kDebugMode,
+//     mediaPlaybackRequiresUserGesture: false,
+//     allowsInlineMediaPlayback: true,
+//     iframeAllow: 'camera; microphone',
+//     iframeAllowFullscreen: true,
+//     useWideViewPort: false,
+//   );
+
+//   @override
+//   void initState() {
+//     super.initState();
+
+//     SystemChrome.setSystemUIOverlayStyle(
+//       const SystemUiOverlayStyle(
+//         statusBarColor: Colors.transparent,
+//         statusBarIconBrightness: Brightness.light,
+//         systemStatusBarContrastEnforced: false,
+//       ),
+//     );
+
+//     pullToRefreshController = kIsWeb ||
+//             ![TargetPlatform.iOS, TargetPlatform.android]
+//                 .contains(defaultTargetPlatform)
+//         ? null
+//         : PullToRefreshController(
+//             settings: PullToRefreshSettings(color: Colors.blue),
+//             onRefresh: () async {
+//               if (defaultTargetPlatform == TargetPlatform.android) {
+//                 await webViewController?.reload();
+//               } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+//                 await webViewController?.loadUrl(
+//                   urlRequest: URLRequest(
+//                     url: await webViewController?.getUrl(),
+//                   ),
+//                 );
+//               }
+//             },
+//           );
+//   }
+
+//   Future<void> _loadUrl() async {
+//     _extractingContentLoadState.value = LoadingStates.loading;
+//     _headlessInAppWebView = HeadlessInAppWebView(
+//       initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+//       initialSettings: settings,
+//       // pullToRefreshController: pullToRefreshController,
+//       onWebViewCreated: (controller) {
+//         webViewController = controller;
+//       },
+//       onLoadStart: (controller, url) {
+//         _extractingContentLoadState.value = LoadingStates.loading;
+//       },
+//       onPermissionRequest: (controller, request) async {
+//         return PermissionResponse(
+//           resources: request.resources,
+//           action: PermissionResponseAction.PROMPT,
+//         );
+//       },
+//       shouldOverrideUrlLoading: (controller, navigationAction) async {
+//         return NavigationActionPolicy.ALLOW;
+//       },
+//       onLoadStop: (controller, url) async {
+//         await extractMainContent(widget.url);
+//       },
+//     );
+
+//     await _headlessInAppWebView?.run();
+//   }
+
+//   @override
+//   void dispose() {
+//     _headlessInAppWebView?.dispose();
+//     // webViewController?.dispose();
+//     // webViewControllerExtracted?.dispose();
+
+//     SystemChrome.setSystemUIOverlayStyle(
+//       const SystemUiOverlayStyle(
+//         statusBarColor: Colors.white,
+//         statusBarIconBrightness: Brightness.dark,
+//         systemNavigationBarColor: Colors.white,
+//         systemNavigationBarIconBrightness: Brightness.dark,
+//       ),
+//     );
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = MediaQuery.of(context).size;
+//     return Scaffold(
+//       body: SizedBox(
+//         width: size.width,
+//         child: FutureBuilder(
+//           future: _loadUrl(),
+//           builder: (context, snapshot) {
+//             return ValueListenableBuilder(
+//               valueListenable: _extractingContentLoadState,
+//               builder: (context, extractingContentLoadState, _) {
+//                 if (snapshot.connectionState == ConnectionState.waiting ||
+//                     extractingContentLoadState == LoadingStates.loading) {
+//                   return Expanded(
+//                     child: Center(
+//                       child: Column(
+//                         mainAxisSize: MainAxisSize.min,
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         children: [
+//                           CircularProgressIndicator(
+//                             color: ColourPallette.salemgreen,
+//                             backgroundColor:
+//                                 ColourPallette.mystic.withOpacity(0.75),
+//                           ),
+//                           const SizedBox(height: 12),
+//                           const Center(
+//                             child: Text('Loading Content...'),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   );
+//                 } else if (extractingContentLoadState ==
+//                         LoadingStates.errorLoading ||
+//                     snapshot.hasError) {
+//                   return Center(
+//                     child: Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: [
+//                         SizedBox(
+//                           height: 20,
+//                           width: 20,
+//                           // child: SvgPicture.asset(
+//                           //   MediaRes.errorANIMATION,
+//                           // placeholderBuilder: (context) {
+//                           //   return Icon(
+//                           //     Icons.error_rounded,
+//                           //     color: ColourPallette.error,
+//                           //   );
+//                           // },
+//                           child: Icon(
+//                             Icons.error_rounded,
+//                             color: ColourPallette.error,
+//                           ),
+//                         ),
+//                         const Center(
+//                           child: Text('Loading Content...'),
+//                         ),
+//                       ],
+//                     ),
+//                   );
+//                 }
+
+//                 return Expanded(
+//                   child: InAppWebView(
+//                     initialSettings: settings,
+//                     onWebViewCreated: (controller) async {
+//                       webViewControllerExtracted = controller;
+//                       await webViewControllerExtracted?.loadData(
+//                         data: _extractedContent.value,
+//                       );
+//                     },
+//                     onLoadStop: (inAppWebViewController, webUri) async {
+//                       // await _headlessInAppWebView?.dispose();
+//                       // webViewController?.dispose();
+//                     },
+//                   ),
+//                 );
+//               },
+//             );
+//           },
+//         ),
+//       ),
+//     );
+//   }
