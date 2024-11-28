@@ -6,6 +6,8 @@ import 'package:link_vault/core/common/presentation_layer/providers/shared_input
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
+import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
 import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
 import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
@@ -103,53 +105,54 @@ class _AppHomePageState extends State<AppHomePage> {
             // shrinkWrap: true,
             children: [
               // Some Profile Details
-              // BlocBuilder<GlobalUserCubit, GlobalUserState>(
-              //   builder: (context, state) {
-              //     return ListTile(
-              //       onTap: () {},
-              //       leading: CircleAvatar(
-              //         radius: 20,
-              //         backgroundColor:
-              //             ColourPallette.mountainMeadow.withOpacity(0.5),
-              //         child: SvgPicture.asset(
-              //           MediaRes.personSVG,
-              //         ),
-              //       ),
-              //       title: Text(
-              //         '${state.globalUser?.name}',
-              //         style: const TextStyle(
-              //           fontSize: 18,
-              //           fontWeight: FontWeight.w500,
-              //         ),
-              //       ),
-              //       subtitle: Text(
-              //         '@${state.globalUser?.email}',
-              //         style: const TextStyle(
-              //           fontSize: 13,
-              //           fontWeight: FontWeight.w500,
-              //         ),
-              //       ),
-              //       trailing: IconButton(
-              //         onPressed: () async {
-              //           await context.read<AuthenticationCubit>().signOut().then(
-              //             (value) {
-              //               Navigator.of(context).pushAndRemoveUntil(
-              //                 MaterialPageRoute(
-              //                   builder: (ctx) => const LoginPage(),
-              //                 ),
-              //                 (route) => false,
-              //               );
-              //             },
-              //           );
-              //         },
-              //         icon: const Icon(
-              //           Icons.arrow_forward_rounded,
-              //           // color: ColourPallette.mountainMeadow,
-              //         ),
-              //       ),
-              //     );
-              //   },
-              // ),
+              
+              BlocBuilder<GlobalUserCubit, GlobalUserState>(
+                builder: (context, state) {
+                  return ListTile(
+                    onTap: () {},
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor:
+                          ColourPallette.mountainMeadow.withOpacity(0.5),
+                      child: SvgPicture.asset(
+                        MediaRes.personSVG,
+                      ),
+                    ),
+                    title: Text(
+                      '${state.globalUser?.name}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '@${state.globalUser?.email}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      onPressed: () async {
+                        await context.read<AuthenticationCubit>().signOut().then(
+                          (value) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (ctx) => const LoginPage(),
+                              ),
+                              (route) => false,
+                            );
+                          },
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        // color: ColourPallette.mountainMeadow,
+                      ),
+                    ),
+                  );
+                },
+              ),
 
               const SizedBox(height: 32),
 

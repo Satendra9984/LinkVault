@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
+import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
@@ -13,10 +14,10 @@ import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_d
 
 class RewardedAdRepoImpl {
   RewardedAdRepoImpl({
-    required SubsciptionRemoteDataSources subsciptionRemoteDataSources,
-  }) : _subsciptionRemoteDataSources = subsciptionRemoteDataSources;
+    required GlobalUserRepositoryImpl globalUserRepositoryImpl,
+  }) : _globalUserRepositoryImpl = globalUserRepositoryImpl;
 
-  final SubsciptionRemoteDataSources _subsciptionRemoteDataSources;
+  final GlobalUserRepositoryImpl _globalUserRepositoryImpl;
 
   RewardedAd? _rewardedAd;
 
@@ -109,13 +110,12 @@ class RewardedAdRepoImpl {
         const Duration(days: rewardedAdCreditLimit),
       );
 
-      await _subsciptionRemoteDataSources.rewardUserForWatchingVideo(
-        userId: globalUser.id,
-        creditExpiryDate: nextExpiryDate.toIso8601String(),
-      );
-
       final newGlobalUser =
           globalUser.copyWith(creditExpiryDate: nextExpiryDate);
+
+      await _globalUserRepositoryImpl.addUser(
+        newGlobalUser,
+      );
 
       return Right(newGlobalUser);
     } on ServerException {
