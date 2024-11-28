@@ -44,7 +44,6 @@ import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart'
 import 'package:link_vault/src/search/data/local_data_source.dart';
 import 'package:link_vault/src/search/presentation/advance_search_cubit/search_cubit.dart';
 import 'package:link_vault/src/search/repositories/searching_repo_impl.dart';
-import 'package:link_vault/src/subsciption/data/datasources/subsciption_remote_data_sources.dart';
 import 'package:link_vault/src/subsciption/data/repositories/rewarded_ad_repo_impl.dart';
 import 'package:link_vault/src/subsciption/presentation/cubit/subscription_cubit.dart';
 import 'package:path_provider/path_provider.dart';
@@ -156,7 +155,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => SubscriptionCubit(
             adRepoImpl: RewardedAdRepoImpl(
-              subsciptionRemoteDataSources: SubsciptionRemoteDataSources(),
+              globalUserRepositoryImpl: GlobalUserRepositoryImpl(
+                remoteDataSource: FirebaseAuthDataSourceImpl(
+                  firestore: FirebaseFirestore.instance,
+                ),
+                localDataSource: IsarAuthDataSourceImpl(null),
+              ),
             ),
           ),
         ),
