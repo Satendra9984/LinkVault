@@ -23,6 +23,8 @@ class MediaRes {
   static const String pageUnderConstructionSVG =
       'assets/images/page_under_construction.svg';
   static const String compassSVG = 'assets/images/compass.svg';
+  static const String networkSVG = 'assets/images/network.svg';
+
   static const String newsletterSVG = 'assets/images/newsletter.svg';
   static const String comingSoonSVG = 'assets/images/coming_soon.svg';
   static const String rssFeedSVG = 'assets/images/rss_feed.svg';

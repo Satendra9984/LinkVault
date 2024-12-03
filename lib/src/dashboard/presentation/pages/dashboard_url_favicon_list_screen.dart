@@ -411,110 +411,107 @@ class _DashboardUrlFaviconListScreenState
     }
 
     final showLastUpdated = ValueNotifier(false);
-    urlOptions
-      ..insert(
-        0,
-        // UPDATE URL
-        BottomSheetOption(
-          leadingIcon: Icons.replay_circle_filled_outlined,
-          title: const Text('Update', style: titleTextStyle),
-          trailing: ValueListenableBuilder(
-            valueListenable: showLastUpdated,
-            builder: (ctx, showLastUpdatedVal, _) {
-              if (!showLastUpdatedVal) {
-                return GestureDetector(
-                  onTap: () => showLastUpdated.value = !showLastUpdated.value,
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 20,
-                  ),
-                );
-              }
-
-              final updatedAt = urlModel.updatedAt;
-              // Format to get hour with am/pm notation
-              final formattedTime = DateFormat('h:mma').format(updatedAt);
-              // Combine with the date
-              final lastSynced =
-                  'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
-
+    urlOptions.insert(
+      0,
+      // UPDATE URL
+      BottomSheetOption(
+        leadingIcon: Icons.replay_circle_filled_outlined,
+        title: const Text('Update', style: titleTextStyle),
+        trailing: ValueListenableBuilder(
+          valueListenable: showLastUpdated,
+          builder: (ctx, showLastUpdatedVal, _) {
+            if (!showLastUpdatedVal) {
               return GestureDetector(
                 onTap: () => showLastUpdated.value = !showLastUpdated.value,
-                child: Text(
-                  lastSynced,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: ColourPallette.salemgreen.withOpacity(0.75),
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
                 ),
               );
-            },
-          ),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (ctx) => UpdateUrlTemplateScreen(
-                  urlModel: urlModel,
-                  isRootCollection: widget.isRootCollection,
-                  onDeleteURLCallback: (urlModel) async {},
+            }
+
+            final updatedAt = urlModel.updatedAt;
+            // Format to get hour with am/pm notation
+            final formattedTime = DateFormat('h:mma').format(updatedAt);
+            // Combine with the date
+            final lastSynced =
+                'Last ($formattedTime, ${updatedAt.day}/${updatedAt.month}/${updatedAt.year})';
+
+            return GestureDetector(
+              onTap: () => showLastUpdated.value = !showLastUpdated.value,
+              child: Text(
+                lastSynced,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ColourPallette.salemgreen.withOpacity(0.75),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ).then(
-              (_) {
-                Navigator.pop(context);
-              },
             );
           },
         ),
-      )
-      ..insert(
-        2,
-        // ADD TO FAVOURITES
-        BottomSheetOption(
-          leadingIcon: Icons.bookmark_add_rounded,
-          title: const Text('Favourites', style: titleTextStyle),
-          trailing: Builder(
-            builder: (ctx) {
-              if (urlModel.isFavourite == false) {
-                return const SizedBox.shrink();
-              }
-
-              return Icon(
-                Icons.check_circle_rounded,
-                color: ColourPallette.salemgreen.withOpacity(0.5),
-              );
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => UpdateUrlTemplateScreen(
+                urlModel: urlModel,
+                isRootCollection: widget.isRootCollection,
+                onDeleteURLCallback: (urlModel) async {},
+              ),
+            ),
+          ).then(
+            (_) {
+              Navigator.pop(context);
             },
-          ),
-          onTap: () async {
-            // if (urlModel.isFavourite) return;
+          );
+        },
+      ),
+    );
 
-            final urlCrudCubit = context.read<UrlCrudCubit>();
-            final globalUser =
-                context.read<GlobalUserCubit>().getGlobalUser()!.id;
-
-            await Future.wait(
-              [
-                urlCrudCubit.addUrl(
-                  isRootCollection: true,
-                  urlData: urlModel.copyWith(
-                    parentUrlModelFirestoreId: urlModel.firestoreId,
-                    collectionId: '$globalUser$favourites',
-                    isFavourite: true,
-                  ),
-                ),
-                urlCrudCubit.updateUrl(
-                  urlData: urlModel.copyWith(
-                    isFavourite: true,
-                  ),
-                ),
-                Future(() => Navigator.pop(context)),
-              ],
-            );
-          },
-        ),
-      );
+    // ..insert(
+    //   2,
+    //   // ADD TO FAVOURITES
+    //   BottomSheetOption(
+    //     leadingIcon: Icons.bookmark_add_rounded,
+    //     title: const Text('Favourites', style: titleTextStyle),
+    //     trailing: Builder(
+    //       builder: (ctx) {
+    //         if (urlModel.isFavourite == false) {
+    //           return const SizedBox.shrink();
+    //         }
+    //         return Icon(
+    //           Icons.check_circle_rounded,
+    //           color: ColourPallette.salemgreen.withOpacity(0.5),
+    //         );
+    //       },
+    //     ),
+    //     onTap: () async {
+    //       // if (urlModel.isFavourite) return;
+    //       final urlCrudCubit = context.read<UrlCrudCubit>();
+    //       final globalUser =
+    //           context.read<GlobalUserCubit>().getGlobalUser()!.id;
+    //       await Future.wait(
+    //         [
+    //           urlCrudCubit.addUrl(
+    //             isRootCollection: true,
+    //             urlData: urlModel.copyWith(
+    //               parentUrlModelFirestoreId: urlModel.firestoreId,
+    //               collectionId: '$globalUser$favourites',
+    //               isFavourite: true,
+    //             ),
+    //           ),
+    //           urlCrudCubit.updateUrl(
+    //             urlData: urlModel.copyWith(
+    //               isFavourite: true,
+    //             ),
+    //           ),
+    //           Future(() => Navigator.pop(context)),
+    //         ],
+    //       );
+    //     },
+    //   ),
+    // );
 
     await showModalBottomSheet<Widget>(
       context: context,

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,10 +7,7 @@ import 'package:link_vault/core/common/presentation_layer/providers/shared_input
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
-import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
 import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
@@ -47,6 +45,7 @@ class _AppHomePageState extends State<AppHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // final size = MediaQuery.of(context).size;
     final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
     const sectionTextStyle = TextStyle(
       fontSize: 18,
@@ -57,6 +56,7 @@ class _AppHomePageState extends State<AppHomePage> {
       Icons.arrow_forward_ios_rounded,
       color: ColourPallette.mountainMeadow.withOpacity(0.75),
     );
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: ColourPallette.white,
@@ -71,9 +71,12 @@ class _AppHomePageState extends State<AppHomePage> {
         highlightColor: Colors.transparent,
       ),
       home: Scaffold(
+        backgroundColor: CupertinoColors.white,
         appBar: AppBar(
+          elevation: 0,
           centerTitle: true,
-          toolbarHeight: 128,
+          toolbarHeight: 140,
+          backgroundColor: ColourPallette.mountainMeadow.withOpacity(0.08),
           title: Column(
             children: [
               SvgPicture.asset(
@@ -97,70 +100,88 @@ class _AppHomePageState extends State<AppHomePage> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              // const SizedBox(height: 16),
             ],
           ),
         ),
         body: Center(
           child: ListView(
-            // shrinkWrap: true,
             children: [
+              // const SizedBox(height: 16),
+
               // Some Profile Details
-              
               BlocBuilder<GlobalUserCubit, GlobalUserState>(
                 builder: (context, state) {
-                  return ListTile(
-                    onTap: () {},
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundColor:
-                          ColourPallette.mountainMeadow.withOpacity(0.5),
-                      child: SvgPicture.asset(
-                        MediaRes.personSVG,
-                      ),
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: ColourPallette.mountainMeadow.withOpacity(0.08),
                     ),
-                    title: Text(
-                      '${state.globalUser?.name}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '@${state.globalUser?.email}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: IconButton(
-                      onPressed: () async {
-                        await context.read<AuthenticationCubit>().signOut().then(
-                          (value) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (ctx) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const ProfileHome(),
+                          ),
                         );
                       },
-                      icon: const Icon(
-                        Icons.arrow_forward_rounded,
-                        // color: ColourPallette.mountainMeadow,
+                      contentPadding:
+                          const EdgeInsets.only(left: 12 + 12, bottom: 8),
+
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: ColourPallette.mountainMeadow,
+                        child: SvgPicture.asset(
+                          MediaRes.personSVG,
+                        ),
                       ),
+                      title: Text(
+                        '${state.globalUser?.name}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${state.globalUser?.email}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      // trailing: IconButton(
+                      //   onPressed: () async {
+                      //     await context
+                      //         .read<AuthenticationCubit>()
+                      //         .signOut()
+                      //         .then(
+                      //       (value) {
+                      //         Navigator.of(context).pushAndRemoveUntil(
+                      //           MaterialPageRoute(
+                      //             builder: (ctx) => const LoginPage(),
+                      //           ),
+                      //           (route) => false,
+                      //         );
+                      //       },
+                      //     );
+                      //   },
+                      //   icon: const Icon(
+                      //     Icons.logout_rounded,
+                      //     color: ColourPallette.mountainMeadow,
+                      //   ),
+                      // ),
+                      // trailing: trailingIcon,
                     ),
                   );
                 },
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    // Dashboard
+                    // DASHBOARD WHERE ALL LINKS ARE STORED
                     ListTile(
                       onTap: () {
                         Navigator.of(context).push(
@@ -181,105 +202,85 @@ class _AppHomePageState extends State<AppHomePage> {
                       ),
                       // tileColor: ColourPallette.mountainMeadow.withOpacity(0.1),
                       leading: const Icon(
-                        Icons.dashboard_rounded,
+                        Icons.apps_rounded,
+                        size: 24,
                         color: ColourPallette.mountainMeadow,
-                        size: 20,
                       ),
                       title: const Text(
-                        'Dashboard',
+                        'Web Apps',
                         style: sectionTextStyle,
                       ),
                       trailing: trailingIcon,
                     ),
-
-                    // const SizedBox(height: 8),
 
                     // FAVOURITE COLLECTIONS STORE
-                    ListTile(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => FavouritesStorePage(
-                              collectionId: '$globalUser$favourites',
-                              isRootCollection: true,
-                              appBarLeadingIcon: SvgPicture.asset(
-                                MediaRes.favouriteSVG,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      // tileColor: ColourPallette.mountainMeadow.withOpacity(0.1),
-
-                      leading: SvgPicture.asset(
-                        MediaRes.favouriteSVG,
-                        height: 18,
-                        width: 18,
-                        color: ColourPallette.mountainMeadow,
-                      ),
-                      title: const Text(
-                        'Favourite',
-                        style: sectionTextStyle,
-                      ),
-                      trailing: trailingIcon,
-                    ),
-
-                    // RECENTS
                     // ListTile(
                     //   onTap: () {
                     //     Navigator.of(context).push(
                     //       MaterialPageRoute(
-                    //         builder: (ctx) => RecentsStorePage(
-                    //           collectionId: '$globalUser$recents',
+                    //         builder: (ctx) => FavouritesStorePage(
+                    //           collectionId: '$globalUser$favourites',
                     //           isRootCollection: true,
                     //           appBarLeadingIcon: SvgPicture.asset(
-                    //             MediaRes.recentSVG,
+                    //             MediaRes.favouriteSVG,
                     //           ),
                     //         ),
                     //       ),
                     //     );
                     //   },
+                    //   shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   // tileColor: ColourPallette.mountainMeadow.withOpacity(0.1),
                     //   leading: SvgPicture.asset(
-                    //     MediaRes.recentSVG,
-                    //     height: 20,
-                    //     width: 20,
+                    //     MediaRes.favouriteSVG,
+                    //     height: 18,
+                    //     width: 18,
+                    //     color: ColourPallette.mountainMeadow,
+                    //     // color: Colors.pink.shade600,
                     //   ),
                     //   title: const Text(
-                    //     'Recents',
-                    //     style: TextStyle(
-                    //       fontSize: 18,
-                    //       fontWeight: FontWeight.w500,
-                    //     ),
+                    //     'Favourite',
+                    //     style: sectionTextStyle,
                     //   ),
-                    //   trailing: const Icon(
-                    //     Icons.arrow_forward_ios_rounded,
-                    //     color: ColourPallette.black,
-                    //   ),
+                    //   trailing: trailingIcon,
                     // ),
 
-                    // SEARCH COLLECTIONS/URLS STORE
+                    // BROWSE
                     ListTile(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => const AdvanceSearchPage(),
-                          ),
-                        );
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (ctx) => RecentsStorePage(
+                        //       collectionId: '$globalUser$recents',
+                        //       isRootCollection: true,
+                        //       appBarLeadingIcon: SvgPicture.asset(
+                        //         MediaRes.recentSVG,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // );
                       },
                       leading: SvgPicture.asset(
-                        MediaRes.searchSVG,
-                        height: 20,
-                        width: 20,
+                        MediaRes.networkSVG,
+                        height: 24,
+                        width: 24,
                         color: ColourPallette.mountainMeadow,
                       ),
                       title: const Text(
-                        'Search',
+                        'Browse',
                         style: sectionTextStyle,
                       ),
-                      trailing: trailingIcon,
+                      // trailing: const Icon(
+                      //   Icons.arrow_forward_ios_rounded,
+                      //   color: ColourPallette.black,
+                      // ),
+                      trailing: SvgPicture.asset(
+                        MediaRes.comingSoonSVG,
+                        height: 16,
+                        width: 16,
+                        // color: ColourPallette.mountainMeadow,
+                      ),
                     ),
 
                     // MY FEEDS
@@ -302,29 +303,27 @@ class _AppHomePageState extends State<AppHomePage> {
                         color: ColourPallette.mountainMeadow,
                       ),
                       title: const Text(
-                        'My Feeds',
+                        'My Feed',
                         style: sectionTextStyle,
                       ),
                       trailing: trailingIcon,
                     ),
 
-                    // SUPPORT US
+                    // SEARCH COLLECTIONS/URLS STORE
                     ListTile(
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => const SubscriptionPage(),
+                            builder: (ctx) => const AdvanceSearchPage(),
                           ),
                         );
                       },
-                      leading: SvgPicture.asset(
-                        MediaRes.collaborateSVG,
-                        height: 20,
-                        width: 20,
+                      leading: const Icon(
+                        Icons.filter_alt_rounded,
                         color: ColourPallette.mountainMeadow,
                       ),
                       title: const Text(
-                        'Support Us',
+                        'Search',
                         style: sectionTextStyle,
                       ),
                       trailing: trailingIcon,
@@ -346,6 +345,69 @@ class _AppHomePageState extends State<AppHomePage> {
                       ),
                       title: const Text(
                         'Profile',
+                        style: sectionTextStyle,
+                      ),
+                      trailing: trailingIcon,
+                    ),
+
+                    // GLOBAL SETTINGS
+                    ListTile(
+                      onTap: () {
+                        // Navigator.of(context).push(
+                        // MaterialPageRoute(
+                        //   builder: (ctx) => RecentsStorePage(
+                        //     collectionId: '$globalUser$recents',
+                        //     isRootCollection: true,
+                        //     appBarLeadingIcon: SvgPicture.asset(
+                        //       MediaRes.recentSVG,
+                        //     ),
+                        //   ),
+                        // ),
+                        // );
+                      },
+                      leading: const Icon(
+                        Icons.settings_rounded,
+                        size: 24,
+                        color: ColourPallette.mountainMeadow,
+                      ),
+                      title: const Text(
+                        'Settings',
+                        style: sectionTextStyle,
+                      ),
+                      // trailing: const Icon(
+                      //   Icons.arrow_forward_ios_rounded,
+                      //   color: ColourPallette.black,
+                      // ),
+                      trailing: SvgPicture.asset(
+                        MediaRes.comingSoonSVG,
+                        height: 16,
+                        width: 16,
+                        // color: ColourPallette.mountainMeadow,
+                      ),
+                    ),
+
+                    // SUPPORT US
+                    ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const SubscriptionPage(),
+                          ),
+                        );
+                      },
+                      leading: const Icon(
+                        Icons.support_rounded,
+                        size: 24,
+                        color: ColourPallette.mountainMeadow,
+                      ),
+                      // SvgPicture.asset(
+                      //   MediaRes.collaborateSVG,
+                      //   height: 16,
+                      //   width: 16,
+                      //   color: ColourPallette.mountainMeadow,
+                      // ),
+                      title: const Text(
+                        'Support Us',
                         style: sectionTextStyle,
                       ),
                       trailing: trailingIcon,

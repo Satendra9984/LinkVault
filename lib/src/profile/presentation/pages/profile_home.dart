@@ -137,19 +137,19 @@ class ProfileHome extends StatelessWidget {
                         MediaRes.collaborateSVG,
                         height: 16,
                         width: 16,
+                        color: ColourPallette.black,
                       ),
                       title: const Text(
                         'Support Us',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          // color: ColourPallette.salemgreen,
                         ),
                       ),
-                      // trailing: const Icon(
-                      //   Icons.arrow_forward_ios_rounded,
-                      //   color: ColourPallette.darkTeal,
-                      // ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: ColourPallette.grey,
+                      ),
                     ),
 
                     // DELETE ACCOUNT FOREVER
@@ -184,10 +184,10 @@ class ProfileHome extends StatelessWidget {
                           },
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          leading: Icon(
-                            Icons.delete_forever_rounded,
-                            size: 20,
-                            color: Colors.red.shade900,
+                          leading: const Icon(
+                            Icons.delete_rounded,
+                            size: 24,
+                            color: Colors.black,
                           ),
                           title: const Text(
                             'Delete Account',
@@ -206,7 +206,10 @@ class ProfileHome extends StatelessWidget {
                                     color: Colors.red.shade900,
                                   ),
                                 )
-                              : null,
+                              : const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: ColourPallette.grey,
+                                ),
                         );
                       },
                     ),
@@ -232,10 +235,10 @@ class ProfileHome extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       minVerticalPadding: 0,
                       dense: true,
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.logout,
                         size: 20,
-                        color: Colors.red.shade900,
+                        color: ColourPallette.black,
                         textDirection: TextDirection.ltr,
                       ),
                       title: const Text(
@@ -243,8 +246,11 @@ class ProfileHome extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          // color: Colors.red.shade900,
                         ),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: ColourPallette.grey,
                       ),
                     ),
                   ],
