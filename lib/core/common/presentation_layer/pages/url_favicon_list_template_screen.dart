@@ -453,7 +453,6 @@ class _UrlFaviconListTemplateScreenState
                       );
                     }
 
-                    // TODO : HANDLE ERROR LOADING CASES IN ALL SCREENS
                     else if (url.loadingStates == LoadingStates.errorLoading ||
                         url.urlModel == null) {
                       // _fetchMoreUrls();
@@ -584,7 +583,7 @@ class _UrlFaviconListTemplateScreenState
                                 },
                                 isDense: true,
                                 iconEnabledColor: ColourPallette.black,
-                                elevation: 4,
+                                elevation: 2,
                                 borderRadius: BorderRadius.circular(8),
                                 underline: const SizedBox.shrink(),
                                 dropdownColor: ColourPallette.mystic,

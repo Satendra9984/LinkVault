@@ -40,8 +40,13 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   final _extractingContentLoadState = ValueNotifier(LoadingStates.initial);
   InAppWebViewController? webViewControllerExtracted;
 
+  // late Stopwatch stopwatch;
+
   @override
   void initState() {
+    // stopwatch = Stopwatch()..start();
+    // Logger.printLog('[EMC][INIT] : ${stopwatch.elapsedMilliseconds}');
+
     super.initState();
 
     SystemChrome.setSystemUIOverlayStyle(
@@ -71,49 +76,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
           );
   }
 
-  // Future<void> _updateCanBack() async {
-  //   if (webViewController != null) {
-  //     final webviewCanGoBack = await webViewController!.canGoBack();
-  //     _canWebviewGoBack.value = webviewCanGoBack;
-  //     // Logger.printLog('CanGoBack updated: $canWebviewGoBack');
-  //   }
-  // }
-
-  // Future<void> _detectDarkMode() async {
-  //   // JavaScript to detect background color
-  //   final bgColor = webViewController
-  //       ?.evaluateJavascript(
-  //         source:
-  //             'window.getComputedStyle(document.body, null).backgroundColor',
-  //       )
-  //       .toString();
-  //   if (bgColor != null) {
-  //     // Here, we are assuming dark mode if background is dark (you might refine this with specific colors)
-  //     final isDark =
-  //         bgColor.contains('rgb(0, 0, 0)') || bgColor.contains('rgba(0, 0, 0');
-  //     if (isDark != _isDarkMode.value) {
-  //       // setState(() {
-  //       _isDarkMode.value = isDark;
-  //       _updateSystemTheme();
-  //       // });
-  //     }
-  //   }
-  // }
-
-  // void _updateSystemTheme() {
-  //   SystemChrome.setSystemUIOverlayStyle(
-  //     SystemUiOverlayStyle(
-  //       statusBarColor: _isDarkMode.value ? Colors.black : Colors.white,
-  //       statusBarIconBrightness:
-  //           _isDarkMode.value ? Brightness.light : Brightness.dark,
-  //       systemNavigationBarColor:
-  //           _isDarkMode.value ? Colors.black : Colors.white,
-  //       systemNavigationBarIconBrightness:
-  //           _isDarkMode.value ? Brightness.light : Brightness.dark,
-  //     ),
-  //   );
-  // }
-
   @override
   void dispose() {
     SystemChrome.setSystemUIOverlayStyle(
@@ -132,7 +94,6 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      
       body: Stack(
         children: [
           SizedBox(
@@ -158,6 +119,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                         onWebViewCreated: (controller) {
                           webViewController = controller;
                         },
+                        // initialUserScripts: ,
                         onLoadStart: (controller, url) {
                           _urlLoadState.value = LoadingStates.loading;
                           _extractingContentLoadState.value =
@@ -175,18 +137,15 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                         },
                         onLoadStop: (controller, url) async {
                           try {
+                            // Logger.printLog(
+                            //     '[EMC][LOADSTOP] : ${stopwatch.elapsedMilliseconds}');
+
                             await extractMainContent(widget.url);
 
-                            await Future.wait(
-                              [
-                                Future(
-                                  () async => await pullToRefreshController
-                                      ?.endRefreshing(),
-                                ),
-                                // _detectDarkMode(),
-                                // _updateCanBack(),
-                              ],
-                            );
+                            // Logger.printLog(
+                            //     '[EMC][EXTRACTMAINCONTENT] : ${stopwatch.elapsedMilliseconds}');
+
+                            await pullToRefreshController?.endRefreshing();
 
                             _urlLoadState.value = LoadingStates.loaded;
                           } catch (e) {
@@ -268,21 +227,20 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                       child: SizedBox(
                         width: size.width,
                         child: InAppWebView(
-                          initialSettings: InAppWebViewSettings(
-                            useOnLoadResource: true,
-                            isInspectable: kDebugMode,
-                            mediaPlaybackRequiresUserGesture: false,
-                            allowsInlineMediaPlayback: true,
-                            iframeAllow: 'camera; microphone',
-                            iframeAllowFullscreen: true,
-                            useWideViewPort: false,
-                          ),
+                          initialSettings: settings,
                           onWebViewCreated: (controller) async {
                             webViewControllerExtracted = controller;
 
+                            // final stopwatch = Stopwatch()..start();
+                            // Logger.printLog(
+                            //     '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
                             await webViewControllerExtracted?.loadData(
                               data: _extractedContent.value,
                             );
+
+                            // stopwatch.stop();
+                            // Logger.printLog(
+                            //     '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
                           },
                           onLoadStop: (controller, url) async {},
                           onReceivedError: (controller, request, error) {
@@ -309,11 +267,13 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     _extractingContentLoadState.value = LoadingStates.loading;
 
     try {
+      // final stopwatch = Stopwatch()..start();
       // Extract the entire HTML content of the webpage
       final currentwebpage = await webViewController?.evaluateJavascript(
         source: 'document.documentElement.outerHTML;',
       );
-      // Logger.printLog(currentwebpage.toString());
+      // Logger.printLog('[EMC] : FETCH ${stopwatch.elapsedMilliseconds}');
+
       // Parse the HTML document
       final document = html_parser.parse(currentwebpage);
       final body = document.body;
@@ -850,6 +810,9 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       _extractingContentLoadState.value = LoadingStates.loaded;
 
       // Logger.printLog('[HTML] : ${_extractedContent.value}');
+      // stopwatch.stop();
+      // Logger.printLog('[EMC] : ${stopwatch.elapsedMilliseconds}');
+
       return mainContent.outerHtml;
     } catch (error) {
       if (kDebugMode) {
