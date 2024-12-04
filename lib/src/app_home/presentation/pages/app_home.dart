@@ -76,7 +76,7 @@ class _AppHomePageState extends State<AppHomePage> {
           elevation: 0,
           centerTitle: true,
           toolbarHeight: 140,
-          backgroundColor: ColourPallette.mountainMeadow.withOpacity(0.08),
+          backgroundColor: ColourPallette.mountainMeadow.withOpacity(0.05),
           title: Column(
             children: [
               SvgPicture.asset(
@@ -114,7 +114,7 @@ class _AppHomePageState extends State<AppHomePage> {
                 builder: (context, state) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: ColourPallette.mountainMeadow.withOpacity(0.08),
+                      color: ColourPallette.mountainMeadow.withOpacity(0.05),
                     ),
                     child: ListTile(
                       onTap: () {
