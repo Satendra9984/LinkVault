@@ -33,6 +33,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        clipBehavior: Clip.none,
         title: Row(
           children: [
             SvgPicture.asset(

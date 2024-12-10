@@ -92,6 +92,8 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
     required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
+      clipBehavior: Clip.none,
+
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         mainAxisSize: MainAxisSize.min,

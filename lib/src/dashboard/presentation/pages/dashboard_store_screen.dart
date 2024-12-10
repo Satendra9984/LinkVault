@@ -121,12 +121,6 @@ class _CollectionStorePageState extends State<CollectionStorePage>
                 showAddCollectionButton: true,
                 appBarLeadingIcon: widget.appBarLeadingIcon,
               ),
-              // UrlsPreviewListScreen(
-              //   showBottomBar: _showBottomNavBar,
-              //   collectionModel: fetchCollection.collection!,
-              //   isRootCollection: widget.isRootCollection,
-              //   appBarLeadingIcon: widget.appBarLeadingIcon,
-              // ),
             ],
           );
         },

@@ -337,6 +337,9 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                             key: webViewKey,
                             initialUrlRequest:
                                 URLRequest(url: WebUri(widget.url)),
+
+                            // keepAlive: ,
+
                             initialSettings: settings,
                             pullToRefreshController: pullToRefreshController,
                             onWebViewCreated: (controller) {

@@ -997,6 +997,7 @@ class _RssFeedUrlsPreviewListWidgetState
               duration: const Duration(milliseconds: 300),
               height: isVisible ? kToolbarHeight + 24 : 0,
               child: AppBar(
+                clipBehavior: Clip.none,
                 surfaceTintColor: ColourPallette.mystic,
                 title: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,

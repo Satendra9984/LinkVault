@@ -96,6 +96,8 @@ class _FavouritesCollectionsListScreenState
     required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
+      clipBehavior: Clip.none,
+
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [

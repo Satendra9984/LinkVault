@@ -214,6 +214,7 @@ class MyApp extends StatelessWidget {
             globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
+        
         //  Create a CRUD cubit for managing crud operation a single collection
         BlocProvider(
           create: (BuildContext context) => UrlCrudCubit(

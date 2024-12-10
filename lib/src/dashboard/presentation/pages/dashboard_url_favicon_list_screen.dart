@@ -175,11 +175,13 @@ class _DashboardUrlFaviconListScreenState
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
+      clipBehavior: Clip.none,
+      // centerTitle: true,
       title: Row(
         children: [
           const Icon(
-            Icons.dashboard_rounded,
-            color: ColourPallette.mountainMeadow,
+            Icons.apps_rounded,
+            // color: ColourPallette.mountainMeadow,
             size: 16,
           ),
           const SizedBox(width: 8),
@@ -188,8 +190,9 @@ class _DashboardUrlFaviconListScreenState
               widget.collectionModel.name,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
