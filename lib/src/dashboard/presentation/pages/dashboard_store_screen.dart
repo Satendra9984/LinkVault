@@ -31,13 +31,6 @@ class CollectionStorePage extends StatefulWidget {
 
 class _CollectionStorePageState extends State<CollectionStorePage>
     with AutomaticKeepAliveClientMixin {
-  // TODO : SEE THE POSSIBILITIES OF AUTOMATIC KEEP ALIVE BUT
-  /* WEBVIEW WILL CREATE PROBLEM AS IT WILL COMSUME MEMORY
-     WE CAN MAKE THE KEEP-ALIVE DYNAMIC IN WEB-VIEW SCREEN
-     SO THAT WHEN THIS-SCREEN GOES OUT-OF-VISIBILITY SO WILL 
-     DISTROY THE WEBVIEW BUT CAN KEEP THE OTHER VIEWS LIKE 
-     URLFAVICONLIST, COLLECTIONSLIST SCREENS
-  */
 
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
@@ -52,10 +45,6 @@ class _CollectionStorePageState extends State<CollectionStorePage>
     );
 
     CustomTabsClientService.warmUp();
-
-    context.read<WebviewsCubit>().createWebView(
-          context.read<GlobalUserCubit>().getGlobalUser()!.id,
-        );
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
@@ -42,6 +43,25 @@ class _AppHomePageState extends State<AppHomePage> {
             );
       },
     );
+
+    _initializeWebViews();
+  }
+
+  void _initializeWebViews() {
+    try {
+      // INITIALIZING WEBVIEWS
+      final globarUserId = context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
+      // FOR OPENING WEBAPPS
+      context.read<WebviewsCubit>().createWebView(
+            globarUserId,
+          );
+
+      // SEPECIFICALLY FOR RSSFEEDS    
+      context.read<WebviewsCubit>().createWebView(
+            globarUserId + RssFeed,
+          );
+    } catch (e) {}
   }
 
   @override

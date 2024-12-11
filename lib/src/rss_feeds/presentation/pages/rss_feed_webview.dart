@@ -9,6 +9,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
@@ -48,7 +49,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   @override
   void initState() {
     stopwatch = Stopwatch()..start();
-    Logger.printLog('[EMC][INIT] : ${stopwatch.elapsedMilliseconds}');
+    // Logger.printLog('[EMC][INIT] : ${stopwatch.elapsedMilliseconds}');
 
     super.initState();
 
@@ -123,9 +124,9 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                           final webviewPoolItem =
                               webviewcubit.getWebViewPoolItem(globalUser.id);
 
-                          Logger.printLog(
-                            'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
-                          );
+                          // Logger.printLog(
+                          //   'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
+                          // );
 
                           return InAppWebView(
                             key: webViewKey,
@@ -137,26 +138,22 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                             onWebViewCreated: (controller) async {
                               // Logger.printLog('loadingUrl in oncreated');
                               webViewController = controller;
-                              final stopWatch = Stopwatch()..start();
 
-                              Logger.printLog(
-                                '[CR] : ${stopWatch.elapsedMilliseconds}',
-                              );
+                              // final stopWatch = Stopwatch()..start();
+                              // Logger.printLog(
+                              //   '[CR] : onWebViewCreated ${stopWatch.elapsedMilliseconds}',
+                              // );
+
                               await webViewController?.loadUrl(
                                 urlRequest: URLRequest(
                                   url: WebUri(widget.url),
                                 ),
                               );
 
-                              // if (_historyCleared == false) {
-                              //   await webViewController?.clearHistory();
-                              //   // _historyCleared = true;
-                              // }
-
-                              stopWatch.stop();
-                              Logger.printLog(
-                                '[CR] : ${stopWatch.elapsedMilliseconds}',
-                              );
+                              // stopWatch.stop();
+                              // Logger.printLog(
+                              //   '[CR] : loadedUrl ${stopWatch.elapsedMilliseconds}',
+                              // );
                             },
                             // initialUserScripts: ,
                             onLoadStart: (controller, url) {
@@ -176,17 +173,21 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                             },
                             onLoadStop: (controller, url) async {
                               try {
-                                Logger.printLog(
-                                    '[EMC][LOADSTOP] : ${stopwatch.elapsedMilliseconds}');
+                                // final stopWatch = Stopwatch()..start();
+                                // Logger.printLog(
+                                //   '[EMC][LOADSTOP] : ${stopwatch.elapsedMilliseconds}',
+                                // );
 
                                 await extractMainContent(widget.url);
 
-                                Logger.printLog(
-                                    '[EMC][EXTRACTMAINCONTENT] : ${stopwatch.elapsedMilliseconds}');
-
-                                await pullToRefreshController?.endRefreshing();
+                                // stopWatch.stop();
+                                // Logger.printLog(
+                                //   '[EMC][EXTRACTMAINCONTENT] : ${stopWatch.elapsedMilliseconds}',
+                                // );
 
                                 _urlLoadState.value = LoadingStates.loaded;
+                                await pullToRefreshController?.endRefreshing();
+                                await webViewController?.clearHistory();
                               } catch (e) {
                                 // Logger.printLog('RSS Feed WebView error $e');
                               }
@@ -267,29 +268,52 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                     return Expanded(
                       child: SizedBox(
                         width: size.width,
-                        child: InAppWebView(
-                          initialSettings: settings,
-                          onWebViewCreated: (controller) async {
-                            webViewControllerExtracted = controller;
+                        child: BlocBuilder<WebviewsCubit, WebViewState>(
+                          builder: (context, state) {
+                            final globalUser = context
+                                .read<GlobalUserCubit>()
+                                .getGlobalUser()!;
+                            final webviewcubit = context.read<WebviewsCubit>();
 
-                            final stopwatch = Stopwatch()..start();
-                            Logger.printLog(
-                                '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
-                            await webViewControllerExtracted?.loadData(
-                              data: _extractedContent.value,
-                            );
+                            final webviewPoolItem = webviewcubit
+                                .getWebViewPoolItem(globalUser.id + RssFeed);
 
-                            stopwatch.stop();
-                            Logger.printLog(
-                                '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
-                          },
-                          onLoadStop: (controller, url) async {},
-                          onReceivedError: (controller, request, error) {
                             // Logger.printLog(
-                            //   '[WEBVIEW] : ${error.description}',
+                            //   'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
                             // );
-                            // pullToRefreshController
-                            //     ?.endRefreshing();
+
+                            return InAppWebView(
+                              // key: webViewKey,
+                              keepAlive: webviewPoolItem?.keepAliveObject,
+                              initialSettings: settings,
+                              onWebViewCreated: (controller) async {
+                                webViewControllerExtracted = controller;
+
+                                // final stopwatch = Stopwatch()..start();
+                                // Logger.printLog(
+                                //   '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}',
+                                // );
+                                await webViewControllerExtracted?.loadData(
+                                  data: _extractedContent.value,
+                                );
+
+                                // stopwatch.stop();
+                                // Logger.printLog(
+                                //   '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}',
+                                // );
+                              },
+                              onLoadStop: (controller, url) async {
+                                await webViewControllerExtracted
+                                    ?.clearHistory();
+                              },
+                              onReceivedError: (controller, request, error) {
+                                // Logger.printLog(
+                                //   '[WEBVIEW] : ${error.description}',
+                                // );
+                                // pullToRefreshController
+                                //     ?.endRefreshing();
+                              },
+                            );
                           },
                         ),
                       ),
@@ -311,7 +335,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       final stopwatch = Stopwatch()..start();
       // Extract the entire HTML content of the webpage
       final currentwebpage = await webViewController?.getHtml();
-      Logger.printLog('[EMC] : FETCH ${stopwatch.elapsedMilliseconds}');
+      // Logger.printLog('[EMC] : FETCH ${stopwatch.elapsedMilliseconds}');
 
       // Parse the HTML document
       final document = html_parser.parse(currentwebpage);
@@ -850,7 +874,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
 
       // Logger.printLog('[HTML] : ${_extractedContent.value}');
       stopwatch.stop();
-      Logger.printLog('[EMC] : ${stopwatch.elapsedMilliseconds}');
+      // Logger.printLog('[EMC] : ${stopwatch.elapsedMilliseconds}');
 
       return mainContent.outerHtml;
     } catch (error) {
