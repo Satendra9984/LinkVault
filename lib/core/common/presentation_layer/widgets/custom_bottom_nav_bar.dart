@@ -12,12 +12,24 @@ class CustomBottomNavItem {
     final isSelected = currentPage.value == index;
 
     return BottomNavigationBarItem(
-      icon: Icon(unSelectedIcon),
+      icon: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 4, bottom: 4),
+        child: Icon(
+          unSelectedIcon,
+          size: 24,
+          color: Colors.grey.shade900,
+          
+        ),
+      ),
       activeIcon: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 4, bottom: 4),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: isSelected ? ColourPallette.salemgreen.withOpacity(0.2) : null,
+          borderRadius: BorderRadius.circular(56),
+          color: isSelected
+              ? ColourPallette.freepikLoginImage.withOpacity(0.4)
+              : null,
         ),
         child: Icon(
           selectedIcon,
@@ -26,7 +38,6 @@ class CustomBottomNavItem {
               isSelected ? ColourPallette.mountainMeadow : ColourPallette.black,
         ),
       ),
-      
       label: label,
     );
   }

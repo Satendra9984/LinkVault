@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:html/dom.dart' as dom;
 // import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:html/parser.dart' as html_parser;
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
@@ -40,12 +43,12 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
   final _extractingContentLoadState = ValueNotifier(LoadingStates.initial);
   InAppWebViewController? webViewControllerExtracted;
 
-  // late Stopwatch stopwatch;
+  late Stopwatch stopwatch;
 
   @override
   void initState() {
-    // stopwatch = Stopwatch()..start();
-    // Logger.printLog('[EMC][INIT] : ${stopwatch.elapsedMilliseconds}');
+    stopwatch = Stopwatch()..start();
+    Logger.printLog('[EMC][INIT] : ${stopwatch.elapsedMilliseconds}');
 
     super.initState();
 
@@ -111,56 +114,94 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                     }
                     return SizedBox(
                       height: 0,
-                      child: InAppWebView(
-                        key: webViewKey,
-                        initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                        initialSettings: settings,
-                        pullToRefreshController: pullToRefreshController,
-                        onWebViewCreated: (controller) {
-                          webViewController = controller;
-                        },
-                        // initialUserScripts: ,
-                        onLoadStart: (controller, url) {
-                          _urlLoadState.value = LoadingStates.loading;
-                          _extractingContentLoadState.value =
-                              LoadingStates.loading;
-                        },
-                        onPermissionRequest: (controller, request) async {
-                          return PermissionResponse(
-                            resources: request.resources,
-                            action: PermissionResponseAction.PROMPT,
+                      child: BlocBuilder<WebviewsCubit, WebViewState>(
+                        builder: (context, state) {
+                          final globalUser =
+                              context.read<GlobalUserCubit>().getGlobalUser()!;
+                          final webviewcubit = context.read<WebviewsCubit>();
+
+                          final webviewPoolItem =
+                              webviewcubit.getWebViewPoolItem(globalUser.id);
+
+                          Logger.printLog(
+                            'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
                           );
-                        },
-                        shouldOverrideUrlLoading:
-                            (controller, navigationAction) async {
-                          return NavigationActionPolicy.ALLOW;
-                        },
-                        onLoadStop: (controller, url) async {
-                          try {
-                            // Logger.printLog(
-                            //     '[EMC][LOADSTOP] : ${stopwatch.elapsedMilliseconds}');
 
-                            await extractMainContent(widget.url);
+                          return InAppWebView(
+                            key: webViewKey,
+                            keepAlive: webviewPoolItem?.keepAliveObject,
+                            // initialUrlRequest:
+                            //     URLRequest(url: WebUri(widget.url)),
+                            initialSettings: settings,
+                            pullToRefreshController: pullToRefreshController,
+                            onWebViewCreated: (controller) async {
+                              // Logger.printLog('loadingUrl in oncreated');
+                              webViewController = controller;
+                              final stopWatch = Stopwatch()..start();
 
-                            // Logger.printLog(
-                            //     '[EMC][EXTRACTMAINCONTENT] : ${stopwatch.elapsedMilliseconds}');
+                              Logger.printLog(
+                                '[CR] : ${stopWatch.elapsedMilliseconds}',
+                              );
+                              await webViewController?.loadUrl(
+                                urlRequest: URLRequest(
+                                  url: WebUri(widget.url),
+                                ),
+                              );
 
-                            await pullToRefreshController?.endRefreshing();
+                              // if (_historyCleared == false) {
+                              //   await webViewController?.clearHistory();
+                              //   // _historyCleared = true;
+                              // }
 
-                            _urlLoadState.value = LoadingStates.loaded;
-                          } catch (e) {
-                            // Logger.printLog('RSS Feed WebView error $e');
-                          }
-                        },
-                        onReceivedError: (controller, request, error) {
-                          pullToRefreshController?.endRefreshing();
-                        },
-                        onProgressChanged: (controller, progress) {
-                          if (progress == 100) {
-                            pullToRefreshController?.endRefreshing();
-                          }
-                          // _progress.value = progress / 100;
-                          // urlController.text = _url.value;
+                              stopWatch.stop();
+                              Logger.printLog(
+                                '[CR] : ${stopWatch.elapsedMilliseconds}',
+                              );
+                            },
+                            // initialUserScripts: ,
+                            onLoadStart: (controller, url) {
+                              _urlLoadState.value = LoadingStates.loading;
+                              _extractingContentLoadState.value =
+                                  LoadingStates.loading;
+                            },
+                            onPermissionRequest: (controller, request) async {
+                              return PermissionResponse(
+                                resources: request.resources,
+                                action: PermissionResponseAction.PROMPT,
+                              );
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, navigationAction) async {
+                              return NavigationActionPolicy.ALLOW;
+                            },
+                            onLoadStop: (controller, url) async {
+                              try {
+                                Logger.printLog(
+                                    '[EMC][LOADSTOP] : ${stopwatch.elapsedMilliseconds}');
+
+                                await extractMainContent(widget.url);
+
+                                Logger.printLog(
+                                    '[EMC][EXTRACTMAINCONTENT] : ${stopwatch.elapsedMilliseconds}');
+
+                                await pullToRefreshController?.endRefreshing();
+
+                                _urlLoadState.value = LoadingStates.loaded;
+                              } catch (e) {
+                                // Logger.printLog('RSS Feed WebView error $e');
+                              }
+                            },
+                            onReceivedError: (controller, request, error) {
+                              // pullToRefreshController?.endRefreshing();
+                            },
+                            onProgressChanged: (controller, progress) {
+                              if (progress == 100) {
+                                // pullToRefreshController?.endRefreshing();
+                              }
+                              // _progress.value = progress / 100;
+                              // urlController.text = _url.value;
+                            },
+                          );
                         },
                       ),
                     );
@@ -231,16 +272,16 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                           onWebViewCreated: (controller) async {
                             webViewControllerExtracted = controller;
 
-                            // final stopwatch = Stopwatch()..start();
-                            // Logger.printLog(
-                            //     '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
+                            final stopwatch = Stopwatch()..start();
+                            Logger.printLog(
+                                '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
                             await webViewControllerExtracted?.loadData(
                               data: _extractedContent.value,
                             );
 
-                            // stopwatch.stop();
-                            // Logger.printLog(
-                            //     '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
+                            stopwatch.stop();
+                            Logger.printLog(
+                                '[EMC][EXTRACTED] : ${stopwatch.elapsedMilliseconds}');
                           },
                           onLoadStop: (controller, url) async {},
                           onReceivedError: (controller, request, error) {
@@ -267,12 +308,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
     _extractingContentLoadState.value = LoadingStates.loading;
 
     try {
-      // final stopwatch = Stopwatch()..start();
+      final stopwatch = Stopwatch()..start();
       // Extract the entire HTML content of the webpage
-      final currentwebpage = await webViewController?.evaluateJavascript(
-        source: 'document.documentElement.outerHTML;',
-      );
-      // Logger.printLog('[EMC] : FETCH ${stopwatch.elapsedMilliseconds}');
+      final currentwebpage = await webViewController?.getHtml();
+      Logger.printLog('[EMC] : FETCH ${stopwatch.elapsedMilliseconds}');
 
       // Parse the HTML document
       final document = html_parser.parse(currentwebpage);
@@ -671,7 +710,7 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       void enhanceImages(dom.Element body, Uri baseUri) {
         // Select all images in the body
         body.querySelectorAll('img').forEach((image) {
-          Logger.printLog('[IMG] : ${image.outerHtml}');
+          // Logger.printLog('[IMG] : ${image.outerHtml}');
 
           // Normalize the image src attribute
           final src = image.attributes['src'];
@@ -810,8 +849,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
       _extractingContentLoadState.value = LoadingStates.loaded;
 
       // Logger.printLog('[HTML] : ${_extractedContent.value}');
-      // stopwatch.stop();
-      // Logger.printLog('[EMC] : ${stopwatch.elapsedMilliseconds}');
+      stopwatch.stop();
+      Logger.printLog('[EMC] : ${stopwatch.elapsedMilliseconds}');
 
       return mainContent.outerHtml;
     } catch (error) {
@@ -872,10 +911,10 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
             .trim();
 
         if (visibleText.isEmpty && link.getElementsByTagName('img').isEmpty) {
-          Logger.printLog('[REMOVED] Empty link: ${link.outerHtml}');
+          // Logger.printLog('[REMOVED] Empty link: ${link.outerHtml}');
           link.remove();
         } else if (visibleText.length > 100) {
-          Logger.printLog('[CONVERTED] Long link: ${link.outerHtml}');
+          // Logger.printLog('[CONVERTED] Long link: ${link.outerHtml}');
           final span = dom.Element.tag('span')..text = visibleText;
           link.replaceWith(span);
         }

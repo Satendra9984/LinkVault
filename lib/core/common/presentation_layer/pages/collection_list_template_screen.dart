@@ -291,6 +291,7 @@ class _CollectionsListScreenTemplateState
                     borderRadius: BorderRadius.circular(16),
                   ),
                   backgroundColor: ColourPallette.salemgreen,
+                  elevation: 2,
                   // [DYNAMIC] : THIS IS A DYNAMIC PART
                   onPressed: () => widget.onAddCollectionPressed(),
 

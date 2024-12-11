@@ -265,7 +265,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     required List<Widget> actions,
   }) {
     return AppBar(
-      clipBehavior: Clip.none,
+      clipBehavior: Clip.antiAlias,
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [
@@ -280,7 +280,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
               widget.collectionModel.name,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
@@ -51,6 +52,10 @@ class _CollectionStorePageState extends State<CollectionStorePage>
     );
 
     CustomTabsClientService.warmUp();
+
+    context.read<WebviewsCubit>().createWebView(
+          context.read<GlobalUserCubit>().getGlobalUser()!.id,
+        );
   }
 
   @override
@@ -130,83 +135,82 @@ class _CollectionStorePageState extends State<CollectionStorePage>
   }
 
   Widget _getBottomNavigationBar() {
-    return Container(
-      padding: const EdgeInsets.only(top: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Colors.grey.shade100,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ColourPallette.mystic.withOpacity(0.5),
-            spreadRadius: 4,
-            blurRadius: 16,
-            offset: const Offset(0, 2), // changes position of shadow
-          ),
-        ],
-      ),
-      child: ValueListenableBuilder(
-        valueListenable: _showBottomNavBar,
-        builder: (context, showBottomBar, _) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            height: showBottomBar ? null : 0,
-            child: ValueListenableBuilder(
-              valueListenable: _currentPage,
-              builder: (context, currentPage, _) {
-                return BottomNavigationBar(
-                  currentIndex: _currentPage.value,
-                  onTap: (currentIndex) {
-                    _currentPage.value = currentIndex;
-                    _pageController.jumpToPage(currentIndex);
-                  },
-                  enableFeedback: false,
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: ColourPallette.white,
-                  elevation: 0,
-                  selectedItemColor: ColourPallette.black,
-                  selectedLabelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                  ),
-                  unselectedItemColor: ColourPallette.black,
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: ColourPallette.black,
-                  ),
-                  items: [
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      label: 'Urls',
-                      unSelectedIcon: Icons.webhook_outlined,
-                      selectedIcon: Icons.webhook_rounded,
-                      index: 0,
-                    ),
-                    CustomBottomNavItem.create(
-                      currentPage: _currentPage,
-                      label: 'Collections',
-                      unSelectedIcon: Icons.folder_outlined,
-                      selectedIcon: Icons.folder_rounded,
-                      index: 1,
-                    ),
-                    // CustomBottomNavItem.create(
-                    //   currentPage: _currentPage,
-                    //   unSelectedIcon: Icons.dynamic_feed_outlined,
-                    //   selectedIcon: Icons.dynamic_feed,
-                    //   index: 2,
-                    //   label: 'Previews',
-                    // ),
-                  ],
-                );
-              },
+    return ValueListenableBuilder(
+      valueListenable: _showBottomNavBar,
+      builder: (context, showBottomBar, _) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.only(top: 4, bottom: 4),
+          height: showBottomBar ? null : 0,
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Colors.grey.shade200,
+                width: 0.5,
+              ),
             ),
-          );
-        },
-      ),
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: ColourPallette.mystic.withOpacity(0.5),
+            //     spreadRadius: 4,
+            //     blurRadius: 10,
+            //     offset: const Offset(0, -1), // changes position of shadow
+            //   ),
+            // ],
+          ),
+          child: ValueListenableBuilder(
+            valueListenable: _currentPage,
+            builder: (context, currentPage, _) {
+              return BottomNavigationBar(
+                currentIndex: _currentPage.value,
+                onTap: (currentIndex) {
+                  _currentPage.value = currentIndex;
+                  _pageController.jumpToPage(currentIndex);
+                },
+                enableFeedback: false,
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: ColourPallette.white,
+                elevation: 0.0,
+                selectedItemColor: ColourPallette.black,
+                selectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black,
+                ),
+                unselectedItemColor: ColourPallette.black,
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ColourPallette.black,
+                ),
+                items: [
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    label: 'Urls',
+                    unSelectedIcon: Icons.webhook_outlined,
+                    selectedIcon: Icons.webhook_rounded,
+                    index: 0,
+                  ),
+                  CustomBottomNavItem.create(
+                    currentPage: _currentPage,
+                    label: 'Collections',
+                    unSelectedIcon: Icons.folder_outlined,
+                    selectedIcon: Icons.folder_rounded,
+                    index: 1,
+                  ),
+                  // CustomBottomNavItem.create(
+                  //   currentPage: _currentPage,
+                  //   unSelectedIcon: Icons.dynamic_feed_outlined,
+                  //   selectedIcon: Icons.dynamic_feed,
+                  //   index: 2,
+                  //   label: 'Previews',
+                  // ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

@@ -3,9 +3,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
+import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:permission_handler/permission_handler.dart'; // Add permission_handler dependency
 
 class DashboardWebView extends StatefulWidget {
@@ -21,10 +26,10 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   final GlobalKey webViewKey = GlobalKey();
   final _showAppBar = ValueNotifier(true);
   final _statusBarBgColorDefault = ValueNotifier<Color?>(null);
-  int _previousScrollOffset = 0;
+  // int _previousScrollOffset = 0;
   InAppWebViewController? webViewController;
   final _canWebviewGoBack = ValueNotifier(false);
-
+  bool _historyCleared = false;
   InAppWebViewSettings settings = InAppWebViewSettings(
     useOnLoadResource: true,
     isInspectable: kDebugMode,
@@ -35,7 +40,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   );
 
   PullToRefreshController? pullToRefreshController;
-  final _url = ValueNotifier('');
+  final _url = ValueNotifier<String?>(null);
   final _progress = ValueNotifier<double>(0);
   final urlController = TextEditingController();
   final _isDarkMode = ValueNotifier(false);
@@ -51,26 +56,8 @@ class _DashboardWebViewState extends State<DashboardWebView> {
       ],
     );
 
-    SystemChrome.setSystemUIChangeCallback(
-      (change) async {
-        if (userSwipedSystemStatusBar.value < 1) {
-          userSwipedSystemStatusBar.value++;
-          return;
-        }
-        // Logger.printLog('[setuicalled]');
-        // await SystemChrome.setEnabledSystemUIMode(
-        //   SystemUiMode.manual,
-        //   overlays: [
-        //     SystemUiOverlay.top,
-        //     SystemUiOverlay.bottom,
-        //   ],
-        // );
-        return;
-      },
-    );
-
     super.initState();
-
+    _initializeWebview();
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
                 .contains(defaultTargetPlatform)
@@ -93,38 +80,96 @@ class _DashboardWebViewState extends State<DashboardWebView> {
           );
   }
 
+  void _initializeWebview() {
+    final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!;
+    final webviewcubit = context.read<WebviewsCubit>();
+
+    final webviewPoolItem = webviewcubit.getWebViewPoolItem(globalUser.id);
+
+    if (webviewPoolItem?.controller != null) {
+      // webviewPoolItem?.controller?.loadUrl(
+      //   urlRequest: URLRequest(
+      //     url: WebUri(widget.url),
+      //   ),
+      // );
+
+      // webViewController = webviewPoolItem?.controller;
+    }
+  }
+
   Future<void> _updateCanBack() async {
-    if (webViewController != null) {
+    if (webViewController == null) {
+      return;
+    }
+    final currentUrl = await webViewController?.getUrl();
+    if (currentUrl?.rawValue != null) {
+      final webViewUrl = Uri.parse(currentUrl!.rawValue);
+      final originalUrl = Uri.parse(_url.value ?? widget.url);
+
+      final areUrlsSame = compareUrls(webViewUrl, originalUrl);
+
+      // Logger.printLog(
+      //   '[RAW] WebView URL: ${currentUrl.rawValue}, '
+      //   'Original URL: ${_url.value} '
+      //   '${currentUrl.rawValue == _url.value} '
+      //   'Same: $areUrlsSame',
+      // );
+
+      if (areUrlsSame) {
+        // Perform your logic, e.g., exit the screen
+        _canWebviewGoBack.value = false;
+        return;
+      }
+
       final webviewCanGoBack = await webViewController!.canGoBack();
       _canWebviewGoBack.value = webviewCanGoBack;
     }
   }
 
-  Future<void> _updateStatusBarColorFromTop() async {
-    // Logger.printLog('[WEBVIEW] : _updateStatusBarColorFromTop');
+// Function to compare URLs
+  bool compareUrls(Uri url1, Uri url2) {
+    final areSchemesSame = url1.scheme == url2.scheme;
+    final arePathSame = url1.path == url2.path;
+    final areHostSame = url1.host == url2.host;
+    // final areNormalizeSame1 = normalizeQueryParams(url1.queryParameters);
+    // final areNormalizeSame2 = normalizeQueryParams(url2.queryParameters);
+    final areNormalizeSame = mapsAreEqual(
+      normalizeQueryParams(url1.queryParameters),
+      normalizeQueryParams(url2.queryParameters),
+    );
 
-    // if (_statusBarBgColorDefault.value != null) {
-    //   SystemChrome.setSystemUIOverlayStyle(
-    //     SystemUiOverlayStyle(
-    //       statusBarColor: _statusBarBgColorDefault.value,
-    //       statusBarIconBrightness:
-    //           _isDarkMode.value ? Brightness.light : Brightness.dark,
-    //       systemNavigationBarColor:
-    //           _isDarkMode.value ? Colors.black : Colors.white,
-    //       systemNavigationBarIconBrightness:
-    //           _isDarkMode.value ? Brightness.light : Brightness.dark,
-    //     ),
-    //   );
-    //   return;
-    // }
-
-    // final bgColor = await webViewController?.evaluateJavascript(
-    //   source: 'window.getComputedStyle(document.header, null).backgroundColor',
+    // Logger.printLog(
+    //   '[Cangoback] : scheme $areSchemesSame '
+    //   'path $arePathSame '
+    //   'host $areHostSame '
+    //   'normalize ${areNormalizeSame1} ${areNormalizeSame2} ${areNormalizeSame}',
     // );
 
-    // Logger.printLog('[bgcol] : ${bgColor}');
-    // Color.fromARGB(255, 227, 230, 230);
+    return areSchemesSame &&
+        areHostSame &&
+        arePathSame &&
+        areNormalizeSame;
+  }
 
+  bool mapsAreEqual(Map<String, String> map1, Map<String, String> map2) {
+    if (map1.length != map2.length) return false;
+
+    for (final key in map1.keys) {
+      if (map1[key] != map2[key]) return false;
+    }
+
+    return true;
+  }
+
+// Helper to normalize query parameters
+  Map<String, String> normalizeQueryParams(Map<String, String> params) {
+    final normalized = Map<String, String>.from(params)
+      ..removeWhere((key, value) => value.isEmpty); // Remove empty params
+
+    return normalized;
+  }
+
+  Future<void> _updateStatusBarColorFromTop() async {
     // Evaluate JavaScript and fetch background colors
     final colorValue = await webViewController?.evaluateJavascript(
       source: '''
@@ -222,7 +267,11 @@ class _DashboardWebViewState extends State<DashboardWebView> {
 
     final colorCount = colors.length;
     return Color.fromARGB(
-        255, red ~/ colorCount, green ~/ colorCount, blue ~/ colorCount,);
+      255,
+      red ~/ colorCount,
+      green ~/ colorCount,
+      blue ~/ colorCount,
+    );
   }
 
   Color? _parseColor(String colorValue) {
@@ -239,21 +288,6 @@ class _DashboardWebViewState extends State<DashboardWebView> {
       return Color.fromRGBO(r, g, b, opacity);
     }
     return null;
-  }
-
-  void _updateSystemTheme() {
-    // Logger.printLog('[WEBVIEW] : themeMode: $_isDarkMode');
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarBrightness:
-            _isDarkMode.value ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor:
-            _isDarkMode.value ? Colors.black : Colors.white,
-        systemNavigationBarIconBrightness:
-            _isDarkMode.value ? Brightness.light : Brightness.dark,
-      ),
-    );
   }
 
   Future<bool> _requestPermission(Permission permission) async {
@@ -290,16 +324,17 @@ class _DashboardWebViewState extends State<DashboardWebView> {
         return ValueListenableBuilder(
           valueListenable: _canWebviewGoBack,
           builder: (context, canWebviewGoBack, _) {
+            Logger.printLog('[Cangoback] $canWebviewGoBack');
             return WillPopScope(
               onWillPop: () async {
                 if (canWebviewGoBack) {
                   await webViewController?.goBack();
                   return false;
                 }
+
                 return true;
               },
               child: Scaffold(
-                // backgroundColor: Colors.transparent,
                 body: Stack(
                   children: [
                     Column(
@@ -333,146 +368,194 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                           ),
                         ),
                         Expanded(
-                          child: InAppWebView(
-                            key: webViewKey,
-                            initialUrlRequest:
-                                URLRequest(url: WebUri(widget.url)),
+                          child: BlocBuilder<WebviewsCubit, WebViewState>(
+                            builder: (context, state) {
+                              final globalUser = context
+                                  .read<GlobalUserCubit>()
+                                  .getGlobalUser()!;
+                              final webviewcubit =
+                                  context.read<WebviewsCubit>();
 
-                            // keepAlive: ,
+                              final webviewPoolItem = webviewcubit
+                                  .getWebViewPoolItem(globalUser.id);
 
-                            initialSettings: settings,
-                            pullToRefreshController: pullToRefreshController,
-                            onWebViewCreated: (controller) {
-                              webViewController = controller;
-                            },
-                            onScrollChanged: (controller, x, y) async {
-                              if (y == 0) {
-                                // _updateStatusBarColorFromTop();
-                              }
-                              if (y > statusBarHeight) {
-                                _showAppBar.value = false;
-                                // _updateSystemTheme();
-                              } else if (y < statusBarHeight &&
-                                  !_showAppBar.value) {
-                                _showAppBar.value = true;
-                              }
-                              _previousScrollOffset = y;
-                              //  SystemChrome.setEnabledSystemUIMode(
-                              //   SystemUiMode.manual,
-                              //   overlays: [
-                              //     SystemUiOverlay.top,
-                              //   ],
+                              // Logger.printLog(
+                              //   'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
                               // );
-                            },
-                            onLoadStart: (controller, url) {
-                              _url.value = url.toString();
-                              urlController.text = _url.value;
-                            },
-                            onGeolocationPermissionsShowPrompt:
-                                (controller, origin) async {
-                              // Request location permission
-                              // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
 
-                              final locationGranted = await _requestPermission(
-                                Permission.location,
-                              );
+                              return InAppWebView(
+                                key: webViewKey,
+                                // initialUrlRequest:
+                                //     URLRequest(url: WebUri(widget.url)),
+                                keepAlive: webviewPoolItem?.keepAliveObject,
+                                initialSettings: settings,
+                                pullToRefreshController:
+                                    pullToRefreshController,
+                                onWebViewCreated: (controller) async {
+                                  // Logger.printLog('loadingUrl in oncreated');
+                                  webViewController = controller;
+                                  final stopWatch = Stopwatch()..start();
 
-                              return GeolocationPermissionShowPromptResponse(
-                                origin: origin,
-                                allow: locationGranted,
-                                retain: true,
-                              );
-                            },
-                            onPermissionRequest: (controller, request) async {
-                              var granted = false;
-
-                              if (request.resources.contains(
-                                  PermissionResourceType.GEOLOCATION,)) {
-                                granted = await _requestPermission(
-                                  Permission.location,
-                                );
-                              }
-                              if (request.resources
-                                  .contains(PermissionResourceType.CAMERA)) {
-                                granted = await _requestPermission(
-                                  Permission.camera,
-                                );
-                              }
-                              if (request.resources.contains(
-                                  PermissionResourceType.MICROPHONE,)) {
-                                granted = await _requestPermission(
-                                  Permission.microphone,
-                                );
-                              }
-                              if (request.resources.contains(
-                                PermissionResourceType.PROTECTED_MEDIA_ID,
-                              )) {
-                                granted = await _requestPermission(
-                                  Permission.storage,
-                                );
-                              }
-
-                              return PermissionResponse(
-                                resources: request.resources,
-                                action: granted
-                                    ? PermissionResponseAction.GRANT
-                                    : PermissionResponseAction.DENY,
-                              );
-                            },
-                            shouldOverrideUrlLoading:
-                                (controller, navigationAction) async {
-                              return NavigationActionPolicy.ALLOW;
-                            },
-                            onLoadStop: (controller, url) async {
-                              await pullToRefreshController
-                                  ?.endRefreshing()
-                                  .catchError(
-                                    (_) {},
+                                  // Logger.printLog(
+                                  //   '[CR] : ${stopWatch.elapsedMilliseconds}',
+                                  // );
+                                  await webViewController?.loadUrl(
+                                    urlRequest: URLRequest(
+                                      url: WebUri(widget.url),
+                                    ),
                                   );
-                              _url.value = url.toString();
-                              urlController.text = _url.value;
-                              await _updateCanBack();
-                              await _updateStatusBarColorFromTop();
-                            },
-                            onReceivedError: (controller, request, error) {
-                              pullToRefreshController
-                                  ?.endRefreshing()
-                                  .catchError(
-                                (_) async {
-                                  final theme = Theme.of(context);
-                                  await CustomTabsService.launchUrl(
-                                    url: request.url.toString(),
-                                    theme: theme,
-                                  ).then(
+
+                                  // if (_historyCleared == false) {
+                                  //   await webViewController?.clearHistory();
+                                  //   // _historyCleared = true;
+                                  // }
+
+                                  stopWatch.stop();
+                                  // Logger.printLog(
+                                  //   '[CR] : ${stopWatch.elapsedMilliseconds}',
+                                  // );
+                                },
+                                onScrollChanged: (controller, x, y) async {
+                                  if (y == 0) {
+                                    // _updateStatusBarColorFromTop();
+                                  }
+                                  if (y > statusBarHeight) {
+                                    _showAppBar.value = false;
+                                    // _updateSystemTheme();
+                                  } else if (y < statusBarHeight &&
+                                      !_showAppBar.value) {
+                                    _showAppBar.value = true;
+                                  }
+                                  // _previousScrollOffset = y;
+                                },
+                                onLoadStart: (controller, url) {
+                                  _url.value ??= url?.rawValue;
+
+                                  // urlController.text = _url.value;
+                                },
+                                onGeolocationPermissionsShowPrompt:
+                                    (controller, origin) async {
+                                  // Request location permission
+                                  // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
+
+                                  final locationGranted =
+                                      await _requestPermission(
+                                    Permission.location,
+                                  );
+
+                                  return GeolocationPermissionShowPromptResponse(
+                                    origin: origin,
+                                    allow: locationGranted,
+                                    retain: true,
+                                  );
+                                },
+                                onPermissionRequest:
+                                    (controller, request) async {
+                                  var granted = false;
+
+                                  if (request.resources.contains(
+                                    PermissionResourceType.GEOLOCATION,
+                                  )) {
+                                    granted = await _requestPermission(
+                                      Permission.location,
+                                    );
+                                  }
+                                  if (request.resources.contains(
+                                      PermissionResourceType.CAMERA)) {
+                                    granted = await _requestPermission(
+                                      Permission.camera,
+                                    );
+                                  }
+                                  if (request.resources.contains(
+                                    PermissionResourceType.MICROPHONE,
+                                  )) {
+                                    granted = await _requestPermission(
+                                      Permission.microphone,
+                                    );
+                                  }
+                                  if (request.resources.contains(
+                                    PermissionResourceType.PROTECTED_MEDIA_ID,
+                                  )) {
+                                    granted = await _requestPermission(
+                                      Permission.storage,
+                                    );
+                                  }
+
+                                  return PermissionResponse(
+                                    resources: request.resources,
+                                    action: granted
+                                        ? PermissionResponseAction.GRANT
+                                        : PermissionResponseAction.DENY,
+                                  );
+                                },
+                                shouldOverrideUrlLoading:
+                                    (controller, navigationAction) async {
+                                  return NavigationActionPolicy.ALLOW;
+                                },
+                                onLoadStop: (controller, url) async {
+                                  await pullToRefreshController
+                                      ?.endRefreshing()
+                                      .catchError(
+                                        (_) {},
+                                      );
+
+                                  _url.value ??= url?.rawValue;
+                                  // urlController.text = _url.value;
+                                  // if (_historyCleared == false) {
+                                  //   Logger.printLog('history clear in onstop');
+                                  //   final stopWatch = Stopwatch()..start();
+                                  //   await webViewController?.clearHistory();
+                                  //   stopWatch.stop();
+                                  //   Logger.printLog(
+                                  //     '[CR] : stop ${stopWatch.elapsedMilliseconds}',
+                                  //   );
+                                  //   _historyCleared = true;
+                                  // }
+                                  await _updateCanBack();
+                                  await _updateStatusBarColorFromTop();
+                                },
+                                onReceivedError: (controller, request, error) {
+                                  pullToRefreshController
+                                      ?.endRefreshing()
+                                      .catchError(
                                     (_) async {
-                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                      // JUST LIKE APPS IN BACKGROUND TYPE
+                                      final theme = Theme.of(context);
+                                      await CustomTabsService.launchUrl(
+                                        url: request.url.toString(),
+                                        theme: theme,
+                                      ).then(
+                                        (_) async {
+                                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                          // JUST LIKE APPS IN BACKGROUND TYPE
+                                        },
+                                      );
                                     },
                                   );
                                 },
+                                onProgressChanged: (controller, progress) {
+                                  if (progress == 100) {
+                                    pullToRefreshController
+                                        ?.endRefreshing()
+                                        .catchError(
+                                          (_) {},
+                                        );
+                                  }
+                                  _progress.value = progress / 100;
+                                  // urlController.text = _url.value;
+                                },
+                                onUpdateVisitedHistory:
+                                    (controller, url, androidIsReload) async {
+                                  _url.value ??= url?.rawValue;
+
+                                  // urlController.text = _url.value;
+                                  await _updateCanBack();
+                                },
+                                onConsoleMessage: (controller, consoleMessage) {
+                                  if (kDebugMode) {
+                                    print(consoleMessage);
+                                  }
+                                },
                               );
-                            },
-                            onProgressChanged: (controller, progress) {
-                              if (progress == 100) {
-                                pullToRefreshController
-                                    ?.endRefreshing()
-                                    .catchError(
-                                      (_) {},
-                                    );
-                              }
-                              _progress.value = progress / 100;
-                              urlController.text = _url.value;
-                            },
-                            onUpdateVisitedHistory:
-                                (controller, url, androidIsReload) async {
-                              _url.value = url.toString();
-                              urlController.text = _url.value;
-                              await _updateCanBack();
-                            },
-                            onConsoleMessage: (controller, consoleMessage) {
-                              if (kDebugMode) {
-                                print(consoleMessage);
-                              }
                             },
                           ),
                         ),
