@@ -435,8 +435,8 @@ class _UrlFaviconListTemplateScreenState
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: availableUrls.length,
                   maxCrossAxisExtent: 80,
-                  mainAxisSpacing: 24,
-                  crossAxisSpacing: 24,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
                   itemBuilder: (context, index) {
                     final url = availableUrls[index].value;
 

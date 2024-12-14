@@ -186,8 +186,8 @@ class _RSSFeedWebViewState extends State<RSSFeedWebView> {
                                 // );
 
                                 _urlLoadState.value = LoadingStates.loaded;
-                                await pullToRefreshController?.endRefreshing();
                                 await webViewController?.clearHistory();
+                                await pullToRefreshController?.endRefreshing();
                               } catch (e) {
                                 // Logger.printLog('RSS Feed WebView error $e');
                               }

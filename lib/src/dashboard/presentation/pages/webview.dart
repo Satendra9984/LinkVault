@@ -11,6 +11,7 @@ import 'package:link_vault/core/common/repository_layer/models/global_user_model
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_service.dart';
 import 'package:link_vault/core/utils/logger.dart';
+// import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart'; // Add permission_handler dependency
 
 class DashboardWebView extends StatefulWidget {
@@ -26,10 +27,11 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   final GlobalKey webViewKey = GlobalKey();
   final _showAppBar = ValueNotifier(true);
   final _statusBarBgColorDefault = ValueNotifier<Color?>(null);
-  // int _previousScrollOffset = 0;
+
   InAppWebViewController? webViewController;
   final _canWebviewGoBack = ValueNotifier(false);
   bool _historyCleared = false;
+
   InAppWebViewSettings settings = InAppWebViewSettings(
     useOnLoadResource: true,
     isInspectable: kDebugMode,
@@ -40,9 +42,9 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   );
 
   PullToRefreshController? pullToRefreshController;
-  final _url = ValueNotifier<String?>(null);
+  // final _url = ValueNotifier<String?>(null);
+  final _prevBackListUrl = ValueNotifier<List<WebHistoryItem>?>(null);
   final _progress = ValueNotifier<double>(0);
-  final urlController = TextEditingController();
   final _isDarkMode = ValueNotifier(false);
   final userSwipedSystemStatusBar = ValueNotifier(0);
 
@@ -57,7 +59,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
     );
 
     super.initState();
-    _initializeWebview();
+
     pullToRefreshController = kIsWeb ||
             ![TargetPlatform.iOS, TargetPlatform.android]
                 .contains(defaultTargetPlatform)
@@ -80,177 +82,120 @@ class _DashboardWebViewState extends State<DashboardWebView> {
           );
   }
 
-  void _initializeWebview() {
-    final globalUser = context.read<GlobalUserCubit>().getGlobalUser()!;
-    final webviewcubit = context.read<WebviewsCubit>();
-
-    final webviewPoolItem = webviewcubit.getWebViewPoolItem(globalUser.id);
-
-    if (webviewPoolItem?.controller != null) {
-      // webviewPoolItem?.controller?.loadUrl(
-      //   urlRequest: URLRequest(
-      //     url: WebUri(widget.url),
-      //   ),
-      // );
-
-      // webViewController = webviewPoolItem?.controller;
-    }
-  }
-
   Future<void> _updateCanBack() async {
-    if (webViewController == null) {
-      return;
-    }
-    final currentUrl = await webViewController?.getUrl();
-    if (currentUrl?.rawValue != null) {
-      final webViewUrl = Uri.parse(currentUrl!.rawValue);
-      final originalUrl = Uri.parse(_url.value ?? widget.url);
-
-      final areUrlsSame = compareUrls(webViewUrl, originalUrl);
-
-      // Logger.printLog(
-      //   '[RAW] WebView URL: ${currentUrl.rawValue}, '
-      //   'Original URL: ${_url.value} '
-      //   '${currentUrl.rawValue == _url.value} '
-      //   'Same: $areUrlsSame',
-      // );
-
-      if (areUrlsSame) {
-        // Perform your logic, e.g., exit the screen
-        _canWebviewGoBack.value = false;
+    try {
+      if (webViewController == null) {
+        // Logger.printLog('WEBVIEW CONTROLLER IS NULL');
         return;
       }
 
       final webviewCanGoBack = await webViewController!.canGoBack();
-      _canWebviewGoBack.value = webviewCanGoBack;
+      if (webviewCanGoBack == false || _prevBackListUrl.value == null) {
+        _canWebviewGoBack.value = webviewCanGoBack;
+        Logger.printLog(
+          'webviewCanGoBack $webviewCanGoBack , prevValueList ${_prevBackListUrl.value == null}',
+        );
+        return;
+      }
+
+      await webViewController?.getCopyBackForwardList().then(
+        (webhis) {
+          if (webhis == null || webhis.list == null) {
+            return;
+          }
+          final currentBackList = webhis.list!;
+          final prevBackList = _prevBackListUrl.value!;
+
+          if ((currentBackList.length - prevBackList.length) <= 1) {
+            _canWebviewGoBack.value = false;
+          } else {
+            _canWebviewGoBack.value = true;
+          }
+
+          Logger.printLog(
+            'webviewCanGoBack IN GETCOPYBACKFORWARDLIST $webviewCanGoBack ',
+          );
+        },
+      );
+    } catch (e) {
+      Logger.printLog('Error in _updateCanBack: $e');
     }
-  }
-
-// Function to compare URLs
-  bool compareUrls(Uri url1, Uri url2) {
-    final areSchemesSame = url1.scheme == url2.scheme;
-    final arePathSame = url1.path == url2.path;
-    final areHostSame = url1.host == url2.host;
-    // final areNormalizeSame1 = normalizeQueryParams(url1.queryParameters);
-    // final areNormalizeSame2 = normalizeQueryParams(url2.queryParameters);
-    final areNormalizeSame = mapsAreEqual(
-      normalizeQueryParams(url1.queryParameters),
-      normalizeQueryParams(url2.queryParameters),
-    );
-
-    // Logger.printLog(
-    //   '[Cangoback] : scheme $areSchemesSame '
-    //   'path $arePathSame '
-    //   'host $areHostSame '
-    //   'normalize ${areNormalizeSame1} ${areNormalizeSame2} ${areNormalizeSame}',
-    // );
-
-    return areSchemesSame &&
-        areHostSame &&
-        arePathSame &&
-        areNormalizeSame;
-  }
-
-  bool mapsAreEqual(Map<String, String> map1, Map<String, String> map2) {
-    if (map1.length != map2.length) return false;
-
-    for (final key in map1.keys) {
-      if (map1[key] != map2[key]) return false;
-    }
-
-    return true;
-  }
-
-// Helper to normalize query parameters
-  Map<String, String> normalizeQueryParams(Map<String, String> params) {
-    final normalized = Map<String, String>.from(params)
-      ..removeWhere((key, value) => value.isEmpty); // Remove empty params
-
-    return normalized;
   }
 
   Future<void> _updateStatusBarColorFromTop() async {
-    // Evaluate JavaScript and fetch background colors
-    final colorValue = await webViewController?.evaluateJavascript(
-      source: '''
-(function() {
-    function getBackgroundColor(element) {
-        while (element) {
-            const style = window.getComputedStyle(element);
-            if (style.backgroundColor && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                return style.backgroundColor;
-            }
-            element = element.parentElement;
-        }
-        return null;
-    }
+    try {
+      // Evaluate JavaScript and fetch background colors
+      final colorValue = await webViewController?.evaluateJavascript(
+        source: '''
+                  (function() {
+                      function getBackgroundColor(element) {
+                          while (element) {
+                              const style = window.getComputedStyle(element);
+                              if (style.backgroundColor && style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                                  return style.backgroundColor;
+                              }
+                              element = element.parentElement;
+                          }
+                          return null;
+                      }
 
-    const samplePoints = [0, window.innerWidth * 0.25, window.innerWidth * 0.5, window.innerWidth * 0.75, window.innerWidth - 1];
-    const colors = samplePoints.map(x => {
-        const element = document.elementFromPoint(x, 0);
-        return element ? getBackgroundColor(element) : null;
-    });
+                      const samplePoints = [0, window.innerWidth * 0.25, window.innerWidth * 0.5, window.innerWidth * 0.75, window.innerWidth - 1];
+                      const colors = samplePoints.map(x => {
+                          const element = document.elementFromPoint(x, 0);
+                          return element ? getBackgroundColor(element) : null;
+                      });
 
-    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    return JSON.stringify({
-        colors: colors,
-        prefersDarkMode: prefersDarkMode
-    });
-})();
-    ''',
-    );
-
-    if (colorValue != null && colorValue != 'null') {
-      // Parse the JSON result
-      final result = jsonDecode(colorValue.toString()) as Map<String, dynamic>;
-      final colors = result['colors'] as List<dynamic>;
-      final prefersDarkMode = result['prefersDarkMode'] as bool;
-
-      // Convert sampled colors to Flutter Color objects and filter out null/transparent colors
-      final parsedColors = colors
-          .map((c) => _parseColor(c.toString()))
-          .where((color) => color != null && color.opacity > 0)
-          .toList();
-
-      Color? effectiveColor;
-
-      if (parsedColors.isNotEmpty) {
-        // Option 1: Use the first non-transparent color (or any heuristic for dominant color)
-        effectiveColor = parsedColors.first;
-
-        // Option 2 (Alternative): Calculate an average color if multiple colors are available
-        effectiveColor = _averageColor(parsedColors);
-        // Logger.printLog(
-        //   'statusbarcolor: $parsedColors $effectiveColor, mode: $prefersDarkMode',
-        // );
-      }
-
-      // If no valid color was detected, apply a fallback based on dark mode preference
-      effectiveColor ??= prefersDarkMode ? Colors.black87 : Colors.white70;
-      // Logger.printLog(
-      //   'statusbarcoloe: $parsedColors, mode: $prefersDarkMode',
-      // );
-      // Apply the effective color to the status bar
-      SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(
-          statusBarColor: effectiveColor,
-          statusBarIconBrightness:
-              prefersDarkMode ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor:
-              prefersDarkMode ? Colors.black : Colors.white,
-          systemNavigationBarIconBrightness:
-              prefersDarkMode ? Brightness.light : Brightness.dark,
-        ),
+                      return JSON.stringify({
+                          colors: colors,
+                          prefersDarkMode: prefersDarkMode
+                      });
+                  })();
+               ''',
       );
 
-      _statusBarBgColorDefault.value = effectiveColor;
-      _isDarkMode.value = prefersDarkMode;
+      if (colorValue != null && colorValue != 'null') {
+        // Parse the JSON result
+        final result =
+            jsonDecode(colorValue.toString()) as Map<String, dynamic>;
+        final colors = result['colors'] as List<dynamic>;
+        final prefersDarkMode = result['prefersDarkMode'] as bool;
 
-      // Logger.printLog(
-      //   '[WEBVIEW] : final effective color: $effectiveColor, darkMode: $prefersDarkMode',
-      // );
-    }
+        // Convert sampled colors to Flutter Color objects and filter out null/transparent colors
+        final parsedColors = colors
+            .map((c) => _parseColor(c.toString()))
+            .where((color) => color != null && color.opacity > 0)
+            .toList();
+
+        Color? effectiveColor;
+
+        if (parsedColors.isNotEmpty) {
+          // Option 1: Use the first non-transparent color (or any heuristic for dominant color)
+          effectiveColor = parsedColors.first;
+          // Option 2 (Alternative): Calculate an average color if multiple colors are available
+          effectiveColor = _averageColor(parsedColors);
+        }
+
+        // If no valid color was detected, apply a fallback based on dark mode preference
+        effectiveColor ??= prefersDarkMode ? Colors.black87 : Colors.white70;
+        // Apply the effective color to the status bar
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            statusBarColor: effectiveColor,
+            statusBarIconBrightness:
+                prefersDarkMode ? Brightness.light : Brightness.dark,
+            systemNavigationBarColor:
+                prefersDarkMode ? Colors.black : Colors.white,
+            systemNavigationBarIconBrightness:
+                prefersDarkMode ? Brightness.light : Brightness.dark,
+          ),
+        );
+
+        _statusBarBgColorDefault.value = effectiveColor;
+        _isDarkMode.value = prefersDarkMode;
+      }
+    } catch (e) {}
   }
 
   // Function to calculate the average color of a list of Colors
@@ -324,14 +269,12 @@ class _DashboardWebViewState extends State<DashboardWebView> {
         return ValueListenableBuilder(
           valueListenable: _canWebviewGoBack,
           builder: (context, canWebviewGoBack, _) {
-            Logger.printLog('[Cangoback] $canWebviewGoBack');
             return WillPopScope(
               onWillPop: () async {
                 if (canWebviewGoBack) {
                   await webViewController?.goBack();
                   return false;
                 }
-
                 return true;
               },
               child: Scaffold(
@@ -339,33 +282,16 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                   children: [
                     Column(
                       children: [
-                        GestureDetector(
-                          onVerticalDragStart: (details) {
-                            if (details.globalPosition.dy >
-                                MediaQuery.of(context).size.height * 0.9) {
-                              // Detect swipe near the bottom of the screen
-                              userSwipedSystemStatusBar.value = 1;
-                            }
+                        ValueListenableBuilder(
+                          valueListenable: _statusBarBgColorDefault,
+                          builder: (ctx, statusBarBgColorDefault, _) {
+                            return Container(
+                              height: statusBarHeight,
+                              width: scrnsize.width,
+                              color: statusBarBgColorDefault ??
+                                  ColourPallette.white,
+                            );
                           },
-                          child: ValueListenableBuilder(
-                            valueListenable: _showAppBar,
-                            builder: (ctx, showAppBar, _) {
-                              // if (!showAppBar) {
-                              //   return SizedBox(height: statusBarHeight);
-                              // }
-                              return ValueListenableBuilder(
-                                valueListenable: _statusBarBgColorDefault,
-                                builder: (ctx, statusBarBgColorDefault, _) {
-                                  return Container(
-                                    height: statusBarHeight,
-                                    width: scrnsize.width,
-                                    color: statusBarBgColorDefault ??
-                                        ColourPallette.white,
-                                  );
-                                },
-                              );
-                            },
-                          ),
                         ),
                         Expanded(
                           child: BlocBuilder<WebviewsCubit, WebViewState>(
@@ -379,40 +305,22 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                               final webviewPoolItem = webviewcubit
                                   .getWebViewPoolItem(globalUser.id);
 
-                              // Logger.printLog(
-                              //   'Webviewpoolitem: ${webviewPoolItem?.keepAliveObject}',
-                              // );
-
                               return InAppWebView(
                                 key: webViewKey,
-                                // initialUrlRequest:
-                                //     URLRequest(url: WebUri(widget.url)),
                                 keepAlive: webviewPoolItem?.keepAliveObject,
                                 initialSettings: settings,
                                 pullToRefreshController:
                                     pullToRefreshController,
                                 onWebViewCreated: (controller) async {
-                                  // Logger.printLog('loadingUrl in oncreated');
                                   webViewController = controller;
-                                  final stopWatch = Stopwatch()..start();
-
-                                  // Logger.printLog(
-                                  //   '[CR] : ${stopWatch.elapsedMilliseconds}',
-                                  // );
+                                  // final stopWatch3 = Stopwatch()..start();
                                   await webViewController?.loadUrl(
                                     urlRequest: URLRequest(
                                       url: WebUri(widget.url),
                                     ),
                                   );
-
-                                  // if (_historyCleared == false) {
-                                  //   await webViewController?.clearHistory();
-                                  //   // _historyCleared = true;
-                                  // }
-
-                                  stopWatch.stop();
                                   // Logger.printLog(
-                                  //   '[CR] : ${stopWatch.elapsedMilliseconds}',
+                                  //   '[LOADURL] : ${stopWatch3.elapsedMilliseconds}',
                                   // );
                                 },
                                 onScrollChanged: (controller, x, y) async {
@@ -428,10 +336,8 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                                   }
                                   // _previousScrollOffset = y;
                                 },
-                                onLoadStart: (controller, url) {
-                                  _url.value ??= url?.rawValue;
-
-                                  // urlController.text = _url.value;
+                                onLoadStart: (controller, url) async {
+                                  await _updateCanBack();
                                 },
                                 onGeolocationPermissionsShowPrompt:
                                     (controller, origin) async {
@@ -495,22 +401,35 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                                 onLoadStop: (controller, url) async {
                                   await pullToRefreshController
                                       ?.endRefreshing()
-                                      .catchError(
-                                        (_) {},
-                                      );
+                                      .catchError((_) {});
 
-                                  _url.value ??= url?.rawValue;
-                                  // urlController.text = _url.value;
-                                  // if (_historyCleared == false) {
-                                  //   Logger.printLog('history clear in onstop');
-                                  //   final stopWatch = Stopwatch()..start();
-                                  //   await webViewController?.clearHistory();
-                                  //   stopWatch.stop();
-                                  //   Logger.printLog(
-                                  //     '[CR] : stop ${stopWatch.elapsedMilliseconds}',
-                                  //   );
-                                  //   _historyCleared = true;
-                                  // }
+                                  // Store original URL on first load
+                                  // _url.value ??= url?.rawValue;
+                                  // Logger.printLog(
+                                  //   '[LOADEDURL] : ${url?.rawValue}',
+                                  // );
+                                  // Clear history only if user is navigating outside original URL context
+                                  if (_historyCleared == false) {
+                                    // final stopWatch4 = Stopwatch()..start();
+                                    await webViewController?.clearHistory();
+                                    await controller
+                                        .getCopyBackForwardList()
+                                        .then((list) {
+                                      if (list == null) return;
+                                      // for (final his
+                                      //     in list.list ?? <WebHistoryItem>[]) {
+                                      //   Logger.printLog(
+                                      //     '[webhistory] : ${his.url?.rawValue}\n',
+                                      //   );
+                                      // }
+                                      _prevBackListUrl.value ??= list.list;
+                                    });
+                                    // Logger.printLog(
+                                    //   '[CR]: History cleared. ${stopWatch4.elapsedMilliseconds}',
+                                    // );
+                                    _historyCleared = true;
+                                  }
+
                                   await _updateCanBack();
                                   await _updateStatusBarColorFromTop();
                                 },
@@ -545,9 +464,6 @@ class _DashboardWebViewState extends State<DashboardWebView> {
                                 },
                                 onUpdateVisitedHistory:
                                     (controller, url, androidIsReload) async {
-                                  _url.value ??= url?.rawValue;
-
-                                  // urlController.text = _url.value;
                                   await _updateCanBack();
                                 },
                                 onConsoleMessage: (controller, consoleMessage) {
