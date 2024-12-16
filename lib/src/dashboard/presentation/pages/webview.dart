@@ -29,7 +29,7 @@ class _DashboardWebViewState extends State<DashboardWebView> {
   final _statusBarBgColorDefault = ValueNotifier<Color?>(null);
 
   InAppWebViewController? webViewController;
-  final _canWebviewGoBack = ValueNotifier(false);
+  // final _canWebviewGoBack = ValueNotifier(false);
   bool _historyCleared = false;
 
   InAppWebViewSettings settings = InAppWebViewSettings(
@@ -178,234 +178,229 @@ class _DashboardWebViewState extends State<DashboardWebView> {
     return ValueListenableBuilder(
       valueListenable: _isDarkMode,
       builder: (context, isDarkMode, _) {
-        return ValueListenableBuilder(
-          valueListenable: _canWebviewGoBack,
-          builder: (context, canWebviewGoBack, _) {
-            return WillPopScope(
-              onWillPop: () async {
-                try {
-                  final canGoBack = await webViewController?.canGoBack();
-
-                  if (canGoBack != null && canGoBack) {
-                    await webViewController?.goBack();
-                    return false;
-                  } else {
-                    return true;
-                  }
-                } catch (e) {
-                  return false;
-                }
-              },
-              child: Scaffold(
-                body: Stack(
+        return WillPopScope(
+          onWillPop: () async {
+            try {
+              final canGoBack = await webViewController?.canGoBack();
+        
+              if (canGoBack != null && canGoBack) {
+                await webViewController?.goBack();
+                return false;
+              } else {
+                return true;
+              }
+            } catch (e) {
+              return false;
+            }
+          },
+          child: Scaffold(
+            body: Stack(
+              children: [
+                Column(
                   children: [
-                    Column(
-                      children: [
-                        ValueListenableBuilder(
-                          valueListenable: _statusBarBgColorDefault,
-                          builder: (ctx, statusBarBgColorDefault, _) {
-                            return Container(
-                              height: statusBarHeight,
-                              width: scrnsize.width,
-                              color: statusBarBgColorDefault ??
-                                  ColourPallette.white,
-                            );
-                          },
-                        ),
-                        Expanded(
-                          child: BlocBuilder<WebviewsCubit, WebViewState>(
-                            builder: (context, state) {
-                              final globalUser = context
-                                  .read<GlobalUserCubit>()
-                                  .getGlobalUser()!;
-                              final webviewcubit =
-                                  context.read<WebviewsCubit>();
-
-                              final webviewPoolItem = webviewcubit
-                                  .getWebViewPoolItem(globalUser.id);
-
-                              return InAppWebView(
-                                key: webViewKey,
-                                keepAlive: webviewPoolItem?.keepAliveObject,
-                                initialSettings: settings,
-                                pullToRefreshController:
-                                    pullToRefreshController,
-                                onWebViewCreated: (controller) async {
-                                  webViewController = controller;
-                                  await webViewController?.loadUrl(
-                                    urlRequest: URLRequest(
-                                      url: WebUri(widget.url),
-                                    ),
-                                  );
-                                },
-                                onScrollChanged: (controller, x, y) async {
-                                  if (y == 0) {
-                                    // _updateStatusBarColorFromTop();
-                                  }
-                                  if (y > statusBarHeight) {
-                                    _showAppBar.value = false;
-                                    // _updateSystemTheme();
-                                  } else if (y < statusBarHeight &&
-                                      !_showAppBar.value) {
-                                    _showAppBar.value = true;
-                                  }
-                                  // _previousScrollOffset = y;
-                                },
-                                onLoadStart: (controller, url) async {
-                                  // Logger.printLog(
-                                  //   'onLoadStart: ${url?.rawValue}',
-                                  // );
-                                  // await _updateCanBack();
-                                },
-                                onGeolocationPermissionsShowPrompt:
-                                    (controller, origin) async {
-                                  // Request location permission
-                                  // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
-
-                                  final locationGranted =
-                                      await _requestPermission(
-                                    Permission.location,
-                                  );
-
-                                  return GeolocationPermissionShowPromptResponse(
-                                    origin: origin,
-                                    allow: locationGranted,
-                                    retain: true,
-                                  );
-                                },
-                                onPermissionRequest:
-                                    (controller, request) async {
-                                  var granted = false;
-
-                                  if (request.resources.contains(
-                                    PermissionResourceType.GEOLOCATION,
-                                  )) {
-                                    granted = await _requestPermission(
-                                      Permission.location,
-                                    );
-                                  }
-                                  if (request.resources.contains(
-                                      PermissionResourceType.CAMERA)) {
-                                    granted = await _requestPermission(
-                                      Permission.camera,
-                                    );
-                                  }
-                                  if (request.resources.contains(
-                                    PermissionResourceType.MICROPHONE,
-                                  )) {
-                                    granted = await _requestPermission(
-                                      Permission.microphone,
-                                    );
-                                  }
-                                  if (request.resources.contains(
-                                    PermissionResourceType.PROTECTED_MEDIA_ID,
-                                  )) {
-                                    granted = await _requestPermission(
-                                      Permission.storage,
-                                    );
-                                  }
-
-                                  return PermissionResponse(
-                                    resources: request.resources,
-                                    action: granted
-                                        ? PermissionResponseAction.GRANT
-                                        : PermissionResponseAction.DENY,
-                                  );
-                                },
-                                shouldOverrideUrlLoading:
-                                    (controller, navigationAction) async {
-                                  return NavigationActionPolicy.ALLOW;
-                                },
-                                onLoadStop: (controller, url) async {
-                                  await pullToRefreshController
-                                      ?.endRefreshing()
-                                      .catchError((_) {});
-
-                                  // await _updateCanBack();
-                                  await _updateStatusBarColorFromTop();
-                                },
-                                onReceivedError: (controller, request, error) {
-                                  pullToRefreshController
-                                      ?.endRefreshing()
-                                      .catchError(
+                    ValueListenableBuilder(
+                      valueListenable: _statusBarBgColorDefault,
+                      builder: (ctx, statusBarBgColorDefault, _) {
+                        return Container(
+                          height: statusBarHeight,
+                          width: scrnsize.width,
+                          color: statusBarBgColorDefault ??
+                              ColourPallette.white,
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: BlocBuilder<WebviewsCubit, WebViewState>(
+                        builder: (context, state) {
+                          final globalUser = context
+                              .read<GlobalUserCubit>()
+                              .getGlobalUser()!;
+                          final webviewcubit =
+                              context.read<WebviewsCubit>();
+        
+                          final webviewPoolItem = webviewcubit
+                              .getWebViewPoolItem(globalUser.id);
+        
+                          return InAppWebView(
+                            key: webViewKey,
+                            keepAlive: webviewPoolItem?.keepAliveObject,
+                            initialSettings: settings,
+                            pullToRefreshController:
+                                pullToRefreshController,
+                            onWebViewCreated: (controller) async {
+                              webViewController = controller;
+                              await webViewController?.loadUrl(
+                                urlRequest: URLRequest(
+                                  url: WebUri(widget.url),
+                                ),
+                              );
+                            },
+                            onScrollChanged: (controller, x, y) async {
+                              if (y == 0) {
+                                // _updateStatusBarColorFromTop();
+                              }
+                              if (y > statusBarHeight) {
+                                _showAppBar.value = false;
+                                // _updateSystemTheme();
+                              } else if (y < statusBarHeight &&
+                                  !_showAppBar.value) {
+                                _showAppBar.value = true;
+                              }
+                              // _previousScrollOffset = y;
+                            },
+                            onLoadStart: (controller, url) async {
+                              // Logger.printLog(
+                              //   'onLoadStart: ${url?.rawValue}',
+                              // );
+                              // await _updateCanBack();
+                            },
+                            onGeolocationPermissionsShowPrompt:
+                                (controller, origin) async {
+                              // Request location permission
+                              // Logger.printLog('[PERMISSION] : ${origin} REQUESTED');
+        
+                              final locationGranted =
+                                  await _requestPermission(
+                                Permission.location,
+                              );
+        
+                              return GeolocationPermissionShowPromptResponse(
+                                origin: origin,
+                                allow: locationGranted,
+                                retain: true,
+                              );
+                            },
+                            onPermissionRequest:
+                                (controller, request) async {
+                              var granted = false;
+        
+                              if (request.resources.contains(
+                                PermissionResourceType.GEOLOCATION,
+                              )) {
+                                granted = await _requestPermission(
+                                  Permission.location,
+                                );
+                              }
+                              if (request.resources.contains(
+                                  PermissionResourceType.CAMERA)) {
+                                granted = await _requestPermission(
+                                  Permission.camera,
+                                );
+                              }
+                              if (request.resources.contains(
+                                PermissionResourceType.MICROPHONE,
+                              )) {
+                                granted = await _requestPermission(
+                                  Permission.microphone,
+                                );
+                              }
+                              if (request.resources.contains(
+                                PermissionResourceType.PROTECTED_MEDIA_ID,
+                              )) {
+                                granted = await _requestPermission(
+                                  Permission.storage,
+                                );
+                              }
+        
+                              return PermissionResponse(
+                                resources: request.resources,
+                                action: granted
+                                    ? PermissionResponseAction.GRANT
+                                    : PermissionResponseAction.DENY,
+                              );
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, navigationAction) async {
+                              return NavigationActionPolicy.ALLOW;
+                            },
+                            onLoadStop: (controller, url) async {
+                              await pullToRefreshController
+                                  ?.endRefreshing()
+                                  .catchError((_) {});
+        
+                              // await _updateCanBack();
+                              await _updateStatusBarColorFromTop();
+                            },
+                            onReceivedError: (controller, request, error) {
+                              pullToRefreshController
+                                  ?.endRefreshing()
+                                  .catchError(
+                                (_) async {
+                                  final theme = Theme.of(context);
+                                  await CustomTabsService.launchUrl(
+                                    url: request.url.toString(),
+                                    theme: theme,
+                                  ).then(
                                     (_) async {
-                                      final theme = Theme.of(context);
-                                      await CustomTabsService.launchUrl(
-                                        url: request.url.toString(),
-                                        theme: theme,
-                                      ).then(
-                                        (_) async {
-                                          // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
-                                          // JUST LIKE APPS IN BACKGROUND TYPE
-                                        },
-                                      );
+                                      // STORE IT IN RECENTS - NEED TO DISPLAY SOME PAGE-LIKE INTERFACE
+                                      // JUST LIKE APPS IN BACKGROUND TYPE
                                     },
                                   );
                                 },
-                                onProgressChanged: (controller, progress) {
-                                  if (progress == 100) {
-                                    pullToRefreshController
-                                        ?.endRefreshing()
-                                        .catchError((_) {});
-                                  }
-                                  _progress.value = progress / 100;
-                                },
-                                onUpdateVisitedHistory:
-                                    (controller, url, androidIsReload) async {
-                                  // Logger.printLog(
-                                  //   'VistedHistory : ${url?.rawValue}',
-                                  // );
-
-                                  await Future.wait(
-                                    [
-                                      // _updateCanBack(),
-                                      Future(
-                                        () async {
-                                          if (_historyCleared) {
-                                            return;
-                                          }
-
-                                          await webViewController
-                                              ?.clearHistory();
-                                          _historyCleared = true;
-                                        },
-                                      ),
-
-                                      _updateStatusBarColorFromTop(),
-                                    ],
-                                  );
-                                },
-                                onConsoleMessage: (controller, consoleMessage) {
-                                  if (kDebugMode) {
-                                    print(consoleMessage);
-                                  }
-                                },
                               );
                             },
-                          ),
-                        ),
-                      ],
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _progress,
-                      builder: (ctx, progress, _) {
-                        if (progress < 1.0) {
-                          return LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 2,
-                            color: Colors.green,
-                            backgroundColor: Colors.grey.withOpacity(0.75),
+                            onProgressChanged: (controller, progress) {
+                              if (progress == 100) {
+                                pullToRefreshController
+                                    ?.endRefreshing()
+                                    .catchError((_) {});
+                              }
+                              _progress.value = progress / 100;
+                            },
+                            onUpdateVisitedHistory:
+                                (controller, url, androidIsReload) async {
+                              // Logger.printLog(
+                              //   'VistedHistory : ${url?.rawValue}',
+                              // );
+        
+                              await Future.wait(
+                                [
+                                  // _updateCanBack(),
+                                  Future(
+                                    () async {
+                                      if (_historyCleared) {
+                                        return;
+                                      }
+        
+                                      await webViewController
+                                          ?.clearHistory();
+                                      _historyCleared = true;
+                                    },
+                                  ),
+        
+                                  _updateStatusBarColorFromTop(),
+                                ],
+                              );
+                            },
+                            onConsoleMessage: (controller, consoleMessage) {
+                              if (kDebugMode) {
+                                print(consoleMessage);
+                              }
+                            },
                           );
-                        } else {
-                          return Container();
-                        }
-                      },
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-            );
-          },
+                ValueListenableBuilder(
+                  valueListenable: _progress,
+                  builder: (ctx, progress, _) {
+                    if (progress < 1.0) {
+                      return LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 2,
+                        color: Colors.green,
+                        backgroundColor: Colors.grey.withOpacity(0.75),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

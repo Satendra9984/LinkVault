@@ -53,7 +53,7 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
 
   // SETTINGS
   // OPEN IN
-  final _urlLaunchType = ValueNotifier<UrlLaunchType>(UrlLaunchType.customTabs);
+  final _urlLaunchType = ValueNotifier<UrlLaunchType>(UrlLaunchType.webView);
 
   /// PREVIEW RELATED DATA
   final _showPreview = ValueNotifier<bool>(false);
