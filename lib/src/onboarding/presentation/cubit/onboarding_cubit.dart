@@ -22,8 +22,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
 
   Future<void> checkIfLoggedIn() async {
     final stopwatch = Stopwatch()..start();
-    Logger.printLog(
-        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
+    // Logger.printLog(
+    //     '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
 
     final result = await _authRepoImpl.isLoggedIn();
 
@@ -46,8 +46,8 @@ class OnBoardCubit extends Cubit<OnBoardState> {
     );
 
     stopwatch.stop();
-    Logger.printLog(
-        '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
+    // Logger.printLog(
+    //     '[INITAPP][CKIFLOGGEDIN] : ${stopwatch.elapsedMilliseconds}',);
   }
 
   bool isCreditExpired() {

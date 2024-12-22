@@ -103,21 +103,21 @@ Future<void> _initializeApp() async {
 }
 
 Future<void> _initializeFirebase() async {
-  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'production');
   var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
 
   if (flavor == 'development') {
     firebaseOptions = development.DefaultFirebaseOptions.currentPlatform;
   }
 
-  debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
+  // debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
 
   // Start Firebase initialization
   await Firebase.initializeApp(
     name: 'LinkVault Singleton',
     options: firebaseOptions,
   );
-  // Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
+  
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,

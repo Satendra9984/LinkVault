@@ -8,6 +8,8 @@ import 'package:link_vault/core/common/repository_layer/models/collection_model.
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
@@ -249,8 +251,13 @@ class CollectionsRepoImpl {
         );
       }
 
-      // Logger.printLog(StringUtils.getJsonFormat(updatedParentColl));
+      Logger.printLog(StringUtils.getJsonFormat(updatedParentColl));
       
+      await updateSubCollection(
+        subCollection: updatedParentColl,
+        userId: userId,
+      );
+
       return Right(
         (
           collection,
@@ -258,7 +265,7 @@ class CollectionsRepoImpl {
         ),
       );
     } catch (e) {
-      // Logger.printLog('[URL] : ${e}');
+      Logger.printLog('[URL] : ${e}');
       return Left(
         ServerFailure(
           message: 'Could Not Deleted. Check internet and try again.',

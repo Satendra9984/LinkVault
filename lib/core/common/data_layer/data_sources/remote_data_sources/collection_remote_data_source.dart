@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
@@ -11,6 +12,47 @@ class RemoteDataSourcesImpl {
   }) : _firestore = firestore;
 
   final FirebaseFirestore _firestore;
+
+  Future<CollectionModel?> fetchCollection({
+    required String collectionId,
+    required String userId,
+  }) async {
+    // [TODO] : Fetch Subcollection
+    try {
+      final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(folderCollections)
+          .doc(collectionId)
+          .get();
+
+      // // Logger.printLog('path: ${response.reference.path}, ');
+
+      final data = response.data();
+      // // Logger.printLog(
+      //     'path: ${response.reference.path}, data: ${data == null}');
+
+      if (data == null) {
+        // That mean user is using it first time may be
+        return null;
+      }
+
+      // user is not using first time
+      data['id'] = response.id;
+      // // Logger.printLog(StringUtils.getJsonFormat(data));
+
+      final collectionModel = CollectionModel.fromJson(data);
+
+      return collectionModel;
+    } catch (e) {
+      debugPrint('[log] : fetchCollection $e');
+
+      throw ServerException(
+        message: 'Something Went Wrong',
+        statusCode: 400,
+      );
+    }
+  }
 
   /// It will use `userId` to fetch root collection currently
   Future<CollectionModel?> fetchCollection({
@@ -166,8 +208,6 @@ class RemoteDataSourcesImpl {
           .collection(folderCollections)
           .doc(collectionId)
           .delete();
-
-
     } catch (e) {
       throw ServerException(
         message: 'Something went wrong.',
@@ -191,7 +231,7 @@ class RemoteDataSourcesImpl {
           .get();
 
       final data = response.data();
-      
+
       if (data == null) {
         // Logger.printLog('Url data is null');
         throw ServerException(

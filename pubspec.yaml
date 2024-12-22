@@ -2,7 +2,7 @@ name: link_vault
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 2.0.0+25
+version: 0.3.0+26
 
 
 environment:
@@ -33,7 +33,6 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_svg: ^2.0.9
   cloud_firestore: ^5.0.2
-  # webview_flutter: ^4.8.0
   google_mobile_ads: ^5.1.0
   lottie: ^3.1.2
   image: ^4.2.0
@@ -51,8 +50,6 @@ dependencies:
   flutter_custom_tabs: ^2.1.0
   flutter_inappwebview: ^6.0.0
   google_fonts: ^6.2.1
-  # flutter_widget_from_html: ^0.15.3
-  # archive: ^3.6.1
 
 dev_dependencies:
   flutter_test:

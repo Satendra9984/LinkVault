@@ -302,7 +302,7 @@ class _RssFeedUrlsListWidgetState extends State<RssFeedUrlsListWidget>
     final size = MediaQuery.of(context).size;
     const titleTextStyle = TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
     );
 
     await SystemChrome.setEnabledSystemUIMode(

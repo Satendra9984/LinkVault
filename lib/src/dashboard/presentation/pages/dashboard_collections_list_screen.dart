@@ -95,7 +95,7 @@ class _DashboardCollectionsListScreenState
     required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
-      clipBehavior: Clip.none,
+      clipBehavior: Clip.antiAlias,
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [

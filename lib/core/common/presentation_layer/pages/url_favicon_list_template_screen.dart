@@ -486,7 +486,7 @@ class _UrlFaviconListTemplateScreenState
 
                     const titleTextStyle = TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     );
 
                     final urlLaunchTypeLocalNotifier =
@@ -596,7 +596,7 @@ class _UrlFaviconListTemplateScreenState
                                       ),
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -608,7 +608,7 @@ class _UrlFaviconListTemplateScreenState
                                       ),
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),

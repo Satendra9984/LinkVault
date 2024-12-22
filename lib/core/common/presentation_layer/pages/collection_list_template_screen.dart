@@ -71,6 +71,7 @@ class _CollectionsListScreenTemplateState
   final _ztoaFilter = ValueNotifier(false);
   final _updatedAtLatestFilter = ValueNotifier(false);
   final _updatedAtOldestFilter = ValueNotifier(false);
+
   final _list =
       ValueNotifier<List<CollectionFetchModel>>(<CollectionFetchModel>[]);
 
@@ -112,6 +113,8 @@ class _CollectionsListScreenTemplateState
           collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: false,
+          isAtoZFilter: _atozFilter.value,
+          isLatestFirst: _updatedAtLatestFilter.value,
         );
   }
 
@@ -372,7 +375,7 @@ class _CollectionsListScreenTemplateState
                         itemCount: availableSubCollections.length,
                         padding: const EdgeInsets.only(bottom: 120),
                         maxCrossAxisExtent: 80,
-                        mainAxisSpacing: 24,
+                        mainAxisSpacing: 20,
                         crossAxisSpacing: 20,
                         itemBuilder: (context, index) {
                           final subCollection = availableSubCollections[index];

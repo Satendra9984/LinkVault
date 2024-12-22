@@ -175,13 +175,11 @@ class _DashboardUrlFaviconListScreenState
   }) {
     return AppBar(
       surfaceTintColor: ColourPallette.mystic,
-      clipBehavior: Clip.none,
-      // centerTitle: true,
+      clipBehavior: Clip.antiAlias,
       title: Row(
         children: [
           const Icon(
             Icons.apps_rounded,
-            // color: ColourPallette.mountainMeadow,
             size: 16,
           ),
           const SizedBox(width: 8),
@@ -395,7 +393,7 @@ class _DashboardUrlFaviconListScreenState
     final size = MediaQuery.of(context).size;
     const titleTextStyle = TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
     );
 
     await SystemChrome.setEnabledSystemUIMode(
@@ -471,7 +469,6 @@ class _DashboardUrlFaviconListScreenState
         },
       ),
     );
-
     // ..insert(
     //   2,
     //   // ADD TO FAVOURITES
