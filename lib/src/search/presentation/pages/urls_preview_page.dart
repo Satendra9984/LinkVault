@@ -263,6 +263,8 @@ class _SearchedUrlsPreviewListWidgetState
             duration: const Duration(milliseconds: 300),
             height: isVisible ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
+      clipBehavior: Clip.none,
+
               surfaceTintColor: ColourPallette.mystic,
               title: const Text(
                 'Advance Search',

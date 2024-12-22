@@ -587,7 +587,7 @@ class _UrlPreviewListTemplateScreenState
 
     const titleTextStyle = TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
     );
     widget.onLongPress(
       urlModel,

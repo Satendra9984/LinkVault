@@ -208,6 +208,7 @@ class _SearchedCollectionsListWidgetState
     required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
+      clipBehavior: Clip.none,
       surfaceTintColor: ColourPallette.mystic,
       title: const Text(
         'Advance Search',

@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
+import 'package:link_vault/src/favourites/presentation/pages/favourite_store_screen.dart';
 import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
 import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
 import 'package:link_vault/src/search/presentation/pages/adv_search_store_page.dart';
@@ -41,6 +43,25 @@ class _AppHomePageState extends State<AppHomePage> {
             );
       },
     );
+
+    _initializeWebViews();
+  }
+
+  void _initializeWebViews() {
+    try {
+      // INITIALIZING WEBVIEWS
+      final globarUserId = context.read<GlobalUserCubit>().getGlobalUser()!.id;
+
+      // FOR OPENING WEBAPPS
+      context.read<WebviewsCubit>().createWebView(
+            globarUserId,
+          );
+
+      // SEPECIFICALLY FOR RSSFEEDS    
+      context.read<WebviewsCubit>().createWebView(
+            globarUserId + RssFeed,
+          );
+    } catch (e) {}
   }
 
   @override
@@ -75,8 +96,9 @@ class _AppHomePageState extends State<AppHomePage> {
         appBar: AppBar(
           elevation: 0,
           centerTitle: true,
-          toolbarHeight: 140,
-          backgroundColor: ColourPallette.mountainMeadow.withOpacity(0.05),
+          toolbarHeight: 120,
+          clipBehavior: Clip.none,
+          backgroundColor: ColourPallette.mountainMeadow.withOpacity(0.1),
           title: Column(
             children: [
               SvgPicture.asset(
@@ -100,21 +122,19 @@ class _AppHomePageState extends State<AppHomePage> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              // const SizedBox(height: 16),
+              const SizedBox(height: 16),
             ],
           ),
         ),
         body: Center(
           child: ListView(
             children: [
-              // const SizedBox(height: 16),
-
               // Some Profile Details
               BlocBuilder<GlobalUserCubit, GlobalUserState>(
                 builder: (context, state) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: ColourPallette.mountainMeadow.withOpacity(0.05),
+                      color: ColourPallette.mountainMeadow.withOpacity(0.1),
                     ),
                     child: ListTile(
                       onTap: () {
@@ -190,7 +210,7 @@ class _AppHomePageState extends State<AppHomePage> {
                               collectionId: globalUser,
                               isRootCollection: true,
                               appBarLeadingIcon: const Icon(
-                                Icons.dashboard_rounded,
+                                Icons.apps_rounded,
                                 color: ColourPallette.mountainMeadow,
                               ),
                             ),
@@ -207,7 +227,7 @@ class _AppHomePageState extends State<AppHomePage> {
                         color: ColourPallette.mountainMeadow,
                       ),
                       title: const Text(
-                        'Web Apps',
+                        'Web-Apps',
                         style: sectionTextStyle,
                       ),
                       trailing: trailingIcon,
@@ -279,7 +299,7 @@ class _AppHomePageState extends State<AppHomePage> {
                         MediaRes.comingSoonSVG,
                         height: 16,
                         width: 16,
-                        // color: ColourPallette.mountainMeadow,
+                        color: ColourPallette.mountainMeadow,
                       ),
                     ),
 
@@ -382,7 +402,7 @@ class _AppHomePageState extends State<AppHomePage> {
                         MediaRes.comingSoonSVG,
                         height: 16,
                         width: 16,
-                        // color: ColourPallette.mountainMeadow,
+                        color: ColourPallette.mountainMeadow,
                       ),
                     ),
 
@@ -400,12 +420,6 @@ class _AppHomePageState extends State<AppHomePage> {
                         size: 24,
                         color: ColourPallette.mountainMeadow,
                       ),
-                      // SvgPicture.asset(
-                      //   MediaRes.collaborateSVG,
-                      //   height: 16,
-                      //   width: 16,
-                      //   color: ColourPallette.mountainMeadow,
-                      // ),
                       title: const Text(
                         'Support Us',
                         style: sectionTextStyle,

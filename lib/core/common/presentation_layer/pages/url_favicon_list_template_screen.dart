@@ -385,7 +385,7 @@ class _UrlFaviconListTemplateScreenState
                         borderRadius: BorderRadius.circular(16),
                       ),
                       backgroundColor: ColourPallette.salemgreen,
-                      elevation: 4,
+                      elevation: 2,
                       onPressed: () => widget.onAddUrlPressed(url: url),
                       label: showFullAddUrlButton
                           ? const Text(
@@ -435,8 +435,8 @@ class _UrlFaviconListTemplateScreenState
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: availableUrls.length,
                   maxCrossAxisExtent: 80,
-                  mainAxisSpacing: 24,
-                  crossAxisSpacing: 24,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
                   itemBuilder: (context, index) {
                     final url = availableUrls[index].value;
 
@@ -486,7 +486,7 @@ class _UrlFaviconListTemplateScreenState
 
                     const titleTextStyle = TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     );
 
                     final urlLaunchTypeLocalNotifier =
@@ -596,7 +596,7 @@ class _UrlFaviconListTemplateScreenState
                                       ),
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -608,7 +608,7 @@ class _UrlFaviconListTemplateScreenState
                                       ),
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),

@@ -116,12 +116,17 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String collectionId,
     required String userId,
     required bool isRootCollection,
+     // FILTERS
+    required bool isAtoZFilter,
+    required bool isLatestFirst,
   }) async {
     _collQueueManager.addTask(
       () => _fetchMoreSubCollections(
         collectionId: collectionId,
         userId: userId,
         isRootCollection: isRootCollection,
+        isAtoZFilter: isAtoZFilter,
+        isLatestFirst: isLatestFirst,
       ),
     );
   }
@@ -130,6 +135,10 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String collectionId,
     required String userId,
     required bool isRootCollection,
+    // FILTERS
+    required bool isAtoZFilter,
+    required bool isLatestFirst,
+
   }) async {
     // Assuming Not Collections In The State
     final fetchedCollection = state.collections[collectionId];

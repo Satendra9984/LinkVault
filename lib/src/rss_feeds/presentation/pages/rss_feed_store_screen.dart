@@ -147,17 +147,23 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
       builder: (context, showBottomBar, _) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.only(top: 4, bottom: 4),
           height: showBottomBar ? null : 0,
-
           decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: ColourPallette.mystic.withOpacity(0.5),
-                spreadRadius: 4,
-                blurRadius: 10,
-                offset: const Offset(0, -1), // changes position of shadow
+            border: Border(
+              top: BorderSide(
+                color: Colors.grey.shade200,
+                width: 0.5,
               ),
-            ],
+            ),
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: ColourPallette.mystic.withOpacity(0.5),
+            //     spreadRadius: 4,
+            //     blurRadius: 10,
+            //     offset: const Offset(0, -1), // changes position of shadow
+            //   ),
+            // ],
           ),
           // height: showBottomBar ? null : 0,
           child: ValueListenableBuilder(
@@ -172,18 +178,18 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
                 type: BottomNavigationBarType.fixed,
                 enableFeedback: false,
                 backgroundColor: ColourPallette.white,
-                elevation: 0,
-                selectedItemColor: ColourPallette.black,
-                selectedLabelStyle: const TextStyle(
+                elevation: 0.0,
+                selectedItemColor: Colors.grey.shade900,
+                selectedLabelStyle: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black,
+                  color: Colors.grey.shade900,
                 ),
-                unselectedItemColor: ColourPallette.black,
-                unselectedLabelStyle: const TextStyle(
+                unselectedItemColor: Colors.grey.shade900,
+                unselectedLabelStyle: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: ColourPallette.black,
+                  color: Colors.grey.shade900,
                 ),
                 items: [
                   CustomBottomNavItem.create(

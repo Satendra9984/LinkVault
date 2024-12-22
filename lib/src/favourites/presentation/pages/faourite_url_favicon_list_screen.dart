@@ -272,6 +272,8 @@ class _FavouritesUrlFaviconListScreenState
     required List<Widget> actions,
   }) {
     return AppBar(
+      clipBehavior: Clip.none,
+
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         children: [

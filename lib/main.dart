@@ -25,6 +25,7 @@ import 'package:link_vault/core/common/presentation_layer/providers/network_imag
 import 'package:link_vault/core/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_crud_cubit/url_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
+import 'package:link_vault/core/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/global_auth_repo.dart';
@@ -102,21 +103,21 @@ Future<void> _initializeApp() async {
 }
 
 Future<void> _initializeFirebase() async {
-  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
+  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'production');
   var firebaseOptions = prod.DefaultFirebaseOptions.currentPlatform;
 
   if (flavor == 'development') {
     firebaseOptions = development.DefaultFirebaseOptions.currentPlatform;
   }
 
-  debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
+  // debugPrint('IsProduction: $flavor ${firebaseOptions.projectId}');
 
   // Start Firebase initialization
   await Firebase.initializeApp(
     name: 'LinkVault Singleton',
     options: firebaseOptions,
   );
-  // Logger.printLog('[INITAPP][FIREBASE] : ${stopwatch.elapsedMilliseconds}');
+  
 
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
@@ -214,6 +215,7 @@ class MyApp extends StatelessWidget {
             globalUserCubit: context.read<GlobalUserCubit>(),
           ),
         ),
+
         //  Create a CRUD cubit for managing crud operation a single collection
         BlocProvider(
           create: (BuildContext context) => UrlCrudCubit(
@@ -299,6 +301,10 @@ class MyApp extends StatelessWidget {
 
         BlocProvider(
           create: (ctx) => UrlPreloadManagerCubit(),
+        ),
+
+        BlocProvider(
+          create: (ctx) => WebviewsCubit(),
         ),
       ],
       child: MaterialApp(

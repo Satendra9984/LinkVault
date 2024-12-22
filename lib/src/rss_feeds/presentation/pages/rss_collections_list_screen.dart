@@ -92,6 +92,8 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
     required List<Widget> Function(CollectionModel) collectionOptions,
   }) {
     return AppBar(
+      clipBehavior: Clip.none,
+
       surfaceTintColor: ColourPallette.mystic,
       title: Row(
         mainAxisSize: MainAxisSize.min,
@@ -106,7 +108,7 @@ class _RssCollectionsListScreenState extends State<RssCollectionsListScreen>
             widget.collectionModel.name,
             style: const TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

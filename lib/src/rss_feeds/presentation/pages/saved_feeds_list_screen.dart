@@ -120,6 +120,7 @@ class _SavedFeedsPreviewListScreenState
             required List<Widget> actions,
           }) {
             return AppBar(
+              clipBehavior: Clip.none,
               surfaceTintColor: ColourPallette.mystic,
               title: Row(
                 children: [
@@ -133,7 +134,7 @@ class _SavedFeedsPreviewListScreenState
                     fetchCollection.collection!.name,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -327,112 +328,114 @@ class _SavedFeedsPreviewListScreenState
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Builder(
-                      builder: (context) {
-                        final urlModelData = urlModel;
-                        final urlMetaData = urlModel.metaData!;
+                        builder: (context) {
+                          final urlModelData = urlModel;
+                          final urlMetaData = urlModel.metaData!;
 
-                        var name = '';
+                          var name = '';
 
-                        if (urlModelData.title.isNotEmpty) {
-                          name = urlModelData.title;
-                        } else if (urlMetaData.title != null &&
-                            urlMetaData.title!.isNotEmpty) {
-                          name = urlMetaData.title!;
-                        } else if (urlMetaData.websiteName != null &&
-                            urlMetaData.websiteName!.isNotEmpty) {
-                          name = urlMetaData.websiteName!;
-                        }
+                          if (urlModelData.title.isNotEmpty) {
+                            name = urlModelData.title;
+                          } else if (urlMetaData.title != null &&
+                              urlMetaData.title!.isNotEmpty) {
+                            name = urlMetaData.title!;
+                          } else if (urlMetaData.websiteName != null &&
+                              urlMetaData.websiteName!.isNotEmpty) {
+                            name = urlMetaData.websiteName!;
+                          }
 
-                        final placeHolder = Container(
-                          padding: const EdgeInsets.all(2),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            color: ColourPallette.black,
-                            // color: Colors.deepPurple
-                          ),
-                          child: Text(
-                            _websiteName(name, 5),
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            softWrap: true,
-                            overflow: TextOverflow.fade,
-                            style: const TextStyle(
-                              color: ColourPallette.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 8,
+                          final placeHolder = Container(
+                            padding: const EdgeInsets.all(2),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: ColourPallette.black,
+                              // color: Colors.deepPurple
                             ),
-                          ),
-                        );
-
-                        if (urlModel.metaData?.faviconUrl == null) {
-                          return placeHolder;
-                        }
-                        final metaData = urlModel.metaData;
-
-                        if (metaData?.faviconUrl != null) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: NetworkImageBuilderWidget(
-                                  imageUrl: urlMetaData.faviconUrl!,
-                                  compressImage: false,
-                                  errorWidgetBuilder: () {
-                                    return placeHolder;
-                                  },
-                                  successWidgetBuilder: (imageData) {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Builder(
-                                        builder: (ctx) {
-                                          final memoryImage = Image.memory(
-                                            imageData.imageBytesData!,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (ctx, _, __) {
-                                              return placeHolder;
-                                            },
-                                          );
-                                          // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
-                                          if (urlMetaData.faviconUrl!
-                                              .toLowerCase()
-                                              .endsWith('.svg')) {
-                                            // Try loading the SVG and handle errors
-                                            return FutureBuilder(
-                                              future: _loadSvgBytes(
-                                                imageData.imageBytesData!,
-                                              ),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return const CircularProgressIndicator();
-                                                } else if (snapshot.hasError) {
-                                                  return memoryImage;
-                                                } else {
-                                                  return snapshot.data!;
-                                                }
-                                              },
-                                            );
-                                          } else {
-                                            return memoryImage;
-                                          }
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                            child: Text(
+                              _websiteName(name, 5),
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              overflow: TextOverflow.fade,
+                              style: const TextStyle(
+                                color: ColourPallette.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 8,
                               ),
                             ),
                           );
-                        } else {
-                          return placeHolder;
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 16),
+
+                          if (urlModel.metaData?.faviconUrl == null) {
+                            return placeHolder;
+                          }
+                          final metaData = urlModel.metaData;
+
+                          if (metaData?.faviconUrl != null) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: NetworkImageBuilderWidget(
+                                    imageUrl: urlMetaData.faviconUrl!,
+                                    compressImage: false,
+                                    errorWidgetBuilder: () {
+                                      return placeHolder;
+                                    },
+                                    successWidgetBuilder: (imageData) {
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Builder(
+                                          builder: (ctx) {
+                                            final memoryImage = Image.memory(
+                                              imageData.imageBytesData!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (ctx, _, __) {
+                                                return placeHolder;
+                                              },
+                                            );
+                                            // Check if the URL ends with ".svg" to use SvgPicture or Image accordingly
+                                            if (urlMetaData.faviconUrl!
+                                                .toLowerCase()
+                                                .endsWith('.svg')) {
+                                              // Try loading the SVG and handle errors
+                                              return FutureBuilder(
+                                                future: _loadSvgBytes(
+                                                  imageData.imageBytesData!,
+                                                ),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const CircularProgressIndicator();
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    return memoryImage;
+                                                  } else {
+                                                    return snapshot.data!;
+                                                  }
+                                                },
+                                              );
+                                            } else {
+                                              return memoryImage;
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            return placeHolder;
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 16),
                       Text(
                         StringUtils.capitalizeEachWord(
                           urlModel.metaData?.websiteName ??
@@ -668,7 +671,6 @@ class _SavedFeedsPreviewListScreenState
 
     return initials.toString();
   }
-
 
   @override
   bool get wantKeepAlive => true;

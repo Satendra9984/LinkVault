@@ -685,6 +685,8 @@ class _AdvanceSearchFiltersPageState extends State<AdvanceSearchFiltersPage>
             duration: const Duration(milliseconds: 300),
             height: isVisible ? kToolbarHeight + 16 : 24.0,
             child: AppBar(
+      clipBehavior: Clip.none,
+
               surfaceTintColor: ColourPallette.white,
               title: Row(
                 children: [

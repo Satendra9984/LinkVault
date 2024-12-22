@@ -22,6 +22,8 @@ class ProfileHome extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+      clipBehavior: Clip.none,
+
         title: const Text(
           'Profile Home',
           style: TextStyle(
@@ -133,10 +135,9 @@ class ProfileHome extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       minVerticalPadding: 0,
                       dense: true,
-                      leading: SvgPicture.asset(
-                        MediaRes.collaborateSVG,
-                        height: 16,
-                        width: 16,
+                      leading: const Icon(
+                        Icons.support_rounded,
+                        size: 24,
                         color: ColourPallette.black,
                       ),
                       title: const Text(
@@ -214,7 +215,7 @@ class ProfileHome extends StatelessWidget {
                       },
                     ),
                     // const SizedBox(height: 8),
-
+                    
                     // LOG OUT
                     ListTile(
                       onTap: () async {
@@ -237,7 +238,7 @@ class ProfileHome extends StatelessWidget {
                       dense: true,
                       leading: const Icon(
                         Icons.logout,
-                        size: 20,
+                        size: 24,
                         color: ColourPallette.black,
                         textDirection: TextDirection.ltr,
                       ),

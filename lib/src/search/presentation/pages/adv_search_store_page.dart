@@ -32,81 +32,83 @@ class _AdvanceSearchPageState extends State<AdvanceSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 8),
+      bottomNavigationBar: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.only(top: 4, bottom: 4),
         decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: ColourPallette.mystic.withOpacity(0.5),
-              spreadRadius: 4,
-              blurRadius: 16,
-              offset: const Offset(0, 2), // changes position of shadow
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.shade200,
+              width: 0.5,
             ),
-          ],
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          child: ValueListenableBuilder(
-            valueListenable: _currentPage,
-            builder: (context, currentPage, _) {
-              return BottomNavigationBar(
-                currentIndex: _currentPage.value,
-                onTap: (currentIndex) {
-                  _currentPage.value = currentIndex;
-                  // _pageController.jumpToPage(currentIndex);
-                  _pageController.jumpToPage(currentIndex);
-                },
-                enableFeedback: false,
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: ColourPallette.white,
-                elevation: 0,
-                selectedItemColor: ColourPallette.black,
-                selectedLabelStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-                unselectedItemColor: ColourPallette.black,
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: ColourPallette.black,
-                ),
-                showUnselectedLabels: true,
-                showSelectedLabels: true,
-                items: [
-                  CustomBottomNavItem.create(
-                    currentPage: _currentPage,
-                    label: 'Filters',
-                    unSelectedIcon: Icons.filter_alt_outlined ,
-                    selectedIcon: Icons.filter_alt_rounded,
-                    index: 0,
-                  ),
-                  CustomBottomNavItem.create(
-                    currentPage: _currentPage,
-                    label: 'Urls',
-                    unSelectedIcon: Icons.webhook_outlined,
-                    selectedIcon: Icons.webhook_rounded,
-                    index: 1,
-                  ),
-                  CustomBottomNavItem.create(
-                    currentPage: _currentPage,
-                    label: 'Collections',
-                    unSelectedIcon: Icons.folder_outlined,
-                    selectedIcon: Icons.folder_rounded,
-                    index: 2,
-                  ),
-                  CustomBottomNavItem.create(
-                    currentPage: _currentPage,
-                    unSelectedIcon: Icons.dynamic_feed_outlined,
-                    selectedIcon: Icons.dynamic_feed,
-                    index: 3,
-                    label: 'Previews',
-                  ),
-                ],
-              );
-            },
           ),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: ColourPallette.mystic.withOpacity(0.5),
+          //     spreadRadius: 4,
+          //     blurRadius: 10,
+          //     offset: const Offset(0, -1), // changes position of shadow
+          //   ),
+          // ],
+        ),
+        child: ValueListenableBuilder(
+          valueListenable: _currentPage,
+          builder: (context, currentPage, _) {
+            return BottomNavigationBar(
+              currentIndex: _currentPage.value,
+              onTap: (currentIndex) {
+                _currentPage.value = currentIndex;
+                // _pageController.jumpToPage(currentIndex);
+                _pageController.jumpToPage(currentIndex);
+              },
+              enableFeedback: false,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: ColourPallette.white,
+              elevation: 0.0,
+              selectedItemColor: ColourPallette.black,
+              selectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
+              unselectedItemColor: ColourPallette.black,
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: ColourPallette.black,
+              ),
+              items: [
+                CustomBottomNavItem.create(
+                  currentPage: _currentPage,
+                  label: 'Filters',
+                  unSelectedIcon: Icons.filter_alt_outlined,
+                  selectedIcon: Icons.filter_alt_rounded,
+                  index: 0,
+                ),
+                CustomBottomNavItem.create(
+                  currentPage: _currentPage,
+                  label: 'Urls',
+                  unSelectedIcon: Icons.webhook_outlined,
+                  selectedIcon: Icons.webhook_rounded,
+                  index: 1,
+                ),
+                CustomBottomNavItem.create(
+                  currentPage: _currentPage,
+                  label: 'Collections',
+                  unSelectedIcon: Icons.folder_outlined,
+                  selectedIcon: Icons.folder_rounded,
+                  index: 2,
+                ),
+                CustomBottomNavItem.create(
+                  currentPage: _currentPage,
+                  unSelectedIcon: Icons.dynamic_feed_outlined,
+                  selectedIcon: Icons.dynamic_feed,
+                  index: 3,
+                  label: 'Previews',
+                ),
+              ],
+            );
+          },
         ),
       ),
       body: PageView(

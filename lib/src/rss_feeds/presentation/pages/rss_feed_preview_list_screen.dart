@@ -995,8 +995,9 @@ class _RssFeedUrlsPreviewListWidgetState
           builder: (context, isVisible, child) {
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: isVisible ? kToolbarHeight + 24 : 0,
+              height: isVisible ? kToolbarHeight : 0,
               child: AppBar(
+                clipBehavior: Clip.antiAlias,
                 surfaceTintColor: ColourPallette.mystic,
                 title: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -1013,7 +1014,7 @@ class _RssFeedUrlsPreviewListWidgetState
                             'My Feeds',
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1118,7 +1119,7 @@ class _RssFeedUrlsPreviewListWidgetState
     return FilterPopupMenuButton(
       icon: const Icon(
         Icons.filter_alt_rounded,
-        size: 20,
+        // size: 20,
       ),
       menuItems: [
         ListFilterPopupMenuItem(
@@ -1170,7 +1171,7 @@ class _RssFeedUrlsPreviewListWidgetState
     return FilterPopupMenuButton(
       icon: const Icon(
         Icons.format_shapes_rounded,
-        size: 20,
+        // size: 20,
       ),
       menuItems: [
         ListFilterPopupMenuItem(

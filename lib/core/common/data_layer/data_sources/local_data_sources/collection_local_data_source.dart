@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -37,7 +38,7 @@ class CollectionLocalDataSourcesImpl {
   }
 
   // Fetch CollectionModelOffline by id
-  Future<CollectionModel?> fetchCollection(String collectionId) async {
+  Future<CollectionModel?> fetchCollection(String collectionId, ) async {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
@@ -47,7 +48,7 @@ class CollectionLocalDataSourcesImpl {
 
       final collectionModelOffline = await collectionModelOfflineCollection
           .getByIndex('firestoreId', [collectionId]);
-
+      
       if (collectionModelOffline == null) {
         return null;
       }

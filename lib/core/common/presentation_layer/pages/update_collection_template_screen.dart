@@ -124,6 +124,8 @@ class _UpdateCollectionTemplateScreenState
     return Scaffold(
       backgroundColor: ColourPallette.white,
       appBar: AppBar(
+      clipBehavior: Clip.none,
+
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Row(
