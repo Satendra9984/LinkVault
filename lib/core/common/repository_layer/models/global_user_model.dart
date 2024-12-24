@@ -6,9 +6,13 @@ part 'global_user_model.g.dart';
 
 @collection
 class GlobalUser {
-
   GlobalUser({
-    required this.id, required this.name, required this.email, required this.createdAt, required this.creditExpiryDate, this.isarId,
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.createdAt,
+    required this.creditExpiryDate,
+    this.isarId,
   });
 
   // Convert from JSON (for remote data)
@@ -38,8 +42,8 @@ class GlobalUser {
       'id': id,
       'name': name,
       'email': email,
-      'createdAt': createdAt.toIso8601String(),
-      'creditExpiryDate': creditExpiryDate.toIso8601String(),
+      'createdAt': createdAt.toUtc(),
+      'creditExpiryDate': creditExpiryDate.toUtc(),
     };
   }
 
@@ -90,8 +94,8 @@ class GlobalUser {
 //       'id': id,
 //       'name': name,
 //       'email': email,
-//       'createdAt': createdAt.toIso8601String(),
-//       'creditExpiryDate': creditExpiryDate.toIso8601String(),
+//       'createdAt': createdAt.toUtc(),
+//       'creditExpiryDate': creditExpiryDate.toUtc(),
 //     };
 //   }
 

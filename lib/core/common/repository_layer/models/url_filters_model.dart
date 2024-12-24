@@ -1,4 +1,4 @@
-class CollectionFilter {
+class UrlModelFilters {
   final String? name;
   final String? category;
   final String parentCollection;
@@ -11,7 +11,7 @@ class CollectionFilter {
   final int? limit;
   final int? offset;
 
-  CollectionFilter({
+  UrlModelFilters({
     required this.parentCollection,
     this.name,
     this.category,
@@ -25,7 +25,7 @@ class CollectionFilter {
     this.offset,
   });
 
-  CollectionFilter copyWith({
+  UrlModelFilters copyWith({
     String? name,
     String? category,
     String? parentCollection,
@@ -38,7 +38,7 @@ class CollectionFilter {
     int? limit,
     int? offset,
   }) {
-    return CollectionFilter(
+    return UrlModelFilters(
       name: name ?? this.name,
       category: category ?? this.category,
       parentCollection: parentCollection ?? this.parentCollection,

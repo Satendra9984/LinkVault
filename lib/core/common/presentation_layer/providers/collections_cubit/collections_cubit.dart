@@ -1,14 +1,14 @@
 // ignore_for_file: public_member_api_docs
-
-import 'dart:math';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_filters_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/collections_repo_impl.dart';
 import 'package:link_vault/core/utils/queue_manager.dart';
@@ -34,95 +34,95 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   final AsyncQueueManager _collQueueManager = AsyncQueueManager();
   final AsyncQueueManager _urlQueueManager = AsyncQueueManager();
 
+  // FETCH THE SINGLE COLLECTION
+  // MAINLY FOR STORE-PAGE
   Future<void> fetchCollection({
-    required String collectionId,
+    required String prentCollectionId,
     required String userId,
     required bool isRootCollection,
     String? collectionName,
   }) async {
-    if (state.collections.containsKey(collectionId)) {
-      final fetch = state.collections[collectionId]!;
+    if (state.collections.containsKey(prentCollectionId)) {
+      final fetch = state.collections[prentCollectionId]!;
 
-      if (fetch.collectionFetchingState == LoadingStates.loaded ||
-          fetch.collectionFetchingState == LoadingStates.loading) {
-        // Logger.printLog(
-        //   'cId: ${collectionId}, ${fetch.collectionFetchingState}',
-        // );
+      if (fetch.collectionFetchingState == LoadingStates.loading ||
+          fetch.collectionFetchingState == LoadingStates.loaded) {
         return;
       }
-    }
 
-    const fetchCollectionModel = CollectionFetchModel(
-      collectionFetchingState: LoadingStates.loading,
-      subCollectionFetchedIndex: -1,
-    );
+      const fetchCollectionModel = CollectionFetchModel(
+        collectionFetchingState: LoadingStates.loading,
+      );
 
-    final newCollection = {...state.collections};
+      final newCollection = {...state.collections};
 
-    newCollection[collectionId] = fetchCollectionModel;
+      newCollection[prentCollectionId] = fetchCollectionModel;
 
-    emit(
-      state.copyWith(
-        collections: newCollection,
-      ),
-    );
+      emit(
+        state.copyWith(
+          collections: newCollection,
+        ),
+      );
 
-    final fetchedCollection = isRootCollection
-        ? await _collectionsRepoImpl.fetchRootCollection(
-            collectionId: collectionId,
-            userId: userId,
-            collectionName: collectionName,
-          )
-        : await _collectionsRepoImpl.fetchSubCollection(
-            collectionId: collectionId,
-            userId: _globalUserCubit.state.globalUser!.id,
+      final fetchedCollection = isRootCollection
+          ? await _collectionsRepoImpl.fetchRootCollection(
+              collectionId: prentCollectionId,
+              userId: userId,
+              collectionName: collectionName,
+            )
+          : await _collectionsRepoImpl.fetchSubCollection(
+              collectionId: prentCollectionId,
+              userId: _globalUserCubit.state.globalUser!.id,
+            );
+
+      // ignore: cascade_invocations
+      fetchedCollection.fold(
+        (failed) {
+          final failedState = {...state.collections};
+          final failedCollection = fetchCollectionModel.copyWith(
+            collectionFetchingState: LoadingStates.errorLoading,
           );
 
-    // ignore: cascade_invocations
-    fetchedCollection.fold(
-      (failed) {
-        final failedState = {...state.collections};
-        final failedCollection = fetchCollectionModel.copyWith(
-          collectionFetchingState: LoadingStates.errorLoading,
-        );
+          failedState[prentCollectionId] = failedCollection;
 
-        failedState[collectionId] = failedCollection;
+          emit(
+            state.copyWith(
+              collections: failedState,
+            ),
+          );
+        },
+        (collection) {
+          final loadedState = {...state.collections};
+          final loadedCollection = fetchCollectionModel.copyWith(
+            collectionFetchingState: LoadingStates.loaded,
+            collection: collection,
+          );
 
-        emit(
-          state.copyWith(
-            collections: failedState,
-          ),
-        );
-      },
-      (collection) {
-        final loadedState = {...state.collections};
-        final loadedCollection = fetchCollectionModel.copyWith(
-          collectionFetchingState: LoadingStates.loaded,
-          collection: collection,
-        );
+          loadedState[prentCollectionId] = loadedCollection;
 
-        loadedState[collectionId] = loadedCollection;
-
-        emit(
-          state.copyWith(
-            collections: loadedState,
-          ),
-        );
-      },
-    );
+          emit(
+            state.copyWith(
+              collections: loadedState,
+            ),
+          );
+        },
+      );
+    }
   }
 
+  // FETCH THE SUBCOLLECTION FROM THE DATABASE
+  // IT ADDS THE QUERY IN THE QUEUE
   Future<void> fetchMoreSubCollections({
     required String collectionId,
     required String userId,
     required bool isRootCollection,
-     // FILTERS
+    // FILTERS
     required bool isAtoZFilter,
     required bool isLatestFirst,
   }) async {
     _collQueueManager.addTask(
       () => _fetchMoreSubCollections(
-        collectionId: collectionId,
+        parentCollectionId: collectionId,
         userId: userId,
         isRootCollection: isRootCollection,
         isAtoZFilter: isAtoZFilter,
@@ -132,116 +132,97 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   }
 
   Future<void> _fetchMoreSubCollections({
-    required String collectionId,
+    required String parentCollectionId,
     required String userId,
-    required bool isRootCollection,
     // FILTERS
     required bool isAtoZFilter,
     required bool isLatestFirst,
-
   }) async {
-    // Assuming Not Collections In The State
-    final fetchedCollection = state.collections[collectionId];
+    final fetchedCollection = state.collections[parentCollectionId];
 
-    if (fetchedCollection == null ||
-        fetchedCollection.collectionFetchingState == LoadingStates.loading ||
-        fetchedCollection.collection == null) {
-      return;
-    }
+    if (fetchedCollection == null) return;
 
-    final subCollections = fetchedCollection.collection!.subcollections;
+    final currentList =
+        getSubCollectionList(parentCollectionId: parentCollectionId);
 
-    if (fetchedCollection.subCollectionFetchedIndex >=
-        subCollections.length - 1) {
-      return;
-    }
+    if (currentList == null) return;
 
-    final start = fetchedCollection.subCollectionFetchedIndex + 1;
-
-    final end = min(subCollections.length, start + 16);
-
-    final moreSubcollectionIds = [...subCollections.sublist(start, end)];
-
-    final moreCollections = <String, CollectionFetchModel>{};
-    for (final subCollId in moreSubcollectionIds) {
-      const fetchCollectionModel = CollectionFetchModel(
-        collectionFetchingState: LoadingStates.loading,
-        subCollectionFetchedIndex: -1,
-      );
-
-      moreCollections[subCollId] = fetchCollectionModel;
-    }
-
-    final newCollection = {...state.collections, ...moreCollections};
-    newCollection[collectionId] = fetchedCollection.copyWith(
-      subCollectionFetchedIndex: end - 1,
+    final filter = CollectionFilter(
+      parentCollection: fetchedCollection.collection!.parentCollection,
+      sortByDateAsc: isLatestFirst,
+      sortByNameAsc: isAtoZFilter,
+      limit: 16,
+      offset: currentList.length - 1,
     );
 
-    emit(
-      state.copyWith(
-        collections: newCollection,
-      ),
-    );
+    await _collectionsRepoImpl
+        .fetchSubCollectionsByFilter(
+      filter: filter,
+      userId: userId,
+    )
+        .then(
+      (data) {
+        data.fold(
+          (failure) {},
+          (list) {
+            final nextCollectionBatch = <String, CollectionFetchModel>{};
 
-    /// NOW WILL FETCH AND UPDATE THE STATE AT ONCE FOR EACH SUBCOLLECTION
-    final newFetchResultsState = {...state.collections};
-    for (final subCollId in moreSubcollectionIds) {
-      final fetchCollectionModel = moreCollections[subCollId]!;
+            for (final collectionModel in list) {
+              nextCollectionBatch[collectionModel.id] = CollectionFetchModel(
+                collectionFetchingState: LoadingStates.loaded,
+                collection: collectionModel,
+              );
+            }
 
-      final fetchedCollection = isRootCollection
-          ? await _collectionsRepoImpl.fetchRootCollection(
-              collectionId: subCollId,
-              userId: userId,
-            )
-          : await _collectionsRepoImpl.fetchSubCollection(
-              collectionId: subCollId,
-              userId: _globalUserCubit.state.globalUser!.id,
+            emit(
+              state.copyWith(
+                collections: {
+                  ...state.collections,
+                  ...nextCollectionBatch,
+                },
+              ),
             );
-
-      // ignore: cascade_invocations
-      fetchedCollection.fold(
-        (failed) {
-          // final failedState = {...state.collections};
-          final failedCollection = fetchCollectionModel.copyWith(
-            collectionFetchingState: LoadingStates.errorLoading,
-          );
-
-          newFetchResultsState[subCollId] = failedCollection;
-        },
-        (collection) {
-          final loadedCollection = fetchCollectionModel.copyWith(
-            collectionFetchingState: LoadingStates.loaded,
-            collection: collection,
-          );
-
-          newFetchResultsState[subCollId] = loadedCollection;
-        },
-      );
-    }
-
-    emit(
-      state.copyWith(
-        collections: newFetchResultsState,
-      ),
+          },
+        );
+      },
     );
-
-    // Logger.printLog('FetchedMoreAfter: ${state.collections.keys.length}');
   }
 
+  // GETTING COLLECTIONS LIST FROM THE
+  // PARENT COLLECTION-ID
+  List<CollectionFetchModel>? getSubCollectionList({
+    required String parentCollectionId,
+  }) {
+    final collections = <CollectionFetchModel>[];
+
+    for (final entry in state.collections.entries) {
+      if (entry.value.collection == null) {
+        continue;
+      }
+
+      if (entry.value.collection!.parentCollection == parentCollectionId) {
+        collections.add(entry.value);
+      }
+    }
+
+    return collections;
+  }
+
+  // GET A SINGLE COLLECTION
   CollectionFetchModel? getCollection({
     required String collectionId,
   }) {
     return state.collections[collectionId];
   }
 
-  void addCollection({
+  // ADD THE COLLECTION IN THE STATE
+  void addSubCollectionInState({
     required CollectionModel collection,
   }) {
     // Add subcollection in db
     final fetchCollectionModel = CollectionFetchModel(
       collection: collection,
       collectionFetchingState: LoadingStates.loaded,
-      subCollectionFetchedIndex: -1,
     );
 
     final newCollection = {...state.collections};
@@ -249,8 +230,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     newCollection[collection.id] = fetchCollectionModel;
 
     final newCollectionUrls = {...state.collectionUrls};
-
-    newCollectionUrls[collection.id] = [];
 
     emit(
       state.copyWith(
@@ -260,7 +239,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  void deleteCollection({
+  // DELETE THE COLLECTION IN THE STATE
+  void deleteCollectionInState({
     required CollectionModel collection,
   }) {
     final newCollMap = {...state.collections}..removeWhere(
@@ -279,9 +259,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
   }
 
-  void updateCollection({
+  // UPDATE THE COLLECTION IN THE STATE
+  void updateCollectionInState({
     required CollectionModel updatedCollection,
-    required int fetchSubCollIndexAdded,
     LoadingStates? collectionFetchState,
   }) {
     final prevCollection = state.collections[updatedCollection.id];
@@ -290,8 +270,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     final updatedCollectionfetch = prevCollection.copyWith(
       collection: updatedCollection,
       collectionFetchingState: collectionFetchState,
-      subCollectionFetchedIndex:
-          prevCollection.subCollectionFetchedIndex + fetchSubCollIndexAdded,
     );
 
     final newCollectionsState = {
@@ -308,7 +286,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
 
   // <--------------------------------- URLS ---------------------------------->
 
-  Future<UrlModel?> fetchSingleUrlModel(String urlModelId) async {
+  Future<UrlModel?> fetchUrlModel(String urlModelId) async {
     UrlModel? fetchedUrlModel;
 
     await _collectionsRepoImpl
@@ -331,11 +309,16 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   Future<void> fetchMoreUrls({
     required String collectionId,
     required String userId,
+    // FILTERS
+    required bool isAtoZFilter,
+    required bool isLatestFirst,
   }) async {
     _urlQueueManager.addTask(
       () => _fetchMoreUrls(
         collectionId: collectionId,
         userId: userId,
+        isAtoZFilter: isAtoZFilter,
+        isLatestFirst: isLatestFirst,
       ),
     );
   }
@@ -343,6 +326,9 @@ class CollectionsCubit extends Cubit<CollectionsState> {
   Future<void> _fetchMoreUrls({
     required String collectionId,
     required String userId,
+    // FILTERS
+    required bool isAtoZFilter,
+    required bool isLatestFirst,
   }) async {
     final fetchCollection = state.collections[collectionId];
 
@@ -352,243 +338,75 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       return;
     }
 
-    final urlsList = fetchCollection.collection!.urls;
-    final alreadyFetchedUrls = [
-      ...state.collectionUrls[collectionId] ?? <UrlFetchStateModel>[],
-    ];
+    // TODO : MAKE URL FETCHING WITH NEW APPROACH
+    final currentCollectionUrls =
+        getUrlsList(collectionId: collectionId) ?? <UrlFetchStateModel>[];
 
-    if (alreadyFetchedUrls.length >= urlsList.length) {
-      return;
-    }
-
-    final start = alreadyFetchedUrls.length;
-    final end = min(urlsList.length, start + 24);
-
-    final urlIds = urlsList.sublist(start, end);
-
-    final moreUrls = <UrlFetchStateModel>[];
-    for (final urlId in urlIds) {
-      final urlFetchModel = UrlFetchStateModel(
-        collectionId: collectionId,
-        loadingStates: LoadingStates.loading,
-        urlModelId: urlId,
-      );
-
-      moreUrls.add(urlFetchModel);
-    }
-
-    final newUrls = [...alreadyFetchedUrls, ...moreUrls];
-    final updatedUrlsState = {...state.collectionUrls};
-    updatedUrlsState[collectionId] = newUrls;
-    emit(
-      state.copyWith(
-        collectionUrls: updatedUrlsState,
-      ),
+    final filter = UrlModelFilters(
+      parentCollection: collectionId,
+      sortByDateAsc: isLatestFirst,
+      sortByNameAsc: isAtoZFilter,
+      limit: 16,
+      offset:
+          currentCollectionUrls.isEmpty ? 0 : currentCollectionUrls.length - 1,
     );
 
-    final fetchedUrlsWithData = <UrlFetchStateModel>[];
-    for (final urlId in urlIds) {
-      final fetchedUrl = await _collectionsRepoImpl.fetchUrl(
-        urlId: urlId,
-        userId: _globalUserCubit.state.globalUser!.id,
-      );
 
-      // ignore: cascade_invocations
-      fetchedUrl.fold(
-        (failed) {
-          final urlFetchModel = UrlFetchStateModel(
-            collectionId: collectionId,
-            loadingStates: LoadingStates.errorLoading,
-            urlModelId: urlId,
-          );
-
-          fetchedUrlsWithData.add(urlFetchModel);
-        },
-        (url) {
-          final urlFetchModel = UrlFetchStateModel(
-            collectionId: collectionId,
-            loadingStates: LoadingStates.loaded,
-            urlModel: url,
-            urlModelId: urlId,
-          );
-
-          fetchedUrlsWithData.add(urlFetchModel);
-        },
-      );
-    }
-
-    final fetchedUrls = [...newUrls];
-
-    fetchedUrls.replaceRange(
-      fetchedUrls.length - urlIds.length,
-      end,
-      fetchedUrlsWithData,
-    );
-
-    final updatedFetchedUrlsState = {...state.collectionUrls};
-    updatedFetchedUrlsState[collectionId] = fetchedUrls;
-    emit(
-      state.copyWith(
-        collectionUrls: updatedFetchedUrlsState,
-      ),
-    );
+    //
   }
 
-  List<UrlFetchStateModel>? urlsFetchModelList({
+  List<UrlFetchStateModel>? getUrlsList({
     required String collectionId,
   }) {
-    return state.collectionUrls[collectionId];
-  }
+    final collections = <UrlFetchStateModel>[];
 
-  void addUrl({
-    required UrlModel url,
-    required CollectionModel collection,
-  }) {
-    final fetchedUrl = UrlFetchStateModel(
-      collectionId: collection.id,
-      loadingStates: LoadingStates.loaded,
-      urlModel: url,
-    );
+    for (final entry in state.collectionUrls.entries) {
+      if (entry.value.urlModel == null) continue;
 
-    final urlCollection = state.collectionUrls[collection.id];
-
-    if (urlCollection == null) {
-      addCollection(collection: collection);
-    }
-
-    final updatedUrlsState = {...state.collectionUrls};
-
-    final updatedUrlsList = [
-      fetchedUrl,
-      ...updatedUrlsState[collection.id]!,
-    ];
-
-    updatedUrlsState[collection.id] = updatedUrlsList;
-
-    emit(
-      state.copyWith(
-        collectionUrls: updatedUrlsState,
-      ),
-    );
-  }
-
-  void updateUrl({
-    required UrlModel url,
-    LoadingStates? urlLoadinState,
-  }) {
-    final fetchedUrlList = state.collectionUrls[url.collectionId];
-
-    if (fetchedUrlList == null) {
-      return;
-    }
-
-    final index = fetchedUrlList.indexWhere(
-      (element) {
-        if (element.urlModel != null &&
-            element.urlModel!.firestoreId == url.firestoreId) {
-          return true;
-        }
-        return false;
-      },
-    );
-
-    final updatedList = [...fetchedUrlList];
-
-    if (index != -1) {
-      updatedList[index] = updatedList[index].copyWith(
-        urlModel: url,
-        loadingStates: urlLoadinState,
-      );
-    }
-
-    final updatedUrlsState = {...state.collectionUrls};
-
-    updatedUrlsState[url.collectionId] = updatedList;
-
-    emit(
-      state.copyWith(
-        collectionUrls: updatedUrlsState,
-      ),
-    );
-  }
-
-  void updateUrlsList({
-    required CollectionModel updatedCollection,
-  }) {
-    // newState[updatedCollection.id] = updatedCollectionfetch;
-    final newCollectionUrlssState = {
-      ...state.collectionUrls,
-    };
-
-    final previousUrlsMap = <String, UrlFetchStateModel>{};
-
-    if (state.collectionUrls.containsKey(updatedCollection.id)) {
-      final urlsList =
-          state.collectionUrls[updatedCollection.id] ?? <UrlFetchStateModel>[];
-      for (final urlf in urlsList) {
-        if (urlf.urlModel == null) continue;
-        previousUrlsMap[urlf.urlModel!.firestoreId] = urlf;
+      if (entry.value.collectionId == collectionId) {
+        collections.add(entry.value);
       }
     }
 
-    final newUrlsList = <UrlFetchStateModel>[];
-
-    for (final urlId in updatedCollection.urls) {
-      if (previousUrlsMap.containsKey(urlId) == false) continue;
-
-      newUrlsList.add(previousUrlsMap[urlId]!);
-    }
-
-    newCollectionUrlssState[updatedCollection.id] = newUrlsList;
-
-    emit(
-      state.copyWith(
-        collectionUrls: newCollectionUrlssState,
-      ),
-    );
+    return collections;
   }
 
-  void clearUrlsList({
-    required String collectionId,
+  void addUrlInState({
+    required UrlFetchStateModel url,
   }) {
-    // newState[updatedCollection.id] = updatedCollectionfetch;
-    final newCollectionUrlssState = {
+    final updatedUrlsState = {
       ...state.collectionUrls,
+      url.urlModel!.firestoreId: url,
     };
 
-    newCollectionUrlssState[collectionId] = <UrlFetchStateModel>[];
-
     emit(
       state.copyWith(
-        collectionUrls: newCollectionUrlssState,
+        collectionUrls: updatedUrlsState,
       ),
     );
   }
 
-  void deleteUrl({
-    required UrlModel url,
-    required CollectionModel collectionModel,
+  void updateUrlInState({
+    required UrlFetchStateModel url,
   }) {
-    final fetchedUrlList = state.collectionUrls[collectionModel.id];
+    final updatedUrlsState = {
+      ...state.collectionUrls,
+      url.urlModel!.firestoreId: url,
+    };
 
-    if (fetchedUrlList == null) {
-      return;
-    }
+    emit(
+      state.copyWith(
+        collectionUrls: updatedUrlsState,
+      ),
+    );
+  }
 
-    final updatedList = [...fetchedUrlList]..removeWhere(
-        (element) {
-          if (element.urlModel != null &&
-              element.urlModel!.firestoreId == url.firestoreId) {
-            return true;
-          }
-          return false;
-        },
+  void deleteUrlInState({
+    required UrlModel url,
+  }) {
+    final updatedUrlsState = {...state.collectionUrls}..removeWhere(
+        (key, value) => key == url.firestoreId,
       );
-
-    final updatedUrlsState = {...state.collectionUrls};
-    // Logger.printLog('deleting in state: ${collectionModel.id}, $updatedList');
-
-    updatedUrlsState[collectionModel.id] = updatedList;
 
     emit(
       state.copyWith(

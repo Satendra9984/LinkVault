@@ -1,5 +1,9 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
+import 'package:isar/isar.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/query_builder.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
@@ -13,37 +17,32 @@ class RemoteDataSourcesImpl {
 
   final FirebaseFirestore _firestore;
 
-  Future<CollectionModel?> fetchCollection({
-    required String collectionId,
+  Future<List<CollectionModel>?> fetchCollectionsFromRemoteDB({
     required String userId,
+    required CollectionFilter filter,
   }) async {
     // [TODO] : Fetch Subcollection
     try {
-      final response = await _firestore
-          .collection(userCollection)
-          .doc(userId)
-          .collection(folderCollections)
-          .doc(collectionId)
-          .get();
+      final query = QueryBuilderHelper.buildCollectionModelFirestoreQuery(
+        userId: userId,
+        firestore: _firestore,
+        collectionFilter: filter,
+      );
 
-      // // Logger.printLog('path: ${response.reference.path}, ');
-
-      final data = response.data();
-      // // Logger.printLog(
+      final querySnapshot = await query.get();
+      // Logger.printLog(
       //     'path: ${response.reference.path}, data: ${data == null}');
+      final data = querySnapshot.docs;
 
-      if (data == null) {
-        // That mean user is using it first time may be
-        return null;
-      }
+      final collections = data
+          .map(
+            (doc) => CollectionModel.fromJson(
+              {'id': doc.id, ...doc.data()},
+            ),
+          )
+          .toList();
 
-      // user is not using first time
-      data['id'] = response.id;
-      // // Logger.printLog(StringUtils.getJsonFormat(data));
-
-      final collectionModel = CollectionModel.fromJson(data);
-
-      return collectionModel;
+      return collections;
     } catch (e) {
       debugPrint('[log] : fetchCollection $e');
 
@@ -55,7 +54,7 @@ class RemoteDataSourcesImpl {
   }
 
   /// It will use `userId` to fetch root collection currently
-  Future<CollectionModel?> fetchCollection({
+  Future<CollectionModel?> fetchCollectionFromRemoteDB({
     required String collectionId,
     required String userId,
   }) async {
@@ -96,7 +95,7 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<CollectionModel> addCollection({
+  Future<CollectionModel> addCollectionInRemoteDB({
     required CollectionModel collection,
     required String userId,
   }) async {
@@ -119,7 +118,7 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<CollectionModel> updateCollection({
+  Future<CollectionModel> updateCollectionInRemoteDB({
     required CollectionModel collection,
     required String userId,
   }) async {
@@ -143,123 +142,146 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<void> deleteCollection({
-    required String collectionId,
+  Future<void> deleteCollectionAndAssociatedData({
     required String userId,
-    void Function({required String collectionId})? locaDBDelete,
+    required String collectionId,
+    int batchSize = 30,
   }) async {
-    // [TODO] : delete subcollection in db
-    // trying bottom up approach
+    var isMainCollectionDeleted = false;
     try {
-      final collection = await fetchCollection(
-        collectionId: collectionId,
-        userId: userId,
-      );
+      // 1. First delete the parent collection document
+      await Future.wait([
+        Future(() async {
+          await _firestore
+              .collection(userCollection)
+              .doc(userId)
+              .collection(folderCollections)
+              .doc(collectionId)
+              .delete();
+          isMainCollectionDeleted = true;
+        }),
 
-      if (collection == null) {
-        throw ServerException(
-          message: 'Something went wrong.',
-          statusCode: 400,
-        );
-      }
-
-      final subCollections = collection.subcollections;
-
-      for (final subcId in subCollections) {
-        await deleteCollection(
-          collectionId: subcId,
+        // 2. Delete all URLs associated with this collection
+        _deleteUrlsForCollection(
           userId: userId,
-        );
+          collectionId: collectionId,
+          batchSize: batchSize,
+        ),
+      ]);
+
+      var batch = _firestore.batch();
+      var operationCount = 0;
+
+      // Queue for processing subcollections
+      final collectionsToProcess = Queue<String>()..add(collectionId);
+
+      while (collectionsToProcess.isNotEmpty) {
+        final currentCollectionId = collectionsToProcess.removeFirst();
+
+        // Get subcollections
+        final subcollections = await _firestore
+            .collection(userCollection)
+            .doc(userId)
+            .collection(folderCollections)
+            .where('parent_collection', isEqualTo: currentCollectionId)
+            .get();
+
+        for (final doc in subcollections.docs) {
+          // Add to queue for processing its subcollections
+          collectionsToProcess.add(doc.id);
+
+          // Delete the collection document
+          batch.delete(doc.reference);
+          operationCount++;
+
+          if (operationCount >= batchSize) {
+            // Run batch commit and URL deletion in parallel
+            await Future.wait([
+              batch.commit(),
+              _deleteUrlsForCollection(
+                userId: userId,
+                collectionId: doc.id,
+                batchSize: batchSize,
+              ),
+            ]);
+
+            // Reset batch after commit
+            batch = _firestore.batch();
+            operationCount = 0;
+          } else {
+            // If batch isn't full, just delete URLs
+            await _deleteUrlsForCollection(
+              userId: userId,
+              collectionId: doc.id,
+              batchSize: batchSize,
+            );
+          }
+        }
       }
 
-      await _firestore
-          .collection(userCollection)
-          .doc(userId)
-          .collection(folderCollections)
-          .doc(collection.id)
-          .delete();
-
-      final urlList = collection.urls;
-
-      for (final urlId in urlList) {
-        await deleteUrlById(
-          urlId,
-          userId: urlId,
-        );
+      // Commit any remaining deletions
+      if (operationCount > 0) {
+        await batch.commit();
       }
     } catch (e) {
+      debugPrint('[log] : Error in deletion: $e');
+      if (isMainCollectionDeleted == true) {
+        return;
+      }
       throw ServerException(
-        message: 'Something went wrong.',
-        statusCode: 400,
+        message: 'Failed to delete collection and associated data',
+        statusCode: 500,
       );
     }
   }
 
-  Future<void> deleteCollectionSingle({
+  // Helper method to delete URLs for a specific collection
+  Future<void> _deleteUrlsForCollection({
+    required String userId,
     required String collectionId,
-    required String userId,
+    required int batchSize,
   }) async {
-    // [TODO] : delete subcollection in db
-    // trying bottom up approach
-    try {
-      await _firestore
-          .collection(userCollection)
-          .doc(userId)
-          .collection(folderCollections)
-          .doc(collectionId)
-          .delete();
-    } catch (e) {
-      throw ServerException(
-        message: 'Something went wrong.',
-        statusCode: 400,
-      );
-    }
-  }
+    var batch = _firestore.batch();
+    var operationCount = 0;
 
-  Future<UrlModel> fetchUrl(
-    String urlId, {
-    required String userId,
-  }) async {
     try {
-      // Logger.printLog('fetchUrl : urlId $urlId');
-
-      final response = await _firestore
+      // Get all URLs for this collection
+      final urlsSnapshot = await _firestore
           .collection(userCollection)
           .doc(userId)
           .collection(urlDataCollection)
-          .doc(urlId)
+          .where('collection_id', isEqualTo: collectionId)
           .get();
 
-      final data = response.data();
+      for (final urlDoc in urlsSnapshot.docs) {
+        batch.delete(urlDoc.reference);
+        operationCount++;
 
-      if (data == null) {
-        // Logger.printLog('Url data is null');
-        throw ServerException(
-          message: 'Something Went Wrong',
-          statusCode: 400,
-        );
+        if (operationCount >= batchSize) {
+          await batch.commit();
+          batch = _firestore.batch();
+          operationCount = 0;
+        }
       }
-      data['id'] = response.id;
-      final fetchedUrlData = UrlModel.fromJson(data);
 
-      return fetchedUrlData;
+      // Commit any remaining URL deletions
+      if (operationCount > 0) {
+        await batch.commit();
+      }
     } catch (e) {
-      // Logger.printLog('fetchUrl : $e');
+      debugPrint('[log] : Error deleting URLs: $e');
       throw ServerException(
-        message: 'Something Went Wrong',
-        statusCode: 400,
+        message: 'Failed to delete associated URLs',
+        statusCode: 500,
       );
     }
   }
 
-  Future<UrlModel> addUrl(
+  Future<UrlModel> addUrlInRemoteDB(
     UrlModel urlModel, {
     required String userId,
   }) async {
     try {
-      // Logger.printLog('UrlModel length');
-      // Logger.printLog(urlModel.toJson().toString().length.toString());
-      // await  _firestore.enableNetwork();
       final response = await _firestore
           .collection(userCollection)
           .doc(userId)
@@ -278,7 +300,7 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<UrlModel> updateUrl({
+  Future<void> updateUrlInRemoteDB({
     required UrlModel urlModel,
     required String userId,
   }) async {
@@ -291,12 +313,9 @@ class RemoteDataSourcesImpl {
           .doc(urlModel.firestoreId)
           .set(urlModel.toJson());
 
-      final urlModelUp = urlModel;
-
-      return urlModelUp;
+      return;
     } catch (e) {
       // Logger.printLog('[RECENTS] : updateUrl : $e urlId: ${urlModel.firestoreId}');
-
       throw ServerException(
         message: 'Something Went Wrong',
         statusCode: 400,
@@ -304,8 +323,8 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<String> deleteUrl(
-    String urlId, {
+  Future<String> deleteUrlInRemoteDB({
+    required String urlId,
     required String userId,
   }) async {
     try {
@@ -320,31 +339,6 @@ class RemoteDataSourcesImpl {
           .delete();
 
       return urlId;
-    } catch (e) {
-      // Logger.printLog('deleteUrl : $e');
-      throw ServerException(
-        message: 'Something Went Wrong',
-        statusCode: 400,
-      );
-    }
-  }
-
-  Future<void> deleteUrlById(
-    String urlId, {
-    required String userId,
-  }) async {
-    try {
-      // // Logger.printLog('UrlModel length');
-      // // Logger.printLog(urlId);
-
-      await _firestore
-          .collection(userCollection)
-          .doc(userId)
-          .collection(urlDataCollection)
-          .doc(urlId)
-          .delete();
-
-      return;
     } catch (e) {
       // Logger.printLog('deleteUrl : $e');
       throw ServerException(

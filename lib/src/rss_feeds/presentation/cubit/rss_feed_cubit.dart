@@ -204,7 +204,7 @@ class RssFeedCubit extends Cubit<RssFeedState> {
   }) async {
     // Fetch all the URLs for the given collection
     final fetchedUrls =
-        _collectionCubit.urlsFetchModelList(collectionId: collectionId) ?? [];
+        _collectionCubit.getUrlsList(collectionId: collectionId) ?? [];
 
     // Extract UrlModels from the fetched URLs
     final urlModelList = fetchedUrls

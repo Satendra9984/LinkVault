@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -24,7 +24,11 @@ class LocalImageDataSource {
         // If no instance exists, create a new one
         final dir = await getApplicationDocumentsDirectory();
         _isar = await Isar.open(
-          [UrlImageSchema, ImagesByteDataSchema, UrlModelOfflineSchema],
+          [
+            UrlImageSchema,
+            ImagesByteDataSchema,
+            UrlModelIsarSchema,
+          ],
           directory: dir.path,
         );
       }

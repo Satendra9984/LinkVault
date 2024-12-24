@@ -69,7 +69,7 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
 
           if (fetchCollection == null) {
             context.read<CollectionsCubit>().fetchCollection(
-                  collectionId: widget.collectionId,
+                  prentCollectionId: widget.collectionId,
                   userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                   isRootCollection: widget.isRootCollection,
                   collectionName: 'Favourites',
@@ -256,7 +256,7 @@ class _FavouritesStorePageState extends State<FavouritesStorePage>
           CustomElevatedButton(
             text: 'Try Again',
             onPressed: () => collectionCubit.fetchCollection(
-              collectionId: widget.collectionId,
+              prentCollectionId: widget.collectionId,
               userId: globalUserCubit.state.globalUser!.id,
               isRootCollection: widget.isRootCollection,
             ),

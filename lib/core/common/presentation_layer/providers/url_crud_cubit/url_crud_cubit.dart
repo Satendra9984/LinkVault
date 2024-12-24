@@ -65,7 +65,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (collection == null) {
       await _collectionsCubit.fetchCollection(
-        collectionId: urlModel.collectionId,
+        prentCollectionId: urlModel.collectionId,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: isRootCollection,
       );
@@ -79,7 +79,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
       return;
     }
 
-    _collectionsCubit.updateUrl(
+    _collectionsCubit.updateUrlInState(
       url: urlModel,
       urlLoadinState: LoadingStates.loading,
     );
@@ -98,13 +98,13 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
         syncedUrlModel.fold(
           (_) {
-            _collectionsCubit.updateUrl(
+            _collectionsCubit.updateUrlInState(
               url: urlModel,
               urlLoadinState: LoadingStates.loaded,
             );
           },
           (surlM) {
-            _collectionsCubit.updateUrl(
+            _collectionsCubit.updateUrlInState(
               url: surlM,
               urlLoadinState: LoadingStates.loaded,
             );
@@ -125,7 +125,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (collection == null) {
       await _collectionsCubit.fetchCollection(
-        collectionId: urlData.collectionId,
+        prentCollectionId: urlData.collectionId,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: isRootCollection,
       );
@@ -147,7 +147,6 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     //   return;
     // }
 
-
     await _urlRepoImpl
         .addUrlData(
       collection: collection.collection!,
@@ -168,12 +167,12 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
             final (urlData, collection) = response;
 
             _collectionsCubit
-              ..addUrl(url: urlData, collection: collection)
-              ..updateCollection(
+              ..addUrlInState(url: urlData, collection: collection)
+              ..updateCollectionInState(
                 updatedCollection: collection,
                 fetchSubCollIndexAdded: 0,
               );
-              
+
             emit(
               state.copyWith(
                 urlCrudLoadingStates: UrlCrudLoadingStates.addedSuccessfully,
@@ -208,7 +207,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           (response) async {
             final urlData = response;
 
-            _collectionsCubit.updateUrl(url: urlData);
+            _collectionsCubit.updateUrlInState(url: urlData);
 
             emit(
               state.copyWith(
@@ -232,7 +231,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     if (collection == null || collection.collection == null) {
       await _collectionsCubit.fetchCollection(
-        collectionId: urlData.collectionId,
+        prentCollectionId: urlData.collectionId,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: isRootCollection,
       );
@@ -269,7 +268,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
           (response) async {
             final (urlData, _) = response;
 
-            _collectionsCubit.deleteUrl(
+            _collectionsCubit.deleteUrlInState(
               url: urlData,
               collectionModel: collection!.collection!,
             );

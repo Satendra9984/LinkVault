@@ -73,7 +73,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
 
           if (fetchCollection == null) {
             context.read<CollectionsCubit>().fetchCollection(
-                  collectionId: widget.collectionId,
+                  prentCollectionId: widget.collectionId,
                   userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                   isRootCollection: widget.isRootCollection,
                   collectionName: 'My Feeds',
@@ -91,7 +91,7 @@ class _RssFeedCollectionStorePageState extends State<RssFeedCollectionStorePage>
               fetchCollection.collection == null) {
             return _showErrorLoadingWidget(
               () => collectionCubit.fetchCollection(
-                collectionId: widget.collectionId,
+                prentCollectionId: widget.collectionId,
                 userId: globalUserCubit.state.globalUser!.id,
                 isRootCollection: widget.isRootCollection,
               ),

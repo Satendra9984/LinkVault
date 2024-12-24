@@ -14,6 +14,7 @@ import 'package:link_vault/core/common/presentation_layer/widgets/filter_popup_m
 import 'package:link_vault/core/common/presentation_layer/widgets/list_filter_pop_up_menu_item.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_meta_data.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_image_cache_service.dart';

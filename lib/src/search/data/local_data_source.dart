@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_isar.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
@@ -23,10 +23,10 @@ class SearchLocalDataSourcesImpl {
 
         _isar = await Isar.open(
           [
-            CollectionModelOfflineSchema,
+            CollectionModelIsarSchema,
             UrlModelOfflineSchema,
             ImagesByteDataSchema,
-            CollectionModelOfflineSchema,
+            CollectionModelIsarSchema,
           ],
           directory: dir.path,
         );
@@ -45,7 +45,7 @@ class SearchLocalDataSourcesImpl {
       if (_isar == null) return null;
 
       final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+          _isar!.collection<CollectionModelIsar>();
 
       final collectionModelOffline = await collectionModelOfflineCollection
           .getByIndex('firestoreId', [collectionId]);
@@ -73,15 +73,13 @@ class SearchLocalDataSourcesImpl {
       if (_isar == null) return;
 
       final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+          _isar!.collection<CollectionModelIsar>();
 
       final docs = await collectionModelOfflineCollection.where().findAll();
 
       for (final doc in docs) {
         final coll = doc.toCollectionModel();
-        final updated = doc.copyWith(
-          collectionModel: coll,
-        );
+        final updated = doc.copyWithCollectionModel(coll);
         await _isar!.writeTxn(() async {
           await collectionModelOfflineCollection.put(updated);
         });
@@ -146,7 +144,7 @@ class SearchLocalDataSourcesImpl {
       }
 
       final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+          _isar!.collection<CollectionModelIsar>();
 
       // await _isar!.collectionModelOfflines;
       // // Logger.printLog('nameSearch: $nameSearch');
@@ -154,7 +152,7 @@ class SearchLocalDataSourcesImpl {
           .filter()
           .group(
             (q) => q
-                .nameIsNull()
+                .nameIsEmpty()
                 .or()
                 .nameIsEmpty()
                 .or()

@@ -1,9 +1,12 @@
 import 'package:isar/isar.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/query_builder.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_isar.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CollectionLocalDataSourcesImpl {
@@ -22,10 +25,10 @@ class CollectionLocalDataSourcesImpl {
 
         _isar = await Isar.open(
           [
-            CollectionModelOfflineSchema,
-            UrlModelOfflineSchema,
+            CollectionModelIsarSchema,
+            UrlModelIsarSchema,
             ImagesByteDataSchema,
-            CollectionModelOfflineSchema,
+            // CollectionModelIsarSchema,
           ],
           directory: dir.path,
         );
@@ -37,69 +40,54 @@ class CollectionLocalDataSourcesImpl {
     }
   }
 
-  // Fetch CollectionModelOffline by id
-  Future<CollectionModel?> fetchCollection(String collectionId, ) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return null;
+  Future<List<CollectionModel>?> fetchCollectionWithFilters(
+    CollectionFilter filter,
+  ) async {
+    await _initializeIsar();
+    if (_isar == null) return null;
 
-      final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+    final collectionModelOfflineCollection =
+        _isar!.collection<CollectionModelIsar>();
 
-      final collectionModelOffline = await collectionModelOfflineCollection
-          .getByIndex('firestoreId', [collectionId]);
-      
-      if (collectionModelOffline == null) {
-        return null;
-      }
-      // // Logger.printLog('Collectionoffline: fetchedCollection');
-      final coll = collectionModelOffline.toCollectionModel();
+    final isarCollections =
+        await QueryBuilderHelper.buildCollectionModelIsarQuery(
+      filter,
+      collectionModelOfflineCollection,
+    ).findAll();
 
-      return coll;
-    } catch (e) {
-      // Logger.printLog('fetchCollectionLocal : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return null;
-    }
+    // Logger.printLog('Collectionoffline: fetchedCollection');
+
+    final collections = isarCollections
+        .map((isarCollection) => isarCollection.toCollectionModel())
+        .toList();
+
+    return collections;
   }
 
-  Future<CollectionModelOffline?> fetchCollectionModelOffline(
+  Future<CollectionModelIsar?> fetchCollectionModelIsar(
     String collectionId,
   ) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return null;
-      // // Logger.printLog(
-      //   'Collectionoffline: fetchedCollectionOfflineModel isar ${_isar != null}',
-      // );
+    await _initializeIsar();
+    if (_isar == null) return null;
 
-      final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+    final collectionModelOfflineCollection =
+        _isar!.collection<CollectionModelIsar>();
 
-      final collectionModelOffline = await collectionModelOfflineCollection
-          .getByIndex('firestoreId', [collectionId]);
+    final collectionModelOffline =
+        await collectionModelOfflineCollection.getByIndex(
+      'firestoreId',
+      [collectionId],
+    );
 
-      if (collectionModelOffline == null) {
-        return null;
-      }
-      // // Logger.printLog('Collectionoffline: fetchedCollectionOfflineModel');
-
-      return collectionModelOffline;
-    } catch (e) {
-      // Logger.printLog('fetchCollectionOffline : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
+    if (collectionModelOffline == null) {
       return null;
     }
+
+    return collectionModelOffline;
   }
 
   // Add CollectionModelOffline
-  Future<CollectionModel?> addCollection(
+  Future<CollectionModel?> addCollectionInLocalDB(
     CollectionModel collectionModel,
   ) async {
     try {
@@ -107,10 +95,10 @@ class CollectionLocalDataSourcesImpl {
       if (_isar == null) return null;
 
       final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+          _isar!.collection<CollectionModelIsar>();
 
       final collectionModelOffline =
-          CollectionModelOffline.fromCollectionModel(collectionModel);
+          CollectionModelIsar.fromCollectionModel(collectionModel);
 
       // Insert the CollectionModelOffline into Isar
       await _isar!.writeTxn(
@@ -119,7 +107,7 @@ class CollectionLocalDataSourcesImpl {
         },
       );
 
-      // // Logger.printLog('Collectionoffline: addedCollection');
+      // Logger.printLog('Collectionoffline: addedCollection');
 
       return collectionModelOffline.toCollectionModel();
     } catch (e) {
@@ -133,36 +121,40 @@ class CollectionLocalDataSourcesImpl {
   }
 
   // Update CollectionModelOffline
-  Future<void> updateCollection(
+  Future<void> updateCollectionInLocalDB(
     CollectionModel collectionModel,
   ) async {
     try {
       await _initializeIsar();
-      // // Logger.printLog(
-      //   'Collectionoffline: updatedCollection isar ${_isar != null}',
-      // );
+
       if (_isar == null) return;
 
       final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+          _isar!.collection<CollectionModelIsar>();
 
-      await fetchCollectionModelOffline(collectionModel.id).then(
-        (collectionModelOffline) async {
-          // if (collectionModelOffline == null) return;
+      await fetchCollectionModelIsar(collectionModel.id).then(
+        (collectionIsarModel) async {
+          if (collectionIsarModel == null) {
+            await _isar!.writeTxn(
+              () async {
+                await collectionModelOfflineCollection.put(
+                  CollectionModelIsar.fromCollectionModel(collectionModel),
+                );
+              },
+            );
+          } else {
+            final updatedIsarCollection =
+                collectionIsarModel.copyWithCollectionModel(collectionModel);
 
-          final updatedUrlOffline = collectionModelOffline?.copyWith(
-                collectionModel: collectionModel,
-              ) ??
-              CollectionModelOffline.fromCollectionModel(collectionModel);
-
-          await _isar!.writeTxn(
-            () async {
-              await collectionModelOfflineCollection.put(updatedUrlOffline);
-            },
-          );
+            await _isar!.writeTxn(
+              () async {
+                await collectionModelOfflineCollection
+                    .put(updatedIsarCollection);
+              },
+            );
+          }
         },
       );
-      // // Logger.printLog('urloffline: updatedUrl');
 
       return;
     } catch (e) {
@@ -175,34 +167,256 @@ class CollectionLocalDataSourcesImpl {
     }
   }
 
-  // Delete CollectionModelOffline by id
-  Future<void> deleteCollection(String collectionId) async {
+  Future<bool> deleteCollectionAndAssociatedDataInLocalDB({
+    required String collectionId,
+    int batchSize = 30,
+  }) async {
+    var isMainCollectionDeleted = false;
+    try {
+      await _initializeIsar();
+
+      if (_isar == null) return false;
+
+      final collectionModelOfflineCollection =
+          _isar!.collection<CollectionModelIsar>();
+
+      await Future.wait(
+        [
+          Future(
+            () async {
+              // 1. Delete the main collection document
+              await _isar!.writeTxn(() async {
+                final deleted =
+                    await collectionModelOfflineCollection.deleteByIndex(
+                  'firestoreId',
+                  [collectionId],
+                );
+                isMainCollectionDeleted = deleted;
+              });
+            },
+          ),
+          _deleteUrlsForCollectionInLocalDB(
+            collectionId: collectionId,
+            batchSize: batchSize,
+          ),
+        ],
+      );
+
+      // 3. Recursively delete subcollections and their URLs
+      final collectionsToProcess = [collectionId];
+
+      while (collectionsToProcess.isNotEmpty) {
+        final currentCollectionId = collectionsToProcess.removeAt(0);
+
+        // Fetch subcollections
+        final subcollections = await collectionModelOfflineCollection
+            .filter()
+            .parentCollectionEqualTo(currentCollectionId)
+            .findAll();
+
+        for (final subCollection in subcollections) {
+          collectionsToProcess.add(subCollection.firestoreId);
+
+          await Future.wait(
+            [
+              _deleteUrlsForCollectionInLocalDB(
+                collectionId: subCollection.firestoreId,
+                batchSize: batchSize,
+              ),
+              _isar!.writeTxn(
+                () async => collectionModelOfflineCollection.deleteByIndex(
+                  'firebaseId',
+                  [subCollection.firestoreId],
+                ),
+              ),
+            ],
+          );
+        }
+      }
+    } catch (e) {
+      Logger.printLog('[log] : Error in deletion: $e');
+      if (isMainCollectionDeleted) {
+        return isMainCollectionDeleted;
+      }
+
+      throw Exception('Failed to delete collection and associated data');
+    }
+
+    return isMainCollectionDeleted;
+  }
+
+// Helper method to delete URLs for a specific collection
+  Future<void> _deleteUrlsForCollectionInLocalDB({
+    required String collectionId,
+    required int batchSize,
+  }) async {
     try {
       await _initializeIsar();
       if (_isar == null) return;
 
-      final collectionModelOfflineCollection =
-          _isar!.collection<CollectionModelOffline>();
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      await fetchCollectionModelOffline(collectionId).then(
-        (collectionModelOffline) async {
-          // // Logger.printLog(
-          //   'Collectionoffline: deletedCollection ${collectionModelOffline?.id}, ${collectionModelOffline?.firestoreId}',
-          // );
+      final urlsToDelete = await urlModelOfflineCollection
+          .filter()
+          .collectionIdEqualTo(collectionId)
+          .findAll();
 
-          if (collectionModelOffline == null) return;
+      for (final url in urlsToDelete) {
+        await _isar!.writeTxn(
+          () async {
+            await urlModelOfflineCollection.deleteByIndex(
+              'collectionId',
+              [url.collectionId],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      Logger.printLog('[log] : Error deleting URLs: $e');
+      throw Exception('Failed to delete associated URLs');
+    }
+  }
+
+  // Fetch UrlModelOffline by id
+  Future<UrlModel?> fetchUrl(String urlId) async {
+    try {
+      await _initializeIsar();
+      if (_isar == null) return null;
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      final urlModelOffline =
+          await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
+
+      if (urlModelOffline == null) {
+        return null;
+      }
+      // Logger.printLog('urloffline: fetchedUrl');
+      return urlModelOffline.toUrlModel();
+    } catch (e) {
+      // Logger.printLog('fetchUrlLocal : $e');
+      // throw ServerException(
+      //   message: 'Something Went Wrong',
+      //   statusCode: 400,
+      // );
+      return null;
+    }
+  }
+
+  Future<UrlModelIsar?> fetchUrlModelOffline(String urlId) async {
+    try {
+      await _initializeIsar();
+      if (_isar == null) return null;
+      // Logger.printLog(
+      //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      final urlModelOffline =
+          await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
+
+      if (urlModelOffline == null) {
+        return null;
+      }
+
+      return urlModelOffline;
+    } catch (e) {
+      // Logger.printLog('fetchUrlOffline : $e');
+      // throw ServerException(
+      //   message: 'Something Went Wrong',
+      //   statusCode: 400,
+      // );
+      return null;
+    }
+  }
+
+  // Add UrlModelOffline
+  Future<UrlModel?> addUrl(UrlModel urlModel) async {
+    try {
+      await _initializeIsar();
+      if (_isar == null) return null;
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      final urlModelOffline = UrlModelIsar.fromUrlModel(urlModel);
+
+      // Insert the UrlModelOffline into Isar
+      await _isar!.writeTxn(
+        () async {
+          await urlModelOfflineCollection.put(urlModelOffline);
+        },
+      );
+
+      // Logger.printLog('urloffline: addedUrl');
+
+      return urlModelOffline.toUrlModel();
+    } catch (e) {
+      // Logger.printLog('addUrlOffline : $e');
+      // throw ServerException(
+      //   message: 'Something Went Wrong',
+      //   statusCode: 400,
+      // );
+      return null;
+    }
+  }
+
+  // Update UrlModelOffline
+  Future<void> updateUrl(UrlModel urlModel) async {
+    try {
+      await _initializeIsar();
+      // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
+      if (_isar == null) return;
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      // final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
+      await fetchUrlModelOffline(urlModel.firestoreId).then(
+        (urlModelOffline) async {
+          final updatedUrlOffline =
+              urlModelOffline?.copyWith(urlModel: urlModel) ??
+                  UrlModelIsar.fromUrlModel(urlModel);
+
           await _isar!.writeTxn(
             () async {
-              await collectionModelOfflineCollection.delete(
-                collectionModelOffline.id!,
-              );
+              await urlModelOfflineCollection.put(updatedUrlOffline);
             },
           );
         },
       );
-      // // Logger.printLog('Collectionoffline: deletedCollection');
+      // Logger.printLog('urloffline: updatedUrl');
+
+      return;
     } catch (e) {
-      // Logger.printLog('deleteCollectionOffline : $e');
+      // Logger.printLog('updateUrlOffline : $e');
+      // throw ServerException(
+      //   message: 'Something Went Wrong',
+      //   statusCode: 400,
+      // );
+      return;
+    }
+  }
+
+  // Delete UrlModelOffline by id
+  Future<void> deleteUrl(String urlFirestoreId) async {
+    try {
+      await _initializeIsar();
+      if (_isar == null) return;
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      await fetchUrlModelOffline(urlFirestoreId).then(
+        (urlModelOffline) async {
+          if (urlModelOffline == null) return;
+          await _isar!.writeTxn(
+            () async {
+              await urlModelOfflineCollection.delete(urlModelOffline.id!);
+            },
+          );
+        },
+      );
+      // Logger.printLog('urloffline: deletedUrl');
+    } catch (e) {
+      // Logger.printLog('deleteUrlOffline : $e');
       // throw ServerException(
       //   message: 'Something Went Wrong',
       //   statusCode: 400,

@@ -8,18 +8,15 @@ import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.d
 class CollectionFetchModel extends Equatable {
   const CollectionFetchModel({
     required this.collectionFetchingState,
-    required this.subCollectionFetchedIndex,
     this.collection,
   });
   final CollectionModel? collection;
   final LoadingStates collectionFetchingState;
-  final int subCollectionFetchedIndex;
 
   @override
   List<Object?> get props => [
         collection,
         collectionFetchingState,
-        subCollectionFetchedIndex,
       ];
 
   CollectionFetchModel copyWith({
@@ -32,8 +29,6 @@ class CollectionFetchModel extends Equatable {
       collection: collection ?? this.collection,
       collectionFetchingState:
           collectionFetchingState ?? this.collectionFetchingState,
-      subCollectionFetchedIndex:
-          subCollectionFetchedIndex ?? this.subCollectionFetchedIndex,
     );
   }
 }

@@ -14,10 +14,10 @@ import 'package:link_vault/core/common/data_layer/data_sources/local_data_source
 import 'package:link_vault/core/common/data_layer/data_sources/local_data_sources/url_local_data_sources.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/collection_remote_data_source.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/global_user_remote_data_source.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_isar.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collection_crud_cubit/collections_crud_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
@@ -131,10 +131,10 @@ Future<void> _initializeIsar() async {
     final dir = await getApplicationDocumentsDirectory();
     await Isar.open(
       [
-        CollectionModelOfflineSchema,
+        CollectionModelIsarSchema,
         UrlImageSchema,
         ImagesByteDataSchema,
-        UrlModelOfflineSchema,
+        UrlModelIsarSchema,
         GlobalUserSchema,
       ],
       directory: dir.path,

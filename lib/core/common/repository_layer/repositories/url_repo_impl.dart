@@ -74,7 +74,7 @@ class UrlRepoImpl {
         htmlContent: '',
       );
 
-      final addedUrlData = await _remoteDataSourcesImpl.addUrl(
+      final addedUrlData = await _remoteDataSourcesImpl.addUrlInRemoteDB(
         optimisedUrlData,
         userId: userId,
       );
@@ -95,7 +95,7 @@ class UrlRepoImpl {
 
       // updating collection
       final serverUpdatedCollection =
-          await _remoteDataSourcesImpl.updateCollection(
+          await _remoteDataSourcesImpl.updateCollectionInRemoteDB(
         collection: updatedCollectionWithUrls,
         userId: userId,
       );
@@ -106,7 +106,7 @@ class UrlRepoImpl {
       );
 
       await _collectionLocalDataSourcesImpl
-          .updateCollection(updatedCollectionWithUrls);
+          .updateCollectionInLocalDB(updatedCollectionWithUrls);
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
     } on ServerException {
@@ -135,7 +135,7 @@ class UrlRepoImpl {
         htmlContent: '',
       );
 
-      await _remoteDataSourcesImpl.updateUrl(
+      await _remoteDataSourcesImpl.updateUrlInRemoteDB(
         urlModel: optimisedUrlData,
         userId: userId,
       );
@@ -163,7 +163,7 @@ class UrlRepoImpl {
     // [TODO] : delete urlData in db
     // then we need to update the collections also
     try {
-      await _remoteDataSourcesImpl.deleteUrl(
+      await _remoteDataSourcesImpl.deleteUrlInRemoteDB(
         urlData.firestoreId,
         userId: userId,
       );
@@ -178,13 +178,13 @@ class UrlRepoImpl {
 
       // updating collection
       final serverUpdatedCollection =
-          await _remoteDataSourcesImpl.updateCollection(
+          await _remoteDataSourcesImpl.updateCollectionInRemoteDB(
         collection: updatedCollectionWithUrls,
         userId: userId,
       );
 
       await _collectionLocalDataSourcesImpl
-          .updateCollection(updatedCollectionWithUrls);
+          .updateCollectionInLocalDB(updatedCollectionWithUrls);
 
       return Right((urlData, serverUpdatedCollection));
     } on ServerException {
@@ -215,7 +215,7 @@ class UrlRepoImpl {
         htmlContent: '',
       );
 
-      final addedUrlData = await _remoteDataSourcesImpl.updateUrl(
+      final addedUrlData = await _remoteDataSourcesImpl.updateUrlInRemoteDB(
         urlModel: optimisedUrlData,
         userId: userId,
       );
@@ -229,7 +229,7 @@ class UrlRepoImpl {
 
       // updating collection
       final serverUpdatedCollection =
-          await _remoteDataSourcesImpl.updateCollection(
+          await _remoteDataSourcesImpl.updateCollectionInRemoteDB(
         collection: updatedCollectionWithUrls,
         userId: userId,
       );
@@ -240,7 +240,7 @@ class UrlRepoImpl {
       );
 
       await _collectionLocalDataSourcesImpl
-          .updateCollection(updatedCollectionWithUrls);
+          .updateCollectionInLocalDB(updatedCollectionWithUrls);
 
       return Right((readdedMetaDataUrlModel, serverUpdatedCollection));
     } on ServerException {
@@ -268,7 +268,7 @@ class UrlRepoImpl {
         metaData: UrlMetaData.fromJson(urlMetaDataJson),
       );
 
-      await _remoteDataSourcesImpl.updateUrl(
+      await _remoteDataSourcesImpl.updateUrlInRemoteDB(
         urlModel: optimisedUrlData,
         userId: userId,
       );

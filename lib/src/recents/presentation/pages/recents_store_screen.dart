@@ -66,7 +66,7 @@ class _RecentsStorePageState extends State<RecentsStorePage>
 
           if (fetchCollection == null) {
             context.read<CollectionsCubit>().fetchCollection(
-                  collectionId: widget.collectionId,
+                  prentCollectionId: widget.collectionId,
                   userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                   isRootCollection: widget.isRootCollection,
                   collectionName: 'Recents',
@@ -238,7 +238,7 @@ class _RecentsStorePageState extends State<RecentsStorePage>
           CustomElevatedButton(
             text: 'Try Again',
             onPressed: () => collectionCubit.fetchCollection(
-              collectionId: widget.collectionId,
+              prentCollectionId: widget.collectionId,
               userId: globalUserCubit.state.globalUser!.id,
               isRootCollection: widget.isRootCollection,
             ),

@@ -9,7 +9,7 @@ class CollectionsState extends Equatable {
   });
 
   final Map<String, CollectionFetchModel> collections;
-  final Map<String, List<UrlFetchStateModel>> collectionUrls;
+  final Map<String, UrlFetchStateModel> collectionUrls;
 
   @override
   List<Object> get props => [
@@ -19,7 +19,7 @@ class CollectionsState extends Equatable {
 
   CollectionsState copyWith({
     Map<String, CollectionFetchModel>? collections,
-    Map<String, List<UrlFetchStateModel>>? collectionUrls,
+    Map<String, UrlFetchStateModel>? collectionUrls,
   }) {
     return CollectionsState(
       collections: collections ?? this.collections,

@@ -31,7 +31,6 @@ class CollectionStorePage extends StatefulWidget {
 
 class _CollectionStorePageState extends State<CollectionStorePage>
     with AutomaticKeepAliveClientMixin {
-
   final _showBottomNavBar = ValueNotifier(true);
   final PageController _pageController = PageController();
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
@@ -70,7 +69,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
 
           if (fetchCollection == null) {
             context.read<CollectionsCubit>().fetchCollection(
-                  collectionId: widget.collectionId,
+                  prentCollectionId: widget.collectionId,
                   userId: context.read<GlobalUserCubit>().state.globalUser!.id,
                   isRootCollection: widget.isRootCollection,
                 );
@@ -257,7 +256,7 @@ class _CollectionStorePageState extends State<CollectionStorePage>
           CustomElevatedButton(
             text: 'Try Again',
             onPressed: () => collectionCubit.fetchCollection(
-              collectionId: widget.collectionId,
+              prentCollectionId: widget.collectionId,
               userId: globalUserCubit.state.globalUser!.id,
               isRootCollection: widget.isRootCollection,
             ),

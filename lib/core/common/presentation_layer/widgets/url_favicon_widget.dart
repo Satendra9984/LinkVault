@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/providers/url_preload_manager_cubit/url_preload_manager_cubit.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/network_image_builder_widget.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_meta_data.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/services/custom_tabs_client_service.dart';

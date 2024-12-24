@@ -7,12 +7,12 @@ class CollectionModel {
     required this.parentCollection,
     required this.name,
     required this.category,
-    required this.subcollections,
-    required this.urls,
     required this.status,
     required this.sharedWith,
     required this.createdAt,
     required this.updatedAt,
+    this.subcollectionCount,
+    this.urlCount,
     this.description,
     this.icon,
     this.background,
@@ -27,9 +27,11 @@ class CollectionModel {
       name: json['name'] as String,
       description: json['description'] as String?,
       category: json['category'] as String,
-      subcollections:
-          (json['subcollections'] as List<dynamic>? ?? []).cast<String>(),
-      urls: (json['urls'] as List<dynamic>? ?? []).cast<String>(),
+      // subcollections:
+      //     (json['subcollections'] as List<dynamic>? ?? []).cast<String>(),
+      // urls: (json['urls'] as List<dynamic>? ?? []).cast<String>(),
+      subcollectionCount: json['subcollectionCount'] as int?,
+      urlCount: json['urlCount'] as int?,
       icon: json['icon'] as Map<String, dynamic>?,
       background: json['background'] as Map<String, dynamic>?,
       status: Map<String, dynamic>.from(json['status'] as Map<String, dynamic>),
@@ -58,8 +60,6 @@ class CollectionModel {
       parentCollection: parentCollection,
       name: name,
       category: '',
-      subcollections: [],
-      urls: [],
       status: status,
       sharedWith: [],
       createdAt: createdAt,
@@ -73,8 +73,12 @@ class CollectionModel {
   final String name;
   final String? description;
   final String category;
-  final List<String> subcollections;
-  final List<String> urls;
+  // final List<String> subcollections;
+  // final List<String> urls;
+  int? subcollectionCount;
+  // List<String> urlIds = [];
+  int? urlCount;
+
   final Map<String, dynamic>? icon;
   final Map<String, dynamic>? background;
   final Map<String, dynamic>? status;
@@ -91,14 +95,14 @@ class CollectionModel {
       'name': name,
       'description': description,
       'category': category,
-      'subcollections': subcollections,
-      'urls': urls,
+      'subcollectionCount': subcollectionCount,
+      'urlCount': urlCount,
       'icon': icon,
       'background': background,
       'status': status,
       'shared_with': sharedWith.map((item) => item.toJson()).toList(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc(),
+      'updated_at': updatedAt.toUtc(),
       if (settings != null)
         'settings': settings, // Conditional inclusion of settings
     };
@@ -111,8 +115,8 @@ class CollectionModel {
     String? name,
     String? description,
     String? category,
-    List<String>? subcollections,
-    List<String>? urls,
+    int? subcollectionCount,
+    int? urlCount,
     Map<String, dynamic>? icon,
     Map<String, dynamic>? background,
     Map<String, dynamic>? status,
@@ -128,8 +132,8 @@ class CollectionModel {
       name: name ?? this.name,
       description: description ?? this.description,
       category: category ?? this.category,
-      subcollections: subcollections ?? this.subcollections,
-      urls: urls ?? this.urls,
+      subcollectionCount: subcollectionCount ?? this.subcollectionCount,
+      urlCount: urlCount ?? this.urlCount,
       icon: icon ?? this.icon,
       background: background ?? this.background,
       status: status ?? this.status,

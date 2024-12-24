@@ -46,7 +46,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
 
     if (collection == null) {
       await _collectionsCubit.fetchCollection(
-        collectionId: recentsCollectionId,
+        prentCollectionId: recentsCollectionId,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: true,
         collectionName: recents,
@@ -114,7 +114,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
               final (urlData, updatedCollection) = response;
 
               _collectionsCubit
-                ..updateCollection(
+                ..updateCollectionInState(
                   updatedCollection: updatedCollection,
                   fetchSubCollIndexAdded: 0,
                 )
@@ -160,7 +160,7 @@ class RecentsUrlCubit extends Cubit<RecentsUrlState> {
             (failed) {},
             (updatedCollection) {
               _collectionsCubit
-                ..updateCollection(
+                ..updateCollectionInState(
                   updatedCollection: updatedCollection,
                   fetchSubCollIndexAdded: 0,
                 )

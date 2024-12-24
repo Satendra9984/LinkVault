@@ -7,10 +7,9 @@ class UrlFetchStateModel extends Equatable {
     required this.collectionId,
     required this.loadingStates,
     this.urlModel,
-    this.urlModelId,
   });
+
   final String collectionId;
-  final String? urlModelId;
   final UrlModel? urlModel;
   final LoadingStates loadingStates;
 
@@ -18,7 +17,6 @@ class UrlFetchStateModel extends Equatable {
   List<Object?> get props => [
         collectionId,
         urlModel,
-        urlModelId,
         loadingStates,
       ];
 
@@ -31,7 +29,6 @@ class UrlFetchStateModel extends Equatable {
     return UrlFetchStateModel(
       collectionId: collectionId ?? this.collectionId,
       urlModel: urlModel ?? this.urlModel,
-      urlModelId: urlModelId ?? this.urlModelId,
       loadingStates: loadingStates ?? this.loadingStates,
     );
   }

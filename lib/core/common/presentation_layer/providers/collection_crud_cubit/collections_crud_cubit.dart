@@ -47,7 +47,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     if (collection == null) {
       await _collectionsCubit.fetchCollection(
-        collectionId: collectionModel.id,
+        prentCollectionId: collectionModel.id,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: isRootCollection,
       );
@@ -61,7 +61,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       return;
     }
 
-    _collectionsCubit.updateCollection(
+    _collectionsCubit.updateCollectionInState(
       updatedCollection: collectionModel,
       fetchSubCollIndexAdded: 0,
       collectionFetchState: LoadingStates.loading,
@@ -86,19 +86,20 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
                 userId: _globalUserCubit.state.globalUser!.id,
               );
 
-        _collectionsCubit.deleteCollection(collection: collection.collection!);
+        _collectionsCubit.deleteCollectionInState(
+            collection: collection.collection!);
 
         // ignore: cascade_invocations
         fetchedCollection.fold(
           (_) {
-            _collectionsCubit.updateCollection(
+            _collectionsCubit.updateCollectionInState(
               updatedCollection: collectionModel,
               fetchSubCollIndexAdded: 0,
               collectionFetchState: LoadingStates.loaded,
             );
           },
           (syncedColl) {
-            _collectionsCubit.addCollection(
+            _collectionsCubit.addSubCollectionInState(
               collection: syncedColl,
             );
           },
@@ -141,10 +142,10 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       (result) async {
         final (collection, updatedParentCollection) = result;
 
-        _collectionsCubit.addCollection(collection: collection);
+        _collectionsCubit.addSubCollectionInState(collection: collection);
 
         if (updatedParentCollection != null) {
-          _collectionsCubit.updateCollection(
+          _collectionsCubit.updateCollectionInState(
             updatedCollection: updatedParentCollection,
             fetchSubCollIndexAdded: 1,
           );
@@ -178,7 +179,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     if (parentCollection == null && !isRootCollection) {
       await _collectionsCubit.fetchCollection(
-        collectionId:
+        prentCollectionId:
             isRootCollection ? collection.id : collection.parentCollection,
         userId: _globalUserCubit.getGlobalUser()!.id,
         isRootCollection: false,
@@ -228,8 +229,8 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         );
 
         _collectionsCubit
-          ..deleteCollection(collection: collection)
-          ..updateCollection(
+          ..deleteCollectionInState(collection: collection)
+          ..updateCollectionInState(
             updatedCollection: updatedParentCollection,
             fetchSubCollIndexAdded: -1,
           );
@@ -269,7 +270,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
       },
       (updatedCollection) async {
         _collectionsCubit
-          ..updateCollection(
+          ..updateCollectionInState(
             updatedCollection: updatedCollection,
             fetchSubCollIndexAdded: 0,
           )

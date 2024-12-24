@@ -49,7 +49,7 @@ class _SavedFeedsPreviewListScreenState
   @override
   void initState() {
     context.read<CollectionsCubit>().fetchCollection(
-          collectionId: widget.collectionId,
+          prentCollectionId: widget.collectionId,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: widget.isRootCollection,
           collectionName: 'My Feeds',
@@ -72,7 +72,7 @@ class _SavedFeedsPreviewListScreenState
 
         if (fetchCollection == null) {
           collectionCubit.fetchCollection(
-            collectionId: widget.collectionId,
+            prentCollectionId: widget.collectionId,
             userId: globalUserCubit.state.globalUser!.id,
             isRootCollection: widget.isRootCollection,
             collectionName: 'My Feeds',
@@ -89,7 +89,7 @@ class _SavedFeedsPreviewListScreenState
             fetchCollection.collection == null) {
           return _showErrorLoadingWidget(
             () => collectionCubit.fetchCollection(
-              collectionId: widget.collectionId,
+              prentCollectionId: widget.collectionId,
               userId: globalUserCubit.state.globalUser!.id,
               isRootCollection: widget.isRootCollection,
               collectionName: 'My Feeds',
