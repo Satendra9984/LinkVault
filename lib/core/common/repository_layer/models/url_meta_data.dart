@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:isar/isar.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 
 class UrlMetaData {
@@ -106,6 +104,19 @@ class UrlMetaData {
       description: description ?? this.description,
       websiteName: websiteName ?? this.websiteName,
       rssFeedUrl: rssFeedUrl ?? this.rssFeedUrl, // Added rssFeedUrl
+    );
+  }
+
+  UrlMetaData removedMetaDataForRemoteDB() {
+    return UrlMetaData(
+      favicon: null,
+      faviconUrl: faviconUrl,
+      bannerImage: null,
+      bannerImageUrl: bannerImageUrl,
+      title: title,
+      description: description,
+      websiteName: websiteName,
+      rssFeedUrl: rssFeedUrl,
     );
   }
 }

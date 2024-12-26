@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/common/presentation_layer/pages/update_url_template_screen.dart';
 import 'package:link_vault/core/common/presentation_layer/widgets/url_previewbytes_widget.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_meta_data.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';

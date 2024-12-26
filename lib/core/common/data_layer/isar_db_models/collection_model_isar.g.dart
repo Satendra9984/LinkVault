@@ -66,8 +66,7 @@ const CollectionModelIsarSchema = CollectionSchema(
     r'sharedWith': PropertySchema(
       id: 9,
       name: r'sharedWith',
-      type: IsarType.objectList,
-      target: r'SharedWithOffline',
+      type: IsarType.stringList,
     ),
     r'status': PropertySchema(
       id: 10,
@@ -194,7 +193,7 @@ const CollectionModelIsarSchema = CollectionSchema(
     )
   },
   links: {},
-  embeddedSchemas: {r'SharedWithOffline': SharedWithOfflineSchema},
+  embeddedSchemas: {},
   getId: _collectionModelIsarGetId,
   getLinks: _collectionModelIsarGetLinks,
   attach: _collectionModelIsarAttach,
@@ -237,11 +236,9 @@ int _collectionModelIsarEstimateSize(
   }
   bytesCount += 3 + object.sharedWith.length * 3;
   {
-    final offsets = allOffsets[SharedWithOffline]!;
     for (var i = 0; i < object.sharedWith.length; i++) {
       final value = object.sharedWith[i];
-      bytesCount +=
-          SharedWithOfflineSchema.estimateSize(value, offsets, allOffsets);
+      bytesCount += value.length * 3;
     }
   }
   {
@@ -269,12 +266,7 @@ void _collectionModelIsarSerialize(
   writer.writeString(offsets[6], object.name);
   writer.writeString(offsets[7], object.parentCollection);
   writer.writeString(offsets[8], object.settings);
-  writer.writeObjectList<SharedWithOffline>(
-    offsets[9],
-    allOffsets,
-    SharedWithOfflineSchema.serialize,
-    object.sharedWith,
-  );
+  writer.writeStringList(offsets[9], object.sharedWith);
   writer.writeString(offsets[10], object.status);
   writer.writeLong(offsets[11], object.subcollectionCount);
   writer.writeDateTime(offsets[12], object.updatedAt);
@@ -299,13 +291,7 @@ CollectionModelIsar _collectionModelIsarDeserialize(
     name: reader.readString(offsets[6]),
     parentCollection: reader.readString(offsets[7]),
     settings: reader.readStringOrNull(offsets[8]),
-    sharedWith: reader.readObjectList<SharedWithOffline>(
-          offsets[9],
-          SharedWithOfflineSchema.deserialize,
-          allOffsets,
-          SharedWithOffline(),
-        ) ??
-        [],
+    sharedWith: reader.readStringList(offsets[9]) ?? [],
     status: reader.readStringOrNull(offsets[10]),
     subcollectionCount: reader.readLongOrNull(offsets[11]),
     updatedAt: reader.readDateTime(offsets[12]),
@@ -341,13 +327,7 @@ P _collectionModelIsarDeserializeProp<P>(
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readObjectList<SharedWithOffline>(
-            offset,
-            SharedWithOfflineSchema.deserialize,
-            allOffsets,
-            SharedWithOffline(),
-          ) ??
-          []) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 10:
       return (reader.readStringOrNull(offset)) as P;
     case 11:
@@ -2179,6 +2159,142 @@ extension CollectionModelIsarQueryFilter on QueryBuilder<CollectionModelIsar,
   }
 
   QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sharedWith',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'sharedWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'sharedWith',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sharedWith',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
+      sharedWithElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'sharedWith',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
       sharedWithLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -2763,14 +2879,7 @@ extension CollectionModelIsarQueryFilter on QueryBuilder<CollectionModelIsar,
 }
 
 extension CollectionModelIsarQueryObject on QueryBuilder<CollectionModelIsar,
-    CollectionModelIsar, QFilterCondition> {
-  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QAfterFilterCondition>
-      sharedWithElement(FilterQuery<SharedWithOffline> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'sharedWith');
-    });
-  }
-}
+    CollectionModelIsar, QFilterCondition> {}
 
 extension CollectionModelIsarQueryLinks on QueryBuilder<CollectionModelIsar,
     CollectionModelIsar, QFilterCondition> {}
@@ -3254,6 +3363,13 @@ extension CollectionModelIsarQueryWhereDistinct
   }
 
   QueryBuilder<CollectionModelIsar, CollectionModelIsar, QDistinct>
+      distinctBySharedWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sharedWith');
+    });
+  }
+
+  QueryBuilder<CollectionModelIsar, CollectionModelIsar, QDistinct>
       distinctByStatus({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'status', caseSensitive: caseSensitive);
@@ -3358,7 +3474,7 @@ extension CollectionModelIsarQueryProperty
     });
   }
 
-  QueryBuilder<CollectionModelIsar, List<SharedWithOffline>, QQueryOperations>
+  QueryBuilder<CollectionModelIsar, List<String>, QQueryOperations>
       sharedWithProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sharedWith');
@@ -3398,359 +3514,3 @@ extension CollectionModelIsarQueryProperty
     });
   }
 }
-
-// **************************************************************************
-// IsarEmbeddedGenerator
-// **************************************************************************
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
-const SharedWithOfflineSchema = Schema(
-  name: r'SharedWithOffline',
-  id: 4357074414233747621,
-  properties: {
-    r'role': PropertySchema(
-      id: 0,
-      name: r'role',
-      type: IsarType.string,
-    ),
-    r'userId': PropertySchema(
-      id: 1,
-      name: r'userId',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _sharedWithOfflineEstimateSize,
-  serialize: _sharedWithOfflineSerialize,
-  deserialize: _sharedWithOfflineDeserialize,
-  deserializeProp: _sharedWithOfflineDeserializeProp,
-);
-
-int _sharedWithOfflineEstimateSize(
-  SharedWithOffline object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  bytesCount += 3 + object.role.length * 3;
-  bytesCount += 3 + object.userId.length * 3;
-  return bytesCount;
-}
-
-void _sharedWithOfflineSerialize(
-  SharedWithOffline object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.role);
-  writer.writeString(offsets[1], object.userId);
-}
-
-SharedWithOffline _sharedWithOfflineDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = SharedWithOffline(
-    role: reader.readStringOrNull(offsets[0]) ?? '',
-    userId: reader.readStringOrNull(offsets[1]) ?? '',
-  );
-  return object;
-}
-
-P _sharedWithOfflineDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset) ?? '') as P;
-    case 1:
-      return (reader.readStringOrNull(offset) ?? '') as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-extension SharedWithOfflineQueryFilter
-    on QueryBuilder<SharedWithOffline, SharedWithOffline, QFilterCondition> {
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'role',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'role',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'role',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'role',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      roleIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'role',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'userId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'userId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'userId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<SharedWithOffline, SharedWithOffline, QAfterFilterCondition>
-      userIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'userId',
-        value: '',
-      ));
-    });
-  }
-}
-
-extension SharedWithOfflineQueryObject
-    on QueryBuilder<SharedWithOffline, SharedWithOffline, QFilterCondition> {}

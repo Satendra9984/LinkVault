@@ -150,6 +150,12 @@ class _UrlPreviewListTemplateScreenState
     context.read<CollectionsCubit>().fetchMoreUrls(
           collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+          isAtoZFilter:
+              _atozFilter.value == _ztoaFilter.value ? null : _atozFilter.value,
+          isLatestFirst:
+              _updatedAtLatestFilter.value == _updatedAtOldestFilter.value
+                  ? null
+                  : _updatedAtLatestFilter.value,
         );
   }
 
@@ -157,8 +163,7 @@ class _UrlPreviewListTemplateScreenState
     final searchText = _searchTextEditingController.text.toLowerCase().trim();
     final feeds = context
         .read<CollectionsCubit>()
-        .state
-        .collectionUrls[widget.collectionModel.id];
+        .getUrlsList(collectionId: widget.collectionModel.id);
 
     if (feeds == null || feeds.isEmpty) return;
 
@@ -842,8 +847,11 @@ class _UrlPreviewListTemplateScreenState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  final availableUrls =
-                      state.collectionUrls[widget.collectionModel.id];
+                  final collectionCubit = context.read<CollectionsCubit>();
+
+                  final availableUrls = collectionCubit.getUrlsList(
+                    collectionId: widget.collectionModel.id,
+                  );
 
                   if (availableUrls == null || availableUrls.isEmpty) {
                     _fetchMoreUrls();
@@ -912,13 +920,13 @@ class _UrlPreviewListTemplateScreenState
                                 return GestureDetector(
                                   onTap: _fetchMoreUrls,
                                   onLongPress: () async {
-                                    if (url.urlModelId == null) return;
+                                    // if (url.urlModel == null) return;
 
-                                    await showDeleteErroreousUrlModel(
-                                      context,
-                                      urlModelId: url.urlModelId!,
-                                      urlOptions: [],
-                                    );
+                                    // await showDeleteErroreousUrlModel(
+                                    //   context,
+                                    //   urlModelId: url.!,
+                                    //   urlOptions: [],
+                                    // );
                                   },
                                   child: const SizedBox(
                                     height: 120,
@@ -1275,7 +1283,11 @@ class _UrlPreviewListTemplateScreenState
   Widget _searchFeedButton() {
     return BlocBuilder<CollectionsCubit, CollectionsState>(
       builder: (context, state) {
-        final feeds = state.collectionUrls[widget.collectionModel.id];
+        final collectionCubit = context.read<CollectionsCubit>();
+
+        final feeds = collectionCubit.getUrlsList(
+          collectionId: widget.collectionModel.id,
+        );
 
         if (feeds == null || feeds.isEmpty) {
           return const SizedBox.shrink();
@@ -1510,23 +1522,24 @@ class _UrlPreviewListTemplateScreenState
                 leadingIcon: Icons.delete_rounded,
                 title: const Text('Delete', style: titleTextStyle),
                 onTap: () async {
+                  // TODO : 
                   final navigator = Navigator.of(context);
-                  final urls = widget.collectionModel.urls
-                    ..removeWhere((urlId) => urlId == urlModelId);
+                  // final urls = widget.collectionModel.urls
+                  //   ..removeWhere((urlId) => urlId == urlModelId);
 
-                  final updatedCollectionModel =
-                      widget.collectionModel.copyWith(urls: urls);
+                  // final updatedCollectionModel =
+                  //     widget.collectionModel.copyWith(urls: urls);
 
-                  await context
-                      .read<CollectionCrudCubit>()
-                      .updateCollection(
-                        collection: updatedCollectionModel,
-                      )
-                      .then(
-                    (_) async {
-                      await navigator.maybePop();
-                    },
-                  );
+                  // await context
+                  //     .read<CollectionCrudCubit>()
+                  //     .updateCollection(
+                  //       collection: updatedCollectionModel,
+                  //     )
+                  //     .then(
+                  //   (_) async {
+                  //     await navigator.maybePop();
+                  //   },
+                  // );
                 },
               ),
             ],

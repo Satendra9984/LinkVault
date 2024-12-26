@@ -6,9 +6,11 @@ import 'package:isar/isar.dart';
 import 'package:link_vault/core/common/data_layer/data_sources/remote_data_sources/query_builder.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_filters_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:link_vault/core/utils/logger.dart';
 
 class RemoteDataSourcesImpl {
   RemoteDataSourcesImpl({
@@ -21,7 +23,6 @@ class RemoteDataSourcesImpl {
     required String userId,
     required CollectionFilter filter,
   }) async {
-    // [TODO] : Fetch Subcollection
     try {
       final query = QueryBuilderHelper.buildCollectionModelFirestoreQuery(
         userId: userId,
@@ -235,6 +236,34 @@ class RemoteDataSourcesImpl {
     }
   }
 
+  Future<int?> getSubCollectionCount({
+    required String userId,
+    required String collectionId,
+  }) async {
+    try {
+      // 1. First delete the parent collection document
+      final snap = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(folderCollections)
+          .where('parent_collection', isEqualTo: collectionId)
+          .count()
+          .get();
+
+      return snap.count;
+    } catch (e) {
+      debugPrint('[log] : Error in deletion: $e');
+
+      throw ServerException(
+        message: 'Failed to delete collection and associated data',
+        statusCode: 500,
+      );
+    }
+  }
+
+
+  /// < -------------------- FOR URLS RELATED QUERIES ------------------------->
+
   // Helper method to delete URLs for a specific collection
   Future<void> _deleteUrlsForCollection({
     required String userId,
@@ -272,6 +301,103 @@ class RemoteDataSourcesImpl {
       debugPrint('[log] : Error deleting URLs: $e');
       throw ServerException(
         message: 'Failed to delete associated URLs',
+        statusCode: 500,
+      );
+    }
+  }
+
+  Future<List<UrlModel>> fetchUrlsFromRemoteDB({
+    required String userId,
+    required UrlModelFilters filter,
+  }) async {
+    try {
+      final query = QueryBuilderHelper.buildUrlModelFirestoreQuery(
+        userId: userId,
+        firestore: _firestore,
+        urlFilter: filter,
+      );
+
+      final querySnapshot = await query.get();
+      final data = querySnapshot.docs;
+
+      final urls = data
+          .map(
+            (doc) => UrlModel.fromJson(
+              {
+                'id': doc.id,
+                ...doc.data(),
+              },
+            ),
+          )
+          .toList();
+
+      return urls;
+    } catch (e) {
+      Logger.printLog('[log] : fetchUrlsFromRemoteDB $e');
+      throw ServerException(
+        message: 'Failed to fetch URLs: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  Future<UrlModel> fetchUrlFromRemoteDB(
+    String urlFirestoreId, {
+    required String userId,
+  }) async {
+    try {
+      final response = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .where('id', isEqualTo: urlFirestoreId)
+          .get();
+
+      if (response.docs.isEmpty) {
+        throw ServerException(
+          message: 'No data found for the given URL model ID.',
+          statusCode: 404,
+        );
+      }
+
+      final data = response.docs.first;
+
+      return UrlModel.fromJson(
+        {
+          'id': data.id,
+          ...data.data(),
+        },
+      );
+    } catch (e) {
+      // Log the error
+      // Logger.printLog('fetchUrlFromRemoteDB: $e');
+      throw ServerException(
+        message: 'Failed to fetch URL model: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  Future<int?> getCollectionUrlsCount({
+    required String userId,
+    required String collectionId,
+  }) async {
+    try {
+      // 1. First delete the parent collection document
+      final snap = await _firestore
+          .collection(userCollection)
+          .doc(userId)
+          .collection(urlDataCollection)
+          .where('collection_id', isEqualTo: collectionId)
+          .count()
+          .get();
+
+      return snap.count;
+    } catch (e) {
+      debugPrint('[log] : Error in deletion: $e');
+
+      throw ServerException(
+        message: 'Failed to delete collection and associated data',
         statusCode: 500,
       );
     }
@@ -323,14 +449,11 @@ class RemoteDataSourcesImpl {
     }
   }
 
-  Future<String> deleteUrlInRemoteDB({
+  Future<bool> deleteUrlInRemoteDB({
     required String urlId,
     required String userId,
   }) async {
     try {
-      // Logger.printLog('UrlModel length');
-      // Logger.printLog(urlId);
-
       await _firestore
           .collection(userCollection)
           .doc(userId)
@@ -338,7 +461,7 @@ class RemoteDataSourcesImpl {
           .doc(urlId)
           .delete();
 
-      return urlId;
+      return true;
     } catch (e) {
       // Logger.printLog('deleteUrl : $e');
       throw ServerException(

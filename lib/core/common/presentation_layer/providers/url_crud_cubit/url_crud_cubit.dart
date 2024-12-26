@@ -4,6 +4,7 @@ import 'package:link_vault/core/common/presentation_layer/providers/collections_
 import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_fetch_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/common/repository_layer/repositories/url_repo_impl.dart';
 
@@ -80,8 +81,11 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     }
 
     _collectionsCubit.updateUrlInState(
-      url: urlModel,
-      urlLoadinState: LoadingStates.loading,
+      url: UrlFetchStateModel(
+        collectionId: urlModel.collectionId,
+        urlModel: urlModel,
+        loadingStates: LoadingStates.loading,
+      ),
     );
 
     // DELETE URL LOCALLY
@@ -99,14 +103,20 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
         syncedUrlModel.fold(
           (_) {
             _collectionsCubit.updateUrlInState(
-              url: urlModel,
-              urlLoadinState: LoadingStates.loaded,
+              url: UrlFetchStateModel(
+                collectionId: urlModel.collectionId,
+                urlModel: urlModel,
+                loadingStates: LoadingStates.loaded,
+              ),
             );
           },
           (surlM) {
             _collectionsCubit.updateUrlInState(
-              url: surlM,
-              urlLoadinState: LoadingStates.loaded,
+              url: UrlFetchStateModel(
+                collectionId: urlModel.collectionId,
+                urlModel: urlModel,
+                loadingStates: LoadingStates.loaded,
+              ),
             );
           },
         );
@@ -150,7 +160,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
     await _urlRepoImpl
         .addUrlData(
       collection: collection.collection!,
-      urlData: urlData,
+      urlModel: urlData,
       userId: _globalUserCubit.state.globalUser!.id,
     )
         .then(
@@ -164,14 +174,21 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
             );
           },
           (response) {
-            final (urlData, collection) = response;
+            final (urlModel, updatedParentCollection) = response;
 
-            _collectionsCubit
-              ..addUrlInState(url: urlData, collection: collection)
-              ..updateCollectionInState(
-                updatedCollection: collection,
-                fetchSubCollIndexAdded: 0,
+            _collectionsCubit.addUrlInState(
+              url: UrlFetchStateModel(
+                collectionId: urlModel.collectionId,
+                urlModel: urlModel,
+                loadingStates: LoadingStates.loaded,
+              ),
+            );
+
+            if (updatedParentCollection != null) {
+              _collectionsCubit.updateCollectionInState(
+                updatedCollection: updatedParentCollection,
               );
+            }
 
             emit(
               state.copyWith(
@@ -191,7 +208,7 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
 
     await _urlRepoImpl
         .updateUrl(
-      urlData: urlData,
+      urlModel: urlData,
       userId: _globalUserCubit.state.globalUser!.id,
     )
         .then(
@@ -205,9 +222,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
             );
           },
           (response) async {
-            final urlData = response;
+            // final urlModel = response;
 
-            _collectionsCubit.updateUrlInState(url: urlData);
+            _collectionsCubit.updateUrlInState(
+              url: UrlFetchStateModel(
+                collectionId: urlData.collectionId,
+                urlModel: urlData,
+                loadingStates: LoadingStates.loaded,
+              ),
+            );
 
             emit(
               state.copyWith(
@@ -266,12 +289,15 @@ class UrlCrudCubit extends Cubit<UrlCrudCubitState> {
             );
           },
           (response) async {
-            final (urlData, _) = response;
+            final (isDeleted, updatedParentCollection) = response;
 
-            _collectionsCubit.deleteUrlInState(
-              url: urlData,
-              collectionModel: collection!.collection!,
-            );
+            _collectionsCubit.deleteUrlInState(url: urlData);
+
+            if (updatedParentCollection != null) {
+              _collectionsCubit.updateCollectionInState(
+                updatedCollection: updatedParentCollection,
+              );
+            }
 
             emit(
               state.copyWith(

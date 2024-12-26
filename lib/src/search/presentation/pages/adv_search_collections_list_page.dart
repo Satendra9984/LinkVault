@@ -111,7 +111,6 @@ class _SearchedCollectionsListWidgetState
           localList.add(
             CollectionFetchModel(
               collectionFetchingState: LoadingStates.loaded,
-              subCollectionFetchedIndex: i,
               collection: state.collections[i],
             ),
           );

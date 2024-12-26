@@ -23,7 +23,7 @@ class LocalDataSource {
           [
             UrlImageSchema,
             ImagesByteDataSchema,
-            UrlModelOfflineSchema,
+            UrlModelIsarSchema,
           ],
           directory: dir.path,
         );
@@ -40,17 +40,15 @@ class LocalDataSource {
       await _initializeIsar();
       if (_isar == null) return null;
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
+      final urlModelIsarSchemaCollection = _isar!.collection<UrlModelIsar>();
 
-      final urlModelOffline = await urlModelOfflineCollection
-          .filter()
+      final UrlModelIsarSchema = await urlModelIsarSchemaCollection.filter()
           .firestoreIdEqualTo(firestoreId)
           .findAll();
 
-      final feeds = urlModelOffline
-          .map(
-            (feed) => feed.toUrlModel(),
-          ) // No need for nullable check if results are guaranteed
+      final feeds = UrlModelIsarSchema.map(
+        (feed) => feed.toUrlModel(),
+      ) // No need for nullable check if results are guaranteed
           .toList();
 
       return feeds;
@@ -65,17 +63,16 @@ class LocalDataSource {
     await _initializeIsar();
     if (_isar == null) return false;
 
-    final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
+    final urlModelIsarSchemaCollection = _isar!.collection<UrlModelIsar>();
 
     // Filter by firestoreId and retrieve the records
-    final feedsToDelete = await urlModelOfflineCollection
-        .filter()
+    final feedsToDelete = await urlModelIsarSchemaCollection.filter()
         .firestoreIdEqualTo(firestoreId) // Filter by the firestoreId
         .findAll();
 
     await _isar?.writeTxn(
       () async {
-        await urlModelOfflineCollection.deleteAll(
+        await urlModelIsarSchemaCollection.deleteAll(
           feedsToDelete.map((e) => e.id!).toList(),
         );
       },
@@ -88,12 +85,12 @@ class LocalDataSource {
     try {
       await _initializeIsar();
       if (_isar == null) return false;
-      final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
+      final urlModelIsarSchemaCollection = _isar!.collection<UrlModelIsar>();
 
       await _isar!.writeTxn(() async {
         for (final urlModel in urlModels) {
-          final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
-          await urlModelOfflineCollection.put(urlModelOffline);
+          final urlModelIsar = UrlModelIsar.fromUrlModel(urlModel);
+          await urlModelIsarSchemaCollection.put(urlModelIsar);
         }
       });
 
@@ -108,17 +105,17 @@ class LocalDataSource {
     await _initializeIsar();
     if (_isar == null) return false;
 
-    final urlModelOfflineCollection = _isar!.collection<UrlModelOffline>();
+    final urlModelIsarSchemaCollection = _isar!.collection<UrlModelIsar>();
 
     if (urlModel.metaData == null || urlModel.metaData!.rssFeedUrl == null) {
       return false;
     }
 
     // Filter by rssFeedUrl in the jsonData and retrieve the record
-    final feedInDbAll = await urlModelOfflineCollection
+    final feedInDbAll = await urlModelIsarSchemaCollection
         .filter()
-        .jsonDataContains(urlModel.collectionId)
-        .jsonDataContains(urlModel.metaData!.rssFeedUrl!)
+        .collectionIdEqualTo(urlModel.collectionId)
+        .metaDataContains(urlModel.metaData!.rssFeedUrl!)
         .findAll();
 
     final feedInDb = feedInDbAll
@@ -131,8 +128,8 @@ class LocalDataSource {
 
     final localUrlModel = feedInDb.toUrlModel();
 
-    final feedToUpdate = feedInDb.copyWith(
-      urlModel: localUrlModel.copyWith(
+    final feedToUpdate = feedInDb.copyWithUrlModel(
+      localUrlModel.copyWith(
         isOffline: urlModel.isOffline,
         isFavourite: urlModel.isFavourite,
         metaData: urlModel.metaData,
@@ -148,7 +145,7 @@ class LocalDataSource {
     try {
       // Transaction to write data to the database
       await _isar?.writeTxn(() async {
-        await urlModelOfflineCollection.put(feedToUpdate);
+        await urlModelIsarSchemaCollection.put(feedToUpdate);
       });
 
       return true;

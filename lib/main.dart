@@ -210,7 +210,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             globalUserCubit: context.read<GlobalUserCubit>(),
           ),
@@ -225,7 +225,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
@@ -240,7 +240,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             urlRepoImpl: UrlRepoImpl(
               remoteDataSourceImpl: RemoteDataSourcesImpl(
@@ -248,7 +248,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
@@ -263,7 +263,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
             collectionsCubit: context.read<CollectionsCubit>(),
             globalUserCubit: context.read<GlobalUserCubit>(),
@@ -294,7 +294,7 @@ class MyApp extends StatelessWidget {
               ),
               collectionLocalDataSourcesImpl:
                   CollectionLocalDataSourcesImpl(isar: null),
-              urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
+              // urlLocalDataSourcesImpl: UrlLocalDataSourcesImpl(isar: null),
             ),
           ),
         ),

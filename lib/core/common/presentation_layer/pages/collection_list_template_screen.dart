@@ -113,8 +113,13 @@ class _CollectionsListScreenTemplateState
           collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
           isRootCollection: false,
-          isAtoZFilter: _atozFilter.value,
-          isLatestFirst: _updatedAtLatestFilter.value,
+          isAtoZFilter: (_atozFilter.value == _ztoaFilter.value)
+              ? null
+              : _atozFilter.value,
+          isLatestFirst:
+              _updatedAtLatestFilter.value == _updatedAtOldestFilter.value
+                  ? null
+                  : _updatedAtLatestFilter.value,
         );
   }
 
@@ -139,9 +144,10 @@ class _CollectionsListScreenTemplateState
 
     try {
       if (widget.collectionModel.settings != null &&
-          widget.collectionModel.settings!.containsKey(sortAlphabaticallyCollection)) {
-        final sortalpha =
-            widget.collectionModel.settings![sortAlphabaticallyCollection] as bool?;
+          widget.collectionModel.settings!
+              .containsKey(sortAlphabaticallyCollection)) {
+        final sortalpha = widget
+            .collectionModel.settings![sortAlphabaticallyCollection] as bool?;
         if (sortalpha == null) {
           return;
         }
@@ -212,7 +218,8 @@ class _CollectionsListScreenTemplateState
 
     try {
       if (widget.collectionModel.settings != null &&
-          widget.collectionModel.settings!.containsKey(sortDateWiseCollection)) {
+          widget.collectionModel.settings!
+              .containsKey(sortDateWiseCollection)) {
         final sortDateWiseCollectionValue =
             widget.collectionModel.settings![sortDateWiseCollection] as bool?;
         if (sortDateWiseCollectionValue == null) {
@@ -330,6 +337,7 @@ class _CollectionsListScreenTemplateState
             : BlocConsumer<CollectionsCubit, CollectionsState>(
                 listener: (context, state) {},
                 builder: (context, state) {
+                  final collectionCubit = context.read<CollectionsCubit>();
                   final fetchCollection =
                       state.collections[widget.collectionModel.id];
 
@@ -341,19 +349,11 @@ class _CollectionsListScreenTemplateState
                     );
                   }
 
-                  final availableSubCollections = <CollectionFetchModel>[];
-
-                  for (var i = 0;
-                      i <= fetchCollection.subCollectionFetchedIndex;
-                      i++,) {
-                    final subCollId =
-                        fetchCollection.collection!.subcollections[i];
-                    final subCollection = state.collections[subCollId];
-
-                    if (subCollection == null) continue;
-
-                    availableSubCollections.add(subCollection);
-                  }
+                  final availableSubCollections =
+                      collectionCubit.getSubCollectionList(
+                            parentCollectionId: widget.collectionModel.id,
+                          ) ??
+                          <CollectionFetchModel>[];
 
                   if (availableSubCollections.isEmpty) {
                     return Center(

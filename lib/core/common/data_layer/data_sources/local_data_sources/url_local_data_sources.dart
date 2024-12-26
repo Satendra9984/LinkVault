@@ -1,183 +1,183 @@
-import 'package:isar/isar.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:isar/isar.dart';
+// import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
+// import 'package:link_vault/core/common/data_layer/isar_db_models/url_image.dart';
+// import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
+// import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+// import 'package:path_provider/path_provider.dart';
 
-class UrlLocalDataSourcesImpl {
-  UrlLocalDataSourcesImpl({
-    required Isar? isar,
-  }) : _isar = isar;
+// class UrlLocalDataSourcesImpl {
+//   UrlLocalDataSourcesImpl({
+//     required Isar? isar,
+//   }) : _isar = isar;
 
-  Isar? _isar;
+//   Isar? _isar;
 
-  Future<void> _initializeIsar() async {
-    try {
-      final currentInstance = Isar.getInstance();
-      _isar = currentInstance;
-      if (_isar == null) {
-        final dir = await getApplicationDocumentsDirectory();
+//   Future<void> _initializeIsar() async {
+//     try {
+//       final currentInstance = Isar.getInstance();
+//       _isar = currentInstance;
+//       if (_isar == null) {
+//         final dir = await getApplicationDocumentsDirectory();
 
-        _isar = await Isar.open(
-          [
-            UrlImageSchema,
-            ImagesByteDataSchema,
-            UrlModelIsarSchema,
-          ],
-          directory: dir.path,
-        );
-      }
-    } catch (e) {
-      return;
-    }
-  }
+//         _isar = await Isar.open(
+//           [
+//             UrlImageSchema,
+//             ImagesByteDataSchema,
+//             UrlModelIsarSchema,
+//           ],
+//           directory: dir.path,
+//         );
+//       }
+//     } catch (e) {
+//       return;
+//     }
+//   }
 
-  // Fetch UrlModelOffline by id
-  Future<UrlModel?> fetchUrl(String urlId) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return null;
+//   // Fetch UrlModelOffline by id
+//   Future<UrlModel?> fetchUrl(String urlId) async {
+//     try {
+//       await _initializeIsar();
+//       if (_isar == null) return null;
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+//       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      final urlModelOffline =
-          await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
+//       final urlModelOffline =
+//           await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
 
-      if (urlModelOffline == null) {
-        return null;
-      }
-      // Logger.printLog('urloffline: fetchedUrl');
-      return urlModelOffline.toUrlModel();
-    } catch (e) {
-      // Logger.printLog('fetchUrlLocal : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return null;
-    }
-  }
+//       if (urlModelOffline == null) {
+//         return null;
+//       }
+//       // Logger.printLog('urloffline: fetchedUrl');
+//       return urlModelOffline.toUrlModel();
+//     } catch (e) {
+//       // Logger.printLog('fetchUrlLocal : $e');
+//       // throw ServerException(
+//       //   message: 'Something Went Wrong',
+//       //   statusCode: 400,
+//       // );
+//       return null;
+//     }
+//   }
 
-  Future<UrlModelIsar?> fetchUrlModelOffline(String urlId) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return null;
-      // Logger.printLog(
-      //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
+//   Future<UrlModelIsar?> fetchUrlModelOffline(String urlId) async {
+//     try {
+//       await _initializeIsar();
+//       if (_isar == null) return null;
+//       // Logger.printLog(
+//       //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+//       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      final urlModelOffline =
-          await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
+//       final urlModelOffline =
+//           await urlModelOfflineCollection.getByIndex('firestoreId', [urlId]);
 
-      if (urlModelOffline == null) {
-        return null;
-      }
+//       if (urlModelOffline == null) {
+//         return null;
+//       }
 
-      return urlModelOffline;
-    } catch (e) {
-      // Logger.printLog('fetchUrlOffline : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return null;
-    }
-  }
+//       return urlModelOffline;
+//     } catch (e) {
+//       // Logger.printLog('fetchUrlOffline : $e');
+//       // throw ServerException(
+//       //   message: 'Something Went Wrong',
+//       //   statusCode: 400,
+//       // );
+//       return null;
+//     }
+//   }
 
-  // Add UrlModelOffline
-  Future<UrlModel?> addUrl(UrlModel urlModel) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return null;
+//   // Add UrlModelOffline
+//   Future<UrlModel?> addUrl(UrlModel urlModel) async {
+//     try {
+//       await _initializeIsar();
+//       if (_isar == null) return null;
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+//       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      final urlModelOffline = UrlModelIsar.fromUrlModel(urlModel);
+//       final urlModelOffline = UrlModelIsar.fromUrlModel(urlModel);
 
-      // Insert the UrlModelOffline into Isar
-      await _isar!.writeTxn(
-        () async {
-          await urlModelOfflineCollection.put(urlModelOffline);
-        },
-      );
+//       // Insert the UrlModelOffline into Isar
+//       await _isar!.writeTxn(
+//         () async {
+//           await urlModelOfflineCollection.put(urlModelOffline);
+//         },
+//       );
 
-      // Logger.printLog('urloffline: addedUrl');
+//       // Logger.printLog('urloffline: addedUrl');
 
-      return urlModelOffline.toUrlModel();
-    } catch (e) {
-      // Logger.printLog('addUrlOffline : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return null;
-    }
-  }
+//       return urlModelOffline.toUrlModel();
+//     } catch (e) {
+//       // Logger.printLog('addUrlOffline : $e');
+//       // throw ServerException(
+//       //   message: 'Something Went Wrong',
+//       //   statusCode: 400,
+//       // );
+//       return null;
+//     }
+//   }
 
-  // Update UrlModelOffline
-  Future<void> updateUrl(UrlModel urlModel) async {
-    try {
-      await _initializeIsar();
-      // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
-      if (_isar == null) return;
+//   // Update UrlModelOffline
+//   Future<void> updateUrl(UrlModel urlModel) async {
+//     try {
+//       await _initializeIsar();
+//       // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
+//       if (_isar == null) return;
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+//       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      // final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
-      await fetchUrlModelOffline(urlModel.firestoreId).then(
-        (urlModelOffline) async {
-          final updatedUrlOffline =
-              urlModelOffline?.copyWith(urlModel: urlModel) ??
-                  UrlModelIsar.fromUrlModel(urlModel);
+//       // final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
+//       await fetchUrlModelOffline(urlModel.firestoreId).then(
+//         (urlModelOffline) async {
+//           final updatedUrlOffline =
+//               urlModelOffline?.copyWith(urlModel: urlModel) ??
+//                   UrlModelIsar.fromUrlModel(urlModel);
 
-          await _isar!.writeTxn(
-            () async {
-              await urlModelOfflineCollection.put(updatedUrlOffline);
-            },
-          );
-        },
-      );
-      // Logger.printLog('urloffline: updatedUrl');
+//           await _isar!.writeTxn(
+//             () async {
+//               await urlModelOfflineCollection.put(updatedUrlOffline);
+//             },
+//           );
+//         },
+//       );
+//       // Logger.printLog('urloffline: updatedUrl');
 
-      return;
-    } catch (e) {
-      // Logger.printLog('updateUrlOffline : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return;
-    }
-  }
+//       return;
+//     } catch (e) {
+//       // Logger.printLog('updateUrlOffline : $e');
+//       // throw ServerException(
+//       //   message: 'Something Went Wrong',
+//       //   statusCode: 400,
+//       // );
+//       return;
+//     }
+//   }
 
-  // Delete UrlModelOffline by id
-  Future<void> deleteUrl(String urlFirestoreId) async {
-    try {
-      await _initializeIsar();
-      if (_isar == null) return;
+//   // Delete UrlModelOffline by id
+//   Future<void> deleteUrl(String urlFirestoreId) async {
+//     try {
+//       await _initializeIsar();
+//       if (_isar == null) return;
 
-      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+//       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      await fetchUrlModelOffline(urlFirestoreId).then(
-        (urlModelOffline) async {
-          if (urlModelOffline == null) return;
-          await _isar!.writeTxn(
-            () async {
-              await urlModelOfflineCollection.delete(urlModelOffline.id!);
-            },
-          );
-        },
-      );
-      // Logger.printLog('urloffline: deletedUrl');
-    } catch (e) {
-      // Logger.printLog('deleteUrlOffline : $e');
-      // throw ServerException(
-      //   message: 'Something Went Wrong',
-      //   statusCode: 400,
-      // );
-      return;
-    }
-  }
-}
+//       await fetchUrlModelOffline(urlFirestoreId).then(
+//         (urlModelOffline) async {
+//           if (urlModelOffline == null) return;
+//           await _isar!.writeTxn(
+//             () async {
+//               await urlModelOfflineCollection.delete(urlModelOffline.id!);
+//             },
+//           );
+//         },
+//       );
+//       // Logger.printLog('urloffline: deletedUrl');
+//     } catch (e) {
+//       // Logger.printLog('deleteUrlOffline : $e');
+//       // throw ServerException(
+//       //   message: 'Something Went Wrong',
+//       //   statusCode: 400,
+//       // );
+//       return;
+//     }
+//   }
+// }

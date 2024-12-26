@@ -63,7 +63,6 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
 
     _collectionsCubit.updateCollectionInState(
       updatedCollection: collectionModel,
-      fetchSubCollIndexAdded: 0,
       collectionFetchState: LoadingStates.loading,
     );
 
@@ -94,7 +93,6 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
           (_) {
             _collectionsCubit.updateCollectionInState(
               updatedCollection: collectionModel,
-              fetchSubCollIndexAdded: 0,
               collectionFetchState: LoadingStates.loaded,
             );
           },
@@ -111,22 +109,16 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
   Future<void> addCollection({
     required CollectionModel collection,
   }) async {
-    // [TODO] : Add subcollection in db
     emit(
       state.copyWith(
         collectionCrudLoadingStates: CollectionCrudLoadingStates.adding,
       ),
     );
 
-    final parentCollection = _collectionsCubit.getCollection(
-      collectionId: collection.parentCollection,
-    );
-
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
     final addedCollection = await _collectionRepoImpl.addCollection(
-      subCollection: collection,
-      parentCollection: parentCollection!.collection,
+      collection: collection,
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
@@ -140,14 +132,12 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         );
       },
       (result) async {
-        final (collection, updatedParentCollection) = result;
+        final collection = result;
 
-        _collectionsCubit.addSubCollectionInState(collection: collection);
-
-        if (updatedParentCollection != null) {
+        _collectionsCubit.addSubCollectionInState(collection: result.$1);
+        if (result.$2 != null) {
           _collectionsCubit.updateCollectionInState(
-            updatedCollection: updatedParentCollection,
-            fetchSubCollIndexAdded: 1,
+            updatedCollection: result.$2!,
           );
         }
 
@@ -205,10 +195,8 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     // WE are updating the parent collection and sending to db request to save
     // query time and less points of server errors
     final deletedCollection = await _collectionRepoImpl.deleteCollection(
-      collectionId: collection.id,
-      parentCollectionId: parentCollection.collection!.id,
+      collection: collection,
       userId: _globalUserCubit.getGlobalUser()!.id,
-      isRootCollection: isRootCollection,
     );
 
     await deletedCollection.fold(
@@ -221,19 +209,14 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         );
       },
       (result) async {
-        final (collection, updatedParentCollection) = result;
+        final (isDeleted, updatedParentCollection) = result;
+        _collectionsCubit.deleteCollectionInState(collection: collection);
 
-        await _collectionRepoImpl.updateSubCollection(
-          subCollection: updatedParentCollection,
-          userId: _globalUserCubit.state.globalUser!.id,
-        );
-
-        _collectionsCubit
-          ..deleteCollectionInState(collection: collection)
-          ..updateCollectionInState(
+        if (updatedParentCollection != null) {
+          _collectionsCubit.updateCollectionInState(
             updatedCollection: updatedParentCollection,
-            fetchSubCollIndexAdded: -1,
           );
+        }
 
         emit(
           state.copyWith(
@@ -255,7 +238,7 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
     );
 
     final addedCollection = await _collectionRepoImpl.updateSubCollection(
-      subCollection: collection,
+      collection: collection,
       userId: _globalUserCubit.getGlobalUser()!.id,
     );
 
@@ -269,14 +252,9 @@ class CollectionCrudCubit extends Cubit<CollectionCrudCubitState> {
         );
       },
       (updatedCollection) async {
-        _collectionsCubit
-          ..updateCollectionInState(
-            updatedCollection: updatedCollection,
-            fetchSubCollIndexAdded: 0,
-          )
-          ..updateUrlsList(
-            updatedCollection: updatedCollection,
-          );
+        _collectionsCubit.updateCollectionInState(
+          updatedCollection: updatedCollection,
+        );
 
         emit(
           state.copyWith(

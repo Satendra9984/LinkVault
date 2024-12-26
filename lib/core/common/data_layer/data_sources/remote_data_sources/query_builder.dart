@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:isar/isar.dart' as isr;
 import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_isar.dart';
+import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_filters_model.dart';
 import 'package:link_vault/core/constants/database_constants.dart';
 
 class QueryBuilderHelper {
@@ -79,6 +81,104 @@ class QueryBuilderHelper {
     return query;
   }
 
+  static cf.Query<Map<String, dynamic>> buildUrlModelFirestoreQuery({
+    required String userId,
+    required cf.FirebaseFirestore firestore,
+    required UrlModelFilters urlFilter,
+  }) {
+    cf.Query<Map<String, dynamic>> query = firestore
+        .collection(userCollection)
+        .doc(userId)
+        .collection(urlDataCollection);
+
+    // Filter by specific Firestore ID
+    // if (urlFilter.firestoreId != null) {
+    //   query = query.where('id', isEqualTo: urlFilter.firestoreId);
+    // }
+
+    // Filter by Collection ID
+    if (urlFilter.collectionId != null) {
+      query = query.where('collection_id', isEqualTo: urlFilter.collectionId);
+    }
+
+    // Filter by Title (case-insensitive prefix search)
+    if (urlFilter.title != null && urlFilter.title!.isNotEmpty) {
+      final searchTitle = urlFilter.title!.toLowerCase();
+      final endTitle = searchTitle.substring(0, searchTitle.length - 1) +
+          String.fromCharCode(
+            searchTitle.codeUnitAt(searchTitle.length - 1) + 1,
+          );
+      query = query
+          .where('title', isGreaterThanOrEqualTo: searchTitle)
+          .where('title', isLessThan: endTitle);
+    }
+
+    // Filter by URL
+    if (urlFilter.url != null) {
+      query = query.where('url', isEqualTo: urlFilter.url);
+    }
+
+    // Filter by Tag
+    if (urlFilter.tag != null) {
+      query = query.where('tag', isEqualTo: urlFilter.tag);
+    }
+
+    // Filter by Description
+    if (urlFilter.description != null) {
+      query = query.where('description', isEqualTo: urlFilter.description);
+    }
+
+    // Filter by Favourite
+    if (urlFilter.isFavourite != null) {
+      query = query.where('is_favourite', isEqualTo: urlFilter.isFavourite);
+    }
+
+    // Filter by Offline
+    if (urlFilter.isOffline != null) {
+      query = query.where('is_offline', isEqualTo: urlFilter.isOffline);
+    }
+
+    // Filter by updatedAfter Date
+    if (urlFilter.updatedAfter != null) {
+      query = query.where(
+        'updated_at',
+        isGreaterThanOrEqualTo: urlFilter.updatedAfter!.toUtc(),
+      );
+    }
+
+    // Filter by updatedBefore Date
+    if (urlFilter.updatedBefore != null) {
+      query = query.where(
+        'updated_at',
+        isLessThanOrEqualTo: urlFilter.updatedBefore!.toUtc(),
+      );
+    }
+
+    // Add Sorting
+    if (urlFilter.sortByNameAsc != null) {
+      query = query.orderBy(
+        'title',
+        descending: !urlFilter.sortByNameAsc!,
+      );
+    }
+    if (urlFilter.sortByDateAsc != null) {
+      query = query.orderBy(
+        'updated_at',
+        descending: !urlFilter.sortByDateAsc!,
+      );
+    }
+
+    // Add Pagination
+    if (urlFilter.limit != null) {
+      query = query.limit(urlFilter.limit!);
+    }
+    if (urlFilter.offset != null) {
+      query = query.startAfter([urlFilter.offset]);
+    }
+
+    return query;
+  }
+
   static isr.QueryBuilder<CollectionModelIsar, CollectionModelIsar,
       isr.QAfterWhereClause> buildCollectionModelIsarQuery(
     CollectionFilter filter,
@@ -137,6 +237,122 @@ class QueryBuilderHelper {
     }
 
     // Execute the query
+    return query;
+  }
+
+  static isr.QueryBuilder<UrlModelIsar, UrlModelIsar, isr.QWhere>
+      buildUrlModelIsarQuery(
+    UrlModelFilters filter,
+    isr.IsarCollection<UrlModelIsar> isar,
+  ) {
+    // Start with the base query
+    final query = isar.where();
+
+    // Create a filter builder for additional conditions
+    var filterBuilder = query.filter();
+
+    // Apply firestoreId filter
+    if (filter.firestoreId?.isNotEmpty ?? false) {
+      filterBuilder = filterBuilder.firestoreIdEqualTo(filter.firestoreId!);
+    }
+
+    // Apply collectionId filter
+    if (filter.collectionId?.isNotEmpty ?? false) {
+      filterBuilder = filterBuilder.collectionIdEqualTo(filter.collectionId!);
+    }
+
+    // Apply title filter (case-insensitive search)
+    if (filter.title?.isNotEmpty ?? false) {
+      filterBuilder =
+          filterBuilder.titleContains(filter.title!, caseSensitive: false);
+    }
+
+    // Apply url filter
+    if (filter.url?.isNotEmpty ?? false) {
+      filterBuilder =
+          filterBuilder.urlContains(filter.url!, caseSensitive: false);
+    }
+
+    // Apply description filter
+    if (filter.description?.isNotEmpty ?? false) {
+      filterBuilder = filterBuilder.descriptionContains(
+        filter.description!,
+        caseSensitive: false,
+      );
+    }
+
+    // Apply tag filter
+    if (filter.tag?.isNotEmpty ?? false) {
+      filterBuilder =
+          filterBuilder.tagContains(filter.tag!, caseSensitive: false);
+    }
+
+    // Apply isFavourite filter
+    if (filter.isFavourite != null) {
+      filterBuilder = filterBuilder.isFavouriteEqualTo(filter.isFavourite!);
+    }
+
+    // Apply metadata filter
+    if (filter.metaData != null && filter.metaData!.isNotEmpty) {
+      for (final entry in filter.metaData!.entries) {
+        final jsonValue =
+            entry.value is String ? '"${entry.value}"' : '${entry.value}';
+        filterBuilder =
+            filterBuilder.metaDataContains('"${entry.key}":$jsonValue');
+      }
+    }
+
+    // Apply isOffline filter
+    if (filter.isOffline != null) {
+      filterBuilder = filterBuilder.isOfflineEqualTo(filter.isOffline!);
+    }
+
+    // Apply htmlContent filter
+    if (filter.htmlContent?.isNotEmpty ?? false) {
+      filterBuilder = filterBuilder.htmlContentContains(
+        filter.htmlContent!,
+        caseSensitive: false,
+      );
+    }
+
+    // Apply settings filter
+    if (filter.settings != null && filter.settings!.isNotEmpty) {
+      for (final entry in filter.settings!.entries) {
+        final jsonValue =
+            entry.value is String ? '"${entry.value}"' : '${entry.value}';
+        filterBuilder =
+            filterBuilder.settingsContains('"${entry.key}":$jsonValue');
+      }
+    }
+
+    // Apply date range filters
+    if (filter.updatedAfter != null) {
+      filterBuilder = filterBuilder.updatedAtGreaterThan(filter.updatedAfter!);
+    }
+    if (filter.updatedBefore != null) {
+      filterBuilder = filterBuilder.updatedAtLessThan(filter.updatedBefore!);
+    }
+
+    // Apply sorting
+    if (filter.sortByDateAsc != null) {
+      filter.sortByDateAsc!
+          ? query.sortByUpdatedAt()
+          : query.sortByUpdatedAtDesc();
+    }
+
+    if (filter.sortByNameAsc != null) {
+      filter.sortByNameAsc! ? query.sortByTitle() : query.sortByTitleDesc();
+    }
+
+    // Apply pagination
+    if (filter.limit != null) {
+      query.limit(filter.limit!);
+    }
+
+    if (filter.offset != null) {
+      query.offset(filter.offset!);
+    }
+
     return query;
   }
 }

@@ -123,6 +123,12 @@ class _UrlFaviconListTemplateScreenState
     context.read<CollectionsCubit>().fetchMoreUrls(
           collectionId: fetchCollection.id,
           userId: context.read<GlobalUserCubit>().state.globalUser!.id,
+          isAtoZFilter:
+              _atozFilter.value == _ztoaFilter.value ? null : _atozFilter.value,
+          isLatestFirst:
+              _updatedAtLatestFilter.value == _updatedAtOldestFilter.value
+                  ? null
+                  : _updatedAtLatestFilter.value,
         );
   }
 
@@ -130,8 +136,7 @@ class _UrlFaviconListTemplateScreenState
     final searchText = _searchTextEditingController.text.toLowerCase().trim();
     final feeds = context
         .read<CollectionsCubit>()
-        .state
-        .collectionUrls[widget.collectionModel.id];
+        .getUrlsList(collectionId: widget.collectionModel.id);
 
     if (feeds == null || feeds.isEmpty) return;
 
@@ -412,12 +417,14 @@ class _UrlFaviconListTemplateScreenState
         child: BlocConsumer<CollectionsCubit, CollectionsState>(
           listener: (context, state) {},
           builder: (context, state) {
-            final availableUrls =
-                state.collectionUrls[widget.collectionModel.id];
+            final collectionCubit = context.read<CollectionsCubit>();
+
+            final availableUrls = collectionCubit.getUrlsList(
+              collectionId: widget.collectionModel.id,
+            );
 
             if (availableUrls == null || availableUrls.isEmpty) {
               _fetchMoreUrls();
-              // [TODO] : THIS IS DYNAMIC FIELD
               return widget.urlsEmptyWidget;
             }
 
@@ -451,9 +458,8 @@ class _UrlFaviconListTemplateScreenState
                           ),
                         ),
                       );
-                    }
-
-                    else if (url.loadingStates == LoadingStates.errorLoading ||
+                    } else if (url.loadingStates ==
+                            LoadingStates.errorLoading ||
                         url.urlModel == null) {
                       // _fetchMoreUrls();
                       return SizedBox(

@@ -20,6 +20,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_meta_data.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/filter_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
@@ -410,9 +411,11 @@ class _RssFeedUrlsPreviewListWidgetState
         padding: const EdgeInsets.only(left: 20, right: 20),
         child: BlocBuilder<CollectionsCubit, CollectionsState>(
           builder: (context, state) {
-            final availableUrls = state
-                .collectionUrls[widget.collectionFetchModel.collection!.id];
+            final collectionCubit = context.read<CollectionsCubit>();
 
+            final availableUrls = collectionCubit.getUrlsList(
+              collectionId: widget.collectionFetchModel.collection!.id,
+            );
             final rssFeedNewsWidget = Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -436,25 +439,25 @@ class _RssFeedUrlsPreviewListWidgetState
               return Center(child: rssFeedNewsWidget);
             }
 
-            final isAllUrlsNotFetched = availableUrls.length !=
-                    widget.collectionFetchModel.collection!.urls.length ||
-                availableUrls[availableUrls.length - 1].loadingStates ==
-                    LoadingStates.loading;
+            // final isAllUrlsNotFetched = availableUrls.length !=
+            //         widget.collectionFetchModel.collection!.urls.length ||
+            //     availableUrls[availableUrls.length - 1].loadingStates ==
+            //         LoadingStates.loading;
 
-            if (isAllUrlsNotFetched) {
-              return Center(
-                child: Column(
-                  children: [
-                    rssFeedNewsWidget,
-                    const SizedBox(height: 20),
-                    const CircularProgressIndicator(
-                      color: ColourPallette.mountainMeadow,
-                      backgroundColor: ColourPallette.white,
-                    ),
-                  ],
-                ),
-              );
-            }
+            // if (isAllUrlsNotFetched) {
+            //   return Center(
+            //     child: Column(
+            //       children: [
+            //         rssFeedNewsWidget,
+            //         const SizedBox(height: 20),
+            //         const CircularProgressIndicator(
+            //           color: ColourPallette.mountainMeadow,
+            //           backgroundColor: ColourPallette.white,
+            //         ),
+            //       ],
+            //     ),
+            //   );
+            // }
 
             return BlocBuilder<RssFeedCubit, RssFeedState>(
               builder: (context, state) {

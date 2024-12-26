@@ -11,6 +11,7 @@ import 'package:link_vault/core/common/repository_layer/enums/loading_states.dar
 import 'package:link_vault/core/common/repository_layer/enums/url_crud_loading_states.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_launch_type.dart';
 import 'package:link_vault/core/common/repository_layer/enums/url_preload_methods_enum.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_meta_data.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/constants/coll_constants.dart';
 import 'package:link_vault/core/res/colours.dart';

@@ -15,17 +15,15 @@ import 'package:link_vault/core/utils/logger.dart';
 class CollectionsRepoImpl {
   CollectionsRepoImpl({
     required RemoteDataSourcesImpl remoteDataSourceImpl,
-    required UrlLocalDataSourcesImpl urlLocalDataSourcesImpl,
     required CollectionLocalDataSourcesImpl collectionLocalDataSourcesImpl,
   })  : _remoteDataSourcesImpl = remoteDataSourceImpl,
-        _urlLocalDataSourcesImpl = urlLocalDataSourcesImpl,
         _collectionLocalDataSourcesImpl = collectionLocalDataSourcesImpl;
 
   final RemoteDataSourcesImpl _remoteDataSourcesImpl;
-  final UrlLocalDataSourcesImpl _urlLocalDataSourcesImpl;
   final CollectionLocalDataSourcesImpl _collectionLocalDataSourcesImpl;
 
-  Future<Either<Failure, List<CollectionModel>>> fetchSubCollectionsByFilter({
+  Future<Either<Failure, List<CollectionModel>>>
+      fetchSubCollectionsListByFilter({
     required CollectionFilter filter,
     required String userId,
   }) async {
@@ -76,13 +74,59 @@ class CollectionsRepoImpl {
       final localCollection = await _collectionLocalDataSourcesImpl
           .fetchCollectionModelIsar(collectionId);
 
-      // Logger.printLog('fetchRootCollection : $collectionId');
-
       final remoteCollection = localCollection?.toCollectionModel() ??
           await _remoteDataSourcesImpl.fetchCollectionFromRemoteDB(
             collectionId: collectionId,
             userId: userId,
           );
+
+      // Script for database updation to new schema
+      if (remoteCollection != null &&
+          (remoteCollection.subcollectionCount == null ||
+              remoteCollection.urlCount == null)) {
+        int? subCollectionCount;
+        int? collectionUrlsCount;
+
+        // Get the counts of subcollection and urls
+        await Future.wait(
+          [
+            Future(
+              () async => subCollectionCount =
+                  await _remoteDataSourcesImpl.getSubCollectionCount(
+                userId: userId,
+                collectionId: collectionId,
+              ),
+            ),
+            Future(
+              () async => collectionUrlsCount =
+                  await _remoteDataSourcesImpl.getCollectionUrlsCount(
+                userId: userId,
+                collectionId: collectionId,
+              ),
+            ),
+          ],
+        );
+
+        final updatedCollectionWithCount = remoteCollection.copyWith(
+          subcollectionCount: subCollectionCount,
+          urlCount: collectionUrlsCount,
+        );
+        // Update both remote database and local database with
+        // updated collectionwithcount
+        await Future.wait(
+          [
+            _remoteDataSourcesImpl.updateCollectionInRemoteDB(
+              collection: updatedCollectionWithCount,
+              userId: userId,
+            ),
+            _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(
+              updatedCollectionWithCount,
+            ),
+          ],
+        );
+
+        return Right(updatedCollectionWithCount);
+      }
 
       if (localCollection == null && remoteCollection != null) {
         await _collectionLocalDataSourcesImpl
@@ -108,9 +152,7 @@ class CollectionsRepoImpl {
           collection: withId,
           userId: userId,
         );
-        await _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(
-          CollectionModelIsar.fromCollectionModel(res),
-        );
+        await _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(res);
         return Right(res);
       }
 
@@ -139,11 +181,6 @@ class CollectionsRepoImpl {
             userId: userId,
           );
 
-      if (localCollection == null && collection != null) {
-        await _collectionLocalDataSourcesImpl
-            .addCollectionInLocalDB(collection);
-      }
-
       if (collection == null) {
         return Left(
           ServerFailure(
@@ -151,6 +188,55 @@ class CollectionsRepoImpl {
             statusCode: 400,
           ),
         );
+      }
+
+      if (collection.subcollectionCount == null ||
+          collection.urlCount == null) {
+        int? subCollectionCount;
+        int? collectionUrlsCount;
+
+        await Future.wait(
+          [
+            Future(
+              () async => subCollectionCount =
+                  await _remoteDataSourcesImpl.getSubCollectionCount(
+                userId: userId,
+                collectionId: collectionId,
+              ),
+            ),
+            Future(
+              () async => collectionUrlsCount =
+                  await _remoteDataSourcesImpl.getCollectionUrlsCount(
+                userId: userId,
+                collectionId: collectionId,
+              ),
+            ),
+          ],
+        );
+
+        final updatedCollectionWithCount = collection.copyWith(
+          subcollectionCount: subCollectionCount,
+          urlCount: collectionUrlsCount,
+        );
+
+        await Future.wait(
+          [
+            _remoteDataSourcesImpl.updateCollectionInRemoteDB(
+              collection: updatedCollectionWithCount,
+              userId: userId,
+            ),
+            _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(
+              updatedCollectionWithCount,
+            ),
+          ],
+        );
+
+        return Right(updatedCollectionWithCount);
+      }
+
+      if (localCollection == null) {
+        await _collectionLocalDataSourcesImpl
+            .addCollectionInLocalDB(collection);
       }
 
       return Right(collection);
@@ -164,7 +250,8 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<Either<Failure, CollectionModel>> addCollection({
+  Future<Either<Failure, (CollectionModel, CollectionModel? parentCollection)>>
+      addCollection({
     required CollectionModel collection,
     required String userId,
   }) async {
@@ -178,7 +265,35 @@ class CollectionsRepoImpl {
       await _collectionLocalDataSourcesImpl
           .addCollectionInLocalDB(addedCollection);
 
-      return Right(addedCollection);
+      // UPDATE PARENT-COLLECTION's SUB-COLLECTION COUNT
+      final parentCollection =
+          await _remoteDataSourcesImpl.fetchCollectionFromRemoteDB(
+        collectionId: collection.parentCollection,
+        userId: userId,
+      );
+
+      if (parentCollection == null ||
+          parentCollection.subcollectionCount == null) {
+        return Right((addedCollection, parentCollection));
+      }
+
+      final updatedParentCollectionWithSubCount = parentCollection.copyWith(
+        subcollectionCount: parentCollection.subcollectionCount! + 1,
+      );
+
+      await Future.wait(
+        [
+          _remoteDataSourcesImpl.updateCollectionInRemoteDB(
+            collection: updatedParentCollectionWithSubCount,
+            userId: userId,
+          ),
+          _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(
+            updatedParentCollectionWithSubCount,
+          ),
+        ],
+      );
+
+      return Right((addedCollection, updatedParentCollectionWithSubCount));
     } catch (e) {
       return Left(
         ServerFailure(
@@ -216,8 +331,9 @@ class CollectionsRepoImpl {
     }
   }
 
-  Future<Either<Failure, Unit>> deleteCollection({
-    required String collectionId,
+  Future<Either<Failure, (bool deleted, CollectionModel? parentCollection)>>
+      deleteCollection({
+    required CollectionModel collection,
     required String userId,
   }) async {
     try {
@@ -225,49 +341,49 @@ class CollectionsRepoImpl {
         [
           _remoteDataSourcesImpl.deleteCollectionAndAssociatedData(
             userId: userId,
-            collectionId: collectionId,
+            collectionId: collection.id,
           ),
           _collectionLocalDataSourcesImpl
               .deleteCollectionAndAssociatedDataInLocalDB(
-            collectionId: collectionId,
+            collectionId: collection.id,
           ),
         ],
       );
 
-      return const Right(unit);
+      // UPDATE PARENT-COLLECTION's SUB-COLLECTION COUNT
+      final parentCollection =
+          await _remoteDataSourcesImpl.fetchCollectionFromRemoteDB(
+        collectionId: collection.parentCollection,
+        userId: userId,
+      );
+
+      if (parentCollection == null ||
+          parentCollection.subcollectionCount == null) {
+        return Right((true, parentCollection));
+      }
+
+      final updatedParentCollectionWithSubCount = parentCollection.copyWith(
+        subcollectionCount: parentCollection.subcollectionCount! - 1,
+      );
+
+      await Future.wait(
+        [
+          _remoteDataSourcesImpl.updateCollectionInRemoteDB(
+            collection: updatedParentCollectionWithSubCount,
+            userId: userId,
+          ),
+          _collectionLocalDataSourcesImpl.updateCollectionInLocalDB(
+            updatedParentCollectionWithSubCount,
+          ),
+        ],
+      );
+
+      return Right((true, updatedParentCollectionWithSubCount));
     } catch (e) {
       Logger.printLog('[URL] : ${e}');
       return Left(
         ServerFailure(
           message: 'Could Not Deleted. Check internet and try again.',
-          statusCode: 400,
-        ),
-      );
-    }
-  }
-
-  Future<Either<Failure, UrlModel>> fetchUrl({
-    required String urlId,
-    required String userId,
-  }) async {
-    try {
-      final localUrl = await _urlLocalDataSourcesImpl.fetchUrl(urlId);
-
-      final url = localUrl ??
-          await _remoteDataSourcesImpl.fetchUrl(
-            urlId,
-            userId: userId,
-          );
-
-      if (localUrl == null) {
-        await _urlLocalDataSourcesImpl.addUrl(url);
-      }
-
-      return Right(url);
-    } catch (e) {
-      return Left(
-        ServerFailure(
-          message: 'Something Went Wrong',
           statusCode: 400,
         ),
       );
@@ -281,41 +397,9 @@ class CollectionsRepoImpl {
     // required String userId,
   }) async {
     try {
-      final collection =
-          await _collectionLocalDataSourcesImpl.fetchCollectionModelIsar(
-        collectionId,
-      );
-
-      if (collection == null) {
-        return Left(
-          ServerFailure(
-            message: 'Could Not Deleted. Check internet and try again.',
-            statusCode: 400,
-          ),
-        );
-      }
-
-      // deleting subcollections
-      for (final subCollId in collection.subcollections) {
-        await deleteCollectionLocally(
-          collectionId: subCollId,
-          parentCollectionId: collectionId,
-        );
-      }
-
-      await Future.wait(
-        [
-          Future(
-            () async {
-              // NEED TO DELETE URLS AS IT WILL BE REFETCHED AND UPDATED FROM ISAR
-              for (final urlId in collection.urls) {
-                await _urlLocalDataSourcesImpl.deleteUrl(urlId);
-              }
-            },
-          ),
-          _collectionLocalDataSourcesImpl
-              .deleteCollectionInLocalDB(collectionId),
-        ],
+      await _collectionLocalDataSourcesImpl
+          .deleteCollectionAndAssociatedDataInLocalDB(
+        collectionId: collectionId,
       );
 
       return const Right(true);

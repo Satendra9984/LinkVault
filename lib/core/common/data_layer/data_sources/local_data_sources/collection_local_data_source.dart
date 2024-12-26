@@ -5,7 +5,9 @@ import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_byte
 import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_isar.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_filter_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/core/common/repository_layer/models/url_filters_model.dart';
 import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -245,7 +247,7 @@ class CollectionLocalDataSourcesImpl {
     return isMainCollectionDeleted;
   }
 
-// Helper method to delete URLs for a specific collection
+  // Helper method to delete URLs for a specific collection
   Future<void> _deleteUrlsForCollectionInLocalDB({
     required String collectionId,
     required int batchSize,
@@ -277,8 +279,31 @@ class CollectionLocalDataSourcesImpl {
     }
   }
 
+  Future<List<UrlModel>?> fetchUrlsFromLocalDB({
+    required UrlModelFilters filter,
+  }) async {
+    try {
+      await _initializeIsar();
+      if (_isar == null) return null;
+
+      final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
+
+      final query = QueryBuilderHelper.buildUrlModelIsarQuery(
+        filter,
+        urlModelOfflineCollection,
+      );
+
+      final urls = await query.findAll();
+
+      return urls.map((isarUrlModel) => isarUrlModel.toUrlModel()).toList();
+    } catch (e) {
+      Logger.printLog('[log]: fetchUrlsFromLocalDB $e');
+      throw Exception('Failed to fetch associated URLs');
+    }
+  }
+
   // Fetch UrlModelOffline by id
-  Future<UrlModel?> fetchUrl(String urlId) async {
+  Future<UrlModel?> fetchUrlFromLocalDB(String urlId) async {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
@@ -303,12 +328,10 @@ class CollectionLocalDataSourcesImpl {
     }
   }
 
-  Future<UrlModelIsar?> fetchUrlModelOffline(String urlId) async {
+  Future<UrlModelIsar?> fetchUrlModelInLocalDB(String urlId) async {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
-      // Logger.printLog(
-      //     'urloffline: fetchedUrlOfflineModel isar ${_isar != null}');
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
@@ -331,7 +354,7 @@ class CollectionLocalDataSourcesImpl {
   }
 
   // Add UrlModelOffline
-  Future<UrlModel?> addUrl(UrlModel urlModel) async {
+  Future<UrlModel?> addUrlInLocalDB(UrlModel urlModel) async {
     try {
       await _initializeIsar();
       if (_isar == null) return null;
@@ -347,8 +370,6 @@ class CollectionLocalDataSourcesImpl {
         },
       );
 
-      // Logger.printLog('urloffline: addedUrl');
-
       return urlModelOffline.toUrlModel();
     } catch (e) {
       // Logger.printLog('addUrlOffline : $e');
@@ -361,7 +382,7 @@ class CollectionLocalDataSourcesImpl {
   }
 
   // Update UrlModelOffline
-  Future<void> updateUrl(UrlModel urlModel) async {
+  Future<void> updateUrlInLocalDB(UrlModel urlModel) async {
     try {
       await _initializeIsar();
       // Logger.printLog('urloffline: updatedUrl isar ${_isar != null}');
@@ -370,10 +391,10 @@ class CollectionLocalDataSourcesImpl {
       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
       // final urlModelOffline = UrlModelOffline.fromUrlModel(urlModel);
-      await fetchUrlModelOffline(urlModel.firestoreId).then(
+      await fetchUrlModelInLocalDB(urlModel.firestoreId).then(
         (urlModelOffline) async {
           final updatedUrlOffline =
-              urlModelOffline?.copyWith(urlModel: urlModel) ??
+              urlModelOffline?.copyWithUrlModel(urlModel) ??
                   UrlModelIsar.fromUrlModel(urlModel);
 
           await _isar!.writeTxn(
@@ -397,14 +418,14 @@ class CollectionLocalDataSourcesImpl {
   }
 
   // Delete UrlModelOffline by id
-  Future<void> deleteUrl(String urlFirestoreId) async {
+  Future<void> deleteUrlInLocalDB(String urlFirestoreId) async {
     try {
       await _initializeIsar();
       if (_isar == null) return;
 
       final urlModelOfflineCollection = _isar!.collection<UrlModelIsar>();
 
-      await fetchUrlModelOffline(urlFirestoreId).then(
+      await fetchUrlModelInLocalDB(urlFirestoreId).then(
         (urlModelOffline) async {
           if (urlModelOffline == null) return;
           await _isar!.writeTxn(

@@ -124,7 +124,6 @@ class CollectionsCubit extends Cubit<CollectionsState> {
       () => _fetchMoreSubCollections(
         parentCollectionId: collectionId,
         userId: userId,
-        isRootCollection: isRootCollection,
         isAtoZFilter: isAtoZFilter,
         isLatestFirst: isLatestFirst,
       ),
@@ -135,8 +134,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String parentCollectionId,
     required String userId,
     // FILTERS
-    required bool isAtoZFilter,
-    required bool isLatestFirst,
+    required bool? isAtoZFilter,
+    required bool? isLatestFirst,
   }) async {
     final fetchedCollection = state.collections[parentCollectionId];
 
@@ -156,7 +155,7 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     );
 
     await _collectionsRepoImpl
-        .fetchSubCollectionsByFilter(
+        .fetchSubCollectionsListByFilter(
       filter: filter,
       userId: userId,
     )
@@ -327,8 +326,8 @@ class CollectionsCubit extends Cubit<CollectionsState> {
     required String collectionId,
     required String userId,
     // FILTERS
-    required bool isAtoZFilter,
-    required bool isLatestFirst,
+    required bool? isAtoZFilter,
+    required bool? isLatestFirst,
   }) async {
     final fetchCollection = state.collections[collectionId];
 
@@ -343,14 +342,13 @@ class CollectionsCubit extends Cubit<CollectionsState> {
         getUrlsList(collectionId: collectionId) ?? <UrlFetchStateModel>[];
 
     final filter = UrlModelFilters(
-      parentCollection: collectionId,
+      collectionId: collectionId,
       sortByDateAsc: isLatestFirst,
       sortByNameAsc: isAtoZFilter,
       limit: 16,
       offset:
           currentCollectionUrls.isEmpty ? 0 : currentCollectionUrls.length - 1,
     );
-
 
     //
   }
