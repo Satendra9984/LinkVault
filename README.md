@@ -22,6 +22,10 @@ To enable offline viewing and highlighting of websites in your app, you'll need 
 4. **Sync Annotations (Optional)**
    - If users want their highlights and annotations to be available across devices, implement a synchronization mechanism using a cloud database like Firebase.
 
+
+![image3](https://github.com/user-attachments/assets/2aa9a967-b9e1-4df9-b2a9-58d3f7668af4)
+
+
 ### Detailed Approach
 
 #### 1. Save Web Content for Offline Use
