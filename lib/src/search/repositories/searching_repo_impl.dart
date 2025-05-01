@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/search/data/local_data_source.dart';

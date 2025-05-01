@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/custom_button.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/src/common/presentation_layer/providers/collections_cubit/collections_cubit.dart';
+import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/custom_bottom_nav_bar.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
+import 'package:link_vault/src/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/favourites/presentation/pages/faourite_url_favicon_list_screen.dart';

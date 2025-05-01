@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/add_collection_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/pages/collection_list_template_screen.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/collection_icon_button.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_fetch_model.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/src/common/presentation_layer/pages/add_collection_template_screen.dart';
+import 'package:link_vault/src/common/presentation_layer/pages/collection_list_template_screen.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/collection_icon_button.dart';
+import 'package:link_vault/src/common/repository_layer/models/collection_fetch_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/collection_model.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/string_utils.dart';

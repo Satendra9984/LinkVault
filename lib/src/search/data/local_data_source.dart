@@ -1,9 +1,9 @@
 import 'package:isar/isar.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/collection_model_offline.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/image_with_bytes.dart';
-import 'package:link_vault/core/common/data_layer/isar_db_models/url_model_offline.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/src/common/data_layer/isar_db_models/collection_model_offline.dart';
+import 'package:link_vault/src/common/data_layer/isar_db_models/image_with_bytes.dart';
+import 'package:link_vault/src/common/data_layer/isar_db_models/url_model_offline.dart';
+import 'package:link_vault/src/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:path_provider/path_provider.dart';
 

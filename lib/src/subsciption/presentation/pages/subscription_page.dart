@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/core/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/core/common/presentation_layer/widgets/container_button.dart';
-import 'package:link_vault/core/common/repository_layer/enums/loading_states.dart';
+import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/container_button.dart';
+import 'package:link_vault/src/common/repository_layer/enums/loading_states.dart';
 import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';

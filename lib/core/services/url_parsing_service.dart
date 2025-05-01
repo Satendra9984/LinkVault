@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/utils/image_utils.dart';
 import 'package:link_vault/core/utils/string_utils.dart';
 

@@ -3,8 +3,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/core/common/repository_layer/models/collection_model.dart';
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/collection_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/src/search/repositories/searching_repo_impl.dart';
 
 part 'search_state.dart';

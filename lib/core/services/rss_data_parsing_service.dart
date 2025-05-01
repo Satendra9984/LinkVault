@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Required for date parsing
-import 'package:link_vault/core/common/repository_layer/models/url_model.dart';
+import 'package:link_vault/src/common/repository_layer/models/url_model.dart';
 import 'package:link_vault/core/services/html_parsing_service.dart';
 import 'package:link_vault/core/services/url_parsing_service.dart';
 import 'package:xml/xml.dart';

@@ -1,0 +1,2 @@
+C:/Users/LENOVO/development/projects/LinkVault/android/app/.cxx/Debug/1j365ar4/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/LENOVO/development/projects/LinkVault/android/app/.cxx/Debug/1j365ar4/armeabi-v7a/CMakeFiles/rebuild_cache.dir
