@@ -49,13 +49,6 @@ class AuthFailure extends Failure {
   });
 }
 
-class LocalAuthFailure extends Failure {
-  LocalAuthFailure({
-    required super.message,
-    required super.statusCode,
-  });
-}
-
 class GeneralFailure extends Failure {
   GeneralFailure({
     required super.message,

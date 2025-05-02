@@ -18,3 +18,14 @@ https://www.behance.net/gallery/224578407/Headspace-Mobile-App?tracking_source=s
 Supabase Documentation
 
 https://supabase.com/docs/reference/dart/auth-signup
+
+
+
+
+flutter tutorials
+
+https://codewithandrea.com/articles/flutter-navigation-gorouter-go-vs-push/
+https://codewithandrea.com/articles/flutter-project-structure/
+https://codewithandrea.com/articles/flutter-repository-pattern/
+
+

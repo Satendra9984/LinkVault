@@ -50,6 +50,8 @@ dependencies:
   flutter_custom_tabs: ^2.1.0
   flutter_inappwebview: ^6.0.0
   google_fonts: ^6.2.1
+  supabase_flutter: ^2.9.0
+  go_router: ^15.1.1
 
 dev_dependencies:
   flutter_test:

@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/common/repository_layer/models/global_user_model.dart';
 import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
-import 'package:link_vault/src/onboarding/data/repositories/models/loading_states.dart';
+import 'package:link_vault/src/splash/data/repositories/models/loading_states.dart';
 
 part 'onboarding_state.dart';
 
