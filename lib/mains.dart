@@ -5,6 +5,7 @@ import 'package:link_vault/injections/app_providers.dart';
 import 'package:link_vault/core/services/storage_services.dart';
 import 'package:link_vault/routing/app_router.dart';
 import 'package:link_vault/src/initialization/presentation/screens/linkvault_init.dart';
+import 'package:link_vault/src/shared/app_themes.dart';
 import 'package:link_vault/src/splash/presentation/pages/splash_screen.dart';
 
 // https://codewithandrea.com/articles/robust-app-initialization-riverpod/
@@ -34,18 +35,16 @@ class LinkVaultApp extends ConsumerWidget {
     // final authBloc = ref.watch(authBlocProvider);
     // final homeBloc = ref.watch(homeBlocProvider);
     // ... other blocs
-    final appRouter = AppRouter();
     // Create the Cubit and pass the ref
-    return MultiBlocProvider(
-      providers: [
-        // BlocProvider.value(value: authBloc),
-        // BlocProvider.value(value: homeBloc),
-        // ... other blocs
-      ],
-      child: MaterialApp.router(
-        title: 'LinkVault',
-        routerConfig: appRouter.router,
-      ),
+    return Consumer(
+      builder: (context, ref, _) {
+        final appRouter = ref.watch(routeProvider);
+        return MaterialApp.router(
+          title: 'LinkVault',
+          routerConfig: appRouter,
+          theme: AppThemes.lightTheme,
+        );
+      },
     );
   }
 }

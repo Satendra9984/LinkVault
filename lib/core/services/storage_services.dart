@@ -1,5 +1,6 @@
 // lib/core/services/storage_service.dart
 import 'package:isar/isar.dart';
+import 'package:link_vault/src/splash/data/models/settings_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,11 +18,22 @@ class StorageService {
   }
 
   Future<void> _initializeSupabase() async {
-    final supabase = await Supabase.initialize(
-      url: 'https://xyzcompany.supabase.co',
-      anonKey: 'public-anon-key',
-    );
+    const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'production');
 
+    late final Supabase supabase;
+
+    if (flavor == 'development') {
+      supabase = await Supabase.initialize(
+        url: 'https://nppcmheydvhbrvqygxed.supabase.co',
+        anonKey: 'public-anon-key',
+      );
+    } else {
+      supabase = await Supabase.initialize(
+        url: 'https://nppcmheydvhbrvqygxed.supabase.co',
+        anonKey: 'public-anon-key',
+      );
+    }
+    
     _supabaseClient = supabase.client;
   }
 
@@ -29,7 +41,9 @@ class StorageService {
     final dir = await getApplicationDocumentsDirectory();
 
     final isar = await Isar.open(
-      [],
+      [
+        IsarAppSettingsModelSchema,
+      ],
       directory: dir.path,
     );
 

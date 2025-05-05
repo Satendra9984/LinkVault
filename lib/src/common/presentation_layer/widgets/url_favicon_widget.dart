@@ -45,9 +45,7 @@ class _UrlFaviconLogoWidgetState extends State<UrlFaviconLogoWidget> {
         if (widget.urlPreloadMethod != UrlPreloadMethods.none &&
             visibleInfo.visibleFraction > 0 &&
             _preloadUrl == false) {
-          // Logger.printLog(
-          //   '[customtabs] : calling mayLaunchUrl FaviconWidget ${widget.urlModelData.url}',
-          // );
+
           final urlPreloadCubit = context.read<UrlPreloadManagerCubit>();
           // CALL CUBIT FOR THIS REQUEST
           await Future.wait(

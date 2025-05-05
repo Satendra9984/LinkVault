@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
+import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/common/data_layer/isar_db_models/image_with_bytes.dart';
 import 'package:link_vault/src/common/data_layer/isar_db_models/url_image.dart';
 import 'package:link_vault/src/common/data_layer/isar_db_models/url_model_offline.dart';
-import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
 class LocalImageDataSource {
@@ -43,7 +43,7 @@ class LocalImageDataSource {
     try {
       await _initializeIsar(); // Ensure Isar is initialized
       if (_isar == null) {
-        // Logger.printLog('Isar is not initialized');
+        // throw LocalDBException('Isar Not Initialized Properly');
         return;
       }
 
@@ -58,6 +58,7 @@ class LocalImageDataSource {
       });
     } catch (e) {
       // Logger.printLog('[isar] addImageData error: $e');
+      rethrow;
     }
   }
 
@@ -90,7 +91,6 @@ class LocalImageDataSource {
     try {
       await _initializeIsar();
       if (_isar == null) {
-        // Logger.printLog('[isar] Isar not initialized');
         return;
       }
 
@@ -146,11 +146,10 @@ class LocalImageDataSource {
           ),
         );
       }).then((_) {
-        // // Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
+        // Logger.printLog('[isar] getImageData $imageUrl addedSuccess');
       });
     } catch (e) {
       // Logger.printLog('[isar] addImageDataByBytes $e');
-
       return;
     }
   }

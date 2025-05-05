@@ -55,6 +55,7 @@ class CustomImagesCacheManager {
         );
       }
       cacheManager = _getCacheManager(cacheKey);
+      
       final fileInfo = await cacheManager?.getFileFromCache(imageUrl) ??
           await cacheManager?.downloadFile(imageUrl);
 

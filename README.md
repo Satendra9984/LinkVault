@@ -12,7 +12,7 @@ https://www.behance.net/gallery/221294629/Klust?tracking_source=search_projects|
 https://www.behance.net/gallery/208209331/Dashboard-(Black-and-White-Theme)?tracking_source=search_projects|black+and+white+ui+theme&l=9
 https://www.behance.net/gallery/224578407/Headspace-Mobile-App?tracking_source=search_projects|bookmark+app&l=29
 
-
+https://youtu.be/wZBBiwgB4ew?t=257
 
 
 Supabase Documentation
@@ -29,3 +29,15 @@ https://codewithandrea.com/articles/flutter-project-structure/
 https://codewithandrea.com/articles/flutter-repository-pattern/
 
 
+
+
+
+// SUPABAE DATABASE DESIGN
+
+https://claude.ai/chat/bafc33e8-2bad-4a7d-8de1-2bbd1d6060cf
+
+
+
+
+features
+add time limit on using websites

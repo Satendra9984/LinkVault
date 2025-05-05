@@ -375,9 +375,7 @@ class _UrlFaviconListTemplateScreenState
                 return ValueListenableBuilder(
                   valueListenable: _showFullAddUrlButton,
                   builder: (context, showFullAddUrlButton, _) {
-                    // Logger.printLog(
-                    //   'Favourites: template ${widget.collectionModel.name}, ${widget.showAddUrlButton}',
-                    // );
+
                     return FloatingActionButton.extended(
                       key: ValueKey(widget.collectionModel.id),
                       isExtended: showFullAddUrlButton,

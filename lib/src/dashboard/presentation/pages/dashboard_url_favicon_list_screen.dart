@@ -364,7 +364,6 @@ class _DashboardUrlFaviconListScreenState
               break;
             }
         }
-
         // await Future.wait(
         //   [
         //     recentUrlCrudCubit.addRecentUrl(
