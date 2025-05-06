@@ -11,11 +11,29 @@ class SplashInitial extends SplashState {}
 
 class SplashLoading extends SplashState {}
 
-class SplashNavigateToOnboarding extends SplashState {}
+class SplashNavigateToOnboarding extends SplashState {
+  const SplashNavigateToOnboarding(
+    this.localAppSettings,
+  );
 
-class SplashNavigateToHome extends SplashState {}
+  final LocalAppSettings localAppSettings;
+}
 
-class SplashNavigateToLogin extends SplashState {}
+class SplashNavigateToHome extends SplashState {
+  const SplashNavigateToHome(
+    this.localAppSettings,
+  );
+
+  final LocalAppSettings localAppSettings;
+}
+
+class SplashNavigateToLogin extends SplashState {
+  const SplashNavigateToLogin(
+    this.localAppSettings,
+  );
+
+  final LocalAppSettings localAppSettings;
+}
 
 class SplashError extends SplashState {
   SplashError(String message);

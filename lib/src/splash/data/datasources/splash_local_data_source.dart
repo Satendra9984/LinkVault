@@ -10,7 +10,7 @@ class SplashLocalDataSource {
   Future<bool> hasSeenOnboarding() async {
     final appSettingsCollection = _isar.collection<IsarAppSettingsModel>();
     final appSettings = await appSettingsCollection.get(1);
-    return appSettings?.seenOnboarding  ?? false;
+    return appSettings?.seenOnboarding ?? false;
   }
 
   /// Once onboarding completes, call this
@@ -22,5 +22,17 @@ class SplashLocalDataSource {
 
       await _isar.isarAppSettingsModels.put(appSettings);
     });
+  }
+
+  Future<IsarAppSettingsModel?> getAppSettings() async {
+    final model =
+        await _isar.writeTxn(() => _isar.isarAppSettingsModels.get(1));
+    return model;
+  }
+
+  Future<void> saveAppSettings(IsarAppSettingsModel settings) {
+    return _isar.writeTxn(
+      () => _isar.isarAppSettingsModels.put(settings),
+    );
   }
 }

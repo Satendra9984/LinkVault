@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
-class SplashScreenTemplate extends StatelessWidget {
-  const SplashScreenTemplate({
+class OnBoardingPageTemplate extends StatelessWidget {
+  const OnBoardingPageTemplate({
     super.key,
     required this.title,
     required this.description,
@@ -31,7 +31,7 @@ class SplashScreenTemplate extends StatelessWidget {
             height: size.height * 0.45,
             padding: EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              // color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),

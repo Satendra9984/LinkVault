@@ -1,37 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:link_vault/src/splash/presentation/pages/splash_screen_template.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:link_vault/routing/route_paths.dart';
+import 'package:link_vault/src/shared/presentation/blocs/local_app_settings_cubit/local_app_settings_cubit.dart';
+import 'package:link_vault/src/splash/presentation/bloc/splash_bloc.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    context.read<SplashBloc>().add(SplashInitialEvent());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('Splash'),
-      // ),
-      body: PageView(
-        children: const [
-          SplashScreenTemplate(
-            title: 'Your Personal Link Sanctuary',
-            description: 'Tired of losing track of all your bookmarks? LinkVault makes it effortless to store, organize, and revisit your favorite web pages—all in one secure place.',
-            imageUrl: '',
-            pageNumber: 1,
+      body: BlocListener<SplashBloc, SplashState>(
+        listener: (context, state) {
+          if (state is SplashNavigateToOnboarding) {
+            context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
+                  state.localAppSettings,
+                );
+            context.go(RoutePaths.onboarding);
+          } else if (state is SplashNavigateToHome) {
+            context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
+                  state.localAppSettings,
+                );
+          } else if (state is SplashNavigateToLogin) {
+            context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
+                  state.localAppSettings,
+                );
+          }
+        },
+        child: Center(
+          child: Text(
+            'LinkVault',
+            style: theme.textTheme.headlineLarge,
           ),
-          SplashScreenTemplate(
-            title: 'Organize Links Your Way',
-            description: 'Create nested collections (folders within folders) to group links by project, topic, or mood. Drag, drop, and reorder to keep everything exactly where you need it.',
-            imageUrl: '',
-            pageNumber: 2,
-          ),
-          // SplashScreenTemplate(
-          //   title: '',
-          //   description: '',
-          //   imageUrl: '',
-          //   pageNumber: ,
-          // ),
-        ],
+        ),
       ),
     );
   }

@@ -46,8 +46,9 @@ final setOnBoardingStatusUseCaseProvider = Provider((ref) {
 
 final splashBlocProvider = Provider((ref) {
   return SplashBloc(
-    getIfFistTimer: ref.watch(getIfSeenOnboardingProvider),
-    getLoggedInStatus: ref.watch(getIfLoggedInProvider),
-    setOnBoardingStatus: ref.watch(setOnBoardingStatusUseCaseProvider),
+    ref.watch(splashRepositoryProvider),
+    // getIfFistTimer: ref.watch(getIfSeenOnboardingProvider),
+    // getLoggedInStatus: ref.watch(getIfLoggedInProvider),
+    // setOnBoardingStatus: ref.watch(setOnBoardingStatusUseCaseProvider),
   );
 });

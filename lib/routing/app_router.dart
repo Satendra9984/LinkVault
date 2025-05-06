@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:link_vault/routing/route_paths.dart';
+import 'package:link_vault/src/on_boarding/presentation/screens/onboarding_home.dart';
 import 'package:link_vault/src/splash/presentation/pages/splash_screen.dart';
 
 final routeProvider = Provider<GoRouter>(
@@ -33,7 +34,10 @@ final routeProvider = Provider<GoRouter>(
           builder: (context, state) => const SplashScreen(),
         ),
         // GoRoute(path: '/login', builder: (c, s) => LoginPage()),
-        // GoRoute(path: '/onboarding', builder: (c, s) => OnboardingPage()),
+        GoRoute(
+          path: RoutePaths.onboarding,
+          builder: (c, s) => OnBoardingHomePage(),
+        ),
         // ShellRoute(
         //   // Example ShellRoute with BottomNavigationBar
         //   builder: (context, state, child) => Scaffold(

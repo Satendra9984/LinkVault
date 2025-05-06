@@ -1,15 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
-import 'package:link_vault/src/auth/presentation/pages/authentication_home.dart';
-import 'package:link_vault/src/splash/data/repositories/models/loading_states.dart';
-import 'package:link_vault/src/on_boarding/presentation/bloc/onboarding_cubit.dart';
-import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
+import 'package:link_vault/src/on_boarding/presentation/screens/widgets/onboarding_page_template.dart';
 
 class OnBoardingHomePage extends StatelessWidget {
   const OnBoardingHomePage({super.key});
@@ -19,50 +11,29 @@ class OnBoardingHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: BlocConsumer<OnBoardCubit, OnBoardState>(
-          listener: (context, state) {
-            final onBoardCubit = context.read<OnBoardCubit>();
-
-            if (state.onBoardingStates == OnBoardingStates.isLoggedIn) {
-              context
-                  .read<GlobalUserCubit>()
-                  .initializeGlobalUser(state.globalUser!);
-
-              if (onBoardCubit.isCreditExpired()) {
-                Navigator.pushReplacementNamed(
-                  context,
-                  SubscriptionPage.routeName,
-                );
-              } else {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => const AppHomePage(),
-                  ),
-                );
-              }
-            }
-            if (state.onBoardingStates == OnBoardingStates.notLoggedIn) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => const AuthenticationHomePage(),
-                ),
-              );
-            }
-           
-          },
-          builder: (context, state) {
-            return Center(
-              child: SvgPicture.asset(
-                MediaRes.linkVaultLogoSVG,
-                height: 136,
-                width: 136,
-              ),
-            );
-          },
-        ),
+      body: PageView(
+        children: const [
+          OnBoardingPageTemplate(
+            title: 'Your Personal Link Sanctuary',
+            description:
+                'Tired of losing track of all your bookmarks? LinkVault makes it effortless to store, organize, and revisit your favorite web pages—all in one secure place.',
+            imageUrl: '',
+            pageNumber: 1,
+          ),
+          OnBoardingPageTemplate(
+            title: 'Organize Links Your Way',
+            description:
+                'Create nested collections (folders within folders) to group links by project, topic, or mood. Drag, drop, and reorder to keep everything exactly where you need it.',
+            imageUrl: '',
+            pageNumber: 2,
+          ),
+          // SplashScreenTemplate(
+          //   title: '',
+          //   description: '',
+          //   imageUrl: '',
+          //   pageNumber: ,
+          // ),
+        ],
       ),
     );
   }
