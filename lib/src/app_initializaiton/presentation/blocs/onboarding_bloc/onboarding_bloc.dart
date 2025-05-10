@@ -2,22 +2,19 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link_vault/src/splash/domain/entities/onboarding_page_entity.dart';
-import 'package:link_vault/src/splash/domain/usecases/get_onboarding_pages_usecase.dart';
-import 'package:link_vault/src/splash/domain/usecases/save_has_seen_onboarding_usecase.dart';
+import 'package:link_vault/src/app_initializaiton/domain/entities/onboarding_page_entity.dart';
+import 'package:link_vault/src/app_initializaiton/domain/usecases/get_onboarding_pages_usecase.dart';
+import 'package:link_vault/src/app_initializaiton/domain/usecases/save_has_seen_onboarding_usecase.dart';
 // import 'package:link_vault/src/splash/domain/usecases/watch_has_seen_onboarding_usecase.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  // final WatchHasSeenOnboardingUsecase _watchHasSeenOnboardingUsecase;
   final SaveHasSeenOnboardingUsecase _saveHasSeenOnboardingUsecase;
   final GetOnboardingPagesUsecase _getOnboardingPagesUsecase;
-  // StreamSubscription<Either<Failure, bool>>? _onboardingSubscription;
 
   OnboardingBloc(
-    // this._watchHasSeenOnboardingUsecase,
     this._saveHasSeenOnboardingUsecase,
     this._getOnboardingPagesUsecase,
   ) : super(OnboardingInitialState()) {
