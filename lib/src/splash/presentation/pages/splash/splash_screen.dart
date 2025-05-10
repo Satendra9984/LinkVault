@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/shared/presentation/blocs/local_app_settings_cubit/local_app_settings_cubit.dart';
-import 'package:link_vault/src/splash/presentation/bloc/splash_bloc.dart';
+import 'package:link_vault/src/splash/presentation/blocs/splash_bloc/splash_bloc.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,29 +25,26 @@ class _SplashScreenState extends State<SplashScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: BlocListener<SplashBloc, SplashState>(
+      body: BlocConsumer<SplashBloc, SplashState>(
         listener: (context, state) {
-          if (state is SplashNavigateToOnboarding) {
+          if (state.localAppSettings != null) {
             context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
-                  state.localAppSettings,
-                );
-            context.go(RoutePaths.onboarding);
-          } else if (state is SplashNavigateToHome) {
-            context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
-                  state.localAppSettings,
-                );
-          } else if (state is SplashNavigateToLogin) {
-            context.read<LocalAppSettingsCubit>().updateLocalAppSettings(
-                  state.localAppSettings,
+                  state.localAppSettings!,
                 );
           }
+          if (state is SplashNavigateToOnboarding) {
+            context.go(RoutePaths.onboarding);
+          } else if (state is SplashNavigateToHome) {
+          } else if (state is SplashNavigateToLogin) {}
         },
-        child: Center(
-          child: Text(
-            'LinkVault',
-            style: theme.textTheme.headlineLarge,
-          ),
-        ),
+        builder: (context, state) {
+          return Center(
+            child: Text(
+              'LinkVault',
+              style: theme.textTheme.headlineLarge,
+            ),
+          );
+        },
       ),
     );
   }

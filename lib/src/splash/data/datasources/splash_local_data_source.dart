@@ -3,9 +3,9 @@
 import 'package:isar/isar.dart';
 import 'package:link_vault/src/splash/data/models/settings_model.dart';
 
-class SplashLocalDataSource {
+class LocalAppSettignsLocalDataSource {
   final Isar _isar;
-  SplashLocalDataSource(this._isar);
+  LocalAppSettignsLocalDataSource(this._isar);
 
   Future<bool> hasSeenOnboarding() async {
     final appSettingsCollection = _isar.collection<IsarAppSettingsModel>();
@@ -28,6 +28,10 @@ class SplashLocalDataSource {
     final model =
         await _isar.writeTxn(() => _isar.isarAppSettingsModels.get(1));
     return model;
+  }
+
+  Stream<IsarAppSettingsModel?> watchIsarAppSettings() {
+   return _isar.isarAppSettingsModels.watchObject(1);
   }
 
   Future<void> saveAppSettings(IsarAppSettingsModel settings) {

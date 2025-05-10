@@ -2,9 +2,9 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SplashRemoteDataSource {
+class LocalAppSettingsRemoteDataSource {
   final SupabaseClient supabase;
-  SplashRemoteDataSource(this.supabase);
+  LocalAppSettingsRemoteDataSource(this.supabase);
 
   bool get isLoggedIn => supabase.auth.currentUser != null;
 }

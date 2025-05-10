@@ -13,7 +13,7 @@ class LocalAppSettingsCubit extends Cubit<LocalAppSettings> {
       : super(
           const LocalAppSettings(
             hasSeenOnboarding: false,
-            theme: AppThemeEnums.light,
+            themeMode: AppThemeEnums.light,
           ),
         ) {
     // _load();

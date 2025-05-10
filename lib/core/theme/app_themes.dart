@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_redundant_argument_values
+// ignore_for_file: avoid_redundant_argument_values, public_member_api_docs
 
 import 'package:flutter/material.dart';
 
@@ -19,55 +19,64 @@ class AppThemes {
     colorScheme: const ColorScheme.light(
       // PRIMARY COLORS
       // Used for key components like app bars, buttons, and other interactive elements
-      primary: Color(
-          0xff232326), // Main brand color, used for primary buttons, app bar
-      onPrimary:
-          Color(0xffFFFFFF), // Text/icons on primary color (white for contrast)
-      primaryContainer: Color(
-          0xffE9E9E9), // Background of cards, dialogs containing primary content
-      onPrimaryContainer: Color(0xff232326), // Text/icons on primary containers
-
+      // Main brand color, used for primary buttons, app bar
+      primary: Color(0xff232326),
+      // Text/icons on primary color (white for contrast)
+      onPrimary: Color(0xffFFFFFF),
+      // Background of cards, dialogs containing primary content
+      primaryContainer: Color(0xffE9E9E9),
+      // Text/icons on primary containers
+      onPrimaryContainer: Color(0xff232326),
       // SECONDARY COLORS
       // Used for less prominent components, accents, and highlights
-      secondary:
-          Color(0xffE9E9E9), // Used for FABs, selection controls, highlights
-      onSecondary: Color(0xff232326), // Text/icons on secondary color
-      secondaryContainer:
-          Color(0xffD0D0D0), // Background for secondary components like chips
-      onSecondaryContainer: Color(0xff232326), // Text on secondary containers
+      // Used for FABs, selection controls, highlights
+      secondary: Color(0xffE9E9E9),
+      // Text/icons on secondary color
+      onSecondary: Color(0xff232326),
+      // Background for secondary components like chips
+      secondaryContainer: Color(0xffD0D0D0),
+      // Text on secondary containers
+      onSecondaryContainer: Color(0xff232326),
 
       // SURFACE COLORS
       // Used for backgrounds, cards, sheets, etc.
-      surface: Color(0xffF0F0F0), // Main background for widgets/screens
-      onSurface: Color(0xff232326), // Primary text on surfaces
-      surfaceContainer:
-          Color(0xffE9E9E9), // Alternative surface for nested components
-      surfaceContainerLow:
-          Color(0xffF8F8F8), // For elevated components like cards
-      surfaceContainerHigh:
-          Color(0xffE0E0E0), // For more prominently elevated components
+      // Main background for widgets/screens
+      surface: Color(0xffF0F0F0),
+      // Primary text on surfaces
+      onSurface: Color(0xff232326),
+      // Alternative surface for nested components
+      surfaceContainer: Color(0xffE9E9E9),
+      // For elevated components like cards
+      surfaceContainerLow: Color(0xffF8F8F8),
+      // For more prominently elevated components
+      surfaceContainerHigh: Color(0xffE0E0E0),
 
       // NEUTRAL VARIANTS
       // Used for backgrounds, borders, dividers
-      outline: Color(0xffA0A0A0), // Borders, dividers, and subtle outlines
-      outlineVariant:
-          Color(0xffC4C4C4), // Less prominent dividers, disabled state borders
+      // Borders, dividers, and subtle outlines
+      outline: Color(0xffA0A0A0),
+      // Less prominent dividers, disabled state borders
+      outlineVariant: Color(0xffC4C4C4),
 
       // ERROR COLORS
       // Used for error states and validation
-      error:
-          Color(0xffB00020), // Error messaging, validation borders, error icons
-      onError: Color(0xffffffff), // Text/icons on error color
-      errorContainer:
-          Color(0xffFDECEF), // Light background for error messages/states
-      onErrorContainer:
-          Color(0xffB00020), // Error text on container backgrounds
+      // Error messaging, validation borders, error icons
+      error: Color(0xffB00020),
+      // Text/icons on error color
+      onError: Color(0xffffffff),
+      // Light background for error messages/states
+      errorContainer: Color(0xffFDECEF),
+      // Error text on container backgrounds
+      onErrorContainer: Color(0xffB00020),
 
       // ADDITIONAL COLORS
       // For specific use cases
-      background: Color(0xffF5F5F5), // Main app background
-      onBackground: Color(0xff232326), // Text/icons on main background
-      shadow: Color(0x40000000), // Shadow color for elevated components
+      // Main app background
+      background: Color(0xffF5F5F5),
+      // Text/icons on main background
+      onBackground: Color(0xff232326),
+      // Shadow color for elevated components
+      shadow: Color(0x40000000),
     ),
 
     // TEXT THEME
@@ -227,29 +236,36 @@ class AppThemes {
     colorScheme: const ColorScheme.dark(
       // PRIMARY COLORS
       // Inverted from light theme for proper dark mode contrast
-      primary:
-          Color(0xffE0E0E0), // Light color for contrast against dark background
-      onPrimary:
-          Color(0xff232326), // Dark text on light primary for readability
-      primaryContainer:
-          Color(0xff3A3A3E), // Slightly lighter than background for containers
-      onPrimaryContainer: Color(0xffE0E0E0), // Light text for contrast
+      // Light color for contrast against dark background
+      primary: Color(0xffE0E0E0),
+      // Dark text on light primary for readability
+      onPrimary: Color(0xff232326),
+      // Slightly lighter than background for containers
+      primaryContainer: Color(0xff3A3A3E),
+      // Light text for contrast
+      onPrimaryContainer: Color(0xffE0E0E0),
 
       // SECONDARY COLORS
-      secondary: Color(0xff787878), // Mid-tone gray for secondary elements
-      onSecondary: Color(0xffE0E0E0), // Light text on secondary elements
-      secondaryContainer:
-          Color(0xff4A4A4E), // Slightly elevated container background
-      onSecondaryContainer: Color(0xffE0E0E0), // Light text for contrast
+      // Mid-tone gray for secondary elements
+      secondary: Color(0xff787878),
+      // Light text on secondary elements
+      onSecondary: Color(0xffE0E0E0),
+      // Slightly elevated container background
+      secondaryContainer: Color(0xff4A4A4E),
+      // Light text for contrast
+      onSecondaryContainer: Color(0xffE0E0E0),
 
       // SURFACE COLORS
-      surface: Color(0xff121214), // Main dark surface color
-      onSurface: Color(0xffE0E0E0), // Light text for contrast
-      surfaceContainer:
-          Color(0xff232326), // Slightly lighter surface for containers
-      surfaceContainerLow: Color(0xff1A1A1D), // Slightly elevated surface
-      surfaceContainerHigh:
-          Color(0xff2C2C30), // More prominently elevated surface
+      // Main dark surface color
+      surface: Color(0xff121214),
+      // Light text for contrast
+      onSurface: Color(0xffE0E0E0),
+      // Slightly lighter surface for containers
+      surfaceContainer: Color(0xff232326),
+      // Slightly elevated surface
+      surfaceContainerLow: Color(0xff1A1A1D),
+      // More prominently elevated surface
+      surfaceContainerHigh: Color(0xff2C2C30),
 
       // NEUTRAL VARIANTS
       outline: Color(0xff848484), // Visible borders and dividers

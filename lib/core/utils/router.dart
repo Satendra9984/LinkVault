@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link_vault/src/common/presentation_layer/pages/page_under_construction.dart';
-import 'package:link_vault/src/on_boarding/presentation/screens/onboarding_home.dart';
+import 'package:link_vault/src/splash/presentation/pages/onboarding/onboarding_home.dart';
 
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 

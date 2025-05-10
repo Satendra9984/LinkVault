@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
 
 class OnBoardingPageTemplate extends StatelessWidget {
   const OnBoardingPageTemplate({
@@ -31,7 +30,7 @@ class OnBoardingPageTemplate extends StatelessWidget {
             height: size.height * 0.45,
             padding: EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              // color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),

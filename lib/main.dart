@@ -38,7 +38,7 @@ import 'package:link_vault/src/auth/data/data_sources/auth_remote_data_sources.d
 import 'package:link_vault/src/auth/data/repositories/auth_repo_impl.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/on_boarding/presentation/bloc/onboarding_cubit.dart';
-import 'package:link_vault/src/on_boarding/presentation/screens/onboarding_home.dart';
+import 'package:link_vault/src/splash/presentation/pages/onboarding/onboarding_home.dart';
 import 'package:link_vault/src/recents/presentation/cubit/recents_url_cubit.dart';
 import 'package:link_vault/src/rss_feeds/presentation/cubit/rss_feed_cubit.dart';
 import 'package:link_vault/src/search/data/local_data_source.dart';
