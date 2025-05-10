@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/splash/presentation/blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:link_vault/src/splash/presentation/widgets/onboarding_page_template.dart';
-import 'package:link_vault/src/on_boarding/presentation/widgets/template.dart';
 
 class OnBoardingHomePage extends StatefulWidget {
   const OnBoardingHomePage({super.key});
@@ -42,6 +41,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
                 PageView.builder(
                   controller: _pageController,
                   itemCount: state.pages.length,
+                  physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (index) {
                     context.read<OnboardingBloc>().add(PageChangedEvent(index));
                   },
@@ -58,7 +58,11 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
               ],
             );
           } else if (state is OnboardingErrorState) {
-            return Center(child: Text('Error: ${state.message}'));
+            return Center(
+              child: Text(
+                'Error: ${state.message}',
+              ),
+            );
           } else {
             return const SizedBox.shrink();
           }

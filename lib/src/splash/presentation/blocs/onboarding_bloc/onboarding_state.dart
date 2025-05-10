@@ -35,7 +35,11 @@ final class OnboardingLoadedState extends OnboardingState {
   }
 
   @override
-  List<Object> get props => [pages, currentPageIndex, isLastPage];
+  List<Object> get props => [
+        pages,
+        currentPageIndex,
+        isLastPage,
+      ];
 }
 
 class OnboardingCompletingState extends OnboardingState {}

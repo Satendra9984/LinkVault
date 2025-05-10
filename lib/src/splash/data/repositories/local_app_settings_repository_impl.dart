@@ -10,7 +10,7 @@ import 'package:link_vault/src/splash/data/datasources/splash_local_data_source.
 import 'package:link_vault/src/splash/data/datasources/splash_remote_data_source.dart';
 import 'package:link_vault/src/splash/data/mappers/local_app_settings_mapper.dart';
 import 'package:link_vault/src/splash/data/models/settings_model.dart';
-import 'package:link_vault/src/splash/domain/repositories/splash_repository.dart';
+import 'package:link_vault/src/splash/domain/repositories/local_app_settings_repository.dart';
 import 'package:rxdart/subjects.dart';
 
 class LocalAppSettingsRepositoryImpl implements LocalAppSettingsRepository {

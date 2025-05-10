@@ -2,40 +2,28 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/splash/domain/entities/onboarding_page_entity.dart';
+import 'package:link_vault/src/splash/domain/usecases/get_onboarding_pages_usecase.dart';
 import 'package:link_vault/src/splash/domain/usecases/save_has_seen_onboarding_usecase.dart';
-import 'package:link_vault/src/splash/domain/usecases/watch_has_seen_onboarding_usecase.dart';
+// import 'package:link_vault/src/splash/domain/usecases/watch_has_seen_onboarding_usecase.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  final WatchHasSeenOnboardingUsecase _watchHasSeenOnboardingUsecase;
+  // final WatchHasSeenOnboardingUsecase _watchHasSeenOnboardingUsecase;
   final SaveHasSeenOnboardingUsecase _saveHasSeenOnboardingUsecase;
+  final GetOnboardingPagesUsecase _getOnboardingPagesUsecase;
   // StreamSubscription<Either<Failure, bool>>? _onboardingSubscription;
 
   OnboardingBloc(
-    this._watchHasSeenOnboardingUsecase,
+    // this._watchHasSeenOnboardingUsecase,
     this._saveHasSeenOnboardingUsecase,
+    this._getOnboardingPagesUsecase,
   ) : super(OnboardingInitialState()) {
     on<LoadOnboardingPageEvent>(_onLoadOnBoardingPages);
     on<PageChangedEvent>(_onPageChanged);
     on<CompleteOnboardingEvent>(_onCompleteOnboarding);
-
-    // _onboardingSubscription ??= _watchHasSeenOnboardingUsecase.call().listen(
-    //   (hasSeenOnboardingRes) {
-    //     hasSeenOnboardingRes.fold(
-    //       (_) {},
-    //       (hasSeenOnboarding) {
-    //         if (hasSeenOnboarding) {
-    //           add(CompleteOnboardingEvent());
-    //         }
-    //       },
-    //     );
-    //   },
-    // );
   }
 
   Future<void> _onLoadOnBoardingPages(
@@ -44,13 +32,41 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   ) async {
     emit(OnboardingLoadingState());
 
-    // await
+    await _getOnboardingPagesUsecase().then(
+      (res) {
+        res.fold(
+          (failed) {
+            emit(OnboardingErrorState(failed.errorMessage));
+          },
+          (pages) {
+            emit(
+              OnboardingLoadedState(
+                pages: pages,
+                currentPageIndex: 0,
+                isLastPage: pages.length == 1,
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _onPageChanged(
-    OnboardingEvent event,
+    PageChangedEvent event,
     Emitter<OnboardingState> emit,
-  ) async {}
+  ) async {
+    if (state is OnboardingLoadedState) {
+      final currentState = state as OnboardingLoadedState;
+
+      emit(
+        currentState.copyWith(
+          currentPageIndex: event.pageIndex,
+          isLastPage: event.pageIndex == currentState.pages.length - 1,
+        ),
+      );
+    }
+  }
 
   Future<void> _onCompleteOnboarding(
     OnboardingEvent event,

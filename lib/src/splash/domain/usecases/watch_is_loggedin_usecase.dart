@@ -3,7 +3,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/failure.dart';
 
-import '../repositories/splash_repository.dart';
+import '../repositories/local_app_settings_repository.dart';
 
 class WatchIsLoggedinUsecase {
   final LocalAppSettingsRepository repo;
