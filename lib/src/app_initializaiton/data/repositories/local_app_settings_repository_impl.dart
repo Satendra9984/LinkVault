@@ -17,18 +17,14 @@ class LocalAppSettingsRepositoryImpl implements LocalAppSettingsRepository {
   LocalAppSettingsRepositoryImpl({
     required LocalAppSettignsLocalDataSource local,
     required LocalAppSettingsRemoteDataSource remote,
-    // required Isar isar,
   })  : _remote = remote,
-        // _isar = isar,
         _local = local {
     // Initialize subjects with current values
     _initializeSubjects();
-
     // Listen to Isar Changes
     _setUpWatchers();
   }
 
-  // final Isar _isar;
   final LocalAppSettignsLocalDataSource _local;
   final LocalAppSettingsRemoteDataSource _remote;
 

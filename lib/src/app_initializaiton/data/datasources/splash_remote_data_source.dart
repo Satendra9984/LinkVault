@@ -6,5 +6,5 @@ class LocalAppSettingsRemoteDataSource {
   final SupabaseClient supabase;
   LocalAppSettingsRemoteDataSource(this.supabase);
 
-  bool get isLoggedIn => supabase.auth.currentUser != null;
+  bool get isLoggedIn => false; //supabase.auth.currentUser != null;
 }

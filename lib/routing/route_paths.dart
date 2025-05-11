@@ -7,7 +7,7 @@ class RoutePaths {
   static const String splash = '/splash';
   static const String login = '/login';
   static const String onboarding = '/onboarding';
-  // static const String = '/';
+  static const String home = '/home ';
   // static const String = '/';
   // static const String = '/';
   // static const String = '/';

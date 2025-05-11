@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:link_vault/injections/app_providers.dart';
+import 'package:link_vault/routing/navigation_service.dart';
 import 'package:link_vault/routing/route_paths.dart';
-import 'package:link_vault/src/app_initializaiton/presentation/blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/onboarding/onboarding_home.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/splash/splash_screen.dart';
 
@@ -32,9 +33,21 @@ final routeProvider = Provider<GoRouter>(
       },
       routes: [
         GoRoute(
-          path: '/splash',
-          builder: (context, state) => const SplashScreen(),
+          path: RoutePaths.splash,
+          builder: (context, state) => BlocProvider(
+            create: (_) => ref.watch(splashBlocProvider),
+            child: const SplashScreen(),
+          ),
         ),
+
+        GoRoute(
+          path: RoutePaths.onboarding,
+          builder: (context, state) => BlocProvider(
+            create:(_)=> ref.watch(onboardingBlocProvider),
+            child: const OnBoardingHomePage(),
+          ),
+        ),
+
         // GoRoute(path: '/login', builder: (c, s) => LoginPage()),
 
         // ShellRoute(
@@ -50,6 +63,14 @@ final routeProvider = Provider<GoRouter>(
         //   ],
         // ),
       ],
+    );
+  },
+);
+
+final appNavigationProvider = Provider(
+  (ref) {
+    return GoRouterNavigationService(
+      ref.watch(routeProvider),
     );
   },
 );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/widgets/onboarding_page_template.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnBoardingHomePage extends StatefulWidget {
   const OnBoardingHomePage({super.key});
@@ -24,8 +25,9 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeData = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: themeData.primaryColor,
       body: BlocConsumer<OnboardingBloc, OnboardingState>(
         listener: (context, state) {
           if (state is OnboardingCompletedState) {
@@ -54,6 +56,77 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
                       pageNumber: index,
                     );
                   },
+                ),
+                // Bottom navigation and indicators
+                Positioned(
+                  bottom: 32,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      // Dot indicators
+                      SmoothPageIndicator(
+                        controller: _pageController, // PageController
+                        count: state.pages.length,
+                        onDotClicked: (index) {
+                          _pageController.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        effect: WormEffect(
+                          activeDotColor: themeData.colorScheme.onSurface,
+                          dotColor: Colors.grey.shade300,
+                          dotHeight: 12,
+                          strokeWidth: 4,
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Navigation buttons
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Skip button (hide on last page)
+                            if (!state.isLastPage)
+                              TextButton(
+                                onPressed: () {
+                                  context
+                                      .read<OnboardingBloc>()
+                                      .add(CompleteOnboardingEvent());
+                                },
+                                child: const Text('Skip'),
+                              )
+                            else
+                              const SizedBox(width: 80),
+
+                            // Next/Get Started button
+                            ElevatedButton(
+                              onPressed: () {
+                                if (state.isLastPage) {
+                                  context
+                                      .read<OnboardingBloc>()
+                                      .add(CompleteOnboardingEvent());
+                                } else {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                              },
+                              child: Text(
+                                state.isLastPage ? 'Get Started' : 'Next',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             );
