@@ -10,9 +10,9 @@ import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
-import 'package:link_vault/src/auth/presentation/pages/forget_password/password_reset.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
-import 'package:link_vault/src/auth/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
+import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
 
 // ignore: public_member_api_docs
 class LoginPage extends StatefulWidget {

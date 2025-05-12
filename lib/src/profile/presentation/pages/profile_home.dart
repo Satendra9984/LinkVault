@@ -6,8 +6,8 @@ import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
 import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/login_page.dart';
-import 'package:link_vault/src/auth/presentation/pages/login_signup/signup_page.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
 import 'package:lottie/lottie.dart';
 

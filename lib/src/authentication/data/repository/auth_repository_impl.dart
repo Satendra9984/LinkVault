@@ -35,9 +35,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, UserProfile>> signInWithEmailPassword(
-      String email, String password) async {
+    String email,
+    String password,
+  ) async {
     try {
       final connectivityResult = await connectivity.checkConnectivity();
+
       if (connectivityResult == ConnectivityResult.none) {
         return Left(
           NetworkFailure(
