@@ -19,6 +19,7 @@ final routeProvider = Provider<GoRouter>(
         // if (user == null && state.location != '/login') {
         //   return '/login';
         // }
+        
         // // If first run and not onboarding, go to onboarding
         // if (user != null && isFirstTime && state.location != '/onboarding') {
         //   return '/onboarding';

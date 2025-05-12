@@ -21,6 +21,20 @@ abstract class Failure extends Equatable {
   String get errorMessage => '$statusCode Error: $message';
 }
 
+class NetworkFailure extends Failure {
+  NetworkFailure({
+    required super.message,
+    required super.statusCode,
+  });
+
+  NetworkFailure.fromException(
+    ServerException exception,
+  ) : this(
+          message: exception.message,
+          statusCode: exception.statusCode,
+        );
+}
+
 class ServerFailure extends Failure {
   ServerFailure({
     required super.message,

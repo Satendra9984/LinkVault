@@ -22,6 +22,11 @@ const IsarAppSettingsModelSchema = CollectionSchema(
       id: 0,
       name: r'seenOnboarding',
       type: IsarType.bool,
+    ),
+    r'theme': PropertySchema(
+      id: 1,
+      name: r'theme',
+      type: IsarType.string,
     )
   },
   estimateSize: _isarAppSettingsModelEstimateSize,
@@ -44,6 +49,12 @@ int _isarAppSettingsModelEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.theme;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -54,6 +65,7 @@ void _isarAppSettingsModelSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeBool(offsets[0], object.seenOnboarding);
+  writer.writeString(offsets[1], object.theme);
 }
 
 IsarAppSettingsModel _isarAppSettingsModelDeserialize(
@@ -64,6 +76,7 @@ IsarAppSettingsModel _isarAppSettingsModelDeserialize(
 ) {
   final object = IsarAppSettingsModel(
     seenOnboarding: reader.readBoolOrNull(offsets[0]) ?? false,
+    theme: reader.readStringOrNull(offsets[1]),
   );
   object.id = id;
   return object;
@@ -78,6 +91,8 @@ P _isarAppSettingsModelDeserializeProp<P>(
   switch (propertyId) {
     case 0:
       return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 1:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -245,6 +260,162 @@ extension IsarAppSettingsModelQueryFilter on QueryBuilder<IsarAppSettingsModel,
       ));
     });
   }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'theme',
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'theme',
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'theme',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+          QAfterFilterCondition>
+      themeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'theme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+          QAfterFilterCondition>
+      themeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'theme',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'theme',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel,
+      QAfterFilterCondition> themeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'theme',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension IsarAppSettingsModelQueryObject on QueryBuilder<IsarAppSettingsModel,
@@ -266,6 +437,20 @@ extension IsarAppSettingsModelQuerySortBy
       sortBySeenOnboardingDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'seenOnboarding', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel, QAfterSortBy>
+      sortByTheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'theme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel, QAfterSortBy>
+      sortByThemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'theme', Sort.desc);
     });
   }
 }
@@ -299,6 +484,20 @@ extension IsarAppSettingsModelQuerySortThenBy
       return query.addSortBy(r'seenOnboarding', Sort.desc);
     });
   }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel, QAfterSortBy>
+      thenByTheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'theme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel, QAfterSortBy>
+      thenByThemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'theme', Sort.desc);
+    });
+  }
 }
 
 extension IsarAppSettingsModelQueryWhereDistinct
@@ -307,6 +506,13 @@ extension IsarAppSettingsModelQueryWhereDistinct
       distinctBySeenOnboarding() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'seenOnboarding');
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, IsarAppSettingsModel, QDistinct>
+      distinctByTheme({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'theme', caseSensitive: caseSensitive);
     });
   }
 }
@@ -323,6 +529,13 @@ extension IsarAppSettingsModelQueryProperty on QueryBuilder<
       seenOnboardingProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'seenOnboarding');
+    });
+  }
+
+  QueryBuilder<IsarAppSettingsModel, String?, QQueryOperations>
+      themeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'theme');
     });
   }
 }
