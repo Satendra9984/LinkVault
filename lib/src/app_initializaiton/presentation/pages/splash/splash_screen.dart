@@ -37,14 +37,14 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: theme.colorScheme.surface,
       body: BlocConsumer<SplashBloc, SplashState>(
         listener: (context, state) {
-          Logger.printLog('[splashstate] : ${state.toString()}');
+          Logger.printLog('[splashstate] : $state');
 
           if (state is SplashNavigateToOnboarding) {
             context.go(RoutePaths.onboarding);
           } else if (state is SplashNavigateToHome) {
             context.go(RoutePaths.home);
           } else if (state is SplashNavigateToLogin) {
-            context.go(RoutePaths.login);
+            context.go(RoutePaths.authHome);
           }
         },
         builder: (context, state) {

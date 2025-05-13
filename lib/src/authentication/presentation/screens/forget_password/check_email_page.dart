@@ -6,34 +6,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
 
-class CheckYourEmailPage extends StatefulWidget {
-  const CheckYourEmailPage({super.key});
+class CheckYourEmailPage extends StatelessWidget {
+  const CheckYourEmailPage({
+    super.key,
+    required this.email,
+  });
 
-  @override
-  State<CheckYourEmailPage> createState() => _CheckYourEmailPageState();
-}
-
-class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
-  final _emailController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your email';
-    }
-    final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegExp.hasMatch(value)) {
-      return 'Please enter a valid email';
-    }
-    return null;
-  }
+  final String email;
 
   @override
   Widget build(BuildContext context) {
@@ -70,10 +52,10 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                BlocBuilder<ForgetPasswordCubit, ForgetPasswordState>(
+                BlocBuilder<LoginBloc, LoginState>(
                   builder: (context, state) {
                     return Text(
-                      state.email,
+                      email,
                       style: TextStyle(
                         color: ColourPallette.textDarkColor,
                         fontWeight: FontWeight.w500,
@@ -96,14 +78,6 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // const SizedBox(
-                //   width: double.infinity,
-                //   child: CustomElevatedButton(
-                //     text: 'Open Email App',
-                //     onPressed: OpenOtherApps.openGmailApp,
-                //   ),
-                // ),
-                // const SizedBox(height: 20),
                 RichText(
                   text: TextSpan(
                     text: 'You remember your password? ',
@@ -122,6 +96,7 @@ class _CheckYourEmailPageState extends State<CheckYourEmailPage> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
+                            // TODO : USE GO ROUTER 
                             Navigator.of(context).pop();
                           },
                       ),

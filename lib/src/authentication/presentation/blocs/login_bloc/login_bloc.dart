@@ -15,12 +15,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LoginWithCredentials event,
     Emitter<LoginState> emit,
   ) async {
-    emit(state.copyWith(
-      isSubmitting: true,
-      isSuccess: false,
-      isFailure: false,
-      errorMessage: '',
-    ));
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        isSuccess: false,
+        isFailure: false,
+        errorMessage: '',
+      ),
+    );
 
     final result = await authRepository.signInWithEmailPassword(
       event.email,
@@ -28,15 +30,19 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     result.fold(
-      (failure) => emit(state.copyWith(
-        isSubmitting: false,
-        isFailure: true,
-        errorMessage: failure.message,
-      )),
-      (_) => emit(state.copyWith(
-        isSubmitting: false,
-        isSuccess: true,
-      )),
+      (failure) => emit(
+        state.copyWith(
+          isSubmitting: false,
+          isFailure: true,
+          errorMessage: failure.message,
+        ),
+      ),
+      (_) => emit(
+        state.copyWith(
+          isSubmitting: false,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
@@ -44,12 +50,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     ForgotPassword event,
     Emitter<LoginState> emit,
   ) async {
-    emit(state.copyWith(
-      isSubmitting: true,
-      isSuccess: false,
-      isFailure: false,
-      errorMessage: '',
-    ));
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        isSuccess: false,
+        isFailure: false,
+        errorMessage: '',
+      ),
+    );
 
     final result = await authRepository.sendPasswordResetEmail(event.email);
 

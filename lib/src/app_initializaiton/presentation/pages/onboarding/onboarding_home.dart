@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/widgets/onboarding_page_template.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -31,7 +33,7 @@ class _OnBoardingHomePageState extends State<OnBoardingHomePage> {
       body: BlocConsumer<OnboardingBloc, OnboardingState>(
         listener: (context, state) {
           if (state is OnboardingCompletedState) {
-            // TODO: GO TO AUTH
+            context.go(RoutePaths.authHome);
           }
         },
         builder: (context, state) {

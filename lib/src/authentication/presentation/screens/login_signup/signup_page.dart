@@ -2,14 +2,17 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_event.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_state.dart';
 import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
 
@@ -33,16 +36,6 @@ class _SignUpPageState extends State<SignUpPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  void _submitForm(AuthenticationCubit cubit) {
-    if (_formKey.currentState!.validate()) {
-      cubit.signUpWithEmailAndPassword(
-        name: _nameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    }
   }
 
   String? _validateName(String? value) {
@@ -137,37 +130,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       validator: _validatePassword,
                     ),
                     const SizedBox(height: 2 * gap),
-                    BlocConsumer<AuthenticationCubit, AuthenticationState>(
+                    BlocConsumer<SignupBloc, SignupState>(
                       listener: (context, state) {
-                        // debugPrint('[log] : authstate $state');
-                        if (state.authenticationStates ==
-                            AuthenticationStates.signedUp) {
-                          context
-                              .read<GlobalUserCubit>()
-                              .initializeGlobalUser(state.globalUser!);
-
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              // builder: (ctx) => const DashboardHomePage(),
-                              builder: (ctx) => const AppHomePage(),
-                            ),
-                            (route) => false,
-                          );
-                        }
-                        if (state.authenticationStates ==
-                            AuthenticationStates.errorSigningUp) {
-                          // ScaffoldMessenger
-                          showSnackbar(
-                            context: context,
-                            title: 'Something Went Wrong',
-                            subtitle:
-                                state.authenticationFailure?.errorMessage ?? '',
-                          );
-                        }
+                        // TODO : HANDLE NAVIGATION
                       },
                       builder: (context, state) {
-                        final authcubit = context.read<AuthenticationCubit>();
+                        final signUpBloc = context.read<SignupBloc>();
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -175,9 +143,17 @@ class _SignUpPageState extends State<SignUpPage> {
                               width: double.infinity,
                               child: CustomElevatedButton(
                                 text: 'Signup',
-                                onPressed: () => _submitForm(authcubit),
-                                icon: state.authenticationStates ==
-                                        AuthenticationStates.signingUp
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    signUpBloc.add(
+                                      SignupWithCredentials(
+                                        email: _emailController.text,
+                                        password: _passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: state.isSubmitting
                                     ? const SizedBox(
                                         height: 24,
                                         width: 24,
@@ -208,11 +184,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        if (state.authenticationStates ==
-                                            AuthenticationStates.signingUp) {
+                                        if (state.isSubmitting) {
                                           return;
                                         }
-
+                                       
+                                        // todo : handle navigation
                                         Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(

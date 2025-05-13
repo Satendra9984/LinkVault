@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:link_vault/src/authentication/domain/entities/user_profile.dart';
 import 'package:link_vault/src/authentication/domain/repository/auth_repository.dart';
 import 'package:link_vault/src/authentication/domain/repository/user_repository.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
-
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
@@ -26,7 +26,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<UserLoggedOut>(_onUserLoggedOut);
 
     // Subscribe to auth state changes
-    _authSubscription = authRepository.authStateChanges.listen((isAuthenticated) {
+    _authSubscription =
+        authRepository.authStateChanges.listen((isAuthenticated) {
       if (isAuthenticated) {
         authRepository.getCurrentUserId().then((userId) {
           if (userId != null) {
@@ -39,10 +40,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
+  Future<void> _onAppStarted(
+    AppStarted event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final isSignedIn = await authRepository.isSignedIn();
-    
+
     if (isSignedIn) {
       final userId = await authRepository.getCurrentUserId();
       if (userId != null) {
@@ -55,10 +59,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onCheckAuth(CheckAuth event, Emitter<AuthState> emit) async {
+  Future<void> _onCheckAuth(
+    CheckAuth event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final isSignedIn = await authRepository.isSignedIn();
-    
+
     if (isSignedIn) {
       final userId = await authRepository.getCurrentUserId();
       if (userId != null) {
@@ -71,9 +78,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onUserLoggedIn(UserLoggedIn event, Emitter<AuthState> emit) async {
+  Future<void> _onUserLoggedIn(
+    UserLoggedIn event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
-    
+
     final result = await userRepository.getUserProfile();
     result.fold(
       (failure) => emit(AuthError(failure.message)),
@@ -81,9 +91,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onUserSignedUp(UserSignedUp event, Emitter<AuthState> emit) async {
+  Future<void> _onUserSignedUp(
+    UserSignedUp event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
-    
+
     final result = await userRepository.getUserProfile();
     result.fold(
       (failure) => emit(AuthError(failure.message)),
@@ -91,7 +104,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onUserLoggedOut(UserLoggedOut event, Emitter<AuthState> emit) async {
+  Future<void> _onUserLoggedOut(
+    UserLoggedOut event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await authRepository.signOut();
     result.fold(

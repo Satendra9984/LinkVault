@@ -1,14 +1,15 @@
 // lib/data/repositories/user_repository_impl.dart
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fpdart/fpdart.dart';
+
+import 'package:link_vault/core/constants/user_constants.dart';
 import 'package:link_vault/core/errors/failure.dart';
+import 'package:link_vault/src/authentication/data/datasources/auth_local_data_source.dart';
+import 'package:link_vault/src/authentication/data/datasources/auth_remote_data_source.dart';
+import 'package:link_vault/src/authentication/data/models/user_profile_model.dart';
 import 'package:link_vault/src/authentication/domain/entities/user_profile.dart';
 import 'package:link_vault/src/authentication/domain/repository/user_repository.dart';
-
-import '../datasources/auth_local_data_source.dart';
-import '../datasources/auth_remote_data_source.dart';
-import '../models/user_profile_model.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -37,20 +38,21 @@ class UserRepositoryImpl implements UserRepository {
       // Try to get from local cache first
       final cachedProfile =
           await localDataSource.getCachedUserProfile(currentUser.id);
+
       if (cachedProfile != null) {
         return Right(cachedProfile.toEntity());
       }
 
       // If not in cache, try to get from server
-      final connectivityResult = await connectivity.checkConnectivity();
-      if (connectivityResult == ConnectivityResult.none) {
-        return Left(
-          NetworkFailure(
-            message: 'No internet connection',
-            statusCode: 400,
-          ),
-        );
-      }
+      // final connectivityResult = await connectivity.checkConnectivity();
+      // if (connectivityResult == ConnectivityResult.none) {
+      //   return Left(
+      //     NetworkFailure(
+      //       message: 'No internet connection',
+      //       statusCode: 400,
+      //     ),
+      //   );
+      // }
 
       final profile = await remoteDataSource.getUserProfile(currentUser.id);
       await localDataSource.cacheUserProfile(profile);
@@ -67,17 +69,18 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Either<Failure, UserProfile>> updateUserProfile(
-      UserProfile profile) async {
+    UserProfile profile,
+  ) async {
     try {
-      final connectivityResult = await connectivity.checkConnectivity();
-      if (connectivityResult == ConnectivityResult.none) {
-        return Left(
-          NetworkFailure(
-            message: 'No internet connection',
-            statusCode: 400,
-          ),
-        );
-      }
+      // final connectivityResult = await connectivity.checkConnectivity();
+      // if (connectivityResult == ConnectivityResult.none) {
+      //   return Left(
+      //     NetworkFailure(
+      //       message: 'No internet connection',
+      //       statusCode: 400,
+      //     ),
+      //   );
+      // }
 
       final profileModel = UserProfileModel.fromEntity(profile);
       final updatedProfile =
@@ -103,26 +106,35 @@ class UserRepositoryImpl implements UserRepository {
     Map<String, dynamic>? settings,
   }) async {
     try {
-      final connectivityResult = await connectivity.checkConnectivity();
-      if (connectivityResult == ConnectivityResult.none) {
-        return Left(
-          NetworkFailure(
-            message: 'No internet connection',
-            statusCode: 400,
-          ),
-        );
-      }
+      // final connectivityResult = await connectivity.checkConnectivity();
+      // if (connectivityResult == ConnectivityResult.none) {
+      //   return Left(
+      //     NetworkFailure(
+      //       message: 'No internet connection',
+      //       statusCode: 400,
+      //     ),
+      //   );
+      // }
 
-      final profile = await remoteDataSource.createUserProfile(
-        userId: userId,
+      // Create user profile in Supabase
+      final currentTime = DateTime.now();
+
+      final userProfile = UserProfileModel(
+        id: userId,
         displayName: displayName,
-        profilePictureUrl: profilePictureUrl,
         bio: bio,
-        settings: settings,
+        usageCredits: 100,
+        premiumExpiresAt: currentTime.add(
+          const Duration(days: accountSingUpCreditLimit),
+        ),
+        createdAt: currentTime,
+        updatedAt: currentTime,
+        lastActiveAt: currentTime,
+        settings: settings ?? {},
       );
 
-      await localDataSource.cacheUserProfile(profile);
-      return Right(profile.toEntity());
+      await localDataSource.cacheUserProfile(userProfile);
+      return Right(userProfile.toEntity());
     } catch (e) {
       return Left(
         ServerFailure(

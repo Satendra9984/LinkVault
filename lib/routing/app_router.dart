@@ -6,6 +6,7 @@ import 'package:link_vault/routing/navigation_service.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/onboarding/onboarding_home.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/splash/splash_screen.dart';
+import 'package:link_vault/src/authentication/auth_routes.dart';
 
 final routeProvider = Provider<GoRouter>(
   (ref) {
@@ -19,7 +20,7 @@ final routeProvider = Provider<GoRouter>(
         // if (user == null && state.location != '/login') {
         //   return '/login';
         // }
-        
+
         // // If first run and not onboarding, go to onboarding
         // if (user != null && isFirstTime && state.location != '/onboarding') {
         //   return '/onboarding';
@@ -44,12 +45,14 @@ final routeProvider = Provider<GoRouter>(
         GoRoute(
           path: RoutePaths.onboarding,
           builder: (context, state) => BlocProvider(
-            create:(_)=> ref.watch(onboardingBlocProvider),
+            create: (_) => ref.watch(onboardingBlocProvider),
             child: const OnBoardingHomePage(),
           ),
         ),
 
-        // GoRoute(path: '/login', builder: (c, s) => LoginPage()),
+        // Auth Routes
+        ...ref.watch(authRoutesProvider),
+
 
         // ShellRoute(
         //   // Example ShellRoute with BottomNavigationBar

@@ -51,6 +51,8 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
               emit(SplashNavigateToHome());
             } else if (localAppSettings.hasSeenOnboarding == false) {
               emit(SplashNavigateToOnboarding());
+            } else {
+              emit(SplashNavigateToLogin());
             }
           },
         );

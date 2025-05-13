@@ -8,8 +8,10 @@ class RoutePaths {
   static const String login = '/login';
   static const String onboarding = '/onboarding';
   static const String home = '/home ';
-  // static const String = '/';
-  // static const String = '/';
+  static const String authHome = '/authHome ';
+
+  static const String forgetPassword = '/forgetPassword';
+  static const String signUp = '/signUp';
   // static const String = '/';
   // static const String = '/';
   // static const String = '/';

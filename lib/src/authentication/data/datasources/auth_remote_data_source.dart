@@ -1,5 +1,6 @@
 // lib/data/datasources/auth_remote_data_source.dart
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:link_vault/core/errors/exceptions.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import '../models/user_profile_model.dart';
 
 class AuthRemoteDataSource {
@@ -7,31 +8,52 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource({required this.supabaseClient});
 
-  // Sign up with email and password
-  Future<AuthResponse> signUpWithEmailPassword(
-    String email,
-    String password,
-  ) async {
-    return supabaseClient.auth.signUp(
-      email: email,
-      password: password,
-    );
-  }
-
   // Sign in with email and password
   Future<AuthResponse> signInWithEmailPassword(
     String email,
     String password,
   ) async {
-    return await supabaseClient.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      return supabaseClient.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      throw AuthException(
+        message: 'Something went wrong while sign-in.',
+        statusCode: 500,
+      );
+    }
+  }
+
+  // Sign up with email and password
+  Future<AuthResponse> signUpWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      return supabaseClient.auth.signUp(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      throw AuthException(
+        message: 'Something went wrong while sign-up.',
+        statusCode: 500,
+      );
+    }
   }
 
   // Sign out
   Future<void> signOut() async {
-    await supabaseClient.auth.signOut();
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (e) {
+      throw AuthException(
+        message: 'Could not sign-out.',
+        statusCode: 500,
+      );
+    }
   }
 
   // Get current user
@@ -41,53 +63,68 @@ class AuthRemoteDataSource {
 
   // Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
-    await supabaseClient.auth.resetPasswordForEmail(email);
+    try {
+      await supabaseClient.auth.resetPasswordForEmail(email);
+    } catch (e) {
+      throw AuthException(
+        message: 'Something went wrong while sending password reset email.',
+        statusCode: 500,
+      );
+    }
   }
 
   // Create user profile
   Future<UserProfileModel> createUserProfile({
-    required String userId,
-    String? displayName,
-    String? profilePictureUrl,
-    String? bio,
-    Map<String, dynamic>? settings,
+    required Map<String, dynamic> userData,
   }) async {
-    final response = await supabaseClient
-        .from('user_profiles')
-        .insert({
-          'id': userId,
-          'display_name': displayName,
-          'profile_picture_url': profilePictureUrl,
-          'bio': bio,
-          'settings': settings ?? {},
-        })
-        .select()
-        .single();
+    try {
+      final response = await supabaseClient
+          .from('user_profiles')
+          .insert(userData)
+          .select()
+          .single();
 
-    return UserProfileModel.fromSupabase(response);
+      return UserProfileModel.fromSupabase(response);
+    } catch (e) {
+      throw ServerException(
+        message: 'Failed to create user on server',
+        statusCode: 500,
+      );
+    }
   }
 
   // Get user profile
   Future<UserProfileModel> getUserProfile(String userId) async {
-    final response = await supabaseClient
-        .from('user_profiles')
-        .select()
-        .eq('id', userId)
-        .single();
+    try {
+      final response =
+          await supabaseClient.from('users').select().eq('id', userId).single();
 
-    return UserProfileModel.fromSupabase(response);
+      return UserProfileModel.fromSupabase(response);
+    } catch (e) {
+      throw ServerException(
+        message: 'Could Not Get User from Server.',
+        statusCode: 500,
+      );
+    }
   }
 
   // Update user profile
   Future<UserProfileModel> updateUserProfile(UserProfileModel profile) async {
-    final response = await supabaseClient
-        .from('user_profiles')
-        .update(profile.toSupabase())
-        .eq('id', profile.id)
-        .select()
-        .single();
+    try {
+      final response = await supabaseClient
+          .from('user_profiles')
+          .update(profile.toSupabase())
+          .eq('id', profile.id)
+          .select()
+          .single();
 
-    return UserProfileModel.fromSupabase(response);
+      return UserProfileModel.fromSupabase(response);
+    } catch (e) {
+      throw ServerException(
+        message: 'Could Not Get User from Server.',
+        statusCode: 500,
+      );
+    }
   }
 
   // Stream auth state changes

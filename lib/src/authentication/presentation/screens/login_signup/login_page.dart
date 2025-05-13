@@ -2,14 +2,16 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
 import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
@@ -34,15 +36,6 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  void _submitForm(AuthenticationCubit authenticationCubit) {
-    if (_formKey.currentState!.validate()) {
-      authenticationCubit.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    }
   }
 
   String? _validateEmail(String? value) {
@@ -81,34 +74,23 @@ class _LoginPageState extends State<LoginPage> {
             bottom: 34,
           ),
           height: size.height,
-          child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
-            listener: (BuildContext context, AuthenticationState state) {
-              if (state.authenticationStates == AuthenticationStates.signedIn) {
-                context
-                    .read<GlobalUserCubit>()
-                    .initializeGlobalUser(state.globalUser!);
+          child: BlocConsumer<LoginBloc, LoginState>(
+            listener: (BuildContext context, LoginState state) {
+              // if (state is Authenticated ) {
+              //   // TODO : NAVIGATE TO APPHOME
+              // }
 
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => const AppHomePage(),
-                  ),
-                  (route) => false,
-                );
-              }
-
-              if (state.authenticationStates ==
-                  AuthenticationStates.errorSigningIn) {
-                // ScaffoldMessenger
-                showSnackbar(
-                  context: context,
-                  title: 'Something Went Wrong',
-                  subtitle: state.authenticationFailure?.errorMessage ?? '',
-                );
-              }
+              // if (state is AuthError) {
+              //   // ScaffoldMessenger
+              //   showSnackbar(
+              //     context: context,
+              //     title: 'Something Went Wrong',
+              //     subtitle: state.message,
+              //   );
+              // }
             },
             builder: (context, state) {
-              final authcubit = context.read<AuthenticationCubit>();
+              final authcubit = context.read<LoginBloc>();
               return Form(
                 key: _formKey,
                 child: Column(
@@ -170,8 +152,13 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 8),
                         TextButton(
                           onPressed: () {
-                            // COMPLETE FORGET PASSWORD
+                            authcubit.add(
+                              ForgotPassword(
+                                email: _emailController.text,
+                              ),
+                            );
 
+                            // TODO: USE GO ROUTER AND COMPLETE FORGET PASSWORD
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -200,11 +187,16 @@ class _LoginPageState extends State<LoginPage> {
                                 text: 'Login',
                                 onPressed: () {
                                   // OpenOtherApps.openGmailApp();
-
-                                  _submitForm(authcubit);
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<LoginBloc>().add(
+                                          LoginWithCredentials(
+                                            email: _emailController.text,
+                                            password: _passwordController.text,
+                                          ),
+                                        );
+                                  }
                                 },
-                                icon: state.authenticationStates ==
-                                        AuthenticationStates.signingIn
+                                icon: state.isSubmitting
                                     ? const SizedBox(
                                         height: 24,
                                         width: 24,
@@ -235,11 +227,11 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        if (state.authenticationStates ==
-                                            AuthenticationStates.signingIn) {
+                                        if (state.isSubmitting) {
                                           return;
                                         }
                                         // debugPrint('[log] : tapping SignUp');
+                                        // TODO : USE GO ROUTER
                                         Navigator.pushReplacement(
                                           context,
                                           // ignore: inference_failure_on_instance_creation

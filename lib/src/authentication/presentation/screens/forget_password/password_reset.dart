@@ -1,12 +1,12 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
 import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/utils/show_snackbar_util.dart';
-import 'package:link_vault/src/auth/presentation/cubit/forget_password/forget_password_cubit.dart';
-import 'package:link_vault/src/auth/presentation/models/forget_password_states.dart';
 import 'package:link_vault/src/authentication/presentation/screens/forget_password/check_email_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
 
@@ -86,30 +86,29 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              BlocConsumer<ForgetPasswordCubit, ForgetPasswordState>(
+              BlocConsumer<LoginBloc, LoginState>(
                 listener: (context, state) {
-                  if (state.forgetPasswordStates ==
-                      ForgetPasswordStates.resetPasswordLinkSentSuccessfully) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => const CheckYourEmailPage(),
-                      ),
-                    );
+                  if (state.isSuccess) {
+                    // TODO: HANDLE NAVIGATION
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (ctx) => const CheckYourEmailPage(),
+                    //   ),
+                    // );
                   }
 
-                  if (state.forgetPasswordStates ==
-                      ForgetPasswordStates.errorSendingResetPasswordLink) {
+                  if (state.isFailure) {
                     // SHOW ERROR SCAFFOLD MESSAGE
                     showSnackbar(
                       context: context,
                       title: 'Error',
-                      subtitle: state.forgetPasswordFailure?.errorMessage ?? '',
+                      subtitle: state.errorMessage,
                     );
                   }
                 },
                 builder: (context, state) {
-                  final forgerPassCubit = context.read<ForgetPasswordCubit>();
+                  final forgerPassCubit = context.read<LoginBloc>();
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -119,13 +118,14 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                           text: 'Send Reset Password',
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              forgerPassCubit.sendResetPasswordLink(
-                                email: _emailController.text,
+                              forgerPassCubit.add(
+                                ForgotPassword(
+                                  email: _emailController.text,
+                                ),
                               );
                             }
                           },
-                          icon: state.forgetPasswordStates ==
-                                  ForgetPasswordStates.sendingEmailLink
+                          icon: state.isSubmitting
                               ? const SizedBox(
                                   height: 24,
                                   width: 24,
