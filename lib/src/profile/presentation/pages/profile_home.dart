@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/auth/presentation/cubit/authentication/authentication_cubit.dart';
-import 'package:link_vault/src/auth/presentation/models/auth_states_enum.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 import 'package:link_vault/src/subsciption/presentation/pages/subscription_page.dart';
@@ -154,34 +153,34 @@ class ProfileHome extends StatelessWidget {
                     ),
 
                     // DELETE ACCOUNT FOREVER
-                    BlocBuilder<AuthenticationCubit, AuthenticationState>(
+                    BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, authState) {
-                        final authCubit = context.read<AuthenticationCubit>();
+                        final authCubit = context.read<AuthBloc>();
 
                         return ListTile(
                           onTap: () async {
-                            final navigator = Navigator.of(context);
+                            // final navigator = Navigator.of(context);
 
-                            // globalUserCubit
-                            if (authState.authenticationStates ==
-                                AuthenticationStates.deletingAccount) {
-                              return;
-                            }
-                            await showDeleteConfirmationDialog(
-                              context,
-                              () async {
-                                await authCubit.deleteAccount().then(
-                                  (_) async {
-                                    await navigator.pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => const SignUpPage(),
-                                      ),
-                                      (route) => false,
-                                    );
-                                  },
-                                );
-                              },
-                            );
+                            // // globalUserCubit
+                            // if (authState.authenticationStates ==
+                            //     AuthenticationStates.deletingAccount) {
+                            //   return;
+                            // }
+                            // await showDeleteConfirmationDialog(
+                            //   context,
+                            //   () async {
+                            //     await authCubit.deleteAccount().then(
+                            //       (_) async {
+                            //         await navigator.pushAndRemoveUntil(
+                            //           MaterialPageRoute(
+                            //             builder: (ctx) => const SignUpPage(),
+                            //           ),
+                            //           (route) => false,
+                            //         );
+                            //       },
+                            //     );
+                            //   },
+                            // );
                           },
                           contentPadding: EdgeInsets.zero,
                           dense: true,
@@ -198,19 +197,19 @@ class ProfileHome extends StatelessWidget {
                               // color: Colors.red.shade900,
                             ),
                           ),
-                          trailing: authState.authenticationStates ==
-                                  AuthenticationStates.deletingAccount
-                              ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.red.shade900,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: ColourPallette.grey,
-                                ),
+                          // trailing: authState.authenticationStates ==
+                          //         AuthenticationStates.deletingAccount
+                          //     ? SizedBox(
+                          //         height: 20,
+                          //         width: 20,
+                          //         child: CircularProgressIndicator(
+                          //           color: Colors.red.shade900,
+                          //         ),
+                          //       )
+                          //     : const Icon(
+                          //         Icons.arrow_forward_ios_rounded,
+                          //         color: ColourPallette.grey,
+                          //       ),
                         );
                       },
                     ),
@@ -219,19 +218,19 @@ class ProfileHome extends StatelessWidget {
                     // LOG OUT
                     ListTile(
                       onTap: () async {
-                        await context
-                            .read<AuthenticationCubit>()
-                            .signOut()
-                            .then(
-                          (value) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (ctx) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
-                        );
+                        // await context
+                        //     .read<AuthenticationCubit>()
+                        //     .signOut()
+                        //     .then(
+                        //   (value) {
+                        //     Navigator.of(context).pushAndRemoveUntil(
+                        //       MaterialPageRoute(
+                        //         builder: (ctx) => const LoginPage(),
+                        //       ),
+                        //       (route) => false,
+                        //     );
+                        //   },
+                        // );
                       },
                       contentPadding: EdgeInsets.zero,
                       minVerticalPadding: 0,

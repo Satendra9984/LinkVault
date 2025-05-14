@@ -26,18 +26,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<UserLoggedOut>(_onUserLoggedOut);
 
     // Subscribe to auth state changes
-    _authSubscription =
-        authRepository.authStateChanges.listen((isAuthenticated) {
-      if (isAuthenticated) {
-        authRepository.getCurrentUserId().then((userId) {
-          if (userId != null) {
-            add(UserLoggedIn(userId));
-          }
-        });
-      } else {
-        add(UserLoggedOut());
-      }
-    });
+    // _authSubscription =
+    //     authRepository.authStateChanges.listen((isAuthenticated) {
+    //   if (isAuthenticated) {
+    //     authRepository.getCurrentUserId().then((userId) {
+    //       if (userId != null) {
+    //         add(UserLoggedIn(userId));
+    //       }
+    //     });
+    //   } else {
+    //     add(UserLoggedOut());
+    //   }
+    // });
   }
 
   Future<void> _onAppStarted(

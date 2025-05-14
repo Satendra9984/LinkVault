@@ -1,14 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
-import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
-import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/utils/show_snackbar_util.dart';
-import 'package:link_vault/src/authentication/presentation/screens/forget_password/check_email_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 
 class ForgetPasswordResetPage extends StatefulWidget {
   const ForgetPasswordResetPage({super.key});

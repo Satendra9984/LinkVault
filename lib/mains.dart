@@ -45,6 +45,7 @@ class LinkVaultApp extends ConsumerWidget {
       child: BlocBuilder<AppThemeCubit, ThemeState>(
         builder: (context, state) {
           return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
             title: 'LinkVault',
             routerConfig: appRouter,
             theme: AppThemes.getThemeDataFromString(

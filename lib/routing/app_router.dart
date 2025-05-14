@@ -6,7 +6,12 @@ import 'package:link_vault/routing/navigation_service.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/onboarding/onboarding_home.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/splash/splash_screen.dart';
+import 'package:link_vault/src/authentication/auth_providers.dart';
 import 'package:link_vault/src/authentication/auth_routes.dart';
+import 'package:link_vault/src/authentication/presentation/screens/auth_home.dart';
+import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 
 final routeProvider = Provider<GoRouter>(
   (ref) {
@@ -50,9 +55,33 @@ final routeProvider = Provider<GoRouter>(
           ),
         ),
 
+        // GoRoute(
+        //   path: RoutePaths.authHome,
+        //   builder: (context, state) => const AuthHome(),
+        // ),
+        // GoRoute(
+        //   path: RoutePaths.login,
+        //   builder: (context, state) {
+        //     return BlocProvider.value(
+        //       value: ref.watch(loginBlocProvider),
+        //       child: const LoginPage(),
+        //     );
+        //   },
+        // ),
+        // GoRoute(
+        //   path: RoutePaths.signUp,
+        //   builder: (context, state) => BlocProvider.value(
+        //     value: ref.watch(signupBlocProvider),
+        //     child: const SignUpPage(),
+        //   ),
+        // ),
+        // GoRoute(
+        //   path: RoutePaths.forgetPassword,
+        //   builder: (context, state) => const ForgetPasswordResetPage(),
+        // ),
+
         // Auth Routes
         ...ref.watch(authRoutesProvider),
-
 
         // ShellRoute(
         //   // Example ShellRoute with BottomNavigationBar

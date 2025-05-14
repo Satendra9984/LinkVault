@@ -201,7 +201,7 @@ class AppThemes {
         backgroundColor: Color(0xff232326),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     ),
@@ -209,10 +209,11 @@ class AppThemes {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: Color(0xff232326),
+        backgroundColor: Color(0xffF0F0F0),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         side: BorderSide(color: Color(0xff232326)),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     ),

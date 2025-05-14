@@ -47,12 +47,15 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
             SplashError(failed.errorMessage),
           ),
           (loggedIn) {
-            if (loggedIn == true || localAppSettings.hasSeenOnboarding) {
+            if (loggedIn == true) {
               emit(SplashNavigateToHome());
-            } else if (localAppSettings.hasSeenOnboarding == false) {
-              emit(SplashNavigateToOnboarding());
-            } else {
+              return;
+            }
+
+            if (localAppSettings.hasSeenOnboarding) {
               emit(SplashNavigateToLogin());
+            } else {
+              emit(SplashNavigateToOnboarding());
             }
           },
         );

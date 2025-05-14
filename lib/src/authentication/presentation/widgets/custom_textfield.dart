@@ -8,11 +8,13 @@ class CustomTextFormField extends StatefulWidget {
     required this.validator,
     super.key,
     this.obscureText = false,
+    this.prefixIcon,
     this.keyboardType = TextInputType.text,
   });
   final TextEditingController controller;
   final String labelText;
   final bool obscureText;
+  final Icon? prefixIcon;
   final TextInputType keyboardType;
   final String? Function(String?) validator;
 
@@ -32,6 +34,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(16);
+    final appTheme = Theme.of(context);
+    final colorScheme = appTheme.colorScheme;
+    final textTheme = appTheme.textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,19 +45,16 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Text(
             widget.labelText,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-              
-            ),
+            style: textTheme.titleMedium,
           ),
         ),
         TextFormField(
           controller: widget.controller,
-          cursorColor: ColourPallette.salemgreen,
+          cursorColor: colorScheme.primary,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
-            isDense: true,
+            isDense: false,
+            prefixIcon: widget.prefixIcon,
             suffixIcon: widget.obscureText
                 ? IconButton(
                     onPressed: () => setState(() {
@@ -67,15 +69,15 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               color: ColourPallette.salemgreen,
               fontWeight: FontWeight.w500,
             ),
-            
             fillColor: ColourPallette.mystic.withOpacity(0.5),
             filled: true,
             border: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
+              borderSide: BorderSide(color: colorScheme.outline),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
-              borderSide: const BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
@@ -83,11 +85,11 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
-              borderSide: const BorderSide(color: Colors.red),
+              borderSide: BorderSide(color: colorScheme.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
-              borderSide: const BorderSide(color: Colors.red),
+              borderSide: BorderSide(color: colorScheme.error),
             ),
           ),
           obscureText: _isObscure,

@@ -1,26 +1,27 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
-import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
-import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/utils/show_snackbar_util.dart';
-import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
-import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 
 // ignore: public_member_api_docs
 class LoginPage extends StatefulWidget {
   // static const routeName = '/login';
 
-  const LoginPage({super.key});
+  const LoginPage({
+    super.key,
+    this.returnPath,
+  });
+
+  final String? returnPath;
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -63,76 +64,67 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     const gap = 16.0;
     final size = MediaQuery.of(context).size;
+
+    final appTheme = Theme.of(context);
+    final colorScheme = appTheme.colorScheme;
+    final textTheme = appTheme.textTheme;
+
     return Scaffold(
-      backgroundColor: ColourPallette.white,
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        actions: [
+          TextButton(
+            onPressed: () {},
+            child: Text(
+              'skip',
+              style: textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.only(
-            left: 28,
-            right: 28,
-            top: 16,
-            bottom: 34,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 32,
           ),
           height: size.height,
           child: BlocConsumer<LoginBloc, LoginState>(
-            listener: (BuildContext context, LoginState state) {
-              // if (state is Authenticated ) {
-              //   // TODO : NAVIGATE TO APPHOME
-              // }
-
-              // if (state is AuthError) {
-              //   // ScaffoldMessenger
-              //   showSnackbar(
-              //     context: context,
-              //     title: 'Something Went Wrong',
-              //     subtitle: state.message,
-              //   );
-              // }
-            },
+            listener: (BuildContext context, LoginState state) {},
             builder: (context, state) {
               final authcubit = context.read<LoginBloc>();
               return Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: gap * 2),
-                            Text(
-                              'Welcome Back',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey.shade800,
-                                fontSize: 24,
-                              ),
-                            ),
-                            Text(
-                              'Login to continue',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade600,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'Welcome \nBack!',
+                          style: textTheme.displayMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 2,
+                          softWrap: true,
                         ),
-                        // Image.asset(
-                        //   'assets/logo/infinite_loop.jpg',
-                        //   fit: BoxFit.contain,
-                        //   height: 56,
-                        // ),
+                        const SizedBox(height: gap),
+                        Text(
+                          // ignore: lines_longer_than_80_chars
+                          'Login to continue in the app and access all of your links again.',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: gap * 1.25),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         CustomTextFormField(
@@ -148,8 +140,8 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                           validator: _validatePassword,
                         ),
-                        // const SizedBox(height: gap),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: gap),
+                        // const SizedBox(height: 8),
                         TextButton(
                           onPressed: () {
                             authcubit.add(
@@ -158,33 +150,21 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
 
-                            // TODO: USE GO ROUTER AND COMPLETE FORGET PASSWORD
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (ctx) =>
-                                    const ForgetPasswordResetPage(),
-                              ),
-                            );
+                            context.push(RoutePaths.forgetPassword);
                           },
-                          child: const Text(
-                            'Forget Password?',
-                            style: TextStyle(
-                              color: ColourPallette.salemgreen,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
+                          child: Text(
+                            'Forget Password',
+                            style: textTheme.titleMedium,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: gap),
 
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SizedBox(
                               width: double.infinity,
-                              child: CustomElevatedButton(
-                                text: 'Login',
+                              child: ElevatedButton.icon(
                                 onPressed: () {
                                   // OpenOtherApps.openGmailApp();
                                   if (_formKey.currentState!.validate()) {
@@ -206,40 +186,31 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                       )
                                     : null,
+                                label: Text(
+                                  'Login',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: gap),
+                            const SizedBox(height: gap * 1.25),
                             RichText(
                               text: TextSpan(
-                                text: ' New here? ',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
+                                text: "Dont't have an account? ",
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: Colors.grey.shade600,
                                 ),
                                 children: <TextSpan>[
                                   TextSpan(
                                     text: 'Sign Up',
-                                    style: const TextStyle(
-                                      color: ColourPallette.salemgreen,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: textTheme.titleMedium,
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         if (state.isSubmitting) {
                                           return;
                                         }
-                                        // debugPrint('[log] : tapping SignUp');
-                                        // TODO : USE GO ROUTER
-                                        Navigator.pushReplacement(
-                                          context,
-                                          // ignore: inference_failure_on_instance_creation
-                                          MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                const SignUpPage(),
-                                          ),
-                                        );
+                                        context.replace(RoutePaths.signUp);
                                       },
                                   ),
                                 ],
@@ -249,13 +220,13 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                     ),
-                    Expanded(
-                      child: SvgPicture.asset(
-                        MediaRes.loginPasswordSVG,
-                        semanticsLabel: 'Login Logo',
-                        alignment: Alignment.bottomCenter,
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: SvgPicture.asset(
+                    //     MediaRes.loginPasswordSVG,
+                    //     semanticsLabel: 'Login Logo',
+                    //     alignment: Alignment.bottomCenter,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

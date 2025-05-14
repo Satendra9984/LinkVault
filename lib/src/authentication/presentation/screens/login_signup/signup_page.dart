@@ -2,19 +2,17 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
-import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_event.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_state.dart';
-import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
-import 'package:link_vault/core/res/colours.dart';
-import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/core/utils/show_snackbar_util.dart';
-import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
+import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -70,42 +68,56 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     const gap = 16.0;
     final size = MediaQuery.of(context).size;
+
+    final appTheme = Theme.of(context);
+    final colorScheme = appTheme.colorScheme;
+    final textTheme = appTheme.textTheme;
+
     return Scaffold(
-      backgroundColor: ColourPallette.white,
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        actions: [
+          TextButton(
+            onPressed: () {},
+            child: Text(
+              'skip',
+              style: textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.only(
-            left: 28,
-            right: 28,
-            top: 16,
-            bottom: 34,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 32,
           ),
           height: size.height,
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                const SizedBox(height: gap * 2),
                 Text(
-                  "Let's Get Started",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                    fontSize: 24,
+                  "Let's \nGet Started",
+                  style: textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 2,
+                  softWrap: true,
                 ),
+                const SizedBox(height: gap),
+
                 Text(
                   'By Creating an Account',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
+                  style: textTheme.titleMedium?.copyWith(
                     color: Colors.grey.shade600,
-                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: gap * 1.25),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -141,8 +153,13 @@ class _SignUpPageState extends State<SignUpPage> {
                           children: [
                             SizedBox(
                               width: double.infinity,
-                              child: CustomElevatedButton(
-                                text: 'Signup',
+                              child: ElevatedButton.icon(
+                                label: Text(
+                                  'Sign Up',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                ),
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
                                     signUpBloc.add(
@@ -169,32 +186,19 @@ class _SignUpPageState extends State<SignUpPage> {
                             RichText(
                               text: TextSpan(
                                 text: 'Already have an account? ',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: Colors.grey.shade600,
                                 ),
                                 children: <TextSpan>[
                                   TextSpan(
                                     text: ' Login',
-                                    style: const TextStyle(
-                                      color: ColourPallette.salemgreen,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: textTheme.titleMedium,
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         if (state.isSubmitting) {
                                           return;
                                         }
-                                       
-                                        // todo : handle navigation
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (ctx) => const LoginPage(),
-                                          ),
-                                        );
+                                        context.replace(RoutePaths.login);
                                       },
                                   ),
                                 ],
@@ -207,13 +211,13 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ],
                 ),
-                Expanded(
-                  child: SvgPicture.asset(
-                    MediaRes.loginSVG,
-                    semanticsLabel: 'Login Logo',
-                    alignment: Alignment.bottomCenter,
-                  ),
-                ),
+                // Expanded(
+                //   child: SvgPicture.asset(
+                //     MediaRes.loginSVG,
+                //     semanticsLabel: 'Login Logo',
+                //     alignment: Alignment.bottomCenter,
+                //   ),
+                // ),
               ],
             ),
           ),
