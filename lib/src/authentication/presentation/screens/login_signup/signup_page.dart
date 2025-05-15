@@ -77,6 +77,7 @@ class _SignUpPageState extends State<SignUpPage> {
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         actions: [
           TextButton(
             onPressed: () {},
@@ -123,23 +124,35 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     CustomTextFormField(
                       controller: _nameController,
+                      validator: _validateName,
                       labelText: 'Name',
                       keyboardType: TextInputType.name,
-                      validator: _validateName,
+                      prefixIcon: Icon(
+                        Icons.person_outline_rounded,
+                        color: colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(height: gap * .5),
                     CustomTextFormField(
                       controller: _emailController,
+                      validator: _validateEmail,
                       labelText: 'Email',
                       keyboardType: TextInputType.emailAddress,
-                      validator: _validateEmail,
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(height: gap * .5),
                     CustomTextFormField(
                       controller: _passwordController,
+                      validator: _validatePassword,
                       labelText: 'Password',
                       obscureText: true,
-                      validator: _validatePassword,
+                      prefixIcon: Icon(
+                        Icons.password_outlined,
+                        color: colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(height: 2 * gap),
                     BlocConsumer<SignupBloc, SignupState>(
@@ -182,7 +195,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                     : null,
                               ),
                             ),
-                            const SizedBox(height: gap),
+                            const SizedBox(height: gap * 1.5),
                             RichText(
                               text: TextSpan(
                                 text: 'Already have an account? ',

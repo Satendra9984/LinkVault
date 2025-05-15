@@ -8,6 +8,7 @@ import 'package:link_vault/src/authentication/data/repository/user_repository_im
 import 'package:link_vault/src/authentication/domain/repository/auth_repository.dart';
 import 'package:link_vault/src/authentication/domain/repository/user_repository.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:link_vault/src/authentication/presentation/blocs/forget_password_bloc/forget_password_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/user_profile_bloc/user_profile_bloc.dart';
@@ -64,6 +65,12 @@ final authBlocProvider = Provider<AuthBloc>((ref) {
 final loginBlocProvider = Provider<LoginBloc>((ref) {
   return LoginBloc(
     authRepository: ref.read(authRepositoryProvider),
+  );
+});
+
+final forgetPasswordBlocProvider = Provider((ref) {
+  return ForgetPasswordBloc(
+    authRepository: ref.watch(authRepositoryProvider),
   );
 });
 

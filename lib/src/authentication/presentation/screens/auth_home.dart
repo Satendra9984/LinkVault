@@ -52,7 +52,7 @@ class AuthHome extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.go(RoutePaths.login),
+                    onPressed: () => context.replace(RoutePaths.login),
                     style: appThemeData.elevatedButtonTheme.style,
                     child: Text(
                       'Login',
@@ -65,7 +65,7 @@ class AuthHome extends StatelessWidget {
                 const SizedBox(width: 24),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.go(RoutePaths.signUp),
+                    onPressed: () => context.replace(RoutePaths.signUp),
                     style: appThemeData.outlinedButtonTheme.style,
                     child: Text(
                       'Sign Up',

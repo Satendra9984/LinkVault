@@ -51,6 +51,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         TextFormField(
           controller: widget.controller,
           cursorColor: colorScheme.primary,
+          style: textTheme.titleMedium,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             isDense: false,
@@ -65,11 +66,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                         : const Icon(Icons.visibility),
                   )
                 : null,
-            labelStyle: const TextStyle(
-              color: ColourPallette.salemgreen,
-              fontWeight: FontWeight.w500,
-            ),
-            fillColor: ColourPallette.mystic.withOpacity(0.5),
+            labelStyle: textTheme.titleSmall,
+            // fillColor: colorScheme.surface,
+            // fillColor: colorScheme.secondary,
             filled: true,
             border: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here

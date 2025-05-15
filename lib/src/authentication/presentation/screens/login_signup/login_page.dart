@@ -73,6 +73,8 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+
         actions: [
           TextButton(
             onPressed: () {},
@@ -132,6 +134,10 @@ class _LoginPageState extends State<LoginPage> {
                           labelText: 'Email',
                           keyboardType: TextInputType.emailAddress,
                           validator: _validateEmail,
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: colorScheme.primary,
+                          ),
                         ),
                         const SizedBox(height: gap * 0.5),
                         CustomTextFormField(
@@ -139,6 +145,10 @@ class _LoginPageState extends State<LoginPage> {
                           labelText: 'Password',
                           obscureText: true,
                           validator: _validatePassword,
+                          prefixIcon: Icon(
+                            Icons.password_outlined,
+                            color: colorScheme.primary,
+                          ),
                         ),
                         const SizedBox(height: gap),
                         // const SizedBox(height: 8),
@@ -150,7 +160,9 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
 
-                            context.push(RoutePaths.forgetPassword);
+                            context.push(
+                              RoutePaths.login + RoutePaths.forgetPassword,
+                            );
                           },
                           child: Text(
                             'Forget Password',

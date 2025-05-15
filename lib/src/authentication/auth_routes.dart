@@ -23,7 +23,7 @@ final authRoutesProvider = Provider(
 
           return BlocProvider.value(
             value: ref.watch(loginBlocProvider),
-            child:  LoginPage(
+            child: LoginPage(
               returnPath: returnPath,
             ),
           );
@@ -31,7 +31,10 @@ final authRoutesProvider = Provider(
         routes: [
           GoRoute(
             path: RoutePaths.forgetPassword,
-            builder: (context, state) => const ForgetPasswordResetPage(),
+            builder: (context, state) => BlocProvider.value(
+              value: ref.watch(forgetPasswordBlocProvider),
+              child: const ForgetPasswordResetPage(),
+            ),
           ),
         ],
       ),
