@@ -68,7 +68,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                 : null,
             labelStyle: textTheme.titleSmall,
             // fillColor: colorScheme.surface,
-            // fillColor: colorScheme.secondary,
+            fillColor: colorScheme.secondary,
             filled: true,
             border: OutlineInputBorder(
               borderRadius: borderRadius, // Set the border radius here
