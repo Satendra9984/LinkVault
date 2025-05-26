@@ -1,6 +1,5 @@
 // lib/core/di/providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
 import 'package:link_vault/src/authentication/data/datasources/auth_local_data_source.dart';
 import 'package:link_vault/src/authentication/data/datasources/auth_remote_data_source.dart';
 import 'package:link_vault/src/authentication/data/repository/auth_repository_impl.dart';
@@ -13,11 +12,7 @@ import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/logi
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/user_profile_bloc/user_profile_bloc.dart';
 import 'package:link_vault/src/shared/shared_app_providers.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Connectivity
 final connectivityProvider = Provider<Connectivity>((ref) {
@@ -39,6 +34,7 @@ final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
 
 // Repositories
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
+
   return AuthRepositoryImpl(
     remoteDataSource: ref.read(authRemoteDataSourceProvider),
     localDataSource: ref.read(authLocalDataSourceProvider),
@@ -77,7 +73,7 @@ final forgetPasswordBlocProvider = Provider((ref) {
 final signupBlocProvider = Provider<SignupBloc>((ref) {
   return SignupBloc(
     authRepository: ref.read(authRepositoryProvider),
-    authBloc: ref.read(authBlocProvider),
+    // authBloc: ref.read(authBlocProvider),
   );
 });
 

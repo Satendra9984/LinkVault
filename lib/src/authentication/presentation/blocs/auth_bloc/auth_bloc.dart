@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/src/authentication/domain/entities/authentication_status.dart';
 
 import 'package:link_vault/src/authentication/domain/entities/user_profile.dart';
 import 'package:link_vault/src/authentication/domain/repository/auth_repository.dart';
@@ -13,7 +14,7 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   final UserRepository userRepository;
-  late StreamSubscription<bool> _authSubscription;
+  late StreamSubscription<AuthenticationStatus> _authSubscription;
 
   AuthBloc({
     required this.authRepository,
@@ -26,18 +27,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<UserLoggedOut>(_onUserLoggedOut);
 
     // Subscribe to auth state changes
-    // _authSubscription =
-    //     authRepository.authStateChanges.listen((isAuthenticated) {
-    //   if (isAuthenticated) {
-    //     authRepository.getCurrentUserId().then((userId) {
-    //       if (userId != null) {
-    //         add(UserLoggedIn(userId));
-    //       }
-    //     });
-    //   } else {
-    //     add(UserLoggedOut());
-    //   }
-    // });
+    _authSubscription = authRepository.authStatusChanges.listen((status) {
+      if (status == AuthenticationStatus.authenticated) {
+        authRepository.getCurrentUserId().then((userId) {
+          if (userId != null) {
+            add(UserLoggedIn(userId));
+          }
+        });
+      } else {
+        add(UserLoggedOut());
+      }
+    });
   }
 
   Future<void> _onAppStarted(
@@ -119,6 +119,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   @override
   Future<void> close() {
     _authSubscription.cancel();
+    // authRepository.dispose();
     return super.close();
   }
 }

@@ -9,13 +9,12 @@ class RoutePaths {
   static const String onboarding = '/onboarding';
   static const String home = '/home ';
 
-
   // Authentication Routes
   static const String authHome = '/authHome';
   static const String forgetPassword = '/forgetPassword';
   static const String signUp = '/signUp';
-  // static const String = '/';
-  // static const String = '/';
+  static const String checkEmail = '/checkEmail';
+  static const String verifyEmail= '/verifyEmail';
   // static const String = '/';
   // static const String = '/';
   // static const String = '/';

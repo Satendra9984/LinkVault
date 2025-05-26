@@ -8,10 +8,14 @@ import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/forget_password_bloc/forget_password_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
-import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 
 class ForgetPasswordResetPage extends StatefulWidget {
-  const ForgetPasswordResetPage({super.key});
+  const ForgetPasswordResetPage({
+    super.key,
+    required this.email,
+  });
+
+  final String? email;
 
   @override
   State<ForgetPasswordResetPage> createState() =>
@@ -20,8 +24,16 @@ class ForgetPasswordResetPage extends StatefulWidget {
 
 class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
   final _formKey = GlobalKey<FormState>();
-
   final _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.email != null) {
+      context.read<ForgetPasswordBloc>().add(SendResetEmail(widget.email!));
+      _emailController.text = widget.email!;
+    }
+  }
 
   @override
   void dispose() {
@@ -103,7 +115,9 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                       context.pop();
                       return;
                     }
-                    context.replace(RoutePaths.login);
+                    context.replace(
+                      '${RoutePaths.login}${RoutePaths.checkEmail}?email=${Uri.encodeComponent(_emailController.text)}',
+                    );
                   }
 
                   if (state.isFailure) {
@@ -116,7 +130,7 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                   }
                 },
                 builder: (context, state) {
-                  final forgerPassCubit = context.read<ForgetPasswordBloc>();
+                  final forgetPassBloc = context.read<ForgetPasswordBloc>();
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -131,12 +145,16 @@ class _ForgetPasswordResetPageState extends State<ForgetPasswordResetPage> {
                           ),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              forgerPassCubit.add(
+                              forgetPassBloc.add(
                                 SendResetEmail(
                                   _emailController.text,
                                 ),
                               );
                             }
+
+                            context.replace(
+                              '${RoutePaths.login}${RoutePaths.checkEmail}?email=${Uri.encodeComponent(_emailController.text)}',
+                            );
                           },
                           icon: state.isSubmitting
                               ? const SizedBox(

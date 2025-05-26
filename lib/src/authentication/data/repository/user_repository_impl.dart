@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fpdart/fpdart.dart';
 
 import 'package:link_vault/core/constants/user_constants.dart';
+import 'package:link_vault/core/errors/exceptions.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/authentication/data/datasources/auth_local_data_source.dart';
 import 'package:link_vault/src/authentication/data/datasources/auth_remote_data_source.dart';
@@ -43,17 +44,6 @@ class UserRepositoryImpl implements UserRepository {
         return Right(cachedProfile.toEntity());
       }
 
-      // If not in cache, try to get from server
-      // final connectivityResult = await connectivity.checkConnectivity();
-      // if (connectivityResult == ConnectivityResult.none) {
-      //   return Left(
-      //     NetworkFailure(
-      //       message: 'No internet connection',
-      //       statusCode: 400,
-      //     ),
-      //   );
-      // }
-
       final profile = await remoteDataSource.getUserProfile(currentUser.id);
       await localDataSource.cacheUserProfile(profile);
       return Right(profile.toEntity());
@@ -67,21 +57,31 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
+   // Helper method to ensure profile exists
+  Future<Either<Failure, UserProfile>> _ensureUserProfile(String userId) async {
+    try {
+      // Call the database function to ensure profile exists
+      final userProfile = await remoteDataSource.ensureUserProfile(userId);
+      await localDataSource.cacheUserProfile(userProfile);
+      return Right(userProfile.toEntity());
+    } catch (e) {
+      // _authStatusController.add(AuthenticationStatus.unauthenticated);
+      if (e is ServerException) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
+        );
+      }
+      return Left(
+        AuthFailure(message: 'Failed to create user profile', statusCode: 500),
+      );
+    }
+  }
+
   @override
   Future<Either<Failure, UserProfile>> updateUserProfile(
     UserProfile profile,
   ) async {
     try {
-      // final connectivityResult = await connectivity.checkConnectivity();
-      // if (connectivityResult == ConnectivityResult.none) {
-      //   return Left(
-      //     NetworkFailure(
-      //       message: 'No internet connection',
-      //       statusCode: 400,
-      //     ),
-      //   );
-      // }
-
       final profileModel = UserProfileModel.fromEntity(profile);
       final updatedProfile =
           await remoteDataSource.updateUserProfile(profileModel);
@@ -106,16 +106,6 @@ class UserRepositoryImpl implements UserRepository {
     Map<String, dynamic>? settings,
   }) async {
     try {
-      // final connectivityResult = await connectivity.checkConnectivity();
-      // if (connectivityResult == ConnectivityResult.none) {
-      //   return Left(
-      //     NetworkFailure(
-      //       message: 'No internet connection',
-      //       statusCode: 400,
-      //     ),
-      //   );
-      // }
-
       // Create user profile in Supabase
       final currentTime = DateTime.now();
 

@@ -55,31 +55,6 @@ final routeProvider = Provider<GoRouter>(
           ),
         ),
 
-        // GoRoute(
-        //   path: RoutePaths.authHome,
-        //   builder: (context, state) => const AuthHome(),
-        // ),
-        // GoRoute(
-        //   path: RoutePaths.login,
-        //   builder: (context, state) {
-        //     return BlocProvider.value(
-        //       value: ref.watch(loginBlocProvider),
-        //       child: const LoginPage(),
-        //     );
-        //   },
-        // ),
-        // GoRoute(
-        //   path: RoutePaths.signUp,
-        //   builder: (context, state) => BlocProvider.value(
-        //     value: ref.watch(signupBlocProvider),
-        //     child: const SignUpPage(),
-        //   ),
-        // ),
-        // GoRoute(
-        //   path: RoutePaths.forgetPassword,
-        //   builder: (context, state) => const ForgetPasswordResetPage(),
-        // ),
-
         // Auth Routes
         ...ref.watch(authRoutesProvider),
 

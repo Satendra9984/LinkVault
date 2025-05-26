@@ -53,7 +53,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           cursorColor: colorScheme.primary,
           style: textTheme.titleMedium,
           autovalidateMode: AutovalidateMode.onUserInteraction,
+          
           decoration: InputDecoration(
+            errorMaxLines: 4,
             isDense: false,
             prefixIcon: widget.prefixIcon,
             suffixIcon: widget.obscureText
@@ -94,6 +96,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           obscureText: _isObscure,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
+          
         ),
       ],
     );

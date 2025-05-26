@@ -19,12 +19,3 @@ class LoginWithCredentials extends LoginEvent {
   @override
   List<Object?> get props => [email, password];
 }
-
-class ForgotPassword extends LoginEvent {
-  final String email;
-
-  const ForgotPassword({required this.email});
-
-  @override
-  List<Object?> get props => [email];
-}

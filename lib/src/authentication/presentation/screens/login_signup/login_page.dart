@@ -4,18 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:link_vault/core/res/colours.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_state.dart';
-import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
 import 'package:link_vault/src/authentication/presentation/widgets/custom_textfield.dart';
-import 'package:link_vault/src/common/presentation_layer/widgets/custom_button.dart';
 
 // ignore: public_member_api_docs
 class LoginPage extends StatefulWidget {
-  // static const routeName = '/login';
-
   const LoginPage({
     super.key,
     this.returnPath,
@@ -74,7 +71,6 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
-
         actions: [
           TextButton(
             onPressed: () {},
@@ -95,7 +91,6 @@ class _LoginPageState extends State<LoginPage> {
           child: BlocConsumer<LoginBloc, LoginState>(
             listener: (BuildContext context, LoginState state) {},
             builder: (context, state) {
-              final authcubit = context.read<LoginBloc>();
               return Form(
                 key: _formKey,
                 child: Column(
@@ -154,14 +149,13 @@ class _LoginPageState extends State<LoginPage> {
                         // const SizedBox(height: 8),
                         TextButton(
                           onPressed: () {
-                            authcubit.add(
-                              ForgotPassword(
-                                email: _emailController.text,
-                              ),
-                            );
+                            // final isValidEmail =
+                            //     _validateEmail(_emailController.text) == null;
 
+                            // if (!isValidEmail) return;
+                           
                             context.push(
-                              RoutePaths.login + RoutePaths.forgetPassword,
+                              '${RoutePaths.login}${RoutePaths.forgetPassword}?email=${Uri.encodeComponent(_emailController.text)}',
                             );
                           },
                           child: Text(

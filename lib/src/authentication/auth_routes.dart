@@ -1,13 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/routing/route_params.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/auth_providers.dart';
 import 'package:link_vault/src/authentication/presentation/screens/auth_home.dart';
+import 'package:link_vault/src/authentication/presentation/screens/forget_password/check_email_page.dart';
 import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
 import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
+import 'package:link_vault/src/authentication/presentation/screens/login_signup/verify_your_mail.dart';
 
 final authRoutesProvider = Provider(
   (ref) {
@@ -31,10 +34,26 @@ final authRoutesProvider = Provider(
         routes: [
           GoRoute(
             path: RoutePaths.forgetPassword,
-            builder: (context, state) => BlocProvider.value(
-              value: ref.watch(forgetPasswordBlocProvider),
-              child: const ForgetPasswordResetPage(),
-            ),
+            builder: (context, state) {
+              final email = state.uri.queryParameters['email'];
+              // Logger.printLog('[forgetpass] email: ${state.uri.queryParameters}');
+              return BlocProvider.value(
+                value: ref.watch(forgetPasswordBlocProvider),
+                child: ForgetPasswordResetPage(
+                  email: email,
+                ),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.checkEmail,
+            builder: (context, state) {
+              final email = state.pathParameters['email'] ?? '';
+
+              return ForgetPasswordCheckEmailPage(
+                email: email,
+              );
+            },
           ),
         ],
       ),
@@ -44,6 +63,18 @@ final authRoutesProvider = Provider(
           value: ref.watch(signupBlocProvider),
           child: const SignUpPage(),
         ),
+        routes: [
+          GoRoute(
+            path: RoutePaths.verifyEmail,
+            builder: (context, state) {
+              final email = state.uri.queryParameters['email'] ?? '';
+
+              return VerifyEmailPage(
+                email: email,
+              );
+            },
+          ),
+        ],
       ),
     ];
   },

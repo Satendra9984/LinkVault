@@ -3,11 +3,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
+import 'package:link_vault/routing/route_paths.dart';
 
-class ForgetPasswordCheckEmailPage extends StatelessWidget {
-  const ForgetPasswordCheckEmailPage({
+class VerifyEmailPage extends StatelessWidget {
+  const VerifyEmailPage({
     super.key,
     required this.email,
   });
@@ -33,24 +35,25 @@ class ForgetPasswordCheckEmailPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Column(
           children: [
-            const SizedBox(height: kToolbarHeight),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: kToolbarHeight),
+
                 Text(
-                  'Check Your Email',
+                  'Verify Your Email',
                   style: textTheme.displaySmall?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: gap),
                 Text(
-                  'We have sent a link to reset password to your email address.',
+                  'We have sent a verification link to reset password to your email address.',
                   style: textTheme.titleMedium?.copyWith(
                     color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: gap * 1.25),
+                const SizedBox(height: gap * 1),
                 Text(
                   email,
                   style: TextStyle(
@@ -78,19 +81,26 @@ class ForgetPasswordCheckEmailPage extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    text: 'You remember your password? ',
+                    text: "Don't forget to ",
                     style: textTheme.titleMedium?.copyWith(
                       color: Colors.grey.shade600,
                     ),
                     children: <TextSpan>[
                       TextSpan(
                         text: 'Login',
-                        style: textTheme.titleMedium,
+                        style: textTheme.titleMedium?.copyWith(
+                          decoration: TextDecoration.underline,
+                        ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // TODO : USE GO ROUTER
-                            Navigator.of(context).pop();
+                            context.go(RoutePaths.login);
                           },
+                      ),
+                      TextSpan(
+                        text: ' after verification.',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
