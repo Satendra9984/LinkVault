@@ -89,5 +89,4 @@ class GoRouterNavigationService implements NavigationService {
 
     return newUri.toString();
   }
-
 }

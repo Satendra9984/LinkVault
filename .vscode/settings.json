@@ -1,4 +1,8 @@
 {
+<<<<<<< HEAD
     "java.configuration.updateBuildConfiguration": "automatic",
     "editor.fontSize": 16
+=======
+    "java.configuration.updateBuildConfiguration": "automatic"
+>>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
 }

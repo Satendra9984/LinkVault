@@ -123,4 +123,3 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     return super.close();
   }
 }
-

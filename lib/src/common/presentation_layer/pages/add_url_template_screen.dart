@@ -117,7 +117,11 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
       if (_urlAddressController.text.isEmpty) {
         _previewLoadingStates.value = LoadingStates.errorLoading;
         _previewError.value =
+<<<<<<< HEAD
             UnknownFailure(message: 'Link Address is empty', statusCode: '400');
+=======
+            GeneralFailure(message: 'Link Address is empty', statusCode: '400');
+>>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
         return;
       }
 
@@ -162,7 +166,11 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
         _previewError.value = null;
       } else {
         _previewLoadingStates.value = LoadingStates.errorLoading;
+<<<<<<< HEAD
         _previewError.value = UnknownFailure(
+=======
+        _previewError.value = GeneralFailure(
+>>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
           message: 'Something went wrong. Check your internet and try again.',
           statusCode: '400',
         );
@@ -218,7 +226,12 @@ class _AddUrlTemplateScreenState extends State<AddUrlTemplateScreen> {
       child: Scaffold(
         backgroundColor: ColourPallette.white,
         appBar: AppBar(
+<<<<<<< HEAD
           clipBehavior: Clip.none,
+=======
+      clipBehavior: Clip.none,
+
+>>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
           backgroundColor: ColourPallette.white,
           surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
           title: Row(
