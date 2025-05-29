@@ -1,0 +1,76 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // Development Flavor Configurations
+        {
+            "name": "web_link_store (development - debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/mains.dart",
+            "toolArgs": [
+                "--flavor", "development",
+                "--dart-define=FLAVOR=development"
+            ]
+        },
+        {
+            "name": "web_link_store (development - profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/mains.dart",
+            "args": [
+                "--flavor", "development",
+                "--dart-define", "FLAVOR=development"
+
+            ]
+        },
+        {
+            "name": "web_link_store (development - release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/mains.dart",
+            "args": [
+                "--flavor", "development",
+                "--dart-define", "FLAVOR=development",
+                
+            ]
+        },
+
+        // Production Flavor Configurations
+        {
+            "name": "web_link_store (production - debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/mains.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
+        },
+        {
+            "name": "web_link_store (production - profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/mains.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
+        },
+        {
+            "name": "web_link_store (production - release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/mains.dart",
+            "args": [
+                "--flavor", "production",
+                "--dart-define", "FLAVOR=production"
+            ]
+        }
+    ]
+}
