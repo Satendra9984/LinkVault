@@ -12,7 +12,7 @@ import 'package:link_vault/src/authentication/presentation/blocs/forget_password
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/sign_bloc/signup_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/user_profile_bloc/user_profile_bloc.dart';
-import 'package:link_vault/src/shared/shared_app_providers.dart';
+import 'package:link_vault/shared/shared_app_providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Connectivity

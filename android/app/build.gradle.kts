@@ -1,7 +1,11 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // If you use Firebase / Crashlytics / Analytics, keep this:
+    // id("com.google.gms.google-services")
+    // The Flutter Gradle Plugin must come after Android & Kotlin:
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -20,32 +24,104 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.link_vault"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 25
         targetSdk = 35
         versionCode = flutter.versionCode.toInt()
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+    // ───────────────────────────────────────────────────
+    // 1. Enable BuildConfig generation (necessary because we use buildConfigField)
+    // ───────────────────────────────────────────────────
+    buildFeatures {
+        // By default, buildConfig is true, but explicitly enabling it avoids the EvalIssueException
+        buildConfig = true
+    }
+
+    // ───────────────────────────────────────────────────
+    // 1. Declare the flavor dimension before using it
+    // ───────────────────────────────────────────────────
+    flavorDimensions += "env"
+
+    productFlavors {
+        create("production") {
+            dimension = "env"
+            // If you need a constant in BuildConfig:
+            buildConfigField("String", "FLAVOR", "\"prod\"")
+            // Put prod-specific resources (including google-services.json) under:
+            //   app/src/production/
+        }
+        create("development") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            buildConfigField("String", "FLAVOR", "\"dev\"")
+            // Override app_name, etc.
+            resValue("string", "app_name", "Link Vault (Dev)")
+            // Put dev-specific resources (including google-services.json) under:
+            //   app/src/development/
         }
     }
+
+    // ───────────────────────────────────────────────────
+    // 2. Signing configurations (load key.properties if it exists)
+    // ───────────────────────────────────────────────────
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                val keystoreProps = Properties().apply {
+                    load(keystorePropertiesFile.inputStream())
+                }
+                // Ensure key.properties has:
+                //   storeFile=/absolute/path/to/keystore.jks
+                //   storePassword=yourStorePassword
+                //   keyAlias=yourKeyAlias
+                //   keyPassword=yourKeyPassword
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias    = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
+    // ───────────────────────────────────────────────────
+    // 3. Build types
+    // ───────────────────────────────────────────────────
+    buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled   = false
+            isShrinkResources = false
+        }
+        getByName("release") {
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
+            isMinifyEnabled   = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    // ───────────────────────────────────────────────────
+    // 4. Source sets if your Kotlin files are in src/main/kotlin
+    // ───────────────────────────────────────────────────
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/kotlin")
+    }
+
+    // ───────────────────────────────────────────────────
+    // 5. (Removed) androidComponents { … } block
+    //    Let the google-services plugin auto-detect
+    //    any JSON under app/src/<flavor>/google-services.json.
+    // ───────────────────────────────────────────────────
 }
 
 flutter {
     source = "../.."
 }
-
-// Use Java 11 for consistency with most Flutter plugins
-//java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(11)
-//    }
-//}

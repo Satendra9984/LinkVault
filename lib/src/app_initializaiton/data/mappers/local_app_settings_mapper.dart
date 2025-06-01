@@ -1,5 +1,5 @@
 import 'package:link_vault/core/theme/app_theme_enums.dart';
-import 'package:link_vault/src/shared/domain/entities/local_app_settings.dart';
+import 'package:link_vault/shared/domain/entities/local_app_settings.dart';
 import 'package:link_vault/src/app_initializaiton/data/models/settings_model.dart';
 
 extension IsarAppSettingsMapper on IsarAppSettingsModel {

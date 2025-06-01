@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/utils/logger.dart';
 import 'package:link_vault/src/authentication/domain/entities/authentication_status.dart';
 
 import 'package:link_vault/src/authentication/domain/entities/user_profile.dart';
@@ -89,6 +90,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthError(failure.message)),
       (profile) => emit(Authenticated(profile)),
     );
+
+    Logger.printLog(result.toString());
   }
 
   Future<void> _onUserSignedUp(

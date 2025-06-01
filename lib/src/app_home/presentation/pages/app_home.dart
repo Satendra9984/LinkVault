@@ -3,15 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:link_vault/src/common/presentation_layer/providers/global_user_cubit/global_user_cubit.dart';
-import 'package:link_vault/src/common/presentation_layer/providers/shared_inputs_cubit/shared_inputs_cubit.dart';
-import 'package:link_vault/src/common/presentation_layer/providers/webview_cubit/webviews_cubit.dart';
-import 'package:link_vault/core/constants/database_constants.dart';
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/res/media.dart';
-import 'package:link_vault/src/dashboard/presentation/pages/dashboard_store_screen.dart';
-import 'package:link_vault/src/profile/presentation/pages/profile_home.dart';
-import 'package:link_vault/src/rss_feeds/presentation/pages/rss_feed_store_screen.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class AppHomePage extends StatefulWidget {
   const AppHomePage({super.key});
@@ -25,45 +18,45 @@ class _AppHomePageState extends State<AppHomePage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) {
-        ReceiveSharingIntent.instance.getMediaStream().listen(
-          context.read<SharedInputsCubit>().addInputFiles,
-          onError: (err) {
-            // debugPrint('getMediaStream error: $err');
-          },
-        );
-        // For sharing images coming from outside the app while the app is closed
-        ReceiveSharingIntent.instance.getInitialMedia().then(
-              context.read<SharedInputsCubit>().addInputFiles,
-            );
-      },
-    );
+    // WidgetsBinding.instance.addPostFrameCallback(
+    //   (timeStamp) {
+    //     ReceiveSharingIntent.instance.getMediaStream().listen(
+    //       context.read<SharedInputsCubit>().addInputFiles,
+    //       onError: (err) {
+    //         // debugPrint('getMediaStream error: $err');
+    //       },
+    //     );
+    //     // For sharing images coming from outside the app while the app is closed
+    //     ReceiveSharingIntent.instance.getInitialMedia().then(
+    //           context.read<SharedInputsCubit>().addInputFiles,
+    //         );
+    //   },
+    // );
 
-    _initializeWebViews();
+    // _initializeWebViews();
   }
 
-  void _initializeWebViews() {
-    try {
-      // INITIALIZING WEBVIEWS
-      final globarUserId = context.read<GlobalUserCubit>().getGlobalUser()!.id;
+  // void _initializeWebViews() {
+  //   try {
+  //     // INITIALIZING WEBVIEWS
+  //     final globarUserId = context.read<GlobalUserCubit>().getGlobalUser()!.id;
 
-      // FOR OPENING WEBAPPS
-      context.read<WebviewsCubit>().createWebView(
-            globarUserId,
-          );
+  //     // FOR OPENING WEBAPPS
+  //     context.read<WebviewsCubit>().createWebView(
+  //           globarUserId,
+  //         );
 
-      // SEPECIFICALLY FOR RSSFEEDS
-      context.read<WebviewsCubit>().createWebView(
-            globarUserId + RssFeed,
-          );
-    } catch (e) {}
-  }
+  //     // SEPECIFICALLY FOR RSSFEEDS
+  //     context.read<WebviewsCubit>().createWebView(
+  //           globarUserId + RssFeed,
+  //         );
+  //   } catch (e) {}
+  // }
 
   @override
   Widget build(BuildContext context) {
     // final size = MediaQuery.of(context).size;
-    final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
+    // final globalUser = context.read<GlobalUserCubit>().state.globalUser!.id;
     const sectionTextStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w700,
@@ -178,18 +171,7 @@ class _AppHomePageState extends State<AppHomePage> {
                     // DASHBOARD WHERE ALL LINKS ARE STORED
                     ListTile(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => CollectionStorePage(
-                              collectionId: globalUser,
-                              isRootCollection: true,
-                              appBarLeadingIcon: const Icon(
-                                Icons.apps_rounded,
-                                color: ColourPallette.mountainMeadow,
-                              ),
-                            ),
-                          ),
-                        );
+                       
                       },
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -269,17 +251,17 @@ class _AppHomePageState extends State<AppHomePage> {
                     // MY FEEDS
                     ListTile(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => RssFeedCollectionStorePage(
-                              collectionId: '$globalUser$RssFeed',
-                              isRootCollection: true,
-                              appBarLeadingIcon: SvgPicture.asset(
-                                MediaRes.compassSVG,
-                              ),
-                            ),
-                          ),
-                        );
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (ctx) => RssFeedCollectionStorePage(
+                        //       collectionId: '$globalUser$RssFeed',
+                        //       isRootCollection: true,
+                        //       appBarLeadingIcon: SvgPicture.asset(
+                        //         MediaRes.compassSVG,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // );
                       },
                       leading: const Icon(
                         Icons.rss_feed_rounded,
@@ -315,11 +297,11 @@ class _AppHomePageState extends State<AppHomePage> {
                     // PROFILE
                     ListTile(
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => const ProfileHome(),
-                          ),
-                        );
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (ctx) => const ProfileHome(),
+                        //   ),
+                        // );
                       },
                       leading: const Icon(
                         Icons.person_3_rounded,

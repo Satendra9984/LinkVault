@@ -33,15 +33,26 @@ class DeepLinkHandler {
   }
 
   void _processDeepLink(Uri uri) {
+    // 1) If Supabase gave us something like com.vicharshala.linkvault:/?code=XYZ
+    //    then uri.path == "/" and uri.queryParameters['code'] is non-null.
+    //    Treat this as an email‐verification flow.
+    final String? deepLinkCode = uri.queryParameters['code'];
+    if (deepLinkCode != null && deepLinkCode.isNotEmpty) {
+      _handleEmailVerification(uri);
+      return;
+    }
 
+    // 2) Otherwise, maybe Supabase (or your other logic) uses an explicit path,
+    //    e.g. com.vicharshala.linkvault://email-verification?code=XYZ
     switch (uri.path) {
       case '/email-verification':
         _handleEmailVerification(uri);
+        break;
+
+      // You can uncomment this if you ever need password‐reset handling:
       // case '/password-reset':
       //   _handlePasswordReset(uri);
-      default:
-        // Handle unknown deeplinks - maybe navigate to home
-        _navigationService.go(RoutePaths.splash);
+      //   break;
     }
   }
 
@@ -50,7 +61,7 @@ class DeepLinkHandler {
 
     if (token != null && token.isNotEmpty) {
       _navigationService.go(
-        '${RoutePaths.signUp}${RoutePaths.emailVerification}?token=${Uri.encodeComponent(token)}',
+        '${RoutePaths.signUp}${RoutePaths.emailVerification}?code=${Uri.encodeComponent(token)}',
       );
     }
   }

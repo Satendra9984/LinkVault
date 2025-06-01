@@ -4,7 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/src/app_initializaiton/domain/usecases/get_is_loggedin_usecase.dart';
 import 'package:link_vault/src/app_initializaiton/domain/usecases/get_settings_usecase.dart';
-import 'package:link_vault/src/shared/domain/entities/local_app_settings.dart';
+import 'package:link_vault/shared/domain/entities/local_app_settings.dart';
 
 part 'splash_event.dart';
 part 'splash_state.dart';

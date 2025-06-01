@@ -1,4 +1,4 @@
-import 'package:link_vault/src/shared/domain/entities/local_app_settings.dart';
+import 'package:link_vault/shared/domain/entities/local_app_settings.dart';
 
 // abstract class LocalAppSettingsRepository {
 //   Future<LocalAppSettings> getSettings();

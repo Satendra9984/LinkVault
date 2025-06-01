@@ -53,9 +53,7 @@ class AuthHome extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.replace(
-                        '${RoutePaths.signUp}${RoutePaths.verifyEmail}?email=satyendrapal@1090',
-                      );
+                      context.replace(RoutePaths.login);
                       // context.replace(RoutePaths.login);
                     },
                     style: appThemeData.elevatedButtonTheme.style,

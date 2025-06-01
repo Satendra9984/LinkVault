@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:link_vault/core/res/colours.dart';
 import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/core/utils/show_snackbar_util.dart';
 import 'package:link_vault/routing/route_paths.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_bloc.dart';
 import 'package:link_vault/src/authentication/presentation/blocs/login_bloc/login_event.dart';
@@ -89,7 +90,17 @@ class _LoginPageState extends State<LoginPage> {
           ),
           height: size.height,
           child: BlocConsumer<LoginBloc, LoginState>(
-            listener: (BuildContext context, LoginState state) {},
+            listener: (BuildContext context, LoginState state) {
+              if (state.isSuccess) {
+                context.go(RoutePaths.home);
+              } else if (state.isFailure) {
+                showSnackbar(
+                  context: context,
+                  title: 'Login Failed',
+                  subtitle: state.errorMessage,
+                );
+              }
+            },
             builder: (context, state) {
               return Form(
                 key: _formKey,
@@ -153,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                             //     _validateEmail(_emailController.text) == null;
 
                             // if (!isValidEmail) return;
-                           
+
                             context.push(
                               '${RoutePaths.login}${RoutePaths.forgetPassword}?email=${Uri.encodeComponent(_emailController.text)}',
                             );

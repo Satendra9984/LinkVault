@@ -4,14 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:link_vault/injections/app_providers.dart';
 import 'package:link_vault/routing/navigation_service.dart';
 import 'package:link_vault/routing/route_paths.dart';
+import 'package:link_vault/src/app_home/presentation/pages/app_home.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/onboarding/onboarding_home.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/pages/splash/splash_screen.dart';
-import 'package:link_vault/src/authentication/auth_providers.dart';
 import 'package:link_vault/src/authentication/auth_routes.dart';
-import 'package:link_vault/src/authentication/presentation/screens/auth_home.dart';
-import 'package:link_vault/src/authentication/presentation/screens/forget_password/password_reset.dart';
-import 'package:link_vault/src/authentication/presentation/screens/login_signup/login_page.dart';
-import 'package:link_vault/src/authentication/presentation/screens/login_signup/signup_page.dart';
 
 final routeProvider = Provider<GoRouter>(
   (ref) {
@@ -45,6 +41,11 @@ final routeProvider = Provider<GoRouter>(
             create: (_) => ref.watch(splashBlocProvider),
             child: const SplashScreen(),
           ),
+        ),
+
+        GoRoute(
+          path: RoutePaths.home,
+          builder: (context, state) => const AppHomePage(),
         ),
 
         GoRoute(

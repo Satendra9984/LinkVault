@@ -15,7 +15,7 @@ import 'package:link_vault/src/app_initializaiton/domain/usecases/watch_themedat
 import 'package:link_vault/src/app_initializaiton/presentation/blocs/app_theme_cubit/app_theme_cubit.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:link_vault/src/app_initializaiton/presentation/blocs/splash_bloc/splash_bloc.dart';
-import 'package:link_vault/src/shared/shared_app_providers.dart';
+import 'package:link_vault/shared/shared_app_providers.dart';
 
 /// CORE INITIALIZATION PROVIDRS
 final localAppSettingsLocalDataSourceProvider = Provider((ref) {

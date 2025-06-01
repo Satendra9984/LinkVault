@@ -5,7 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:link_vault/core/errors/failure.dart';
 import 'package:link_vault/core/theme/app_theme_enums.dart';
 import 'package:link_vault/core/theme/app_themes.dart';
-import 'package:link_vault/src/shared/domain/entities/local_app_settings.dart';
+import 'package:link_vault/shared/domain/entities/local_app_settings.dart';
 import 'package:link_vault/src/app_initializaiton/data/datasources/splash_local_data_source.dart';
 import 'package:link_vault/src/app_initializaiton/data/datasources/splash_remote_data_source.dart';
 import 'package:link_vault/src/app_initializaiton/data/mappers/local_app_settings_mapper.dart';

@@ -1,6 +1,7 @@
 // lib/core/services/storage_service.dart
 import 'package:isar/isar.dart';
 import 'package:link_vault/src/app_initializaiton/data/models/settings_model.dart';
+import 'package:link_vault/src/authentication/data/models/user_profile_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -43,6 +44,7 @@ class StorageService {
     final isar = await Isar.open(
       [
         IsarAppSettingsModelSchema,
+        UserProfileModelSchema,
       ],
       directory: dir.path,
     );
