@@ -113,11 +113,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         // // Logger.printLog('url address is empty');
         _previewLoadingStates.value = LoadingStates.errorLoading;
         _previewError.value =
-<<<<<<< HEAD
             UnknownFailure(message: 'Url Address is empty', statusCode: '400');
-=======
-            GeneralFailure(message: 'Url Address is empty', statusCode: '400');
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
         return;
       }
 
@@ -160,11 +156,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
         _showPreview.value = true;
       } else {
         _previewLoadingStates.value = LoadingStates.errorLoading;
-<<<<<<< HEAD
         _previewError.value = UnknownFailure(
-=======
-        _previewError.value = GeneralFailure(
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
           message: 'Something went wrong. Check your internet and try again.',
           statusCode: '400',
         );
@@ -186,11 +178,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
 
     _initializeSettingsOption();
     _loadPreview();
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
     super.initState();
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
@@ -221,10 +208,6 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     _previewLoadingStates.dispose();
     _allImagesUrlsList.dispose();
     _urlLaunchType.dispose();
-<<<<<<< HEAD
-=======
-    
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
 
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.edgeToEdge,
@@ -238,12 +221,7 @@ class _UpdateUrlTemplateScreenState extends State<UpdateUrlTemplateScreen> {
     return Scaffold(
       backgroundColor: ColourPallette.white,
       appBar: AppBar(
-<<<<<<< HEAD
         clipBehavior: Clip.none,
-=======
-      clipBehavior: Clip.none,
-
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
         backgroundColor: ColourPallette.white,
         surfaceTintColor: ColourPallette.mystic.withOpacity(0.5),
         title: Row(

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satendra Pal - Media Kit Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px; /* Space between "slides" */
+        }
+        .slide-container {
+            width: 100%;
+            max-width: 700px; /* Mimic carousel slide width */
+            min-height: 500px; /* Mimic carousel slide height, but allow content to expand */
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden; /* For rounded corners */
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box; /* Include padding in width/height */
+        }
+
+        /* Specific styles for elements within slides */
+        .testimonial-card {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .medium-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners for table */
+        }
+        .medium-stats-table th, .medium-stats-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        .medium-stats-table th {
+            background-color: #edf2f7;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .medium-stats-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .medium-stats-table td {
+            color: #4a5568;
+        }
+        .medium-stats-table tr:hover {
+            background-color: #ebf8ff; /* Light blue on hover */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                gap: 20px;
+            }
+            .slide-container {
+                min-height: 400px;
+                padding: 20px;
+            }
+            .slide-container h2 {
+                font-size: 2.5rem;
+            }
+            .slide-container p {
+                font-size: 1rem;
+            }
+            .slide-container .text-8xl {
+                font-size: 5rem;
+            }
+            .slide-container .text-5xl {
+                font-size: 3rem;
+            }
+            .slide-container .text-4xl {
+                font-size: 2.5rem;
+            }
+            .slide-container .text-3xl {
+                font-size: 2rem;
+            }
+            .slide-container .text-2xl {
+                font-size: 1.5rem;
+            }
+            .medium-stats-table th, .medium-stats-table td {
+                padding: 8px;
+                font-size: 0.85rem;
+            }
+            .medium-stats-table {
+                font-size: 0.9rem;
+            }
+            .testimonial-card {
+                padding: 15px;
+            }
+            .testimonial-card .text-lg {
+                font-size: 0.95rem;
+            }
+            .testimonial-card .text-md {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div class="text-8xl mb-6">🚀</div>
+        <h2 class="text-5xl font-extrabold mb-4 text-center leading-tight">Partner with Satendra Pal</h2>
+        <p class="text-2xl font-semibold text-center opacity-90">Reach Engaged Flutter & Full-Stack Developers</p>
+    </div>
+
+    <div class="slide-container bg-white text-gray-800">
+        <h3 class="text-4xl font-bold mb-6 flex items-center justify-center">
+            <span class="mr-4 text-5xl">✍️</span> Who Am I?
+        </h3>
+        <p class="text-lg mb-6 text-center">I am a Full-Stack Flutter Developer and Technical Writer on Medium. I create in-depth tutorials and architectural insights for building high-performance mobile applications.</p>
+        <ul class="list-none space-y-3 text-left w-full max-w-md mx-auto">
+            <li class="flex items-start text-xl">
+                <span class="text-green-500 text-2xl mr-3">✓</span> Expert in Flutter UI/UX & performance optimization
+            </li>
+            <li class="flex items-start text-xl">
+                <span class="text-green-500 text-2xl mr-3">✓</span> Specialized in full-stack integrations (local DBs, Firebase, REST)
+            </li>
+            <li class="flex items-start text-xl">
+                <span class="text-green-500 text-2xl mr-3">✓</span> Focus on CI/CD & DevOps for Flutter
+            </li>
+        </ul>
+    </div>
+
+    <div class="slide-container bg-blue-50 text-gray-800">
+        <h3 class="text-4xl font-bold mb-8 text-center">My Audience: Highly Engaged Developers</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-lg mx-auto mb-8">
+            <div class="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg">
+                <span class="text-5xl mb-3">📱</span>
+                <div class="text-4xl font-bold text-blue-700">70%</div>
+                <div class="text-lg font-semibold text-gray-700 text-center">Flutter Engineers</div>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg">
+                <span class="text-5xl mb-3">💻</span>
+                <div class="text-4xl font-bold text-blue-700">15-20%</div>
+                <div class="text-lg font-semibold text-gray-700 text-center">Full-Stack Mobile Devs</div>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg col-span-full">
+                <span class="text-5xl mb-3">🧠</span>
+                <div class="text-4xl font-bold text-blue-700">5-10%</div>
+                <div class="text-lg font-semibold text-gray-700 text-center">Software Architects/Tech Leads</div>
+            </div>
+        </div>
+        <div class="text-center">
+            <h4 class="text-2xl font-bold mb-4">Geographic Distribution</h4>
+            <ul class="list-none space-y-2 text-xl">
+                <li class="flex justify-center items-center">
+                    <span class="font-semibold text-gray-700 mr-2">India & Southeast Asia:</span> 40%
+                </li>
+                <li class="flex justify-center items-center">
+                    <span class="font-semibold text-gray-700 mr-2">North America:</span> 30%
+                </li>
+                <li class="flex justify-center items-center">
+                    <span class="font-semibold text-gray-700 mr-2">Europe:</span> 20%
+                </li>
+                <li class="flex justify-center items-center">
+                    <span class="font-semibold text-gray-700 mr-2">Rest of World:</span> 10%
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="slide-container bg-white text-gray-800">
+        <h3 class="text-4xl font-bold mb-6 text-center">Medium Performance: Deep Dive</h3>
+        <div class="w-full max-w-md mb-8">
+            <table class="medium-stats-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Views</th>
+                        <th>Reads</th>
+                        <th>Read Ratio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Feb 2025</td>
+                        <td>319</td>
+                        <td>110</td>
+                        <td>34%</td>
+                    </tr>
+                    <tr>
+                        <td>Mar 2025</td>
+                        <td>966</td>
+                        <td>473</td>
+                        <td>49%</td>
+                    </tr>
+                    <tr>
+                        <td>Apr 2025</td>
+                        <td>813</td>
+                        <td>341</td>
+                        <td>42%</td>
+                    </tr>
+                    <tr>
+                        <td>May 2025</td>
+                        <td>1,000</td>
+                        <td>473</td>
+                        <td>47%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-6 w-full max-w-md">
+            <div class="p-4 bg-blue-100 rounded-lg">
+                <div class="text-2xl font-bold text-blue-800">3,098</div>
+                <div class="text-md font-semibold text-blue-700">Total Views (Feb-May)</div>
+            </div>
+            <div class="p-4 bg-green-100 rounded-lg">
+                <div class="text-2xl font-bold text-green-800">1,397</div>
+                <div class="text-md font-semibold text-green-700">Total Reads (Feb-May)</div>
+            </div>
+        </div>
+        <p class="text-xl font-bold text-center text-gray-800">Average Read Ratio: <span class="text-green-600">45%</span></p>
+    </div>
+
+    <div class="slide-container bg-green-50 text-gray-800">
+        <h3 class="text-4xl font-bold mb-8 text-center">Proven Reach & Growing Engagement</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mx-auto mb-8">
+            <div class="flex items-center p-5 bg-white rounded-xl shadow-md">
+                <span class="text-5xl mr-5 text-blue-600">👥</span>
+                <div>
+                    <div class="text-3xl font-bold text-gray-800">~1,900+</div>
+                    <div class="text-lg font-semibold text-gray-700">Combined Monthly Reach</div>
+                    <div class="text-sm text-gray-600">Unique Engaged Audience</div>
+                </div>
+            </div>
+            <div class="flex items-center p-5 bg-white rounded-xl shadow-md">
+                <span class="text-5xl mr-5 text-blue-600">🔗</span>
+                <div>
+                    <div class="text-3xl font-bold text-gray-800">6,000+</div>
+                    <div class="text-lg font-semibold text-gray-700">LinkedIn Followers</div>
+                    <div class="text-sm text-gray-600">Growing Community</div>
+                </div>
+            </div>
+            <div class="flex items-center p-5 bg-white rounded-xl shadow-md col-span-full">
+                <span class="text-5xl mr-5 text-blue-600">🐦</span>
+                <div>
+                    <div class="text-3xl font-bold text-gray-800">50,000+</div>
+                    <div class="text-lg font-semibold text-gray-700">X (Twitter) Views</div>
+                    <div class="text-sm text-gray-600">Per Post</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-blue-100 p-6 rounded-xl shadow-inner text-center mx-auto max-w-xl">
+            <h4 class="text-2xl font-bold text-blue-800 mb-3">Email Newsletter: Small but Mighty & Growing Fast!</h4>
+            <p class="text-xl font-semibold mb-2">Subscribers: <span class="text-blue-700">4</span></p>
+            <p class="text-lg mb-1">Open Rate: <span class="font-semibold text-green-700">60-70%</span></p>
+            <p class="text-lg mb-3">Click-Through Rate: <span class="font-semibold text-green-700">25-30%</span></p>
+            <p class="text-md text-gray-700">Actively growing through gated content (e.g., "Flutter Caching Cheat Sheet") promoted in articles. Aiming for 20-30 subscribers by August 2025.</p>
+        </div>
+    </div>
+
+    <div class="slide-container bg-blue-50 text-gray-800">
+        <h3 class="text-4xl font-bold mb-8 text-center">What Readers Are Saying</h3>
+        <div class="grid grid-cols-1 gap-6 w-full max-w-2xl mx-auto">
+            <div class="testimonial-card">
+                <span class="text-5xl mb-4 text-blue-600">⭐</span>
+                <p class="text-lg italic text-gray-700 mb-4">"Loved this. Totally agree—building something useful feels like a win in itself... If you’re in the same boat, solidarity—and if not, I’d love to hear how you cracked that early traction puzzle."</p>
+                <p class="text-md font-semibold text-gray-900">— Founder, ACEGI.io</p>
+            </div>
+            <div class="testimonial-card">
+                <span class="text-5xl mb-4 text-blue-600">💡</span>
+                <p class="text-lg italic text-gray-700 mb-4">"Incredible lineup of niche SaaS ideas—each brilliantly tailored to solve specific real-world problems and enhance user engagement."</p>
+                <p class="text-md font-semibold text-gray-900">— A Satisfied Reader</p>
+            </div>
+            <div class="testimonial-card">
+                <span class="text-5xl mb-4 text-blue-600">👍</span>
+                <p class="text-lg italic text-gray-700 mb-4">"Hey thanks, I’ll be making an app that does a lot of image fetching via links and this is likely going to be invaluable."</p>
+                <p class="text-md font-semibold text-gray-900">— A Mobile Developer</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-container bg-green-50 text-gray-800">
+        <h3 class="text-4xl font-bold mb-8 text-center flex items-center justify-center">
+            <span class="mr-4 text-5xl">🌟</span> Why Partner With Me?
+        </h3>
+        <ul class="list-none space-y-4 text-left w-full max-w-xl mx-auto">
+            <li class="flex items-start text-xl leading-relaxed">
+                <span class="text-blue-600 text-2xl mr-3 mt-1">●</span> 🎯 <span class="font-bold">Niche & Engaged Audience:</span> Reach developers actively seeking solutions.
+            </li>
+            <li class="flex items-start text-xl leading-relaxed">
+                <span class="text-blue-600 text-2xl mr-3 mt-1">●</span> 📈 <span class="font-bold">High Read Completion:</span> My readers spend 4-5 minutes on 5-minute tutorials.
+            </li>
+            <li class="flex items-start text-xl leading-relaxed">
+                <span class="text-blue-600 text-2xl mr-3 mt-1">●</span> 💡 <span class="font-bold">Actionable Content:</span> I provide practical code examples and benchmarks.
+            </li>
+            <li class="flex items-start text-xl leading-relaxed">
+                <span class="text-blue-600 text-2xl mr-3 mt-1">●</span> 🤝 <span class="font-bold">Tailored Collaborations:</span> Flexible sponsorship packages to meet your goals.
+            </li>
+        </ul>
+    </div>
+
+    <div class="slide-container bg-white text-gray-800">
+        <h3 class="text-4xl font-bold mb-8 text-center">Sponsorship & Collaboration Opportunities</h3>
+        <div class="grid grid-cols-1 gap-6 w-full max-w-xl mx-auto">
+            <div class="p-6 bg-blue-50 rounded-xl shadow-md flex flex-col items-center text-center">
+                <h4 class="text-2xl font-bold text-blue-700 mb-2">"Sponsored By" Mention</h4>
+                <p class="text-xl font-semibold text-gray-800 mb-2">$200 - $300</p>
+                <p class="text-md text-gray-600">In-article blurb + logo + link.</p>
+            </div>
+            <div class="p-6 bg-blue-50 rounded-xl shadow-md flex flex-col items-center text-center">
+                <h4 class="text-2xl font-bold text-blue-700 mb-2">Dedicated Integration Tutorial</h4>
+                <p class="text-xl font-semibold text-gray-800 mb-2">$400 - $600</p>
+                <p class="text-md text-gray-600">1,500-2,000 words, code, benchmarks.</p>
+            </div>
+            <div class="p-6 bg-blue-50 rounded-xl shadow-md flex flex-col items-center text-center">
+                <h4 class="text-2xl font-bold text-blue-700 mb-2">Social Media Spotlight Package</h4>
+                <p class="text-xl font-semibold text-gray-800 mb-2">$150 - $250</p>
+                <p class="text-md text-gray-600">Newsletter, LinkedIn, X promotion.</p>
+            </div>
+            <div class="p-6 bg-blue-50 rounded-xl shadow-md flex flex-col items-center text-center">
+                <h4 class="text-2xl font-bold text-blue-700 mb-2">Custom e-Booklet/Whitepaper</h4>
+                <p class="text-xl font-semibold text-gray-800 mb-2">$800 - $1,200</p>
+                <p class="text-md text-gray-600">Co-branded PDF, gated distribution.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-container bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <h3 class="text-5xl font-extrabold mb-8 text-center leading-tight">Let's Collaborate!</h3>
+        <div class="space-y-4 text-center">
+            <p class="text-2xl font-semibold">Email: <a href="mailto:palsatyendra9984@medium.com" class="underline hover:text-blue-200">palsatyendra9984@medium.com</a></p>
+            <p class="text-2xl font-semibold">LinkedIn: <a href="[Your LinkedIn Profile URL]" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-200">Connect Here</a></p>
+            <p class="text-2xl font-semibold">X (Twitter): <a href="https://x.com/your_twitter_handle" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-200">@your_twitter_handle</a></p>
+        </div>
+    </div>
+
+</body>
+</html>

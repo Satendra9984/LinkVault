@@ -174,11 +174,7 @@ class RssFeedRepo {
       return const Right(true); // Return success after processing feeds
     } catch (e) {
       return Left(
-<<<<<<< HEAD
         UnknownFailure(
-=======
-        GeneralFailure(
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
           message: 'Something Went Wrong',
           statusCode: 402,
         ),
