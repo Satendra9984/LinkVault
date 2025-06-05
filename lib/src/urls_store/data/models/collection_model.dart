@@ -1,13 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:link_vault/src/urls_store/domain/entities/collection_background.dart';
 import 'package:link_vault/src/urls_store/domain/entities/collection_entity.dart';
 import 'package:link_vault/src/urls_store/domain/entities/collection_icon.dart';
 
-part 'linkvault_models_and_entities.g.dart';
+part 'collection_model.g.dart';
 
 @Collection()
-class CollectionModel extends Equatable {
+class CollectionModel {
   CollectionModel({
     this.isarId = Isar.autoIncrement,
     required this.id,
@@ -39,56 +39,42 @@ class CollectionModel extends Equatable {
 
   @Index()
   final String userId;
+
   final String? parentCollectionId;
   final String name;
   final String? description;
   final String iconJson;
   final String backgroundJson;
+
   @Index()
   final bool isPinned;
+
   @Index()
   final bool isArchived;
+
   @Index()
   final int position;
+
   final String layoutType;
   final String sortOrder;
   final String visibility;
+
   final int urlCount;
   final int totalClicks;
+
   final String statusJson;
   final String settingsJson;
+
   @Index()
   final DateTime createdAt;
+
   @Index()
   final DateTime updatedAt;
+
   @Index()
-  final DateTime lastAccessedAt;
+  final DateTime? lastAccessedAt;
 
-  @override
-  List<Object?> get props => [
-        isarId,
-        id,
-        userId,
-        parentCollectionId,
-        name,
-        description,
-        iconJson,
-        backgroundJson,
-        isPinned,
-        isArchived,
-        position,
-        layoutType,
-        sortOrder,
-        visibility,
-        urlCount,
-        totalClicks,
-        statusJson,
-        settingsJson,
-        createdAt,
-        updatedAt,
-        lastAccessedAt
-      ];
-
+  // Convert from Entity to Model
   factory CollectionModel.fromEntity(CollectionEntity e) {
     return CollectionModel(
       id: e.id,
@@ -96,8 +82,8 @@ class CollectionModel extends Equatable {
       parentCollectionId: e.parentCollectionId,
       name: e.name,
       description: e.description,
-      iconJson: e.icon.toJson().toString(),
-      backgroundJson: e.background.toJson().toString(),
+      iconJson: jsonEncode(e.icon.toJson()),
+      backgroundJson: jsonEncode(e.background.toJson()),
       isPinned: e.isPinned,
       isArchived: e.isArchived,
       position: e.position,
@@ -106,35 +92,140 @@ class CollectionModel extends Equatable {
       visibility: e.visibility,
       urlCount: e.urlCount,
       totalClicks: e.totalClicks,
-      statusJson: e.status.toString(),
-      settingsJson: e.settings.toString(),
+      statusJson: jsonEncode(e.status),
+      settingsJson: jsonEncode(e.settings),
       createdAt: e.createdAt,
       updatedAt: e.updatedAt,
       lastAccessedAt: e.lastAccessedAt,
     );
   }
 
+  // Convert from Model to Entity
   CollectionEntity toEntity() {
-    // Parsing of JSON strings to maps should be implemented as needed
     return CollectionEntity(
       id: id,
       userId: userId,
       parentCollectionId: parentCollectionId,
       name: name,
       description: description,
-      icon: CollectionIcon.fromJson({}),
-      background: CollectionBackground.fromJson({}),
+      icon: CollectionIcon.fromJson(jsonDecode(iconJson)),
+      background: CollectionBackground.fromJson(jsonDecode(backgroundJson)),
       isPinned: isPinned,
       isArchived: isArchived,
       position: position,
       layoutType: layoutType,
       sortOrder: sortOrder,
       visibility: visibility,
-      status: {},
-      settings: {},
+      urlCount: urlCount,
+      totalClicks: totalClicks,
+      status: jsonDecode(statusJson),
+      settings: jsonDecode(settingsJson),
       createdAt: createdAt,
       updatedAt: updatedAt,
       lastAccessedAt: lastAccessedAt,
+    );
+  }
+
+  // CopyWith
+  CollectionModel copyWith({
+    Id? isarId,
+    String? id,
+    String? userId,
+    String? parentCollectionId,
+    String? name,
+    String? description,
+    String? iconJson,
+    String? backgroundJson,
+    bool? isPinned,
+    bool? isArchived,
+    int? position,
+    String? layoutType,
+    String? sortOrder,
+    String? visibility,
+    int? urlCount,
+    int? totalClicks,
+    String? statusJson,
+    String? settingsJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? lastAccessedAt,
+  }) {
+    return CollectionModel(
+      isarId: isarId ?? this.isarId,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      parentCollectionId: parentCollectionId ?? this.parentCollectionId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      iconJson: iconJson ?? this.iconJson,
+      backgroundJson: backgroundJson ?? this.backgroundJson,
+      isPinned: isPinned ?? this.isPinned,
+      isArchived: isArchived ?? this.isArchived,
+      position: position ?? this.position,
+      layoutType: layoutType ?? this.layoutType,
+      sortOrder: sortOrder ?? this.sortOrder,
+      visibility: visibility ?? this.visibility,
+      urlCount: urlCount ?? this.urlCount,
+      totalClicks: totalClicks ?? this.totalClicks,
+      statusJson: statusJson ?? this.statusJson,
+      settingsJson: settingsJson ?? this.settingsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+    );
+  }
+
+  // To JSON (for remote)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'parent_collection_id': parentCollectionId,
+      'name': name,
+      'description': description,
+      'icon_json': iconJson,
+      'background_json': backgroundJson,
+      'is_pinned': isPinned,
+      'is_archived': isArchived,
+      'position': position,
+      'layout_type': layoutType,
+      'sort_order': sortOrder,
+      'visibility': visibility,
+      'url_count': urlCount,
+      'total_clicks': totalClicks,
+      'status_json': statusJson,
+      'settings_json': settingsJson,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'last_accessed_at': lastAccessedAt?.toIso8601String(),
+    };
+  }
+
+  // From JSON (remote)
+  factory CollectionModel.fromJson(Map<String, dynamic> json) {
+    return CollectionModel(
+      id: json['id'],
+      userId: json['user_id'],
+      parentCollectionId: json['parent_collection_id'],
+      name: json['name'],
+      description: json['description'],
+      iconJson: json['icon_json'],
+      backgroundJson: json['background_json'],
+      isPinned: json['is_pinned'],
+      isArchived: json['is_archived'],
+      position: json['position'],
+      layoutType: json['layout_type'],
+      sortOrder: json['sort_order'],
+      visibility: json['visibility'],
+      urlCount: json['url_count'],
+      totalClicks: json['total_clicks'],
+      statusJson: json['status_json'],
+      settingsJson: json['settings_json'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+      lastAccessedAt: json['last_accessed_at'] != null
+          ? DateTime.parse(json['last_accessed_at'])
+          : null,
     );
   }
 }

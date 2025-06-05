@@ -5,37 +5,25 @@ import '../models/collection_model.dart';
 
 abstract class CollectionsLocalDataSource {
   // CRUD Operations
-  Future<CollectionModel> createCollection(CollectionModel collection);
+  Future<Id> createCollection(CollectionModel collection);
   Future<CollectionModel?> getCollection(String id);
   Future<List<CollectionModel>> getAllCollections({
     String? parentCollectionId,
     bool includeArchived = false,
   });
-  Future<CollectionModel> updateCollection(CollectionModel collection);
+  Future<void> updateCollection(CollectionModel collection);
   Future<void> deleteCollection(String id);
 
   // Hierarchical Operations
   Future<List<CollectionModel>> getChildCollections(String parentId);
   Future<List<CollectionModel>> getRootCollections();
   Future<bool> canMoveCollection(String collectionId, String? newParentId);
-  Future<CollectionModel> moveCollection(String collectionId, String? newParentId);
 
   // Favorites & Pins
-  Future<CollectionModel> togglePin(String id);
   Future<List<CollectionModel>> getPinnedCollections();
 
   // Archiving
-  Future<CollectionModel> toggleArchive(String id);
   Future<List<CollectionModel>> getArchivedCollections();
-
-  // Ordering & Layout
-  Future<CollectionModel> updatePosition(String id, int newPosition);
-  Future<CollectionModel> updateLayout(String id, String layoutType);
-  Future<CollectionModel> updateSortOrder(String id, String sortOrder);
-
-  // Statistics & Analytics
-  Future<CollectionModel> updateLastAccessed(String id);
-  Future<void> refreshCollectionStats(String id);
 
   // Search & Filter
   Future<List<CollectionModel>> searchCollections(String query);
@@ -43,7 +31,8 @@ abstract class CollectionsLocalDataSource {
   Future<List<CollectionModel>> getCollectionsByTag(String tagId);
 
   // Batch Operations
-  Future<List<CollectionModel>> saveCollections(List<CollectionModel> collections);
+  Future<List<CollectionModel>> saveCollections(
+      List<CollectionModel> collections);
   Future<void> deleteCollections(List<String> ids);
   Future<void> clearAllCollections();
 
@@ -59,15 +48,11 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   CollectionsLocalDataSourceImpl({required this.isar});
 
   @override
-  Future<CollectionModel> createCollection(CollectionModel collection) async {
+  Future<Id> createCollection(CollectionModel collection) async {
     try {
-      await isar.writeTxn(() async {
-        await isar.collectionModels.put(collection);
+      return await isar.writeTxn(() async {
+        return await isar.collectionModels.put(collection);
       });
-      
-      final savedCollection = await isar.collectionModels.put(collection);
-      
-      return savedCollection;
     } catch (e) {
       if (e is LocalDataException) rethrow;
       throw LocalDataException(
@@ -80,10 +65,7 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   @override
   Future<CollectionModel?> getCollection(String id) async {
     try {
-      return await isar.collectionModels
-          .filter()
-          .idEqualTo(id)
-          .findFirst();
+      return await isar.collectionModels.filter().idEqualTo(id).findFirst();
     } catch (e) {
       throw LocalDataException(
         message: 'Failed to get collection: ${e.toString()}',
@@ -99,23 +81,20 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }) async {
     try {
       var query = isar.collectionModels.filter();
-      
+
       // Filter by parent collection
       if (parentCollectionId != null) {
         query = query.parentCollectionIdEqualTo(parentCollectionId);
       } else {
         query = query.parentCollectionIdIsNull();
       }
-      
+
       // Filter archived collections
       if (!includeArchived) {
         query = query.isArchivedEqualTo(false);
       }
-      
-      return await query
-          .sortByPosition()
-          .thenByCreatedAt()
-          .findAll();
+
+      return await query.sortB().thenByCreatedAt().findAll();
     } catch (e) {
       throw LocalDataException(
         message: 'Failed to get collections: ${e.toString()}',
@@ -125,27 +104,11 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<CollectionModel> updateCollection(CollectionModel collection) async {
+  Future<void> updateCollection(CollectionModel collection) async {
     try {
-      final existingCollection = await getCollection(collection.id);
-      if (existingCollection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      // Update the updatedAt timestamp
-      final updatedCollection = collection.copyWith(
-        updatedAt: DateTime.now(),
-      );
-
       await isar.writeTxn(() async {
-        await isar.collectionModels.put(updatedCollection);
+        await isar.collectionModels.put(collection);
       });
-
-      final savedCollection = await getCollection(collection.id);
-      return savedCollection!;
     } catch (e) {
       if (e is LocalDataException) rethrow;
       throw LocalDataException(
@@ -172,12 +135,9 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
         for (final child in childCollections) {
           await deleteCollection(child.id);
         }
-        
+
         // Delete the collection itself
-        await isar.collectionModels
-            .filter()
-            .idEqualTo(id)
-            .deleteAll();
+        await isar.collectionModels.filter().idEqualTo(id).deleteAll();
       });
     } catch (e) {
       if (e is LocalDataException) rethrow;
@@ -225,79 +185,20 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<bool> canMoveCollection(String collectionId, String? newParentId) async {
+  Future<bool> canMoveCollection(
+      String collectionId, String? newParentId) async {
     try {
       if (newParentId == null) return true;
-      
+
       // Check if trying to move to itself
       if (collectionId == newParentId) return false;
-      
+
       // Check if trying to move to one of its descendants
       final descendants = await _getAllDescendants(collectionId);
       return !descendants.any((d) => d.id == newParentId);
     } catch (e) {
       throw LocalDataException(
         message: 'Failed to check move validity: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<CollectionModel> moveCollection(String collectionId, String? newParentId) async {
-    try {
-      final canMove = await canMoveCollection(collectionId, newParentId);
-      if (!canMove) {
-        throw LocalDataException(
-          message: 'Cannot move collection to specified parent',
-          statusCode: 400,
-        );
-      }
-
-      final collection = await getCollection(collectionId);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        parentCollectionId: newParentId,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to move collection: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<CollectionModel> togglePin(String id) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        isPinned: !collection.isPinned,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to toggle pin: ${e.toString()}',
         statusCode: 500,
       );
     }
@@ -322,32 +223,6 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<CollectionModel> toggleArchive(String id) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        isArchived: !collection.isArchived,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to toggle archive: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
   Future<List<CollectionModel>> getArchivedCollections() async {
     try {
       return await isar.collectionModels
@@ -364,136 +239,6 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<CollectionModel> updatePosition(String id, int newPosition) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        position: newPosition,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to update position: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<CollectionModel> updateLayout(String id, String layoutType) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        layoutType: layoutType,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to update layout: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<CollectionModel> updateSortOrder(String id, String sortOrder) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        sortOrder: sortOrder,
-        updatedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to update sort order: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<CollectionModel> updateLastAccessed(String id) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      final updatedCollection = collection.copyWith(
-        lastAccessedAt: DateTime.now(),
-      );
-
-      return await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to update last accessed: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
-  Future<void> refreshCollectionStats(String id) async {
-    try {
-      final collection = await getCollection(id);
-      if (collection == null) {
-        throw LocalDataException(
-          message: 'Collection not found',
-          statusCode: 404,
-        );
-      }
-
-      // Note: In a real implementation, you would calculate URL count and total clicks
-      // from the URLs table. For now, we just update the timestamp.
-      final updatedCollection = collection.copyWith(
-        updatedAt: DateTime.now(),
-      );
-
-      await updateCollection(updatedCollection);
-    } catch (e) {
-      if (e is LocalDataException) rethrow;
-      throw LocalDataException(
-        message: 'Failed to refresh collection stats: ${e.toString()}',
-        statusCode: 500,
-      );
-    }
-  }
-
-  @override
   Future<List<CollectionModel>> searchCollections(String query) async {
     try {
       if (query.trim().isEmpty) {
@@ -501,7 +246,7 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
       }
 
       final searchTerm = query.toLowerCase();
-      
+
       return await isar.collectionModels
           .filter()
           .group((q) => q
@@ -521,7 +266,8 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<List<CollectionModel>> getCollectionsByCategory(String categoryId) async {
+  Future<List<CollectionModel>> getCollectionsByCategory(
+      String categoryId) async {
     try {
       // Note: This would require a relationship with categories
       // For now, returning empty list as categories are not yet implemented
@@ -549,7 +295,8 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   }
 
   @override
-  Future<List<CollectionModel>> saveCollections(List<CollectionModel> collections) async {
+  Future<List<CollectionModel>> saveCollections(
+      List<CollectionModel> collections) async {
     try {
       await isar.writeTxn(() async {
         await isar.collectionModels.putAll(collections);
@@ -646,14 +393,14 @@ class CollectionsLocalDataSourceImpl implements CollectionsLocalDataSource {
   Future<List<CollectionModel>> _getAllDescendants(String parentId) async {
     final descendants = <CollectionModel>[];
     final directChildren = await getChildCollections(parentId);
-    
+
     descendants.addAll(directChildren);
-    
+
     for (final child in directChildren) {
       final childDescendants = await _getAllDescendants(child.id);
       descendants.addAll(childDescendants);
     }
-    
+
     return descendants;
   }
 }

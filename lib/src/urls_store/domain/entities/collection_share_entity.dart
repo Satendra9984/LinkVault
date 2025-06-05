@@ -1,10 +1,11 @@
 
 
 import 'package:equatable/equatable.dart';
+import 'package:link_vault/src/urls_store/domain/entities/permission_level.dart';
+import 'package:link_vault/src/urls_store/domain/entities/share_status.dart';
 
 
-enum PermissionLevel { read, edit, admin }
-enum ShareStatus { pending, accepted, declined, revoked }
+
 
 class CollectionShareEntity extends Equatable {
   final String id;

@@ -1,12 +1,10 @@
-
-
-
-import 'package:equatable/equatable.dart';
 import 'package:isar/isar.dart';
 import 'package:link_vault/shared/domain/entities/recent_activities_entity.dart';
 
+part 'recent_activities_model.g.dart';
+
 @Collection()
-class RecentActivityModel extends Equatable {
+class RecentActivityModel {
   RecentActivityModel({
     this.isarId = Isar.autoIncrement,
     required this.id,
@@ -18,7 +16,6 @@ class RecentActivityModel extends Equatable {
     required this.createdAt,
   });
 
-  @Id()
   final Id isarId;
   @Index()
   final String id;
@@ -31,8 +28,6 @@ class RecentActivityModel extends Equatable {
   @Index()
   final DateTime createdAt;
 
-  @override
-  List<Object?> get props => [isarId, id, userId, activityType, entityId, entityType, entityName, createdAt];
 
   factory RecentActivityModel.fromEntity(RecentActivityEntity e) {
     return RecentActivityModel(

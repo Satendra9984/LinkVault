@@ -43,7 +43,7 @@ class CollectionsRemoteDataSourceImpl implements CollectionsRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('collections')
-          .insert(collection.toSupabaseJson())
+          .insert(collection.toEntity())
           .select()
           .single();
 
@@ -206,7 +206,7 @@ class CollectionsRemoteDataSourceImpl implements CollectionsRemoteDataSource {
       final response = await supabaseClient
           .from('collections')
           .select()
-          .is('parent_collection_id', null)
+          .is_('parent_collection_id', null)
           .eq('is_archived', false)
           .order('position')
           .order('created_at');
