@@ -34,7 +34,7 @@ class UrlEntity extends Equatable {
     this.metadata = const {},
     this.settings = const {},
     required this.createdAt,
-    required this.updatedAt,
+    required this.updatedAt, required bool isArchived, DateTime? lastAccessedAt,
   });
 
   bool get isFavourite => isPinned;

@@ -1,149 +1,140 @@
-import 'dart:convert';
-
+import 'package:equatable/equatable.dart';
 import 'package:isar/isar.dart';
-import 'package:link_vault/src/urls_store/data/models/url_model.dart';
 import 'package:link_vault/src/urls_store/domain/entities/collection_background.dart';
+import 'package:link_vault/src/urls_store/domain/entities/collection_entity.dart';
 import 'package:link_vault/src/urls_store/domain/entities/collection_icon.dart';
-import '../../domain/entities/collection_entity.dart';
 
-part 'collection_model.g.dart';
+part 'linkvault_models_and_entities.g.dart';
 
 @Collection()
-class CollectionModel {
-  Id id = Isar.autoIncrement;
-  
+class CollectionModel extends Equatable {
+  CollectionModel({
+    this.isarId = Isar.autoIncrement,
+    required this.id,
+    required this.userId,
+    this.parentCollectionId,
+    required this.name,
+    this.description,
+    required this.iconJson,
+    required this.backgroundJson,
+    required this.isPinned,
+    required this.isArchived,
+    required this.position,
+    required this.layoutType,
+    required this.sortOrder,
+    required this.visibility,
+    required this.urlCount,
+    required this.totalClicks,
+    required this.statusJson,
+    required this.settingsJson,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.lastAccessedAt,
+  });
+
+  final Id isarId;
+
   @Index()
-  late String remoteId; // UUID from Supabase
-  
+  final String id;
+
   @Index()
-  late String userId;
-  
-  String? parentCollectionId;
-  late String name;
-  String? description;
-  
-  // Serialized as JSON strings in Isar
-  late String iconJson;
-  late String backgroundJson;
-  
+  final String userId;
+  final String? parentCollectionId;
+  final String name;
+  final String? description;
+  final String iconJson;
+  final String backgroundJson;
   @Index()
-  bool isPinned = false;
-  bool isArchived = false;
-  int position = 0;
-  
-  String layoutType = 'grid';
-  String sortOrder = 'manual';
-  String visibility = 'private';
-  
-  late String statusJson; // Map<String, dynamic> as JSON
-  late String settingsJson; // Map<String, dynamic> as JSON
-  
+  final bool isPinned;
   @Index()
-  late DateTime createdAt;
-  late DateTime updatedAt;
-  DateTime? lastAccessedAt;
-  
+  final bool isArchived;
   @Index()
-  late DateTime lastSyncedAt; // For offline-first sync
-  bool needsSync = false; // Mark for upload to Supabase
-  
-  // Relationships (Isar will handle these)
-  final urls = IsarLinks<UrlModel>();
-  
-  // Convert to Domain Entity
+  final int position;
+  final String layoutType;
+  final String sortOrder;
+  final String visibility;
+  final int urlCount;
+  final int totalClicks;
+  final String statusJson;
+  final String settingsJson;
+  @Index()
+  final DateTime createdAt;
+  @Index()
+  final DateTime updatedAt;
+  @Index()
+  final DateTime lastAccessedAt;
+
+  @override
+  List<Object?> get props => [
+        isarId,
+        id,
+        userId,
+        parentCollectionId,
+        name,
+        description,
+        iconJson,
+        backgroundJson,
+        isPinned,
+        isArchived,
+        position,
+        layoutType,
+        sortOrder,
+        visibility,
+        urlCount,
+        totalClicks,
+        statusJson,
+        settingsJson,
+        createdAt,
+        updatedAt,
+        lastAccessedAt
+      ];
+
+  factory CollectionModel.fromEntity(CollectionEntity e) {
+    return CollectionModel(
+      id: e.id,
+      userId: e.userId,
+      parentCollectionId: e.parentCollectionId,
+      name: e.name,
+      description: e.description,
+      iconJson: e.icon.toJson().toString(),
+      backgroundJson: e.background.toJson().toString(),
+      isPinned: e.isPinned,
+      isArchived: e.isArchived,
+      position: e.position,
+      layoutType: e.layoutType,
+      sortOrder: e.sortOrder,
+      visibility: e.visibility,
+      urlCount: e.urlCount,
+      totalClicks: e.totalClicks,
+      statusJson: e.status.toString(),
+      settingsJson: e.settings.toString(),
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
+      lastAccessedAt: e.lastAccessedAt,
+    );
+  }
+
   CollectionEntity toEntity() {
+    // Parsing of JSON strings to maps should be implemented as needed
     return CollectionEntity(
-      id: remoteId,
+      id: id,
       userId: userId,
       parentCollectionId: parentCollectionId,
       name: name,
       description: description,
-      icon: CollectionIcon.fromJson(jsonDecode(iconJson)),
-      background: CollectionBackground.fromJson(jsonDecode(backgroundJson)),
+      icon: CollectionIcon.fromJson({}),
+      background: CollectionBackground.fromJson({}),
       isPinned: isPinned,
       isArchived: isArchived,
       position: position,
       layoutType: layoutType,
       sortOrder: sortOrder,
       visibility: visibility,
-      status: jsonDecode(statusJson),
-      settings: jsonDecode(settingsJson),
+      status: {},
+      settings: {},
       createdAt: createdAt,
       updatedAt: updatedAt,
       lastAccessedAt: lastAccessedAt,
-      urls: urls.map((url) => url.toEntity()).toList(),
     );
-  }
-  
-  // Create from Domain Entity
-  static CollectionModel fromEntity(CollectionEntity entity) {
-    return CollectionModel()
-      ..remoteId = entity.id
-      ..userId = entity.userId
-      ..parentCollectionId = entity.parentCollectionId
-      ..name = entity.name
-      ..description = entity.description
-      ..iconJson = jsonEncode(entity.icon.toJson())
-      ..backgroundJson = jsonEncode(entity.background.toJson())
-      ..isPinned = entity.isPinned
-      ..isArchived = entity.isArchived
-      ..position = entity.position
-      ..layoutType = entity.layoutType
-      ..sortOrder = entity.sortOrder
-      ..visibility = entity.visibility
-      ..statusJson = jsonEncode(entity.status)
-      ..settingsJson = jsonEncode(entity.settings)
-      ..createdAt = entity.createdAt
-      ..updatedAt = entity.updatedAt
-      ..lastAccessedAt = entity.lastAccessedAt
-      ..lastSyncedAt = DateTime.now()
-      ..needsSync = false;
-  }
-  
-  // Create from Supabase JSON
-  static CollectionModel fromSupabaseJson(Map<String, dynamic> json) {
-    return CollectionModel()
-      ..remoteId = json['id']
-      ..userId = json['user_id']
-      ..parentCollectionId = json['parent_collection_id']
-      ..name = json['name']
-      ..description = json['description']
-      ..iconJson = jsonEncode(json['icon'] ?? {'type': 'emoji', 'value': '📁', 'color': '#6B7280'})
-      ..backgroundJson = jsonEncode(json['background'] ?? {'color': '#F9FAFB', 'pattern': 'none', 'opacity': 1.0})
-      ..isPinned = json['is_pinned'] ?? false
-      ..isArchived = json['is_archived'] ?? false
-      ..position = json['position'] ?? 0
-      ..layoutType = json['layout_type'] ?? 'grid'
-      ..sortOrder = json['sort_order'] ?? 'manual'
-      ..visibility = json['visibility'] ?? 'private'
-      ..statusJson = jsonEncode(json['status'] ?? {})
-      ..settingsJson = jsonEncode(json['settings'] ?? {})
-      ..createdAt = DateTime.parse(json['created_at'])
-      ..updatedAt = DateTime.parse(json['updated_at'])
-      ..lastAccessedAt = json['last_accessed_at'] != null ? DateTime.parse(json['last_accessed_at']) : null
-      ..lastSyncedAt = DateTime.now()
-      ..needsSync = false;
-  }
-  
-  // Convert to Supabase JSON for API calls
-  Map<String, dynamic> toSupabaseJson() {
-    return {
-      'id': remoteId.isEmpty ? null : remoteId, // null for new collections
-      'user_id': userId,
-      'parent_collection_id': parentCollectionId,
-      'name': name,
-      'description': description,
-      'icon': jsonDecode(iconJson),
-      'background': jsonDecode(backgroundJson),
-      'is_pinned': isPinned,
-      'is_archived': isArchived,
-      'position': position,
-      'layout_type': layoutType,
-      'sort_order': sortOrder,
-      'visibility': visibility,
-      'status': jsonDecode(statusJson),
-      'settings': jsonDecode(settingsJson),
-      'updated_at': updatedAt.toIso8601String(),
-    };
   }
 }
