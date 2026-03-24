@@ -1,9 +1,11 @@
 # LinkVault — Premium Feature Gating Matrix
 
-**Version:** 1.0  
-**Last Updated:** March 20, 2026
+**Version:** 1.1  
+**Last Updated:** March 24, 2026
 
 This document defines which features are available on each tier and exactly how each gate is enforced in code.
+
+**Canonical monetization + persistence:** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](../05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · [ADR-0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).
 
 ---
 
@@ -11,9 +13,9 @@ This document defines which features are available on each tier and exactly how 
 
 ```dart
 enum UserTier {
-  guest,     // No account, local ObjectBox only, Ad Day Pass required
-  free,      // Authenticated, local ObjectBox, Ad Day Pass required
-  premium,   // Authenticated, Supabase cloud, no ads
+  guest,     // No account — ObjectBox only; Ad Day Pass (app access)
+  free,      // Authenticated — Supabase lv_* + quotas; Ad Day Pass
+  premium,   // Authenticated — Supabase lv_* + high limits; no ads
 }
 ```
 
@@ -21,7 +23,7 @@ enum UserTier {
 
 ## Feature Gate Matrix
 
-| Feature | Guest | Free (Ad Pass Active) | Premium | Note |
+| Feature | Guest | Free account (Ad Pass Active) | Premium | Note |
 |---|---|---|---|---|
 | **Collections** | | | | |
 | Create collection | ✅ | ✅ | ✅ | |
@@ -51,15 +53,17 @@ enum UserTier {
 | Add RSS feeds | ✅ | ✅ | ✅ | |
 | Browse feed articles | ✅ | ✅ | ✅ | |
 | Save article to collection | ✅ | ✅ | ✅ | |
-| **Cloud Sync** | | | | |
-| Cloud sync (Supabase) | ❌ | ❌ | ✅ | Premium core feature |
-| Cross-device access | ❌ | ❌ | ✅ | |
-| Automatic backup | ❌ | ❌ | ✅ | |
+| **Cloud** | | | | |
+| Cloud data (`lv_*` authority) | ❌ | ✅ (within quotas) | ✅ | Guest = local only |
+| Cross-device (same account) | ❌ | ✅ | ✅ | |
+| Automatic backup | ❌ | ✅ (bounded by quotas) | ✅ | Messaging: premium = best backup |
+| Quota: max collections / URLs | n/a | ✅ enforced | ❌ (premium limits) | Server-side enforcement |
 | **Data Management** | | | | |
 | Export data (JSON) | ✅ | ✅ | ✅ | |
 | Import data (JSON) | ✅ | ✅ | ✅ | |
 | **Ads** | | | | |
 | Ad Day Pass required | ✅ (Day 4+) | ✅ (Day 4+) | ❌ | Premium = no ads |
+| Create blocked when over quota | n/a | ✅ | ❌ | Show upgrade / manage items |
 | 3-day free trial | ✅ | ✅ | N/A | |
 | **Social** (Phase 2) | | | | |
 | Share collection link | ❌ | ❌ | Phase 2 | Premium only |
@@ -70,14 +74,15 @@ enum UserTier {
 
 ### In Repository Layer
 
-The tier-based repository injection is the **primary enforcement mechanism**. Free/guest users physically cannot write to Supabase because a Supabase repository is never injected.
+**Guest:** inject **local** repositories only — no `lv_*` writes.
+
+**Free account:** inject **Supabase** repositories (same code path as premium for CRUD shape). **Quotas** are enforced via **server-side checks** (RPC / policy) and mirrored in the client for UX. Do **not** use “premium-only Supabase injection” for free accounts.
 
 ```dart
 final collectionsRepositoryProvider = Provider<CollectionRepository>((ref) {
   final tier = ref.watch(userTierProvider).valueOrNull ?? UserTier.guest;
-  return tier == UserTier.premium
-    ? ref.read(supabaseCollectionsRepoProvider)
-    : ref.read(localCollectionsRepoProvider);
+  if (tier == UserTier.guest) return ref.read(localCollectionsRepoProvider);
+  return ref.read(supabaseCollectionsRepoProvider); // free + premium; quota + entitlement layered
 });
 ```
 
@@ -134,10 +139,12 @@ if (adStatus == AdPassStatus.passExpired && !isPremium) {
 **Title:** Upgrade to LinkVault Premium
 
 **Benefits listed:**
-1. 🚫 No ads — ever
-2. ☁️ Cloud sync across all your devices
-3. 🔒 Automatic backup — your links are always safe
-4. ⚡ Priority support
+1. No ads
+2. Higher limits (or unlimited-style) — no quota wall for normal use
+3. Best sync and backup story
+4. Priority support
+
+(Free account already has cloud backup within quotas; premium is **more headroom + no ads**.)
 
 **Pricing display:**
 - Monthly: **$4.99/month**

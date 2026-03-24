@@ -1,7 +1,7 @@
 # LinkVault — Product Requirements Document (PRD)
 
-**Version:** 1.0  
-**Last Updated:** March 20, 2026  
+**Version:** 1.1  
+**Last Updated:** March 24, 2026  
 **Status:** Approved for Development  
 **Target Launch:** Q3 2026
 
@@ -314,6 +314,18 @@ A mobile-first, offline-first link vault where:
 
 ### 4.7 Monetization (P0)
 
+**Tier model (canonical):** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](../05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md).
+
+**Guest (no account):**
+- Product data **local-only** (ObjectBox)
+- Same Ad Day Pass rules for **app access** after trial
+
+**Free account (authenticated, not premium):**
+- Product data **authoritative in Supabase `lv_*`** with **enforced quotas** (total collections, total URLs — tunable)
+- Same Ad Day Pass rules after trial
+- **Quota exceeded:** block new creates (or defined soft behavior) with clear UX + upgrade path
+- Offline: cache + queue behavior per [Data_Persistence_State_Machine.md](../04_DATA_AND_MIGRATION/Data_Persistence_State_Machine.md)
+
 **Ad Day Pass:**
 - ✅ 3-day free trial (no ads)
 - ✅ Day 4+: ad gate shows if >24hrs since last valid pass
@@ -326,7 +338,7 @@ A mobile-first, offline-first link vault where:
 - ✅ Monthly: $4.99/month (`lv_premium_monthly`)
 - ✅ Annual: $39.99/year (`lv_premium_annual`)
 - ✅ No ads
-- ✅ Cloud sync
+- ✅ **Higher / unlimited-style limits** (no free-tier quota wall)
 - ✅ Restore purchases
 
 ### 4.8 Settings (P1)
@@ -354,7 +366,7 @@ A mobile-first, offline-first link vault where:
 ### 5.2 Reliability
 
 - Zero data loss on crash (ObjectBox ACID transactions)
-- Offline-first: all core features work with no internet
+- Offline-first: **guest** has full local core CRUD; **authenticated** users rely on **cache + queue** when offline (writes sync when online per policy)
 - Ad grace period ensures no user lockout
 - Crash-free rate: 99.5%+
 
@@ -379,8 +391,10 @@ A mobile-first, offline-first link vault where:
 ### 6.1 Revenue Model
 
 Two streams:
-1. **Ad Revenue** — AdMob rewarded video (free tier daily gate)
-2. **Premium Subscriptions** — RevenueCat IAP
+1. **Ad Revenue** — AdMob rewarded video (Day Pass for guest + free account after trial)
+2. **Premium Subscriptions** — RevenueCat IAP (no ads + higher limits)
+
+**Infra note:** Free **account** users consume **Supabase** resources; **quotas** and **egress discipline** are required for sustainability. See [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](../05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md).
 
 ### 6.2 Revenue Projections
 
@@ -391,7 +405,7 @@ Two streams:
 | 6 | 20,000 | 8,000 | ~$720 | ~$2,400 | ~$3,120 |
 | 12 | 50,000 | 20,000 | ~$1,800 | ~$6,000 | ~$7,800 |
 
-*Assumptions: 60% ad view rate, $0.15 CPM avg, 10% premium conversion, $4.99/mo ARPU*
+*Illustrative only — validate against AdMob actual eCPM (rewarded differs from banner CPM). See unit economics formulas in monetization model doc.*
 
 ---
 
@@ -399,4 +413,5 @@ Two streams:
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.1 | March 24, 2026 | Monetization: guest local-only; **free account = Supabase + quotas + Day Pass**; premium = higher limits + no ads. |
 | 1.0 | March 20, 2026 | Initial PRD — full reboot |

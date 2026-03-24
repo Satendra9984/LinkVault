@@ -1,0 +1,128 @@
+import 'dart:async';
+
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link_vault/core/utils/logger.dart';
+import 'package:link_vault/src/authentication/domain/entities/authentication_status.dart';
+
+import 'package:link_vault/shared/domain/entities/user_profile.dart';
+import 'package:link_vault/src/authentication/domain/repository/auth_repository.dart';
+import 'package:link_vault/shared/domain/repositories/user_repository.dart';
+
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final AuthRepository authRepository;
+  final UserRepository userRepository;
+  late StreamSubscription<AuthenticationStatus> _authSubscription;
+
+  AuthBloc({
+    required this.authRepository,
+    required this.userRepository,
+  }) : super(AuthInitial()) {
+    on<AppStarted>(_onAppStarted);
+    on<CheckAuth>(_onCheckAuth);
+    on<UserLoggedIn>(_onUserLoggedIn);
+    on<UserSignedUp>(_onUserSignedUp);
+    on<UserLoggedOut>(_onUserLoggedOut);
+
+    // Subscribe to auth state changes
+    _authSubscription = authRepository.authStatusChanges.listen((status) {
+      if (status == AuthenticationStatus.authenticated) {
+        authRepository.getCurrentUserId().then((userId) {
+          if (userId != null) {
+            add(UserLoggedIn(userId));
+          }
+        });
+      } else {
+        add(UserLoggedOut());
+      }
+    });
+  }
+
+  Future<void> _onAppStarted(
+    AppStarted event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final isSignedIn = await authRepository.isSignedIn();
+
+    if (isSignedIn) {
+      final userId = await authRepository.getCurrentUserId();
+      if (userId != null) {
+        add(UserLoggedIn(userId));
+      } else {
+        emit(Unauthenticated());
+      }
+    } else {
+      emit(Unauthenticated());
+    }
+  }
+
+  Future<void> _onCheckAuth(
+    CheckAuth event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final isSignedIn = await authRepository.isSignedIn();
+
+    if (isSignedIn) {
+      final userId = await authRepository.getCurrentUserId();
+      if (userId != null) {
+        add(UserLoggedIn(userId));
+      } else {
+        emit(Unauthenticated());
+      }
+    } else {
+      emit(Unauthenticated());
+    }
+  }
+
+  Future<void> _onUserLoggedIn(
+    UserLoggedIn event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await userRepository.getUserProfile();
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (profile) => emit(Authenticated(profile)),
+    );
+
+    Logger.printLog(result.toString());
+  }
+
+  Future<void> _onUserSignedUp(
+    UserSignedUp event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await userRepository.getUserProfile();
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (profile) => emit(Authenticated(profile)),
+    );
+  }
+
+  Future<void> _onUserLoggedOut(
+    UserLoggedOut event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await authRepository.signOut();
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(Unauthenticated()),
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _authSubscription.cancel();
+    // authRepository.dispose();
+    return super.close();
+  }
+}

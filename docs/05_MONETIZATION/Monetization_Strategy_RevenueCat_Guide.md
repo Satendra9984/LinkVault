@@ -1,8 +1,20 @@
 # LinkVault — Monetization Strategy & RevenueCat Guide
 
-**Version:** 1.0  
-**Last Updated:** March 20, 2026  
+**Version:** 1.1  
+**Last Updated:** March 24, 2026  
 **Covers:** Revenue model · RevenueCat setup · AdMob Day Pass · Testing · Pitfalls
+
+**Companion (canonical tier + quotas + unit economics):** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · **ADR:** [ADR_0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).
+
+---
+
+## Part 0 — Tier model snapshot (2026-03-24)
+
+- **Guest:** local ObjectBox only; Day Pass for app access.
+- **Free account:** Supabase `lv_*` + **quotas** + Day Pass.
+- **Premium:** Supabase + **high limits** + no ads (RevenueCat).
+
+Implementation must follow [Data_Persistence_State_Machine.md](../04_DATA_AND_MIGRATION/Data_Persistence_State_Machine.md) v2+.
 
 ---
 
@@ -13,7 +25,7 @@
 | Stream | Mechanism | Target User |
 |---|---|---|
 | **Ad Revenue** | Rewarded video (AdMob) — 1 ad/day for 24hr access | Free users (Day 4+) |
-| **Premium Subscriptions** | IAP managed by RevenueCat | Power users who want no ads + cloud sync |
+| **Premium Subscriptions** | IAP managed by RevenueCat | Users who want **no ads + higher limits** + best sync (free account already has cloud within quotas) |
 
 ### Pricing
 

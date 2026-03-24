@@ -1,143 +1,78 @@
 {
   "version": "0.2.0",
   "configurations": [
-    // ──────────────────────────────────────────────────────────────────────────────
-    // 1) Development Flavor  (debug with hot-reload)
-    // ──────────────────────────────────────────────────────────────────────────────
     {
-      "name": "web_link_store (dev – debug)",
+      "name": "linkvault (dev) - debug",
       "request": "launch",
       "type": "dart",
-
-      // “debug” mode gives you hot-reload, full stack traces, breakpoints, etc.
       "flutterMode": "debug",
-
-      // If you use a separate entrypoint file:
-      //   -t lib/main_dev.dart
-      // If you keep a single main.dart that reads const flavor = String.fromEnvironment("FLAVOR"),
-      //   you can still just pass “-t lib/main.dart”.
-      "program": "lib/mains.dart",
-
-      // All CLI flags to flutter run go in “args”.
-      // ––flavor picks the Gradle product flavor
-      // ––dart-define passes the same value into Dart via const String.fromEnvironment("FLAVOR")
+      "program": "lib/main.dart",
       "args": [
-        "--flavor", "development",
-        "--dart-define", "FLAVOR=development"
-      ],
-
-      // (Optional) You can set environment vars here, or pass `cwd`, but usually not needed.
-      // "cwd": "${workspaceFolder}"
+        "--flavor", "dev",
+        "--dart-define", "FLAVOR=dev",
+        "--dart-define=dart.vm.product=false"
+      ]
+    },
+    {
+      "name": "linkvault (dev) - profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor", "dev",
+        "--dart-define", "FLAVOR=dev",
+        "--dart-define=dart.vm.product=false"
+      ]
+    },
+    {
+      "name": "linkvault (dev) - release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor", "dev",
+        "--dart-define", "FLAVOR=dev",
+        "--dart-define=dart.vm.product=false"
+      ]
     },
 
-    // ──────────────────────────────────────────────────────────────────────────────
-    // 2) Production Flavor  (debug with hot-reload)
-    // ──────────────────────────────────────────────────────────────────────────────
     {
-      "name": "web_link_store (prod – debug)",
+      "name": "linkvault (prod) - debug",
       "request": "launch",
       "type": "dart",
       "flutterMode": "debug",
-      "program": "lib/mains.dart",
+      "program": "lib/main.dart",
       "args": [
         "--flavor", "production",
-        "--dart-define", "FLAVOR=production"
+        "--dart-define", "FLAVOR=production",
+        "--dart-define=dart.vm.product=true"
+      ]
+    },
+    {
+      "name": "linkvault (prod) - profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor", "production",
+        "--dart-define", "FLAVOR=production",
+        "--dart-define=dart.vm.product=true"
+      ]
+    },
+    {
+      "name": "linkvault (prod) - release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor", "production",
+        "--dart-define", "FLAVOR=production",
+        "--dart-define=dart.vm.product=true"
       ]
     }
-
-    //  If you truly need profile/release here, you can duplicate one of the above
-    //  blocks and change “flutterMode” => “profile” or “release” and/or remove hot-reload-related flags.
-    //
-    //  e.g.:
-    //  {
-    //    "name": "web_link_store (prod – release)",
-    //    "request": "launch",
-    //    "type": "dart",
-    //    "flutterMode": "release",
-    //    "program": "lib/mains.dart",
-    //    "args": [
-    //      "--flavor", "production",
-    //      "--dart-define", "FLAVOR=production"
-    //    ]
-    //  }
   ]
 }
-
-
-
-// {
-//     "version": "0.2.0",
-//     "configurations": [
-//         // Development Flavor Configurations
-//         {
-//             "name": "web_link_store (development - debug mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "debug",
-//             "program": "lib/mains.dart",
-//             "toolArgs": [
-//                 "--flavor", "development",
-//                 "--dart-define=FLAVOR=development"
-//             ]
-//         },
-//         {
-//             "name": "web_link_store (development - profile mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "profile",
-//             "program": "lib/mains.dart",
-//             "args": [
-//                 "--flavor", "development",
-//                 "--dart-define", "FLAVOR=development"
-
-//             ]
-//         },
-//         {
-//             "name": "web_link_store (development - release mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "release",
-//             "program": "lib/mains.dart",
-//             "args": [
-//                 "--flavor", "development",
-//                 "--dart-define", "FLAVOR=development",
-                
-//             ]
-//         },
-
-//         // Production Flavor Configurations
-//         {
-//             "name": "web_link_store (production - debug mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "debug",
-//             "program": "lib/mains.dart",
-//             "args": [
-//                 "--flavor", "production",
-//                 "--dart-define", "FLAVOR=production"
-//             ]
-//         },
-//         {
-//             "name": "web_link_store (production - profile mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "profile",
-//             "program": "lib/mains.dart",
-//             "args": [
-//                 "--flavor", "production",
-//                 "--dart-define", "FLAVOR=production"
-//             ]
-//         },
-//         {
-//             "name": "web_link_store (production - release mode)",
-//             "request": "launch",
-//             "type": "dart",
-//             "flutterMode": "release",
-//             "program": "lib/mains.dart",
-//             "args": [
-//                 "--flavor", "production",
-//                 "--dart-define", "FLAVOR=production"
-//             ]
-//         }
-//     ]
-// }

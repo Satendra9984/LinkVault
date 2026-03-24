@@ -1,0 +1,337 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:3712937077068604428",
+      "lastPropertyId": "5:1053603822047256309",
+      "name": "AppSettingsModel",
+      "properties": [
+        {
+          "id": "1:2209342593238822856",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7347789794011051129",
+          "name": "lastAdWatch",
+          "type": 10
+        },
+        {
+          "id": "3:326058209068253710",
+          "name": "isPremium",
+          "type": 1
+        },
+        {
+          "id": "4:535809320177100057",
+          "name": "hasMigratedToCloud",
+          "type": 1
+        },
+        {
+          "id": "5:1053603822047256309",
+          "name": "dbThemeMode",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:5849219588462393305",
+      "lastPropertyId": "11:480709859896423710",
+      "name": "AuthSettingsModel",
+      "properties": [
+        {
+          "id": "1:2846338009472945797",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:4827465255069710658",
+          "name": "hasSeenOnboarding",
+          "type": 1
+        },
+        {
+          "id": "3:1059668868780102894",
+          "name": "isGuestMode",
+          "type": 1
+        },
+        {
+          "id": "4:8695278132393047110",
+          "name": "installDate",
+          "type": 10
+        },
+        {
+          "id": "5:6850893731177395455",
+          "name": "lastAdWatchedAt",
+          "type": 10
+        },
+        {
+          "id": "6:3623215960999661916",
+          "name": "lastAdFailed",
+          "type": 1
+        },
+        {
+          "id": "7:7278418656919357870",
+          "name": "offlineGracePeriodStart",
+          "type": 10
+        },
+        {
+          "id": "8:5289512684247903679",
+          "name": "dayPassExpiresAt",
+          "type": 10
+        },
+        {
+          "id": "9:2177515961368509429",
+          "name": "isPremiumCached",
+          "type": 1
+        },
+        {
+          "id": "10:3900409415605503935",
+          "name": "hasMigratedToCloud",
+          "type": 1
+        },
+        {
+          "id": "11:480709859896423710",
+          "name": "themeMode",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:5730371926328866297",
+      "lastPropertyId": "17:3802886459136006474",
+      "name": "CollectionModel",
+      "properties": [
+        {
+          "id": "1:1301829372740442991",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4777222735186962361",
+          "name": "uid",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "1:1820529652983650800"
+        },
+        {
+          "id": "3:1042854652956709266",
+          "name": "ownerId",
+          "type": 9
+        },
+        {
+          "id": "4:574791585606913701",
+          "name": "isShared",
+          "type": 1
+        },
+        {
+          "id": "5:5453332528611644029",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "6:7053081148233879503",
+          "name": "category",
+          "type": 9
+        },
+        {
+          "id": "7:4820841968673638082",
+          "name": "colorHex",
+          "type": 9
+        },
+        {
+          "id": "8:7792858474470365085",
+          "name": "iconName",
+          "type": 9
+        },
+        {
+          "id": "9:8699486832562175477",
+          "name": "position",
+          "type": 8
+        },
+        {
+          "id": "10:5145296700179462546",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "11:1669410262979459514",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "12:8128030011837012598",
+          "name": "itemCount",
+          "type": 6
+        },
+        {
+          "id": "13:2634712499462882079",
+          "name": "parentId",
+          "type": 9
+        },
+        {
+          "id": "14:5858540030880926328",
+          "name": "isPinned",
+          "type": 1
+        },
+        {
+          "id": "15:4579439767859949290",
+          "name": "isArchived",
+          "type": 1
+        },
+        {
+          "id": "16:4395960698390096293",
+          "name": "isDeleted",
+          "type": 1
+        },
+        {
+          "id": "17:3802886459136006474",
+          "name": "childCount",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:328533937922981262",
+      "lastPropertyId": "17:9014242142404849946",
+      "name": "ItemModel",
+      "properties": [
+        {
+          "id": "1:3350982875288984299",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2719751623722923038",
+          "name": "uid",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "2:7297498146274015927"
+        },
+        {
+          "id": "3:3149462872452473471",
+          "name": "ownerId",
+          "type": 9
+        },
+        {
+          "id": "4:4513586168020500529",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "5:4548202439707431896",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "6:4577251279909621259",
+          "name": "imagePath",
+          "type": 9
+        },
+        {
+          "id": "7:1482225421024857713",
+          "name": "imageUrl",
+          "type": 9
+        },
+        {
+          "id": "8:6805819360045786009",
+          "name": "link",
+          "type": 9
+        },
+        {
+          "id": "9:210722606043499996",
+          "name": "location",
+          "type": 9
+        },
+        {
+          "id": "10:6167179647945300023",
+          "name": "tags",
+          "type": 9
+        },
+        {
+          "id": "11:93655818926627561",
+          "name": "customFieldsJson",
+          "type": 9
+        },
+        {
+          "id": "12:6329644407112702688",
+          "name": "dbStatus",
+          "type": 6
+        },
+        {
+          "id": "13:891141021799947655",
+          "name": "collectionUid",
+          "type": 9,
+          "flags": 2048,
+          "indexId": "3:6024706868027249757"
+        },
+        {
+          "id": "14:2839185912509053998",
+          "name": "position",
+          "type": 8
+        },
+        {
+          "id": "15:2286213370297118386",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "16:7092394482203611515",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "17:9014242142404849946",
+          "name": "collectionId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "4:4471310188009959902",
+          "relationTarget": "CollectionModel"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:4726494674158433880",
+      "lastPropertyId": "3:805015051994274526",
+      "name": "SearchHistoryModel",
+      "properties": [
+        {
+          "id": "1:8116658242244622687",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7339821541894070905",
+          "name": "query",
+          "type": 9
+        },
+        {
+          "id": "3:805015051994274526",
+          "name": "searchedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "5:4726494674158433880",
+  "lastIndexId": "4:4471310188009959902",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

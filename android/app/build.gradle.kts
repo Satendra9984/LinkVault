@@ -52,7 +52,7 @@ android {
             // Put prod-specific resources (including google-services.json) under:
             //   app/src/production/
         }
-        create("development") {
+        create("dev") {
             dimension = "env"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
@@ -60,7 +60,7 @@ android {
             // Override app_name, etc.
             resValue("string", "app_name", "Link Vault (Dev)")
             // Put dev-specific resources (including google-services.json) under:
-            //   app/src/development/
+            //   app/src/dev/
         }
     }
 
@@ -108,18 +108,9 @@ android {
         }
     }
 
-    // ───────────────────────────────────────────────────
-    // 4. Source sets if your Kotlin files are in src/main/kotlin
-    // ───────────────────────────────────────────────────
     sourceSets {
         getByName("main").java.srcDirs("src/main/kotlin")
     }
-
-    // ───────────────────────────────────────────────────
-    // 5. (Removed) androidComponents { … } block
-    //    Let the google-services plugin auto-detect
-    //    any JSON under app/src/<flavor>/google-services.json.
-    // ───────────────────────────────────────────────────
 }
 
 flutter {

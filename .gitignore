@@ -1,3 +1,11 @@
+# Secrets and local env (never commit keys)
+.env
+.env.*
+!.env.example
+
+# Gradle caches (local machine)
+.gradle/
+
 # Miscellaneous
 *.class
 *.log

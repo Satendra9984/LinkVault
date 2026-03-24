@@ -1,352 +1,203 @@
-# LinkVault — Developer Bible
+# LinkVault Developer Bible
 
-**Version:** 1.0  
-**Last Updated:** March 20, 2026  
-**Read this before writing a single line of code.**
-
----
-
-## 1. Project Philosophy
-
-LinkVault is an **offline-first, mobile-first URL organizer** rebuilt from scratch on the Curate architecture foundation. The original app suffered from:
-- Dual state management (BLoC + Riverpod)
-- Dual backends (Firebase + Supabase)
-- No use-case layer
-- Isar v3 (outdated, buggy on iOS)
-- No environment separation
-
-This reboot corrects all of these. **The rules below are absolute**.
+Version: 2.1  
+Last Updated: 2026-03-24  
+Status: Active  
+Owner: Engineering  
+Depends On: `docs/03_ARCHITECTURE/Technical_Architecture.md`, `docs/04_DATA_AND_MIGRATION/Supabase_Schema_and_Migrations.md`, `docs/05_MONETIZATION/Monetization_Strategy_RevenueCat_Guide.md`, `docs/05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md`, `docs/10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md`
 
 ---
 
-## 2. The Six Non-Negotiable Rules
+## Purpose
 
-### Rule 1: One State Manager — Riverpod Only
+This is the non-negotiable engineering rulebook for LinkVault implementation.  
+When another document conflicts with this one, raise an ADR before coding.
 
-- ✅ `flutter_riverpod` (Riverpod 2.x)
-- ❌ `flutter_bloc`
-- ❌ `provider` package
-- ❌ `setState` (except for trivial animation controllers)
-- ❌ `ChangeNotifier`
+---
 
-> **Why:** Two competing state managers create unpredictable behavior, race conditions, and double-rebuilds. Riverpod's compile-time safety is superior.
+## Absolute Rules
 
-### Rule 2: One Backend — Supabase Only
+### 1) Riverpod Is the Only App-State Framework
 
-- ✅ Supabase Auth (OTP + Email passwordless)
-- ✅ Supabase PostgreSQL (premium cloud data)
-- ✅ Supabase Storage (thumbnails)
-- ❌ Firebase Auth
-- ❌ Firestore / Firebase Realtime DB
-- ❌ Any other backend service
+Allowed:
 
-> **Why:** Firebase + Supabase was the original app's primary architectural mistake. Mixed backends mean mixed auth states, mixed error handling, double initialization costs.
+- `flutter_riverpod`
+- Riverpod codegen annotations where useful
 
-### Rule 3: Local-First ObjectBox
+Not allowed:
 
-- ✅ ObjectBox v4 (`objectbox` package) for all local storage
-- ❌ Isar
-- ❌ Hive
-- ❌ SQLite directly
+- `flutter_bloc`
+- `provider`
+- feature state in `setState` (except local animation-only concerns)
 
-> **Why:** ObjectBox is the fastest Flutter local database (benchmarks show 10x over Isar v3 for reactive queries). It has proper reactive streams via `Query.watch()`.
+### 2) Supabase Is the Only Product Data Backend
 
-### Rule 4: Every Feature Has a Use Case Layer
+Allowed:
 
-Do NOT call repositories directly from providers. All business logic lives in use case classes.
+- Supabase Auth
+- Supabase PostgreSQL (`lv_*` tables)
+- Supabase Storage
 
-```dart
-// ✅ CORRECT
-final result = await ref.read(addUrlUsecaseProvider).call(params);
+Not allowed:
 
-// ❌ WRONG — never call repo directly from provider/screen
-final result = await ref.read(urlRepositoryProvider).addUrl(params);
+- Firebase Auth/Firestore/Realtime DB for product data paths
+- parallel backend stacks for the same business flow
+
+### 3) ObjectBox Is Mandatory for Local Persistence
+
+Not allowed:
+
+- Isar/Hive/SQLite for primary product persistence in new implementation
+
+### 4) Every Mutation Must Flow Through a Use Case
+
+Screens/providers cannot write through repositories directly.
+
+### 5) Environment and Secrets Discipline
+
+- no hardcoded keys in Dart
+- use flavor-specific env files
+- fail startup if required keys are missing
+
+### 6) Type-Safe Error Handling
+
+- use `Either<Failure, T>`
+- no silent catch blocks
+- map external exceptions into project failures
+
+---
+
+## Dependency Direction
+
+```text
+Presentation -> Application -> Domain <- Data <- Infrastructure
 ```
 
-### Rule 5: Clean Architecture Dependency Direction
-
-```
-Presentation → Application → Domain ← Data
-```
-
-- Presentation depends on Application (use cases)
-- Application depends on Domain (entities, repo interfaces)
-- Domain has ZERO dependencies (pure Dart)
-- Data depends on Domain (implements repo interfaces)
-- Data does NOT depend on Presentation
-
-Violations are immediately refactored. No exceptions.
-
-### Rule 6: Environments Must Be Separate
-
-- `.env.dev` — dev Supabase project, RevenueCat test keys, AdMob test IDs
-- `.env.production` — prod Supabase project, real RevenueCat keys, real AdMob IDs
-- Never hardcode API keys, URLs, or secrets in Dart code
-- Run dev: `flutter run --flavor dev --dart-define-from-file=.env.dev`
-- Run prod: `flutter run --flavor production --dart-define-from-file=.env.production`
+Violations must be corrected before merge.
 
 ---
 
-## 3. Folder Structure Rules
+## Runtime Contracts
 
-Every feature folder must follow this exact structure:
+### Repository Selection
 
-```
-features/
-└── feature_name/
-    ├── domain/
-    │   ├── entities/          # Immutable, Equatable, pure Dart
-    │   ├── repositories/      # Abstract interfaces only
-    │   └── failures/          # Feature-specific failure types (optional)
-    ├── application/
-    │   └── usecases/          # One file = one use case
-    ├── data/
-    │   ├── models/            # ObjectBox @Entity classes
-    │   ├── mappers/           # entity ↔ model ↔ Supabase JSON
-    │   └── repositories/      # local_*.dart + supabase_*.dart implementations
-    └── presentation/
-        ├── providers/         # Riverpod providers
-        ├── screens/           # Full-screen views (*_screen.dart)
-        └── widgets/           # Reusable pieces (*_card.dart, *_list.dart)
+Repository injection must be decided by:
+
+- auth state
+- premium entitlement
+- migration completion flag
+- connectivity state
+
+No feature is allowed to bypass the selector.
+
+### Collections and URLs Contract
+
+- Collections use LinkVault schema semantics (`parentId`, `position`, `isDeleted`).
+- URLs use LinkVault schema semantics (`collectionId`, `status`, `clickCount`, metadata fields).
+- All cloud models map to `lv_collections` and `lv_urls`.
+
+### Migration Contract
+
+- premium enablement can trigger local-to-cloud migration
+- migration must be idempotent and resumable
+- legacy Firebase import remains optional and non-blocking
+
+---
+
+## Code Organization Rules
+
+### Feature Layout
+
+Every feature follows:
+
+```text
+feature/
+├── domain/
+├── application/usecases/
+├── data/{models,mappers,repositories}/
+└── presentation/{providers,screens,widgets}/
 ```
 
-**Naming must match:**
-- Entity: `CollectionEntity`
-- ObjectBox model: `CollectionModel`
-- Mapper: `CollectionMapper`
-- Local repo: `LocalCollectionRepository`
-- Supabase repo: `SupabaseCollectionRepository`
-- Use case: `CreateCollectionUsecase`
-- Provider: `collectionsRepositoryProvider`
+### Naming Rules
+
+- `*Entity` for domain entities
+- `*Model` for persistence models
+- `Local*Repository` and `Supabase*Repository` for data implementations
+- `*Usecase` for use case classes
+- providers end with `Provider`
 
 ---
 
-## 4. Data Flow Example (End-to-End)
+## Data and Schema Rules
 
-**User adds a URL via Share Intent:**
-
-```
-1. receive_sharing_intent → ReceiveIntentScreen
-2. Screen calls: ref.read(addUrlUsecaseProvider).call(url: sharedUrl, collectionId: selectedId)
-3. AddUrlUsecase:
-   a. Validate URL format
-   b. Call FetchUrlMetadataUsecase → returns title, thumbnail, favicon, dominantColor
-   c. Build UrlEntity (UUID, timestamps, status: unread)
-   d. Call urlRepository.addUrl(entity)
-4. Repository (based on tier):
-   - Free/Guest: LocalUrlRepository → ObjectBox put()
-   - Premium: SupabaseUrlRepository → supabase.from('lv_urls').insert(json)
-5. StreamProvider watching the collection auto-updates → UI rebuilds
-6. ReceiveIntentScreen pops on Right(unit) result
-```
+- business IDs are UUID strings and remain stable across local/cloud stores
+- local store keeps sync metadata (`updatedAt`, `isDeleted`, `deletedAt`)
+- all cloud writes include owner identity fields and obey RLS model
+- soft delete is preferred to hard delete for sync-safe behavior
 
 ---
 
-## 5. Error Handling Contract
+## Security Rules
 
-**Every use case returns `Either<Failure, T>`** using `fpdart`.
-
-```dart
-Future<Either<Failure, T>> call(...) async {
-  try {
-    // happy path
-    return Right(result);
-  } on SpecificException catch (e) {
-    return Left(DatabaseFailure(e.message));
-  } catch (e, st) {
-    // Always log unexpected errors
-    _logger.e('Unexpected error', error: e, stackTrace: st);
-    return Left(UnexpectedFailure('Something went wrong', error: e, stackTrace: st));
-  }
-}
-```
-
-**In UI, always handle both sides:**
-
-```dart
-final result = await ref.read(someUsecaseProvider).call(...);
-result.fold(
-  (failure) {
-    if (failure is ValidationFailure) {
-      // Show inline field error
-    } else {
-      // Show generic snackbar
-      _showErrorSnackbar(context, failure.message);
-    }
-  },
-  (success) {
-    // Navigate or show success
-  },
-);
-```
-
-**Never swallow errors silently.** If you catch and don't at minimum log, you introduce invisible bugs.
+- RLS is required on every `lv_*` table before feature release
+- user-scoped ownership checks are mandatory in insert/update/delete policies
+- service-role operations are isolated to explicit administrative flows only
+- export/import features must never include auth tokens
 
 ---
 
-## 6. Supabase RLS Policy Contract
+## Monetization Rules
 
-Every Supabase table used by LinkVault must have:
-1. `ENABLE ROW LEVEL SECURITY`
-2. A SELECT policy that checks `auth.uid() = owner_id`
-3. An INSERT policy with `WITH CHECK (auth.uid() = owner_id)`
-4. An UPDATE policy with `USING (auth.uid() = owner_id)`
-5. A DELETE policy with `USING (auth.uid() = owner_id)`
-
-**No table ships without RLS.** Test by querying as a different user and confirming zero results.
+- entitlement key: `premium`
+- RevenueCat user identity must use Supabase `auth.uid()`
+- use return values from purchase/restore calls directly
+- premium checks gate cloud sync and ad bypass behavior
 
 ---
 
-## 7. ObjectBox Rules
+## Performance Rules
 
-- All ObjectBox entities are in `data/models/`
-- All entities have a `String id` field (UUID) that is the **business key**
-- The `@Id() int dbId` is the ObjectBox internal key — never expose it
-- Always use `Query.watch(triggerImmediately: true)` for reactive streams
-- Use transactions for batch writes: `store.runInTransaction(TxMode.write, () { ... })`
-- Never store `DateTime` directly — use epoch milliseconds (`int`) for portability
+- list features with pagination must avoid full-table load in UI
+- metadata fetch must be timeout-bound and non-blocking for save action
+- reorder uses fractional indexing and rebalance logic when precision saturates
 
 ---
 
-## 8. RevenueCat Integration Rules
+## Test Expectations
 
-- Use the `CustomerInfo` returned **directly** from `Purchases.purchase()` — do NOT call `Purchases.getCustomerInfo()` separately (stale data race condition)
-- Same rule for `Purchases.restorePurchases()` — use its return value directly
-- Entitlement identifier in RevenueCat: `premium` (shared across both LinkVault and Curate)
-- App User ID passed to RevenueCat: **the Supabase `auth.uid()`** (ensures cross-app sharing)
-- Dev flavor uses `test_` API key (Test Store)
-- Prod Android uses `goog_` API key
-- Prod iOS uses `appl_` API key — must NOT use `goog_` for iOS
+- each use case has unit tests
+- repository mapping and failure paths are tested
+- critical flows (auth, save URL, collection CRUD, premium migration) have integration coverage
+- migration paths include success, retry, resume, and rollback-adjacent tests
 
 ---
 
-## 9. Metadata Fetch Rules
+## Pull Request Gate Checklist
 
-URL metadata is fetched by `UrlMetadataFetcher` utility:
+Before merge:
 
-```dart
-// lib/core/utils/url_metadata_fetcher.dart
-class UrlMetadataFetcher {
-  static Future<UrlMetadata> fetch(String url) async {
-    // 1. HTTP GET with timeout: 5 seconds
-    // 2. Parse HTML for: <title>, og:title, og:description, og:image, <link rel="icon">
-    // 3. Fallback gracefully — if any field fails, return null for that field
-    // 4. Never throw — always return partial metadata
-  }
-}
-```
-
-**Rules:**
-- Timeout: 5 seconds hard cutoff
-- Never block the URL save on metadata failure — save with empty metadata first, enrich async
-- Cache fetched metadata in ObjectBox to avoid re-fetching
-- Respect `robots.txt` and fetch failures gracefully
+- architecture boundaries respected
+- no disallowed dependencies introduced
+- no secrets added
+- migration/sync behavior covered by tests where changed
+- docs updated for behavior changes
 
 ---
 
-## 10. RSS Feed Rules
+## Violation Handling
 
-- RSS feeds are parsed using the `xml` package — no external RSS parsing library needed
-- Support: RSS 2.0, Atom 1.0
-- Local ObjectBox cache for feed items (evict items older than 7 days)
-- Manual refresh only in v1 — no background push
-- "Save to LinkVault" creates a `UrlEntity` from the article's `<link>` field
+If a rule is violated:
 
----
-
-## 11. Share Intent Rules
-
-- Platform: `receive_sharing_intent` package (forked master branch for bug fixes)
-- On shared URL received → navigate to `ReceiveIntentScreen`
-- If app is in background: handle via `getInitialMedia()` on startup
-- If app is in foreground: handle via `getMediaStream()`
-- Always validate the received URL before showing collection picker
+1. block merge
+2. open remediation task
+3. if rule must change, create ADR first
 
 ---
 
-## 12. Fractional Position Indexing
+## Revision History
 
-Collections and URLs are ordered using `position: FLOAT8`. Do NOT use integer sequence (0, 1, 2, ...) as it requires mass re-numbering.
-
-**Algorithm: Midpoint positioning**
-```dart
-// Insert between items A (position=1.0) and B (position=2.0)
-double newPosition = (A.position + B.position) / 2; // = 1.5
-
-// Insert at start (before first item at position=1.0)
-double newPosition = firstItem.position / 2; // = 0.5
-
-// Insert at end (after last item at position=5.0)
-double newPosition = lastItem.position + 1.0; // = 6.0
-```
-
-When `newPosition - math.min(a, b) < 0.0001` (precision exhausted), **rebalance** by querying all items in the collection and assigning `position = index * 1.0`.
-
----
-
-## 13. Testing Philosophy
-
-Every use case must have a unit test. No exceptions.
-
-```
-test/
-├── features/
-│   ├── collections/
-│   │   └── application/
-│   │       └── create_collection_usecase_test.dart
-│   └── urls/
-│       └── application/
-│           └── add_url_usecase_test.dart
-└── core/
-    └── utils/
-        └── url_metadata_fetcher_test.dart
-```
-
-**Minimum coverage target: 80% of use case logic**
-
----
-
-## 14. Debug Feature Flag
-
-```dart
-// lib/core/config/flavor_config.dart
-enum Flavor { dev, production }
-
-class FlavorConfig {
-  static Flavor current = Flavor.production;
-  static bool get isDev => current == Flavor.dev;
-  static bool get isProduction => current == Flavor.production;
-}
-
-// In UI — show debug tools only in dev
-if (FlavorConfig.isDev) ...[
-  const DebugMenuTile(),
-]
-```
-
-The `debug` feature module is only visible in the `dev` flavor. It must never appear in the production build.
-
----
-
-## 15. Localization (Future-Ready)
-
-- All user-facing strings must go via `l10n` from day 1
-- No hardcoded English strings in widget files
-- Use `AppLocalizations.of(context)!.someKey`
-- v1 ships English-only; the scaffolding must support adding Hindi, Telugu, Tamil, Spanish later
-
----
-
-## Quick Reference
-
-| Question | Answer |
-|---|---|
-| Where do I put business logic? | `features/X/application/usecases/` |
-| Where do I define data contracts? | `features/X/domain/repositories/` |
-| Where do I put ObjectBox entities? | `features/X/data/models/` |
-| Where do I convert between model and entity? | `features/X/data/mappers/` |
-| How do I inject the right repository? | Riverpod `Provider` in `core/providers/core_providers.dart` |
-| Can I call a repository from a screen? | No. Call a use case. |
-| Can I use setState? | Only for animation controllers. Never for app state. |
-| Where are API keys? | `.env.dev` / `.env.production` — never in Dart files |
-| What happens if metadata fetch fails? | Save URL with empty metadata. Log warning. Never block save. |
+| Version | Date | Notes |
+|---|---|---|
+| 2.1 | 2026-03-24 | Depends on monetization model + ADR-0002 (free account Supabase + quotas). |
+| 2.0 | 2026-03-23 | Rewritten as canonical engineering contract for execution phase. |
+| 1.0 | 2026-03-20 | Initial reboot rules draft. |

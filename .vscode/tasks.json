@@ -9,7 +9,8 @@
               "run",
               "--flavor",
               "dev",
-              "--dart-define=dart.vm.product=false"
+              "--dart-define=dart.vm.product=false",
+              "--dart-define=FLAVOR=dev"
           ],
           "group": {
               "kind": "build",
@@ -25,7 +26,8 @@
               "run",
               "--flavor",
               "production",
-              "--dart-define=dart.vm.product=true"
+              "--dart-define=dart.vm.product=true",
+              "--dart-define=FLAVOR=production"
           ],
           "group": {
               "kind": "build",

@@ -2,20 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-<<<<<<< HEAD
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.vicharshala.linkvault.supabase</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.vicharshala.linkvault</string>
-			</array>
-		</dict>
-	</array>
-=======
->>>>>>> b5af7d0d72fe3290112f11fa2a3df99dc54f675d
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -59,13 +45,16 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<string>YES</string>
-	<key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key> <true/>
-      <key>NSAllowsArbitraryLoadsInWebContent</key> <true/>
-    </dict>
-    <key>CFBundleURLTypes</key>
-	 <array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.vicharshala.linkvault.supabase</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.vicharshala.linkvault</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -74,96 +63,36 @@
 				<string>ShareMedia</string>
 			</array>
 		</dict>
-	 <dict/>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-9004947579124903~6181417192</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>sms</string>
+		<string>tel</string>
+		<string>https</string>
+		<string>http</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>To upload photos, please allow permission to access your photo library.</string>
-
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-      <string>sms</string>
-      <string>tel</string>
-      <string>https</string>
-      <string>http</string>
-    </array>
-    	<string>$(FLUTTER_BUILD_NAME)</string>
-    	<key>CFBundleVersion</key>
-    	<string>$(FLUTTER_BUILD_NUMBER)</string>
-    	<key>NSExtension</key>
-    	<dict>
-    		<key>NSExtensionAttributes</key>
-            <dict>
-                <key>PHSupportedMediaTypes</key>
-                   <array>
-                        <!--TODO: Add this flag, if you want to support sharing video into your app-->
-                       <string>Video</string>
-                       <!--TODO: Add this flag, if you want to support sharing images into your app-->
-                       <string>Image</string>
-                   </array>
-                <key>NSExtensionActivationRule</key>
-                <dict>
-                    <!--TODO: Add this flag, if you want to support sharing text into your app-->
-                    <key>NSExtensionActivationSupportsText</key>
-                    <true/>
-                    <!--TODO: Add this tag, if you want to support sharing urls into your app-->
-                	<key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
-                	<integer>1</integer>
-                	<!--TODO: Add this flag, if you want to support sharing images into your app-->
-                    // <key>NSExtensionActivationSupportsImageWithMaxCount</key>
-                    // <integer>100</integer>
-                    // <!--TODO: Add this flag, if you want to support sharing video into your app-->
-                    // <key>NSExtensionActivationSupportsMovieWithMaxCount</key>
-                    // <integer>100</integer>
-                    // <!--TODO: Add this flag, if you want to support sharing other files into your app-->
-                    // <!--Change the integer to however many files you want to be able to share at a time-->
-    				// <key>NSExtensionActivationSupportsFileWithMaxCount</key>
-    				// <integer>1</integer>
-                </dict>
-            </dict>
-    		<key>NSExtensionMainStoryboard</key>
-    		<string>MainInterface</string>
-    		<key>NSExtensionPointIdentifier</key>
-    		<string>com.apple.share-services</string>
-    	</dict>
-		<key>LSApplicationQueriesSchemes</key>
-    <key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-9004947579124903~6181417192</string>
-	// <key>NSLocationWhenInUseUsageDescription</key>
-	// <string>Location Permissins are required when you open websites that uses location services.</string>
-	// <key>NSLocationAlwaysUsageDescription</key>
-	// <string>Location Permissins are required when you open websites that uses location services.</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<!-- Allowing arbitrary loads for HTTP requests -->
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-
-	<!-- Permission to access the internet -->
-	<key>NSAllowsArbitraryLoadsInWebContent</key>
-	<true/>
-
-	<!-- Location permissions -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to show your position on the map and for location-based services within the web content.</string>
-
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Your location is needed for continuous location-based services.</string>
-
-	<!-- Camera and Microphone access for web apps -->
-	<key>NSCameraUsageDescription</key>
-	<string>Camera access is needed to use camera-based features in web content.</string>
-
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone access is required to capture audio in web content.</string>
-
-	<!-- Photo library access for upload/download files -->
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Access to the photo library is needed to upload photos in web content.</string>
-
-	<!-- External storage access (in case your app needs file access) -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Permission is needed to save files from the web to your photo library.</string>
-
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to show your position on the map and for location-based services within the web content.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is needed for continuous location-based services.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to use camera-based features in web content.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required to capture audio in web content.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This allows us to deliver more relevant ads and measure ad performance.</string>
 </dict>
 </plist>

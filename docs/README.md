@@ -1,118 +1,136 @@
-# LinkVault — Documentation Index
+# LinkVault Documentation Portal
 
-**Version:** 1.0  
-**Last Updated:** March 20, 2026  
-**Project:** LinkVault — URL & Link Organizer (Full Reboot)  
-**Architecture Base:** Curate v1 (Adapted)
-
----
-
-## Quick Links
-
-| I want to… | Go to |
-|---|---|
-| Understand the full project plan & sprint schedule | [Master Project Plan](./00_PROJECT_OVERVIEW/Master_Project_Plan.md) |
-| Read the product requirements | [Product Requirements Document](./01_PRODUCT/Product_Requirements_Document.md) |
-| Know which features are free vs premium | [Premium Feature Gating Matrix](./01_PRODUCT/Premium_Feature_Gating_Matrix.md) |
-| Understand the code architecture | [Technical Architecture](./03_ARCHITECTURE/Technical_Architecture.md) |
-| Set up the Supabase database | [Supabase Schema Design](./03_ARCHITECTURE/Supabase_Schema_Design.md) |
-| Understand offline/cloud sync logic | [Cloud Sync & Scalability](./03_ARCHITECTURE/Cloud_Sync_Scalability_Strategy.md) |
-| Understand local vs cloud repository selection | [Data Persistence State Machine](./09_SPRINT_ARCHITECTURE/Data_Persistence_State_Machine.md) |
-| Set up RevenueCat + AdMob monetization | [Monetization Strategy & RevenueCat Guide](./05_MONETIZATION/Monetization_Strategy_RevenueCat_Guide.md) |
-| Read the coding rules and standards | [Developer Bible](./03_ARCHITECTURE/Developer_Bible.md) |
+Version: 2.1  
+Last Updated: 2026-03-24  
+Project Status: Documentation-First Execution Planning  
+Canonical Docs Root: `docs/`
 
 ---
 
-## Document Map
+## Start Here
 
-```
+If you are new to the project, read in this order:
+
+1. [Documentation Audit and Source-of-Truth Matrix](./00_PROJECT_OVERVIEW/Documentation_Audit_and_Source_of_Truth_Matrix.md)
+2. [Phase Roadmap, Tasks, Evaluation Gates, and Test Catalog](./00_PROJECT_OVERVIEW/Phase_Roadmap_Tasks_and_Test_Catalog.md) *(v1.1 execution source for P0-P6 gates and test IDs)*
+3. [Master Project Plan](./00_PROJECT_OVERVIEW/Master_Project_Plan.md) *(strategic and sprint narrative aligned to roadmap)*
+4. [Product Requirements Document](./01_PRODUCT/Product_Requirements_Document.md)
+4b. [Monetization model — free cloud, quotas, unit economics](./05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · [ADR-0002](./10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md)
+5. [Technical Architecture](./03_ARCHITECTURE/Technical_Architecture.md)
+6. [Supabase Schema and Migrations](./04_DATA_AND_MIGRATION/Supabase_Schema_and_Migrations.md)
+7. [Data Persistence State Machine](./04_DATA_AND_MIGRATION/Data_Persistence_State_Machine.md)
+8. [Execution Readiness Report](./10_DECISIONS_AND_RISKS/Execution_Readiness_Report.md)
+
+**Execution order note:** when there is wording drift, phase gates and test IDs in the roadmap document are the release-control source of truth.
+
+---
+
+## Canonical Information Architecture
+
+```text
 docs/
-├── README.md                           ← You are here
-│
+├── README.md
 ├── 00_PROJECT_OVERVIEW/
-│   └── Master_Project_Plan.md          ← Vision, sprints, timeline, success criteria
-│
 ├── 01_PRODUCT/
-│   ├── Product_Requirements_Document.md ← PRD: stories, features, KPIs
-│   └── Premium_Feature_Gating_Matrix.md ← Feature tiers, enforcement code
-│
+├── 02_DESIGN/
 ├── 03_ARCHITECTURE/
-│   ├── Technical_Architecture.md       ← Clean Architecture, layers, structure, conventions
-│   ├── Supabase_Schema_Design.md       ← Full SQL schema with RLS, triggers, indexes
-│   ├── Cloud_Sync_Scalability_Strategy.md ← Offline-first sync, delta sync, conflict resolution
-│   └── Developer_Bible.md              ← Non-negotiable coding rules
-│
+├── 04_DATA_AND_MIGRATION/
 ├── 05_MONETIZATION/
-│   └── Monetization_Strategy_RevenueCat_Guide.md ← Revenue model, RC setup, AdMob, testing
-│
-└── 09_SPRINT_ARCHITECTURE/
-    └── Data_Persistence_State_Machine.md ← When to use local vs Supabase repo
+├── 06_ANALYTICS/
+├── 07_SECURITY_AND_COMPLIANCE/
+├── 08_TESTING_AND_QUALITY/
+├── 09_RELEASE_AND_OPERATIONS/
+└── 10_DECISIONS_AND_RISKS/
 ```
 
----
+### Domain Ownership
 
-## Project Stack Reference
-
-| Layer | Technology |
-|---|---|
-| Framework | Flutter 3.x |
-| State management | Riverpod 2.x (only) |
-| Local DB | ObjectBox v4 |
-| Remote / Auth | Supabase (PostgreSQL + Auth + Storage) |
-| Navigation | GoRouter |
-| IAP | RevenueCat (`purchases_flutter`) |
-| Ads | Google AdMob (`google_mobile_ads`) |
-| URL metadata | `html` + `http` (custom parser) |
-| In-app browser | `flutter_custom_tabs` |
-| Share intent | `receive_sharing_intent` |
-| RSS | `xml` |
-| OTP input | `pinput` |
-| Flavors | `flutter_flavorizr` (dev / production) |
-| Env config | `flutter_dotenv` |
-| Error handling | `fpdart` (`Either<Failure, T>`) |
-| Logging | `logger` |
-
----
-
-## Architecture in One Diagram
-
-```
-[Share Intent / User Input]
-         │
-         ▼
-[Presentation Layer — Screens + Widgets + Riverpod Providers]
-         │
-         ▼ (calls use cases)
-[Application Layer — Use Cases (business logic + validation)]
-         │
-         ▼ (via repository interface)
-[Domain Layer — Entities + Repository Interfaces]
-         │
-         ▼ (implemented by)
-[Data Layer — LocalRepo (ObjectBox) or SupabaseRepo (Supabase)]
-         │
-         ▼
-[Infrastructure — ObjectBox Store / Supabase Client]
-```
-
-**Repository selection is automatic via Riverpod:**
-```
-Guest / Free  →  LocalRepository (ObjectBox, offline-always)
-Premium       →  SupabaseRepository (Supabase, syncs to cloud)
-```
-
----
-
-## Key Design Decisions
-
-| Decision | Choice | Reason |
+| Section | Purpose | Primary Owner |
 |---|---|---|
-| State management | Riverpod only | Single source of truth, compile-time safety |
-| Backend | Supabase only | Original app had Firebase + Supabase — caused bugs |
-| Local DB | ObjectBox v4 | 10x faster than Isar v3 for reactive queries |
-| Nested collections | `parent_id: String?` | Simple, portable, works in ObjectBox and Supabase |
-| URL ordering | `position: FLOAT8` | Fractional indexing avoids mass re-numbering |
-| Conflict resolution | Last-write-wins by `updated_at` | Simple, correct for single-user app |
-| Ad model | 1 rewarded ad/day = 24hr pass | Lower friction than hard paywall, higher ad engagement |
-| Shared Supabase project | Same project as Curate | Shared auth.users; enables future cross-app features |
-| Shared RevenueCat project | Same project as Curate | Shared entitlements; enables future bundle subscription |
+| `00_PROJECT_OVERVIEW` | Strategy, roadmap, governance context | Product + Engineering |
+| `01_PRODUCT` | Functional/non-functional requirements | Product |
+| `02_DESIGN` | UX language and design contracts | Product + Design |
+| `03_ARCHITECTURE` | Runtime architecture and coding contracts | Engineering |
+| `04_DATA_AND_MIGRATION` | Schema, sync, migration, reconciliation | Engineering |
+| `05_MONETIZATION` | Revenue and entitlement behavior | Product + Engineering |
+| `06_ANALYTICS` | Metrics model and event definitions | Product + Engineering |
+| `07_SECURITY_AND_COMPLIANCE` | Security controls and compliance posture | Engineering |
+| `08_TESTING_AND_QUALITY` | Test strategy, quality gates | Engineering + QA |
+| `09_RELEASE_AND_OPERATIONS` | Deployment, incidents, runbooks | Engineering + Ops |
+| `10_DECISIONS_AND_RISKS` | ADRs, risk register, readiness | Engineering Leadership |
+
+---
+
+## Metadata Standard (Mandatory in All Docs)
+
+Each active document must include this front section:
+
+- Version
+- Last Updated (YYYY-MM-DD)
+- Status (`Draft`, `Active`, `Approved`, `Deprecated`, `Archived`)
+- Owner (role/team)
+- Depends On (linked docs)
+- Blocks (optional, linked docs/tasks)
+
+A full template is provided in:
+[Document Metadata Template](./10_DECISIONS_AND_RISKS/Document_Metadata_Template.md)
+
+---
+
+## Source-of-Truth Rules
+
+1. `docs/` is the only canonical documentation tree for LinkVault execution.
+2. `curate/docs/` is reference-only and cannot be used as primary implementation authority.
+3. One topic must map to one canonical owner document.
+4. If two docs conflict, the doc listed in the source-of-truth matrix wins.
+5. Deprecated guidance must be explicitly marked and linked to the replacement document.
+
+---
+
+## Core Engineering Baseline
+
+| Decision Area | Canonical Choice |
+|---|---|
+| Architecture base | Curate-inspired clean architecture, adapted for LinkVault |
+| Domain model for collections/items | LinkVault-specific `lv_collections` + `lv_urls` |
+| Backend | Supabase-first (Auth + PostgreSQL + Storage) |
+| Local persistence | ObjectBox local-first |
+| Tier switching | Repository selection by auth/tier/migration state |
+| Legacy migration | Optional Firebase-era import path (non-blocking for greenfield users) |
+
+---
+
+## Document Lifecycle
+
+| Status | Meaning | Allowed Use |
+|---|---|---|
+| Draft | In progress and incomplete | Discussion only |
+| Active | Current working guidance | Implementation allowed |
+| Approved | Signed-off baseline | Implementation required to follow |
+| Deprecated | Superseded by newer doc | Do not use for new work |
+| Archived | Historical reference only | Read-only context |
+
+---
+
+## Maintenance Protocol
+
+- Update `Last Updated` and version on every substantial change.
+- Cross-link impacted docs whenever architecture or data behavior changes.
+- Open a new ADR for decisions that alter boundaries, schema, migration logic, or release policy.
+- Re-run readiness checks before implementation starts and before each major milestone.
+- Keep `Master_Project_Plan.md` phase/sprint text synchronized with roadmap gates after any phase-level change.
+
+---
+
+## Critical Links
+
+- [Execution Roadmap](./00_PROJECT_OVERVIEW/Phase_Roadmap_Tasks_and_Test_Catalog.md)
+- [Master Plan](./00_PROJECT_OVERVIEW/Master_Project_Plan.md)
+- [Cursor Usage SOP](./00_PROJECT_OVERVIEW/Cursor_Usage_SOP.md)
+- [Architecture](./03_ARCHITECTURE/Technical_Architecture.md)
+- [Developer Bible](./03_ARCHITECTURE/Developer_Bible.md)
+- [Data and Migration Suite](./04_DATA_AND_MIGRATION/)
+- [Security and Compliance](./07_SECURITY_AND_COMPLIANCE/)
+- [Testing and Quality](./08_TESTING_AND_QUALITY/)
+- [Release and Operations](./09_RELEASE_AND_OPERATIONS/)
+- [ADRs and Risks](./10_DECISIONS_AND_RISKS/)

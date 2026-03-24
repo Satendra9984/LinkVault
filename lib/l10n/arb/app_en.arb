@@ -1,0 +1,19 @@
+{
+    "@@locale": "en",
+    "appTitle": "Curate",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "collections": "Collections",
+    "@collections": {
+        "description": "Label for collections"
+    },
+    "items": "Items",
+    "@items": {
+        "description": "Label for items"
+    },
+    "settings": "Settings",
+    "@settings": {
+        "description": "Label for settings"
+    }
+}
