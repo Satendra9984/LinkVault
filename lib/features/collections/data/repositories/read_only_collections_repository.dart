@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/collection.dart';
 import '../../domain/repositories/i_collections_repository.dart';
 
@@ -33,19 +34,34 @@ class ReadOnlyCollectionsRepository implements ICollectionsRepository {
   // ── Write operations — gate ───────────────────────────────────────────────
 
   @override
-  Future<Either<Failure, void>> createCollection(Collection collection) async =>
-      const Left(_error);
+  Future<Either<Failure, void>> createCollection(Collection collection) async {
+    AppLogger.w(
+        '[collections] createCollection blocked (read-only cloud) title="${collection.title}"');
+    return const Left(_error);
+  }
 
   @override
-  Future<Either<Failure, void>> updateCollection(Collection collection) async =>
-      const Left(_error);
+  Future<Either<Failure, void>> updateCollection(Collection collection) async {
+    AppLogger.w(
+        '[collections] updateCollection blocked (read-only cloud) id=${collection.id}');
+    return const Left(_error);
+  }
 
   @override
-  Future<Either<Failure, void>> deleteCollection(String id) async =>
-      const Left(_error);
+  Future<Either<Failure, void>> deleteCollection(String id) async {
+    AppLogger.w('[collections] deleteCollection blocked (read-only cloud) id=$id');
+    return const Left(_error);
+  }
 
   @override
   Future<Either<Failure, void>> updateCollectionPosition(
-          String id, double newPosition) async =>
-      const Left(_error);
+      String id, double newPosition) async {
+    AppLogger.w(
+        '[collections] updateCollectionPosition blocked (read-only cloud) id=$id');
+    return const Left(_error);
+  }
+
+  @override
+  Future<Either<Failure, void>> recordCollectionAccess(String id) =>
+      _inner.recordCollectionAccess(id);
 }

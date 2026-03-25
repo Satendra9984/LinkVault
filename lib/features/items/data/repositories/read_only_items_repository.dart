@@ -45,6 +45,23 @@ class ReadOnlyItemsRepository implements IItemsRepository {
       const Left(_error);
 
   @override
+  Future<Either<Failure, void>> toggleItemPin(String id) async =>
+      const Left(_error);
+
+  @override
+  Future<Either<Failure, void>> toggleItemArchive(String id) async =>
+      const Left(_error);
+
+  @override
+  Future<Either<Failure, void>> markItemReadAndTrack(String id) async =>
+      const Left(_error);
+
+  @override
+  Future<Either<Failure, void>> reorderItems(
+          String collectionId, List<String> orderedIds) async =>
+      const Left(_error);
+
+  @override
   Future<Either<Failure, void>> updateItemPosition(
           String id, double newPosition) async =>
       const Left(_error);

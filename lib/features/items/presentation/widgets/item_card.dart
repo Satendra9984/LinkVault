@@ -18,7 +18,7 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = item.status == ItemStatus.completed;
+    final isArchived = item.status == ItemStatus.archived;
 
     return InkWell(
       onTap: onTap,
@@ -49,7 +49,7 @@ class ItemCard extends StatelessWidget {
                           size: 48, color: Colors.grey.shade400),
                     ),
                   // Status Overlay
-                  if (isCompleted)
+                  if (isArchived)
                     Container(
                       color: Colors.black.withValues(alpha: 0.4),
                       child: const Center(
@@ -78,11 +78,11 @@ class ItemCard extends StatelessWidget {
                                 width: 1),
                           ),
                           child: Icon(
-                            isCompleted
+                            isArchived
                                 ? Icons.check_circle
                                 : Icons.circle_outlined,
                             color:
-                                isCompleted ? Colors.greenAccent : Colors.white,
+                                isArchived ? Colors.greenAccent : Colors.white,
                             size: 22,
                           ),
                         ),
@@ -108,7 +108,8 @@ class ItemCard extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ).copyWith(
-                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                    decoration:
+                        isArchived ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -140,22 +141,22 @@ class ItemCard extends StatelessWidget {
 
   String _getStatusText(ItemStatus status) {
     switch (status) {
-      case ItemStatus.pending:
-        return 'pending';
-      case ItemStatus.visited:
-        return 'visited';
-      case ItemStatus.completed:
-        return 'completed';
+      case ItemStatus.unread:
+        return 'unread';
+      case ItemStatus.read:
+        return 'read';
+      case ItemStatus.archived:
+        return 'archived';
     }
   }
 
   IconData _getStatusIcon(ItemStatus status) {
     switch (status) {
-      case ItemStatus.pending:
+      case ItemStatus.unread:
         return Icons.schedule_rounded;
-      case ItemStatus.visited:
+      case ItemStatus.read:
         return Icons.check_circle_outline_rounded;
-      case ItemStatus.completed:
+      case ItemStatus.archived:
         return Icons.star_border_rounded;
     }
   }

@@ -9,5 +9,10 @@ String collectionSummarySubtitle(Collection collection) {
   }
   final links = collection.itemCount;
   parts.add('$links link${links == 1 ? '' : 's'}');
-  return parts.join(' · ');
+  final summary = parts.join(' · ');
+  final d = collection.description?.trim();
+  if (d != null && d.isNotEmpty) {
+    return '$d · $summary';
+  }
+  return summary;
 }

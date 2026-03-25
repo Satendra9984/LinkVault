@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
-import '../../domain/entities/item.dart';
 import '../providers/forms/item_form_notifier.dart';
 
 /// Create / Edit screen for a single Item.
@@ -39,8 +38,6 @@ class CreateEditItemScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
-  bool _statusOpen = false;
-
   @override
   void initState() {
     super.initState();
@@ -77,8 +74,6 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final microLabelColor = isDark ? Colors.grey[500]! : Colors.grey[500]!;
     final valueTextColor = isDark ? Colors.white : Colors.black87;
-    final dividerColor =
-        isDark ? Colors.white.withValues(alpha: 0.07) : const Color(0xFFF0F0F0);
 
     return Scaffold(
       backgroundColor: bg,
@@ -112,16 +107,40 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // ── Title field — own card ─────────────────────
+                        // ── URL field — required ────────────────────────
                         _FieldCard(
                           isDark: isDark,
                           cardColor: cardColor,
                           child: _LabeledField(
-                            label: 'Item title',
+                            label: 'URL',
                             isRequired: true,
                             labelColor: microLabelColor,
                             child: SmartFormField(
-                              hint: 'Enter title',
+                              hint: 'https://example.com/article',
+                              initialValue: state.link,
+                              onChanged: notifier.updateLink,
+                              errorText: state.fieldErrors['link'],
+                              keyboardType: TextInputType.url,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: valueTextColor,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ── Title field — required ──────────────────────
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: _LabeledField(
+                            label: 'Title',
+                            isRequired: true,
+                            labelColor: microLabelColor,
+                            child: SmartFormField(
+                              hint: 'e.g. LinkVault docs',
                               initialValue: state.title,
                               onChanged: notifier.updateTitle,
                               errorText: state.fieldErrors['title'],
@@ -137,33 +156,53 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
 
                         const SizedBox(height: 12),
 
-                        // ── Image field — own card ─────────────────────
+                        // ── Preview identity block ──────────────────────
                         _FieldCard(
                           isDark: isDark,
                           cardColor: cardColor,
-                          child: _ImageLabeledRow(
-                            imagePath: state.imagePath,
-                            isDark: isDark,
+                          child: _UrlIdentityPreview(
+                            link: state.link,
+                            siteName: state.siteName,
+                            faviconUrl: state.faviconUrl,
                             labelColor: microLabelColor,
-                            onPickTap: () =>
-                                _showImageSourceSheet(context, notifier),
-                            onRemove: () => notifier.updateImagePath(null),
+                            valueTextColor: valueTextColor,
+                            isDark: isDark,
                           ),
                         ),
 
                         const SizedBox(height: 12),
 
-                        // ── Description field — own card ───────────────
+                        // ── Thumbnail field — own card ──────────────────
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: _ImageLabeledRow(
+                            imageUrl: state.imageUrl,
+                            imagePath: state.imagePath,
+                            isDark: isDark,
+                            labelColor: microLabelColor,
+                            onPickTap: () =>
+                                _showImageSourceSheet(context, notifier),
+                            onRemove: () {
+                              notifier.updateImageUrl(null);
+                              notifier.updateImagePath(null);
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ── Notes field — own card ──────────────────────
                         _FieldCard(
                           isDark: isDark,
                           cardColor: cardColor,
                           child: _LabeledField(
-                            label: 'Description',
+                            label: 'Notes',
                             labelColor: microLabelColor,
                             child: SmartFormField(
                               hint: 'Add a note...',
-                              initialValue: state.description,
-                              onChanged: notifier.updateDescription,
+                              initialValue: state.annotation,
+                              onChanged: notifier.updateLocation,
                               maxLines: 3,
                               style: TextStyle(
                                 fontSize: 15,
@@ -175,155 +214,22 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
 
                         const SizedBox(height: 12),
 
-                        // ── Status field — own card, inline dropdown ───
+                        // ── Tags field — own card ───────────────────────
                         _FieldCard(
                           isDark: isDark,
                           cardColor: cardColor,
-                          child: _StatusInlineDropdown(
-                            status: state.status,
-                            isOpen: _statusOpen,
-                            isDark: isDark,
+                          child: _LabeledField(
+                            label: 'Tags',
                             labelColor: microLabelColor,
-                            valueColor: valueTextColor,
-                            dividerColor: dividerColor,
-                            onTap: () =>
-                                setState(() => _statusOpen = !_statusOpen),
-                            onSelect: (s) {
-                              notifier.updateStatus(s);
-                              setState(() => _statusOpen = false);
-                            },
+                            child: SmartFormField(
+                              hint: 'flutter, docs, reference',
+                              initialValue: state.tags,
+                              onChanged: notifier.updateTags,
+                              style: TextStyle(
+                                  fontSize: 15, color: valueTextColor),
+                            ),
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-
-                        // ── More fields label + chips ──────────────────
-                        _MoreFieldsChipsRow(
-                          expandedFields: state.expandedFields,
-                          isDark: isDark,
-                          onToggle: notifier.toggleExpandedField,
-                        ),
-
-                        // ── Each expanded more-field = own card ────────
-                        if (state.expandedFields.contains('link')) ...[
-                          const SizedBox(height: 12),
-                          _FieldCard(
-                            isDark: isDark,
-                            cardColor: cardColor,
-                            child: _LabeledField(
-                              label: 'Link',
-                              labelColor: microLabelColor,
-                              child: SmartFormField(
-                                hint: 'https://',
-                                initialValue: state.link,
-                                onChanged: notifier.updateLink,
-                                keyboardType: TextInputType.url,
-                                style: TextStyle(
-                                    fontSize: 15, color: valueTextColor),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        if (state.expandedFields.contains('location')) ...[
-                          const SizedBox(height: 12),
-                          _FieldCard(
-                            isDark: isDark,
-                            cardColor: cardColor,
-                            child: _LabeledField(
-                              label: 'Location',
-                              labelColor: microLabelColor,
-                              child: SmartFormField(
-                                hint: 'Address or place name',
-                                initialValue: state.location,
-                                onChanged: notifier.updateLocation,
-                                maxLines: 2,
-                                style: TextStyle(
-                                    fontSize: 15, color: valueTextColor),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        if (state.expandedFields.contains('tags')) ...[
-                          const SizedBox(height: 12),
-                          _FieldCard(
-                            isDark: isDark,
-                            cardColor: cardColor,
-                            child: _LabeledField(
-                              label: 'Tags',
-                              labelColor: microLabelColor,
-                              child: SmartFormField(
-                                hint: 'coffee, cozy, must-visit',
-                                initialValue: state.tags,
-                                onChanged: notifier.updateTags,
-                                style: TextStyle(
-                                    fontSize: 15, color: valueTextColor),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        // ── Dynamic Custom Fields ──────────────────────
-                        ...state.customFields.values.map((field) {
-                          TextInputType keyboardType = TextInputType.text;
-                          int maxLines = 1;
-
-                          switch (field.type) {
-                            case CustomFieldType.number:
-                              keyboardType = TextInputType.number;
-                              break;
-                            case CustomFieldType.url:
-                              keyboardType = TextInputType.url;
-                              break;
-                            case CustomFieldType.text:
-                            default:
-                              keyboardType = TextInputType.multiline;
-                              maxLines = 2;
-                              break;
-                          }
-
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                _FieldCard(
-                                  isDark: isDark,
-                                  cardColor: cardColor,
-                                  child: _LabeledField(
-                                    label: field.name,
-                                    labelColor: microLabelColor,
-                                    child: SmartFormField(
-                                      hint: 'Enter ${field.name.toLowerCase()}',
-                                      initialValue: field.value?.toString(),
-                                      onChanged: (val) =>
-                                          notifier.updateCustomFieldValue(
-                                              field.id, val),
-                                      keyboardType: keyboardType,
-                                      maxLines: maxLines,
-                                      style: TextStyle(
-                                          fontSize: 15, color: valueTextColor),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        notifier.removeCustomField(field.id),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 18,
-                                      color: Colors.grey[400],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
                       ],
                     ),
                   ),
@@ -419,93 +325,6 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
       final picked = await picker.pickImage(source: source);
       if (picked != null && mounted) notifier.updateImagePath(picked.path);
     }
-  }
-
-  void _showAddCustomFieldSheet(
-      BuildContext context, ItemFormNotifier notifier, bool isDark) {
-    String fieldName = '';
-    CustomFieldType fieldType = CustomFieldType.text;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: 24,
-            right: 24,
-            top: 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Add Custom Field',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Field Name',
-                  hintText: 'e.g. Rating, Cook Time, Deal Size',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onChanged: (val) => fieldName = val,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<CustomFieldType>(
-                // ignore: deprecated_member_use
-                value: fieldType,
-                decoration: InputDecoration(
-                  labelText: 'Field Type',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                      value: CustomFieldType.text, child: Text('Text')),
-                  DropdownMenuItem(
-                      value: CustomFieldType.number, child: Text('Number')),
-                  DropdownMenuItem(
-                      value: CustomFieldType.url, child: Text('URL')),
-                  // We can add Date/Boolean later when we build UI fields for them
-                ],
-                onChanged: (val) {
-                  if (val != null) setState(() => fieldType = val);
-                },
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  if (fieldName.trim().isNotEmpty) {
-                    notifier.addCustomField(fieldName.trim(), fieldType);
-                    Navigator.pop(ctx);
-                  }
-                },
-                child: const Text('Add Field',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _showSuccessDialog(BuildContext context) {
@@ -654,6 +473,7 @@ class _LabeledField extends StatelessWidget {
 /// Image row: micro-label "Image" above, then left-aligned 120px thumbnail
 /// (or dashed "+ " placeholder if no image).
 class _ImageLabeledRow extends StatelessWidget {
+  final String? imageUrl;
   final String? imagePath;
   final bool isDark;
   final Color labelColor;
@@ -661,6 +481,7 @@ class _ImageLabeledRow extends StatelessWidget {
   final VoidCallback onRemove;
 
   const _ImageLabeledRow({
+    required this.imageUrl,
     required this.imagePath,
     required this.isDark,
     required this.labelColor,
@@ -670,6 +491,7 @@ class _ImageLabeledRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayImage = imageUrl ?? imagePath;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -683,7 +505,7 @@ class _ImageLabeledRow extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        if (imagePath != null) ...[
+        if (displayImage != null) ...[
           Center(
             child: Stack(
               children: [
@@ -696,9 +518,9 @@ class _ImageLabeledRow extends StatelessWidget {
                         maxHeight: 350,
                         maxWidth: double.infinity,
                       ),
-                      child: imagePath!.startsWith('http')
-                          ? Image.network(imagePath!, fit: BoxFit.contain)
-                          : Image.file(File(imagePath!), fit: BoxFit.contain),
+                      child: displayImage.startsWith('http')
+                          ? Image.network(displayImage, fit: BoxFit.contain)
+                          : Image.file(File(displayImage), fit: BoxFit.contain),
                     ),
                   ),
                 ),
@@ -750,248 +572,112 @@ class _ImageLabeledRow extends StatelessWidget {
   }
 }
 
-/// Status field: micro-label "Status" above, value + chevron below,
-/// expands inline to show selectable options — no bottom sheet.
-class _StatusInlineDropdown extends StatelessWidget {
-  final ItemStatus status;
-  final bool isOpen;
-  final bool isDark;
-  final Color labelColor;
-  final Color valueColor;
-  final Color dividerColor;
-  final VoidCallback onTap;
-  final ValueChanged<ItemStatus> onSelect;
-
-  const _StatusInlineDropdown({
-    required this.status,
-    required this.isOpen,
-    required this.isDark,
+class _UrlIdentityPreview extends StatelessWidget {
+  const _UrlIdentityPreview({
+    required this.link,
+    required this.siteName,
+    required this.faviconUrl,
     required this.labelColor,
-    required this.valueColor,
-    required this.dividerColor,
-    required this.onTap,
-    required this.onSelect,
+    required this.valueTextColor,
+    required this.isDark,
   });
 
-  String _labelFor(ItemStatus s) {
-    switch (s) {
-      case ItemStatus.pending:
-        return 'Pending';
-      case ItemStatus.visited:
-        return 'Visited';
-      case ItemStatus.completed:
-        return 'Completed';
+  final String? link;
+  final String? siteName;
+  final String? faviconUrl;
+  final Color labelColor;
+  final Color valueTextColor;
+  final bool isDark;
+
+  String _domainFromLink(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    final normalized = raw.startsWith('http') ? raw : 'https://$raw';
+    try {
+      final host = Uri.parse(normalized).host;
+      return host.startsWith('www.') ? host.substring(4) : host;
+    } catch (_) {
+      return raw;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Header row — tappable
-        GestureDetector(
-          onTap: onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Status',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: labelColor,
-                  letterSpacing: 0.1,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Text(
-                    _labelFor(status),
-                    style: TextStyle(fontSize: 15, color: valueColor),
-                  ),
-                  const Spacer(),
-                  AnimatedRotation(
-                    turns: isOpen ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(Icons.keyboard_arrow_down_rounded,
-                        size: 22, color: Colors.grey[400]),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+    final domain = _domainFromLink(link);
+    final displayName = (siteName?.trim().isNotEmpty ?? false)
+        ? siteName!.trim()
+        : domain;
 
-        // Inline options — animated
-        AnimatedCrossFade(
-          duration: const Duration(milliseconds: 200),
-          crossFadeState:
-              isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          firstChild: const SizedBox.shrink(),
-          secondChild: Column(
-            children: [
-              const SizedBox(height: 10),
-              Divider(height: 1, color: dividerColor),
-              ...ItemStatus.values.map((s) {
-                final selected = s == status;
-                return InkWell(
-                  onTap: () => onSelect(s),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      children: [
-                        Text(
-                          _labelFor(s),
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: selected ? AppColors.primary : valueColor,
-                            fontWeight:
-                                selected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (selected)
-                          const Icon(Icons.check,
-                              size: 16, color: AppColors.primary),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// "More fields" section: label + horizontally scrollable chips.
-/// Chips adapt color properly in both light AND dark mode.
-class _MoreFieldsChipsRow extends ConsumerWidget {
-  final Set<String> expandedFields;
-  final bool isDark;
-  final ValueChanged<String> onToggle;
-
-  const _MoreFieldsChipsRow({
-    required this.expandedFields,
-    required this.isDark,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'More fields',
+          'Preview',
           style: TextStyle(
-            fontSize: 14,
-            color: isDark ? Colors.grey[400] : Colors.grey[600],
-            fontWeight: FontWeight.w500,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: labelColor,
+            letterSpacing: 0.1,
           ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        const SizedBox(height: 8),
+        Row(
           children: [
-            _FieldChip(
-              label: 'Location',
-              active: expandedFields.contains('location'),
-              isDark: isDark,
-              onTap: () => onToggle('location'),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: faviconUrl != null && faviconUrl!.startsWith('http')
+                    ? Image.network(
+                        faviconUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _fallbackFavicon(),
+                      )
+                    : _fallbackFavicon(),
+              ),
             ),
-            _FieldChip(
-              label: 'Tags',
-              active: expandedFields.contains('tags'),
-              isDark: isDark,
-              onTap: () => onToggle('tags'),
-            ),
-            _FieldChip(
-              label: 'Link',
-              active: expandedFields.contains('link'),
-              isDark: isDark,
-              onTap: () => onToggle('link'),
-            ),
-            _FieldChip(
-              label: 'Custom field',
-              active: false,
-              isDark: isDark,
-              // we don't use checkmark for custom fields because it's a 1-to-many relationship
-              onTap: () {
-                final state = context
-                    .findAncestorStateOfType<_CreateEditItemScreenState>();
-                if (state != null) {
-                  state._showAddCustomFieldSheet(context,
-                      ref.read(itemFormNotifierProvider.notifier), isDark);
-                }
-              },
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName.isNotEmpty ? displayName : 'No preview yet',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: valueTextColor,
+                    ),
+                  ),
+                  if (domain.isNotEmpty)
+                    Text(
+                      domain,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
       ],
     );
   }
-}
 
-/// Animated pill chip — correctly adapts to dark mode via [isDark].
-class _FieldChip extends StatelessWidget {
-  final String label;
-  final bool active;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _FieldChip({
-    required this.label,
-    required this.active,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Dark mode: inactive chip = dark surface, not white
-    final inactiveBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
-    final inactiveBorder = isDark ? Colors.white24 : Colors.grey[300]!;
-    final inactiveText = isDark ? Colors.grey[300]! : Colors.grey[600]!;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color:
-              active ? AppColors.primary.withValues(alpha: 0.15) : inactiveBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: active ? AppColors.primary : inactiveBorder,
-            width: active ? 1.5 : 1.0,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              active ? Icons.check : Icons.add,
-              size: 13,
-              color: active ? AppColors.primary : inactiveText,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                color: active ? AppColors.primary : inactiveText,
-              ),
-            ),
-          ],
-        ),
+  Widget _fallbackFavicon() {
+    return Container(
+      color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.language_rounded,
+        size: 14,
+        color: isDark ? Colors.grey[400] : Colors.grey[600],
       ),
     );
   }

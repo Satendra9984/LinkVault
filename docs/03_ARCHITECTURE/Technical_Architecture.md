@@ -1,6 +1,6 @@
 # LinkVault Technical Architecture
 
-Version: 2.1  
+Version: 2.3  
 Last Updated: 2026-03-24  
 Status: Active  
 Owner: Engineering  
@@ -237,10 +237,22 @@ Before implementation starts, verify:
 
 ---
 
+## Related: primary navigation and Home UX
+
+Screen-level information architecture (Home vs nested collections, pinned/recent, folders + URLs) is defined in:
+
+- [Home_and_Collections_UX_Architecture.md](./Home_and_Collections_UX_Architecture.md)
+- Binding product decisions: [ADR_0003: Home Landing and Folder Content Model](../10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md)
+- Visual-only contract: [Home_Collections_Visual_Contract.md](../02_DESIGN/Home_Collections_Visual_Contract.md)
+
+---
+
 ## Revision History
 
 | Version | Date | Notes |
 |---|---|---|
+| 2.3 | 2026-03-24 | Related section: ADR-0003 + Home visual contract links. |
+| 2.2 | 2026-03-24 | Link to Home and Collections UX architecture (primary navigation). |
 | 2.1 | 2026-03-24 | Monetization alignment: free **account** uses Supabase + quotas; guest local-only. |
 | 2.0 | 2026-03-23 | Rewritten as canonical architecture contract for execution readiness. |
 | 1.0 | 2026-03-20 | Initial reboot architecture draft. |

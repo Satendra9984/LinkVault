@@ -103,7 +103,7 @@
     },
     {
       "id": "3:5730371926328866297",
-      "lastPropertyId": "17:3802886459136006474",
+      "lastPropertyId": "25:1285019974657237596",
       "name": "CollectionModel",
       "properties": [
         {
@@ -193,13 +193,53 @@
           "id": "17:3802886459136006474",
           "name": "childCount",
           "type": 6
+        },
+        {
+          "id": "18:8982339870197124853",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "19:9038032919751803621",
+          "name": "iconJson",
+          "type": 9
+        },
+        {
+          "id": "20:2963113255417979106",
+          "name": "itemsLayout",
+          "type": 9
+        },
+        {
+          "id": "21:9003180395958761994",
+          "name": "itemsSortDefault",
+          "type": 9
+        },
+        {
+          "id": "22:8443699427568464173",
+          "name": "openLinksIn",
+          "type": 9
+        },
+        {
+          "id": "23:5173186625873116228",
+          "name": "showLinkPreviews",
+          "type": 1
+        },
+        {
+          "id": "24:1155281046020825262",
+          "name": "lastAccessedAt",
+          "type": 10
+        },
+        {
+          "id": "25:1285019974657237596",
+          "name": "childCollectionsLayout",
+          "type": 9
         }
       ],
       "relations": []
     },
     {
       "id": "4:328533937922981262",
-      "lastPropertyId": "17:9014242142404849946",
+      "lastPropertyId": "29:7717661519180054530",
       "name": "ItemModel",
       "properties": [
         {
@@ -246,18 +286,8 @@
           "type": 9
         },
         {
-          "id": "9:210722606043499996",
-          "name": "location",
-          "type": 9
-        },
-        {
           "id": "10:6167179647945300023",
           "name": "tags",
-          "type": 9
-        },
-        {
-          "id": "11:93655818926627561",
-          "name": "customFieldsJson",
           "type": 9
         },
         {
@@ -294,6 +324,66 @@
           "flags": 520,
           "indexId": "4:4471310188009959902",
           "relationTarget": "CollectionModel"
+        },
+        {
+          "id": "18:3982830580985195947",
+          "name": "annotation",
+          "type": 9
+        },
+        {
+          "id": "19:2297163299018166586",
+          "name": "faviconUrl",
+          "type": 9
+        },
+        {
+          "id": "20:6580459291987530291",
+          "name": "dominantColor",
+          "type": 9
+        },
+        {
+          "id": "21:3791120418302521793",
+          "name": "siteName",
+          "type": 9
+        },
+        {
+          "id": "22:4812080865479975745",
+          "name": "canonicalUrl",
+          "type": 9
+        },
+        {
+          "id": "23:6704937845926635303",
+          "name": "contentType",
+          "type": 9
+        },
+        {
+          "id": "24:4238896887064578209",
+          "name": "publishedAt",
+          "type": 10
+        },
+        {
+          "id": "25:2671407846795417719",
+          "name": "isPinned",
+          "type": 1
+        },
+        {
+          "id": "26:6603623744955188865",
+          "name": "clickCount",
+          "type": 6
+        },
+        {
+          "id": "27:4561958621040648625",
+          "name": "lastAccessedAt",
+          "type": 10
+        },
+        {
+          "id": "28:1484607773168578181",
+          "name": "isDeleted",
+          "type": 1
+        },
+        {
+          "id": "29:7717661519180054530",
+          "name": "deletedAt",
+          "type": 10
         }
       ],
       "relations": []
@@ -331,7 +421,10 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    210722606043499996,
+    93655818926627561
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

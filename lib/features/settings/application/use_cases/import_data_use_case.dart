@@ -195,9 +195,11 @@ class ImportDataUseCase {
   }
 
   Collection _collectionFromJson(Map<String, dynamic> json) {
+    final desc = json['description'];
     return Collection(
       id: json['id'],
       title: json['name'],
+      description: desc is String ? desc : desc?.toString(),
       category: json['category'] ?? 'default',
       colorHex: json['colorHex'] ?? '#000000',
       iconName: AppCategories.getIconForCategory(json['category'] ?? 'default'),
@@ -208,10 +210,16 @@ class ImportDataUseCase {
   }
 
   Item _itemFromJson(Map<String, dynamic> json) {
-    final statusStr = json['status'] ?? 'pending';
+    final rawStatus = json['status'] ?? 'unread';
+    final statusStr = switch (rawStatus) {
+      'pending' => 'unread',
+      'visited' => 'read',
+      'completed' => 'archived',
+      _ => rawStatus.toString(),
+    };
     final parsedStatus = ItemStatus.values.firstWhere(
       (e) => e.name == statusStr,
-      orElse: () => ItemStatus.pending,
+      orElse: () => ItemStatus.unread,
     );
 
     return Item(
@@ -222,7 +230,7 @@ class ImportDataUseCase {
       link: json['link'],
       imagePath: null,
       imageUrl: null,
-      customFields: const [], // Standard 1.0 backup drops customfields entirely right now unless added in a future spec update.
+      tags: '', // Standard 1.0 backup drops customfields entirely right now unless added in a future spec update.
       status: parsedStatus,
       position: 0.0,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),

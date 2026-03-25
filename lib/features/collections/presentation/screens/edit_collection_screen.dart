@@ -7,6 +7,9 @@ import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../providers/collections_providers.dart';
 import '../providers/forms/collection_form_notifier.dart';
+import '../widgets/collection_category_sheet.dart';
+import '../widgets/collection_color_sheet.dart';
+import '../widgets/collection_extended_fields_section.dart';
 import '../../../items/presentation/providers/items_providers.dart';
 import '../../domain/collection_parent_validation.dart';
 import '../../domain/entities/collection.dart';
@@ -35,6 +38,9 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        ref
+            .read(collectionsRepositoryProvider)
+            .recordCollectionAccess(widget.collectionId);
         ref
             .read(collectionFormNotifierProvider.notifier)
             .initialize(widget.collectionId);
@@ -68,6 +74,7 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
 
     ref.listen(collectionFormNotifierProvider, (previous, next) {
       if (next.isSuccess && mounted) {
+        ref.invalidate(collectionsListProvider);
         context.pop();
       }
       if (next.errorMessage != null &&
@@ -78,12 +85,10 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
       }
     });
 
-    Color baseColor;
-    try {
-      baseColor = Color(int.parse(state.colorHex.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      baseColor = const Color(0xFFB3E0FF);
-    }
+    final accentColor =
+        AppColors.collectionCoverEmojiTint(state.colorHex, theme);
+    final naturalEmoji =
+        AppColors.isCollectionCoverNoColor(state.colorHex);
 
     final bgColor = theme.scaffoldBackgroundColor;
     final textColor = theme.colorScheme.onSurface;
@@ -153,71 +158,172 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Category Selector
-                          GestureDetector(
-                            onTap: () => _showCategoryPicker(context, isDark,
-                                state.category, baseColor, notifier),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: inputBgColor,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
+                          CollectionExtendedFieldsSection(
+                            inputBgColor: inputBgColor,
+                            textColor: textColor,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Category row: emoji vs category sheet
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: inputBgColor,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text('Category',
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: Text(
+                                          'Category',
                                           style: TextStyle(
-                                              color: theme
-                                                  .colorScheme.onSurfaceVariant,
-                                              fontSize: 12)),
+                                            color: theme.colorScheme
+                                                .onSurfaceVariant,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
                                       const SizedBox(height: 2),
                                       Row(
                                         children: [
-                                          ColorFiltered(
-                                            colorFilter: ColorFilter.mode(
-                                              isDark
-                                                  ? baseColor
-                                                  : Color.lerp(baseColor,
-                                                          Colors.black, 0.6) ??
-                                                      baseColor,
-                                              BlendMode.srcIn,
-                                            ),
-                                            child: Text(
-                                              AppCategories.getIconForCategory(
-                                                  state.category),
-                                              style:
-                                                  const TextStyle(fontSize: 16),
+                                          Semantics(
+                                            button: true,
+                                            label: 'Change emoji',
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                onTap: () => _showIconPicker(
+                                                    context, notifier),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: naturalEmoji
+                                                      ? Text(
+                                                          state.iconName,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize:
+                                                                      16),
+                                                        )
+                                                      : ColorFiltered(
+                                                          colorFilter:
+                                                              ColorFilter.mode(
+                                                            isDark
+                                                                ? accentColor
+                                                                : Color.lerp(
+                                                                        accentColor,
+                                                                        Colors
+                                                                            .black,
+                                                                        0.6) ??
+                                                                    accentColor,
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                          child: Text(
+                                                            state.iconName,
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        16),
+                                                          ),
+                                                        ),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            state.category,
-                                            style: TextStyle(
-                                                color: textColor, fontSize: 16),
+                                          Expanded(
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                onTap: () =>
+                                                    CollectionCategorySheet
+                                                        .showPicker(
+                                                  rootContext: context,
+                                                  ref: ref,
+                                                  isDark: isDark,
+                                                  accentColor: accentColor,
+                                                  colorHex: state.colorHex,
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      vertical: 8.0,
+                                                      horizontal: 4),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Text(
+                                                      state.category,
+                                                      style: TextStyle(
+                                                        color: textColor,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                  Icon(Icons.keyboard_arrow_down,
-                                      color: theme.colorScheme.primary),
-                                ],
-                              ),
+                                ),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(20),
+                                    onTap: () =>
+                                        CollectionCategorySheet.showPicker(
+                                      rootContext: context,
+                                      ref: ref,
+                                      isDark: isDark,
+                                      accentColor: accentColor,
+                                      colorHex: state.colorHex,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Icon(Icons.keyboard_arrow_down,
+                                          color: theme.colorScheme.primary),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          if (state.fieldErrors['category'] != null) ...[
+                            const SizedBox(height: 6),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                state.fieldErrors['category']!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 16),
 
                           // Color Selector
                           GestureDetector(
-                            onTap: () => _showColorPicker(
-                                context, isDark, state.colorHex, notifier),
+                            onTap: () => CollectionColorSheet.showPicker(
+                              context: context,
+                              selectedColor: state.colorHex,
+                              onSelect: notifier.updateColor,
+                            ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 16),
@@ -232,37 +338,8 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                                   Text('Cover colour',
                                       style: TextStyle(
                                           color: textColor, fontSize: 16)),
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      color: baseColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          GestureDetector(
-                            onTap: () => _showIconPicker(context, notifier),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: inputBgColor,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Icon',
-                                      style: TextStyle(
-                                          color: textColor, fontSize: 16)),
-                                  Text(state.iconName,
-                                      style: const TextStyle(fontSize: 20)),
+                                  CollectionCoverSwatch(
+                                      colorHex: state.colorHex),
                                 ],
                               ),
                             ),
@@ -295,7 +372,12 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                                       Text(
                                         state.parentId == null
                                             ? 'Root (Home)'
-                                            : 'Nested collection',
+                                            : (state.parentTitleHint !=
+                                                        null &&
+                                                    state.parentTitleHint!
+                                                        .isNotEmpty
+                                                ? state.parentTitleHint!
+                                                : 'Nested folder'),
                                         style: TextStyle(
                                             color: textColor, fontSize: 16),
                                       ),
@@ -551,243 +633,8 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
     );
   }
 
-  void _showCategoryPicker(BuildContext context, bool isDark,
-      String selectedCategory, Color baseColor, dynamic notifier) {
-    final theme = Theme.of(context);
-    final bgColor = theme.scaffoldBackgroundColor;
-    final textColor = theme.colorScheme.onSurface;
-    final tileColor = theme.inputDecorationTheme.fillColor ??
-        theme.colorScheme.surfaceContainerHighest;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: bgColor,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (_, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Icon(Icons.arrow_back,
-                            color: theme.colorScheme.primary),
-                      ),
-                      Text('Choose category',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: textColor)),
-                      Icon(Icons.more_vert, color: theme.colorScheme.primary),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: AppCategories.list.length,
-                    itemBuilder: (context, index) {
-                      final category = AppCategories.list[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: InkWell(
-                          onTap: () {
-                            notifier.updateCategory(category);
-                            context.pop();
-                          },
-                          borderRadius: BorderRadius.circular(24),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: tileColor,
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? baseColor.withValues(alpha: 0.15)
-                                        : baseColor.withValues(alpha: 0.6),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: ColorFiltered(
-                                      colorFilter: ColorFilter.mode(
-                                        isDark
-                                            ? baseColor
-                                            : Color.lerp(baseColor,
-                                                    Colors.black, 0.6) ??
-                                                baseColor,
-                                        BlendMode.srcIn,
-                                      ),
-                                      child: Text(
-                                        AppCategories.getIconForCategory(
-                                            category),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Text(category,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: textColor,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showColorPicker(BuildContext context, bool isDark, String selectedColor,
-      dynamic notifier) {
-    final theme = Theme.of(context);
-    final bgColor = theme.scaffoldBackgroundColor;
-    final textColor = theme.colorScheme.onSurface;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: bgColor,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.3,
-          maxChildSize: 0.7,
-          expand: false,
-          builder: (_, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Icon(Icons.arrow_back,
-                            color: theme.colorScheme.primary),
-                      ),
-                      Text('Choose colour',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: textColor)),
-                      const SizedBox(width: 24),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: Center(
-                      child: Wrap(
-                        spacing: 24,
-                        runSpacing: 24,
-                        alignment: WrapAlignment.center,
-                        children:
-                            AppColors.collectionColorHexes.map((colorHex) {
-                          Color color;
-                          try {
-                            color = Color(
-                                int.parse(colorHex.replaceFirst('#', '0xFF')));
-                          } catch (e) {
-                            color = const Color(0xFFB3E0FF);
-                          }
-                          final isSelected = colorHex == selectedColor;
-                          return GestureDetector(
-                            onTap: () {
-                              notifier.updateColor(colorHex);
-                              context.pop();
-                            },
-                            child: Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: color,
-                                borderRadius: BorderRadius.circular(20),
-                                border: isSelected
-                                    ? Border.all(color: textColor, width: 2)
-                                    : null,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   void _showIconPicker(BuildContext context, dynamic notifier) {
-    final icons = {
-      for (final category in AppCategories.list)
-        AppCategories.getIconForCategory(category),
-      '📁',
-      '🗂️',
-      '🧩',
-      '📰',
-      '🔖',
-    }.toList();
+    final icons = AppCategories.allPickerEmojis;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(

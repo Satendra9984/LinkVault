@@ -29,7 +29,12 @@ class UnexpectedFailure extends Failure {
 
 class AuthFailure extends Failure {
   final String code;
-  const AuthFailure(super.message, {required this.code, super.error});
+  const AuthFailure(
+    super.message, {
+    required this.code,
+    super.error,
+    super.stackTrace,
+  });
 
   @override
   List<Object?> get props => [...super.props, code];

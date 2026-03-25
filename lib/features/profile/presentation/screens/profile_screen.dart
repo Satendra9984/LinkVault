@@ -383,6 +383,12 @@ class ProfileScreen extends ConsumerWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.info_outline_rounded),
+            title: const Text('About'),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () => context.push('/profile/about'),
+          ),
+          ListTile(
             leading: const Icon(Icons.policy_outlined),
             title: const Text('Privacy Policy & Terms'),
             trailing: const Icon(Icons.open_in_new_rounded, color: Colors.grey),

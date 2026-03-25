@@ -85,7 +85,7 @@ Key columns:
 - `id` UUID PK
 - `owner_id` UUID FK to `auth.users`
 - `collection_id` UUID FK to `lv_collections`
-- URL + metadata: `url`, `title`, `description`, `thumbnail_url`, `favicon_url`, `dominant_color`
+- URL + metadata: `url`, `title`, `description`, `thumbnail_url`, `favicon_url`, `dominant_color`, `site_name`, `canonical_url`, `content_type`, `published_at`
 - user metadata: `tags`, `annotation`
 - state/order: `status`, `is_pinned`, `position`
 - behavior: `click_count`, `last_accessed_at`
@@ -209,6 +209,11 @@ CREATE TABLE IF NOT EXISTS public.lv_urls (
   dominant_color TEXT,
   tags TEXT,
   annotation TEXT,
+  -- Optional future URL metadata (recommended by URLItem contract)
+  site_name TEXT,
+  canonical_url TEXT,
+  content_type TEXT,
+  published_at TIMESTAMPTZ,
   status TEXT NOT NULL DEFAULT 'unread' CHECK (status IN ('unread', 'read', 'archived')),
   is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
   click_count INT NOT NULL DEFAULT 0,

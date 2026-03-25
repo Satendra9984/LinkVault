@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link_vault/core/theme/color_palette.dart';
 import 'package:link_vault/features/collections/domain/entities/collection.dart';
 
 import 'collection_subtitle.dart';
@@ -18,14 +19,21 @@ class CollectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Parse color hex string to Color
-    final baseColor =
-        Color(int.parse(collection.colorHex.replaceFirst('#', '0xFF')));
-    // Improved dark mode logic with subtle glow
     final isDarkMode = theme.brightness == Brightness.dark;
+    final coverHex = collection.colorHex;
+    final parsed = AppColors.tryParseCollectionColorHex(coverHex);
+    final noCover = AppColors.isCollectionCoverNoColor(coverHex);
+    final accent = AppColors.collectionCoverEmojiTint(coverHex, theme);
+
     final backgroundColor = isDarkMode
-        ? theme.colorScheme.surfaceContainerHighest // Dark surface
-        : baseColor.withValues(alpha: 0.3); // Pastel background in light mode
+        ? theme.colorScheme.surfaceContainerHighest
+        : noCover
+            ? theme.colorScheme.surfaceContainerHighest
+            : (parsed ?? const Color(0xFFB3E0FF)).withValues(alpha: 0.3);
+
+    final borderColor = noCover
+        ? theme.colorScheme.outline.withValues(alpha: 0.35)
+        : (parsed ?? const Color(0xFFB3E0FF)).withValues(alpha: 0.3);
 
     return GestureDetector(
       onTap: onTap,
@@ -34,11 +42,11 @@ class CollectionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(20), // Highly rounded
-          border: Border.all(color: baseColor.withValues(alpha: 0.3), width: 1),
-          boxShadow: isDarkMode
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: isDarkMode && !noCover && parsed != null
               ? [
                   BoxShadow(
-                    color: baseColor.withValues(alpha: 0.15),
+                    color: accent.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )
@@ -72,27 +80,37 @@ class CollectionCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isDarkMode
-                        ? baseColor.withValues(alpha: 0.15)
-                        : baseColor.withValues(
-                            alpha: 0.6), // Lighter background
+                    color: noCover
+                        ? theme.colorScheme.surfaceContainerHighest
+                        : (isDarkMode
+                            ? accent.withValues(alpha: 0.15)
+                            : accent.withValues(alpha: 0.6)),
                     shape: BoxShape.circle,
+                    border: noCover
+                        ? Border.all(
+                            color: theme.colorScheme.outline
+                                .withValues(alpha: 0.28),
+                          )
+                        : null,
                   ),
                   child: Center(
-                    // Use ColorFiltered to tint the emoji a darker shade of the card color
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        isDarkMode
-                            ? baseColor // Glow the emoji in dark mode
-                            : Color.lerp(baseColor, Colors.black,
-                                0.6)!, // Darker shade of the pastel in light mode
-                        BlendMode.srcIn,
-                      ),
-                      child: Text(
-                        collection.iconName,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
+                    child: noCover
+                        ? Text(
+                            collection.iconName,
+                            style: const TextStyle(fontSize: 20),
+                          )
+                        : ColorFiltered(
+                            colorFilter: ColorFilter.mode(
+                              isDarkMode
+                                  ? accent
+                                  : Color.lerp(accent, Colors.black, 0.6)!,
+                              BlendMode.srcIn,
+                            ),
+                            child: Text(
+                              collection.iconName,
+                              style: const TextStyle(fontSize: 20),
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -114,11 +132,11 @@ class CollectionCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isDarkMode
-                    ? baseColor
-                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                color: isDarkMode && !noCover && parsed != null
+                    ? accent
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
               ),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ],

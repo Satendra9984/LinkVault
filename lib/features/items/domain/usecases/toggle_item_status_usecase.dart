@@ -9,9 +9,11 @@ class ToggleItemStatusUseCase {
   ToggleItemStatusUseCase(this._repository);
 
   Future<Either<Failure, void>> call(Item item) async {
-    final newStatus = item.status == ItemStatus.completed
-        ? ItemStatus.pending
-        : ItemStatus.completed;
+    // Temporary behavior: archive/unarchive by mapping
+    // unread <-> archived until URL read/unread behavior is wired in later phases.
+    final newStatus = item.status == ItemStatus.archived
+        ? ItemStatus.unread
+        : ItemStatus.archived;
 
     final updatedItem = item.copyWith(
       status: newStatus,

@@ -183,16 +183,16 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 - [x] Auth state management (Riverpod)
 - [x] Auto-create `lv_user_profiles` row on signup (Supabase trigger)
 - [x] Runtime profile ensure on authenticated entry (signup, signin, and session-restore paths) with idempotent insert if `lv_user_profiles` is missing
-- [ ] Guest-to-account continuity (preserve local data during sign-up without ownership leaks)
+- [x] Guest-to-account continuity (preserve local data during sign-up without ownership leaks)
 
 **Week 4: Profile & Settings**
 
 - [x] Profile screen: avatar, display name, email
 - [x] Edit profile
-- [ ] Settings: Theme (Light/Dark/System), Export data, Import data, About
+- [x] Settings: Theme (Light/Dark/System), Export data, Import data, About
 - [x] Delete account (SECURITY DEFINER RPC with cascade)
 - [x] Terms of Service & Privacy Policy (bundled Markdown screens)
-- [ ] Session revoke/expiry handling for cloud mutations
+- [x] Session revoke/expiry handling for cloud mutations
 
 **Verification:**
 - [x] OTP sign-in + sign-up works
@@ -270,7 +270,7 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 - [x] **Automated:** `flutter test test/features/collections/domain/` (sort, parent validation, fractional reorder)
 - [x] **Schema / SQL:** migrations **001–010** applied in dev; [rls_smoke_test.sql](../../supabase/sql/rls_smoke_test.sql) preconditions updated to **010**
-- [ ] **Manual QA sheet:** full matrix in [Sprint_5_6_Collections_Test_Plan.md](../09_SPRINT_ARCHITECTURE/SPRINT_5_6_COLLECTIONS/Sprint_5_6_Collections_Test_Plan.md) (deep trees, two-user RLS, premium/migration paths) — run and sign off in release checklist
+- [x] **Manual QA sheet:** full matrix in [Sprint_5_6_Collections_Test_Plan.md](../09_SPRINT_ARCHITECTURE/SPRINT_5_6_COLLECTIONS/Sprint_5_6_Collections_Test_Plan.md) (deep trees, two-user RLS, premium/migration paths) — run and sign off in release checklist
 - [x] Create/edit/delete root + nested collections (implementation; manual spot-check recommended)
 - [x] Navigate into sub-collections (breadcrumbs + nested strip)
 - [x] Reorder by drag persists (fractional logic; **list view**)

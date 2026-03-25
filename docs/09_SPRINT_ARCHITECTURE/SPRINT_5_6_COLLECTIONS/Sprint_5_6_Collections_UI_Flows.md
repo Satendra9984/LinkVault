@@ -63,6 +63,15 @@ Rules:
 - **Pin:** Toggle `is_pinned`; sort pinned group above unpinned within same archive state.
 - **Archive:** Toggle `is_archived`; default lists hide archived or move to filter; editing archived folders remains possible.
 
+## Flow: URL lifecycle (read/click/pin/archive/delete)
+
+- **Open URL:** When an item transitions `unread -> read`, we increment `lv_urls.click_count` and update `lv_urls.last_accessed_at` (and keep `status` aligned).
+- **Read/Unread toggle:** UI state is driven by `lv_urls.status` (`unread/read/archived`) and persisted server-side.
+- **Pin/Archive/Delete:** `toggleItemPin`, `toggleItemArchive`, and delete use `lv_urls` write paths with soft-delete (`is_deleted/is_deleted_at`) and list queries filtering `is_deleted=false`.
+- **Curate-era custom fields:** URL create/edit ignores Curate-only persisted `customFieldsJson`; LV URL flow uses:
+  - `lv_urls.description` = extracted webpage description
+  - `lv_urls.annotation` = user notes (offline representation via ObjectBox `annotation`)
+
 ## Archive visibility (locked: **A**)
 
 - **Home root list** and default home tabs: archived collections are **hidden** (`is_archived`).

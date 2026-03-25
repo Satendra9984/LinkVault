@@ -110,6 +110,77 @@ class ItemsRepositoryImpl implements IItemsRepository {
   }
 
   @override
+  Future<Either<Failure, void>> toggleItemPin(String id) async {
+    // Local schema currently doesn't persist URL pin state.
+    // Cloud pin state will be reconciled during sync once offline queue lands.
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, void>> toggleItemArchive(String id) async {
+    try {
+      store.runInTransaction(TxMode.write, () {
+        final item = _box.query(ItemModel_.uid.equals(id)).build().findFirst();
+        if (item == null) return;
+
+        item.status = item.status == ItemStatus.archived
+            ? ItemStatus.unread
+            : ItemStatus.archived;
+        item.updatedAt = DateTime.now();
+        _box.put(item);
+      });
+      return const Right(null);
+    } catch (e, stackTrace) {
+      return Left(DatabaseFailure('Failed to toggle url archive', error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> markItemReadAndTrack(String id) async {
+    try {
+      store.runInTransaction(TxMode.write, () {
+        final item = _box.query(ItemModel_.uid.equals(id)).build().findFirst();
+        if (item == null) return;
+
+        if (item.status == ItemStatus.unread) {
+          item.status = ItemStatus.read;
+          item.updatedAt = DateTime.now();
+          _box.put(item);
+        }
+        // Local click tracking is not implemented yet.
+      });
+      return const Right(null);
+    } catch (e, stackTrace) {
+      return Left(DatabaseFailure('Failed to mark url as read/track', error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> reorderItems(
+    String collectionId,
+    List<String> orderedIds,
+  ) async {
+    try {
+      const step = 1024.0;
+      store.runInTransaction(TxMode.write, () {
+        var i = 0;
+        for (final urlId in orderedIds) {
+          final item = _box.query(ItemModel_.uid.equals(urlId)).build().findFirst();
+          if (item == null) continue;
+          if (item.collectionUid != collectionId) continue;
+          item.position = (i + 1) * step;
+          item.updatedAt = DateTime.now();
+          _box.put(item);
+          i++;
+        }
+      });
+      return const Right(null);
+    } catch (e, stackTrace) {
+      return Left(DatabaseFailure('Failed to reorder urls', error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> updateItemPosition(String id, double newPosition) async {
     try {
       store.runInTransaction(TxMode.write, () {

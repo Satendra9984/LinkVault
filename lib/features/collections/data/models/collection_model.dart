@@ -1,3 +1,4 @@
+import 'package:link_vault/features/collections/domain/collection_display_defaults.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
@@ -13,20 +14,31 @@ class CollectionModel {
   bool isShared = false;
 
   late String title;
+  String? description;
   late String category;
   late String colorHex;
   late String iconName;
+  String? iconJson;
   late double position;
   bool isPinned = false;
   bool isArchived = false;
   bool isDeleted = false;
-  
+
+  String itemsLayout = CollectionLayoutMode.list;
+  String childCollectionsLayout = CollectionLayoutMode.list;
+  String itemsSortDefault = CollectionItemsSortDefault.manual;
+  String openLinksIn = CollectionOpenLinksIn.inApp;
+  bool showLinkPreviews = true;
+
   @Property(type: PropertyType.date)
   late DateTime createdAt;
-  
+
   @Property(type: PropertyType.date)
   late DateTime updatedAt;
-  
+
+  @Property(type: PropertyType.date)
+  DateTime? lastAccessedAt;
+
   int itemCount = 0;
   int childCount = 0;
 }

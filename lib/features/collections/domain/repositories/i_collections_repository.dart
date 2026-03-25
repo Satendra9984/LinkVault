@@ -11,4 +11,7 @@ abstract class ICollectionsRepository {
   Future<Either<Failure, void>> updateCollectionPosition(
       String id, double newPosition);
   Future<Either<Failure, List<Collection>>> getAllCollections();
+
+  /// Sets [Collection.lastAccessedAt] (and typically `updated_at` remotely).
+  Future<Either<Failure, void>> recordCollectionAccess(String id);
 }

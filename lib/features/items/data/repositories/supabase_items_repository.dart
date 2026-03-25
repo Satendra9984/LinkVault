@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/supabase_quota_messages.dart';
 import '../mappers/supabase_item_mapper.dart';
 import '../../domain/entities/item.dart';
 import '../../domain/repositories/i_items_repository.dart';
@@ -36,14 +37,20 @@ class SupabaseItemsRepository implements IItemsRepository {
         }
       }
 
-      final data = SupabaseItemMapper.toJson(
+      final data = SupabaseItemMapper.toInsertJson(
         item,
+        ownerId: _userId,
         uploadedImageUrl: uploadedImageUrl,
       );
 
-      await _supabase.from('items').insert(data);
+      await _supabase.from('lv_urls').insert(data);
       return const Right(null);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to create item',
@@ -57,11 +64,18 @@ class SupabaseItemsRepository implements IItemsRepository {
   @override
   Future<Either<Failure, void>> deleteItem(String id) async {
     try {
-      // Could optionally delete the image from storage here if we tracked its path,
-      // but simple delete works for now.
-      await _supabase.from('items').delete().eq('id', id);
+      // Soft delete to keep url_count triggers & reconciliation deterministic.
+      await _supabase.from('lv_urls').update({
+        'is_deleted': true,
+        'deleted_at': DateTime.now().toIso8601String(),
+      }).eq('id', id);
       return const Right(null);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to delete item',
@@ -73,13 +87,184 @@ class SupabaseItemsRepository implements IItemsRepository {
   }
 
   @override
+  Future<Either<Failure, void>> toggleItemPin(String id) async {
+    try {
+      final row = await _supabase
+          .from('lv_urls')
+          .select('is_pinned')
+          .eq('id', id)
+          .eq('is_deleted', false)
+          .maybeSingle();
+
+      if (row == null) return const Right(null);
+
+      final currentPinned = (row['is_pinned'] as bool?) ?? false;
+      final newPinned = !currentPinned;
+
+      await _supabase
+          .from('lv_urls')
+          .update({'is_pinned': newPinned})
+          .eq('id', id);
+      return const Right(null);
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) return Left(authFailure);
+      return Left(
+        NetworkFailure(
+          'Failed to toggle url pin',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> toggleItemArchive(String id) async {
+    try {
+      final row = await _supabase
+          .from('lv_urls')
+          .select('status,last_accessed_at')
+          .eq('id', id)
+          .eq('is_deleted', false)
+          .maybeSingle();
+      if (row == null) return const Right(null);
+
+      final status = row['status'] as String?;
+      final lastAccessed = row['last_accessed_at'] as String?;
+
+      final isArchived = status == 'archived';
+      final shouldRestore = isArchived;
+
+      final newStatus = shouldRestore
+          ? (lastAccessed != null ? 'read' : 'unread')
+          : 'archived';
+
+      await _supabase
+          .from('lv_urls')
+          .update({'status': newStatus})
+          .eq('id', id);
+
+      return const Right(null);
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) return Left(authFailure);
+      return Left(
+        NetworkFailure(
+          'Failed to toggle url archive',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> markItemReadAndTrack(String id) async {
+    try {
+      final row = await _supabase
+          .from('lv_urls')
+          .select('status,click_count')
+          .eq('id', id)
+          .eq('is_deleted', false)
+          .maybeSingle();
+      if (row == null) return const Right(null);
+
+      final status = row['status'] as String?;
+      final clickCount = (row['click_count'] as int?) ?? 0;
+
+      // Best practice: only transition & track analytics when the URL
+      // transitions `unread` -> `read` to reduce write load.
+      if (status != 'unread') {
+        return const Right(null);
+      }
+
+      await _supabase.from('lv_urls').update({
+        'status': 'read',
+        'click_count': clickCount + 1,
+        'last_accessed_at': DateTime.now().toIso8601String(),
+      }).eq('id', id);
+
+      return const Right(null);
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) return Left(authFailure);
+      return Left(
+        NetworkFailure(
+          'Failed to mark url as read/track',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> reorderItems(
+    String collectionId,
+    List<String> orderedIds,
+  ) async {
+    try {
+      // Avoid reordering ids from other collections.
+      final rows = await _supabase
+          .from('lv_urls')
+          .select('id')
+          .eq('collection_id', collectionId)
+          .eq('is_deleted', false);
+
+      final allowedIds = (rows as List<dynamic>)
+          .map((r) => (r as Map<String, dynamic>)['id'] as String)
+          .toSet();
+
+      const step = 1024.0;
+      final updates = <Map<String, dynamic>>[];
+      var i = 0;
+      for (final urlId in orderedIds) {
+        if (!allowedIds.contains(urlId)) continue;
+        updates.add({
+          'id': urlId,
+          'position': (i + 1) * step,
+        });
+        i++;
+      }
+
+      if (updates.isEmpty) return const Right(null);
+
+      await _supabase
+          .from('lv_urls')
+          .upsert(updates, onConflict: 'id');
+      return const Right(null);
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) return Left(authFailure);
+      return Left(
+        NetworkFailure(
+          'Failed to reorder urls',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, Item?>> getItem(String id) async {
     try {
       final response =
-          await _supabase.from('items').select().eq('id', id).maybeSingle();
+          await _supabase
+              .from('lv_urls')
+              .select()
+              .eq('id', id)
+              .eq('is_deleted', false)
+              .maybeSingle();
       if (response == null) return const Right(null);
       return Right(_fromMap(response));
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to get item',
@@ -98,14 +283,20 @@ class SupabaseItemsRepository implements IItemsRepository {
   ) async {
     try {
       final response = await _supabase
-          .from('items')
+          .from('lv_urls')
           .select()
           .eq('collection_id', collectionId)
+          .eq('is_deleted', false)
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       final items = response.map((data) => _fromMap(data)).toList();
       return Right(items);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to get items',
@@ -137,14 +328,19 @@ class SupabaseItemsRepository implements IItemsRepository {
         }
       }
 
-      final data = SupabaseItemMapper.toJson(
+      final data = SupabaseItemMapper.toUpdateJson(
         item,
         uploadedImageUrl: uploadedImageUrl,
       );
 
-      await _supabase.from('items').update(data).eq('id', item.id);
+      await _supabase.from('lv_urls').update(data).eq('id', item.id);
       return const Right(null);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to update item',
@@ -164,12 +360,17 @@ class SupabaseItemsRepository implements IItemsRepository {
       if (_userId == null) {
         return const Left(NetworkFailure('User not authenticated'));
       }
-      await _supabase.from('items').update({
+      await _supabase.from('lv_urls').update({
         'position': newPosition,
         'updated_at': DateTime.now().toIso8601String()
       }).eq('id', id);
       return const Right(null);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(
         NetworkFailure(
           'Failed to update item position',
@@ -183,12 +384,17 @@ class SupabaseItemsRepository implements IItemsRepository {
   @override
   Future<Either<Failure, List<Item>>> getAllItems() async {
     try {
-      if (_userId == null) {
+      final userId = _userId;
+      if (userId == null) {
         return const Left(NetworkFailure('User not authenticated'));
       }
 
       final response =
-          await _supabase.from('items').select().eq('owner_id', _userId!);
+          await _supabase
+              .from('lv_urls')
+              .select()
+              .eq('owner_id', userId)
+              .eq('is_deleted', false);
 
       final items = (response as List<dynamic>)
           .map((data) => _fromMap(data as Map<String, dynamic>))
@@ -196,48 +402,65 @@ class SupabaseItemsRepository implements IItemsRepository {
 
       return Right(items);
     } catch (e, stackTrace) {
+      final authFailure =
+          tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
       return Left(DatabaseFailure('Failed to get all items',
           error: e, stackTrace: stackTrace));
     }
   }
 
   Item _fromMap(Map<String, dynamic> map) {
-    List<CustomField> parsedCustomFields = [];
-    if (map['custom_fields'] != null) {
-      final list = map['custom_fields'] as List;
-      parsedCustomFields = list.map((f) {
-        final fieldMap = f as Map<String, dynamic>;
-        return CustomField(
-          id: fieldMap['id'] ?? '',
-          name: fieldMap['name'] ?? '',
-          type: CustomFieldType.values.firstWhere(
-            (e) => e.name == fieldMap['type'],
-            orElse: () => CustomFieldType.text,
-          ),
-          value: fieldMap['value'],
-        );
-      }).toList();
-    }
+    final lvStatus = map['status'] as String?;
+    final mappedStatus = switch (lvStatus) {
+      'unread' => ItemStatus.unread,
+      'read' => ItemStatus.read,
+      'archived' => ItemStatus.archived,
+      _ => ItemStatus.unread,
+    };
+
+    final webDescription = map['description'] as String?;
+    final annotationNotes = map['annotation'] as String?;
+
+    // Back-compat:
+    // Older rows written by Curate-era code stored notes under `annotation`
+    // and left `description` null.
+    final mappedDescription = webDescription ?? annotationNotes;
+
+    final publishedAt = map['published_at'] as String?;
+    final lastAccessedAt = map['last_accessed_at'] as String?;
+    final deletedAt = map['deleted_at'] as String?;
 
     return Item(
       id: map['id'],
       ownerId: map['owner_id'],
       title: map['title'],
-      description: map['description'],
-      imagePath: map['image_path'],
-      imageUrl: map['image_url'],
-      link: map['link'],
-      location: map['location'],
+      // Extracted webpage summary (with fallback to notes for older rows).
+      description: mappedDescription,
+      imagePath: null,
+      imageUrl: map['thumbnail_url'],
+      link: map['url'],
+      // User notes.
+      annotation: annotationNotes,
       tags: map['tags'],
-      customFields: parsedCustomFields,
-      status: ItemStatus.values.firstWhere(
-        (e) => e.name == map['status'],
-        orElse: () => ItemStatus.pending,
-      ),
+      status: mappedStatus,
       position: (map['position'] as num?)?.toDouble() ?? 0.0,
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
       collectionId: map['collection_id'],
+      faviconUrl: map['favicon_url'] as String?,
+      dominantColor: map['dominant_color'] as String?,
+      isPinned: map['is_pinned'] as bool? ?? false,
+      clickCount: map['click_count'] as int? ?? 0,
+      lastAccessedAt: lastAccessedAt == null ? null : DateTime.parse(lastAccessedAt),
+      isDeleted: map['is_deleted'] as bool? ?? false,
+      deletedAt: deletedAt == null ? null : DateTime.parse(deletedAt),
+      siteName: map['site_name'] as String?,
+      canonicalUrl: map['canonical_url'] as String?,
+      contentType: map['content_type'] as String?,
+      publishedAt: publishedAt == null ? null : DateTime.parse(publishedAt),
     );
   }
 }

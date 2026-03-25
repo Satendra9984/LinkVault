@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../objectbox.g.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/collection.dart';
 import '../../domain/collection_sibling_order.dart';
 import '../../domain/repositories/i_collections_repository.dart';
@@ -22,6 +23,8 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   @override
   Future<Either<Failure, void>> createCollection(Collection collection) async {
     try {
+      AppLogger.d(
+          '[collections] createCollection local title="${collection.title}" id=${collection.id}');
       final String finalId =
           collection.id.isEmpty ? const Uuid().v4() : collection.id;
       final collectionToSave = Collection(
@@ -30,9 +33,11 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
         parentId: collection.parentId,
         isShared: collection.isShared,
         title: collection.title,
+        description: collection.description,
         category: collection.category,
         colorHex: collection.colorHex,
         iconName: collection.iconName,
+        iconJson: collection.iconJson,
         position: collection.position,
         isPinned: collection.isPinned,
         isArchived: collection.isArchived,
@@ -40,6 +45,12 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
         childCount: collection.childCount,
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
+        lastAccessedAt: collection.lastAccessedAt,
+        itemsLayout: collection.itemsLayout,
+        childCollectionsLayout: collection.childCollectionsLayout,
+        itemsSortDefault: collection.itemsSortDefault,
+        openLinksIn: collection.openLinksIn,
+        showLinkPreviews: collection.showLinkPreviews,
         itemCount: collection.itemCount,
       );
 
@@ -52,8 +63,10 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
         }
         _box.put(model);
       });
+      AppLogger.d('[collections] createCollection local ok id=$finalId');
       return const Right(null);
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] createCollection local failed', e, stackTrace);
       return Left(DatabaseFailure('Failed to create collection',
           error: e, stackTrace: stackTrace));
     }
@@ -62,6 +75,7 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   @override
   Future<Either<Failure, void>> deleteCollection(String id) async {
     try {
+      AppLogger.d('[collections] deleteCollection local id=$id');
       store.runInTransaction(TxMode.write, () {
         final existing = _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
         if (existing != null) {
@@ -76,8 +90,10 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
         }
         itemsQuery.close();
       });
+      AppLogger.d('[collections] deleteCollection local ok id=$id');
       return const Right(null);
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] deleteCollection local failed id=$id', e, stackTrace);
       return Left(DatabaseFailure('Failed to delete collection',
           error: e, stackTrace: stackTrace));
     }
@@ -88,10 +104,13 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
     try {
       final model = _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
       if (model == null) {
+        AppLogger.d('[collections] getCollectionById local not found id=$id');
         return const Right(null);
       }
+      AppLogger.d('[collections] getCollectionById local ok id=$id');
       return Right(CollectionMapper.toEntity(model));
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] getCollectionById local failed id=$id', e, stackTrace);
       return Left(DatabaseFailure('Failed to get collection',
           error: e, stackTrace: stackTrace));
     }
@@ -100,6 +119,8 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   @override
   Future<Either<Failure, void>> updateCollection(Collection collection) async {
     try {
+      AppLogger.d(
+          '[collections] updateCollection local id=${collection.id} title="${collection.title}"');
       final model = CollectionMapper.toModel(collection);
 
       store.runInTransaction(TxMode.write, () {
@@ -109,8 +130,10 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
         }
         _box.put(model);
       });
+      AppLogger.d('[collections] updateCollection local ok id=${collection.id}');
       return const Right(null);
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] updateCollection local failed id=${collection.id}', e, stackTrace);
       return Left(DatabaseFailure('Failed to update collection',
           error: e, stackTrace: stackTrace));
     }
@@ -120,6 +143,8 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   Future<Either<Failure, void>> updateCollectionPosition(
       String id, double newPosition) async {
     try {
+      AppLogger.d(
+          '[collections] updateCollectionPosition local id=$id position=$newPosition');
       store.runInTransaction(TxMode.write, () {
         final existing = _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
         if (existing != null) {
@@ -129,6 +154,7 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
       });
       return const Right(null);
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] updateCollectionPosition local failed id=$id', e, stackTrace);
       return Left(DatabaseFailure('Failed to update collection position',
           error: e, stackTrace: stackTrace));
     }
@@ -136,10 +162,12 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
 
   @override
   Stream<List<Collection>> watchCollections() {
+    AppLogger.d('[collections] watchCollections local subscribed');
     return _box.query().watch(triggerImmediately: true).map((query) {
       final models = query.find();
       final entities = models.map(CollectionMapper.toEntity).toList();
       sortCollectionsSiblings(entities);
+      AppLogger.t('[collections] watchCollections local emit n=${entities.length}');
       return entities;
     });
   }
@@ -148,9 +176,32 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   Future<Either<Failure, List<Collection>>> getAllCollections() async {
     try {
       final models = _box.getAll();
+      AppLogger.d('[collections] getAllCollections local n=${models.length}');
       return Right(models.map(CollectionMapper.toEntity).toList());
     } catch (e, stackTrace) {
+      AppLogger.e('[collections] getAllCollections local failed', e, stackTrace);
       return Left(DatabaseFailure('Failed to get all collections',
+          error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> recordCollectionAccess(String id) async {
+    try {
+      AppLogger.t('[collections] recordCollectionAccess local id=$id');
+      store.runInTransaction(TxMode.write, () {
+        final existing =
+            _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
+        if (existing != null) {
+          existing.lastAccessedAt = DateTime.now();
+          existing.updatedAt = DateTime.now();
+          _box.put(existing);
+        }
+      });
+      return const Right(null);
+    } catch (e, stackTrace) {
+      AppLogger.e('[collections] recordCollectionAccess local failed id=$id', e, stackTrace);
+      return Left(DatabaseFailure('Failed to record collection access',
           error: e, stackTrace: stackTrace));
     }
   }

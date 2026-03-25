@@ -50,10 +50,9 @@ class CloudMigrationService {
 
       onProgress(0.2, 'Reading local items...');
       final itemsResult = await _localItemsRepo.getAllItems();
-      if (itemsResult.isLeft()) {
-        return Left(itemsResult.fold((l) => l, (r) => throw Exception()));
-      }
-      final items = itemsResult.getOrElse((_) => []);
+      // Best-effort: if items migration is unavailable (e.g. legacy schema
+      // mismatch), we still want collections continuity after guest->account.
+      final items = itemsResult.isLeft() ? [] : itemsResult.getOrElse((_) => []);
 
       // 1. Upsert Collections
       onProgress(0.3, 'Uploading collections (${collections.length})...');
@@ -61,63 +60,76 @@ class CloudMigrationService {
         final collectionData = collections
             .map((c) => SupabaseCollectionMapper.toJson(c, userId))
             .toList();
-        await _supabase.from('collections').upsert(collectionData);
+        await _supabase.from('lv_collections').upsert(collectionData);
       }
 
       // 2. Upload Images for Items (Sequential to not overload memory)
       onProgress(0.5, 'Uploading images and items (${items.length})...');
 
       final mappedItems = [];
-      for (int i = 0; i < items.length; i++) {
-        final item = items[i];
-        String? uploadedImageUrl = item.imageUrl;
+      try {
+        for (int i = 0; i < items.length; i++) {
+          final item = items[i];
+          String? uploadedImageUrl = item.imageUrl;
 
-        // Upload new image if local imagePath exists and is not an http url
-        if (item.imagePath != null &&
-            item.imagePath!.isNotEmpty &&
-            !item.imagePath!.startsWith('http')) {
-          onProgress(0.5 + (0.3 * (i / items.length)),
-              'Uploading image ${i + 1} of ${items.length}...');
+          // Upload new image if local imagePath exists and is not an http url
+          if (item.imagePath != null &&
+              item.imagePath!.isNotEmpty &&
+              !item.imagePath!.startsWith('http')) {
+            onProgress(
+                0.5 + (0.3 * (items.isEmpty ? 0 : (i / items.length))),
+                'Uploading image ${i + 1} of ${items.length}...');
 
-          final file = File(item.imagePath!);
-          if (await file.exists()) {
-            // Use a stable, deterministic filename based only on item.id.
-            // This makes uploads idempotent: re-running migration on an
-            // already-migrated account won't create duplicate Storage files.
-            final path = '$userId/${item.id}.jpg';
-            try {
-              // Attempt to get the public URL first — if the file already
-              // exists, we skip the costly upload entirely.
-              await _supabase.storage
-                  .from('item-images')
-                  .createSignedUrl(path, 60);
-              uploadedImageUrl =
-                  _supabase.storage.from('item-images').getPublicUrl(path);
-            } catch (_) {
-              // File does not exist yet — safe to upload.
-              await _supabase.storage.from('item-images').upload(path, file);
-              uploadedImageUrl =
-                  _supabase.storage.from('item-images').getPublicUrl(path);
+            final file = File(item.imagePath!);
+            if (await file.exists()) {
+              // Use a stable, deterministic filename based only on item.id.
+              // This makes uploads idempotent: re-running migration on an
+              // already-migrated account won't create duplicate Storage files.
+              final path = '$userId/${item.id}.jpg';
+              try {
+                // Attempt to get the public URL first — if the file already
+                // exists, we skip the costly upload entirely.
+                await _supabase.storage
+                    .from('item-images')
+                    .createSignedUrl(path, 60);
+                uploadedImageUrl =
+                    _supabase.storage.from('item-images').getPublicUrl(path);
+              } catch (_) {
+                // File does not exist yet — safe to upload.
+                await _supabase.storage.from('item-images').upload(path, file);
+                uploadedImageUrl =
+                    _supabase.storage.from('item-images').getPublicUrl(path);
+              }
             }
           }
-        }
 
-        mappedItems.add(
-          SupabaseItemMapper.toJson(item, uploadedImageUrl: uploadedImageUrl),
-        );
+          mappedItems.add(
+            SupabaseItemMapper.toInsertJson(item,
+                ownerId: userId,
+                uploadedImageUrl: uploadedImageUrl),
+          );
+        }
+      } catch (e) {
+        // If legacy items schema doesn't exist yet (Sprint gap), skip items.
+        _logger.w('CloudMigrationService: skipping item migration: $e');
       }
 
       // 3. Upsert Items
       onProgress(0.9, 'Finalizing items sync...');
       if (mappedItems.isNotEmpty) {
-        // Upsert in batches of 100 to avoid request too large errors
-        for (var i = 0; i < mappedItems.length; i += 100) {
-          final end =
-              (i + 100 < mappedItems.length) ? i + 100 : mappedItems.length;
-          final batch = mappedItems.sublist(i, end);
-          await _supabase
-              .from('items')
-              .upsert(List<Map<String, dynamic>>.from(batch));
+        try {
+          // Upsert in batches of 100 to avoid request too large errors
+          for (var i = 0; i < mappedItems.length; i += 100) {
+            final end =
+                (i + 100 < mappedItems.length) ? i + 100 : mappedItems.length;
+            final batch = mappedItems.sublist(i, end);
+            await _supabase.from('items')
+                .upsert(List<Map<String, dynamic>>.from(batch));
+          }
+        } catch (e) {
+          // Items migration may not be ready yet (Sprint 7-8 gap); don't
+          // block guest->account collections continuity.
+          _logger.w('CloudMigrationService: item upsert skipped: $e');
         }
       }
 

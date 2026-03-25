@@ -124,7 +124,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(3, 5730371926328866297),
       name: 'CollectionModel',
-      lastPropertyId: const obx_int.IdUid(17, 3802886459136006474),
+      lastPropertyId: const obx_int.IdUid(25, 1285019974657237596),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -212,6 +212,46 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(17, 3802886459136006474),
             name: 'childCount',
             type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(18, 8982339870197124853),
+            name: 'description',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(19, 9038032919751803621),
+            name: 'iconJson',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(20, 2963113255417979106),
+            name: 'itemsLayout',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(21, 9003180395958761994),
+            name: 'itemsSortDefault',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(22, 8443699427568464173),
+            name: 'openLinksIn',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(23, 5173186625873116228),
+            name: 'showLinkPreviews',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(24, 1155281046020825262),
+            name: 'lastAccessedAt',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(25, 1285019974657237596),
+            name: 'childCollectionsLayout',
+            type: 9,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -219,7 +259,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(4, 328533937922981262),
       name: 'ItemModel',
-      lastPropertyId: const obx_int.IdUid(17, 9014242142404849946),
+      lastPropertyId: const obx_int.IdUid(29, 7717661519180054530),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -264,18 +304,8 @@ final _entities = <obx_int.ModelEntity>[
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(9, 210722606043499996),
-            name: 'location',
-            type: 9,
-            flags: 0),
-        obx_int.ModelProperty(
             id: const obx_int.IdUid(10, 6167179647945300023),
             name: 'tags',
-            type: 9,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(11, 93655818926627561),
-            name: 'customFieldsJson',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
@@ -310,7 +340,67 @@ final _entities = <obx_int.ModelEntity>[
             type: 11,
             flags: 520,
             indexId: const obx_int.IdUid(4, 4471310188009959902),
-            relationTarget: 'CollectionModel')
+            relationTarget: 'CollectionModel'),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(18, 3982830580985195947),
+            name: 'annotation',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(19, 2297163299018166586),
+            name: 'faviconUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(20, 6580459291987530291),
+            name: 'dominantColor',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(21, 3791120418302521793),
+            name: 'siteName',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(22, 4812080865479975745),
+            name: 'canonicalUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(23, 6704937845926635303),
+            name: 'contentType',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(24, 4238896887064578209),
+            name: 'publishedAt',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(25, 2671407846795417719),
+            name: 'isPinned',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(26, 6603623744955188865),
+            name: 'clickCount',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(27, 4561958621040648625),
+            name: 'lastAccessedAt',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(28, 1484607773168578181),
+            name: 'isDeleted',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(29, 7717661519180054530),
+            name: 'deletedAt',
+            type: 10,
+            flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
@@ -381,7 +471,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [],
+      retiredPropertyUids: const [210722606043499996, 93655818926627561],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -511,7 +601,19 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final parentIdOffset = object.parentId == null
               ? null
               : fbb.writeString(object.parentId!);
-          fbb.startTable(18);
+          final descriptionOffset = object.description == null
+              ? null
+              : fbb.writeString(object.description!);
+          final iconJsonOffset = object.iconJson == null
+              ? null
+              : fbb.writeString(object.iconJson!);
+          final itemsLayoutOffset = fbb.writeString(object.itemsLayout);
+          final itemsSortDefaultOffset =
+              fbb.writeString(object.itemsSortDefault);
+          final openLinksInOffset = fbb.writeString(object.openLinksIn);
+          final childCollectionsLayoutOffset =
+              fbb.writeString(object.childCollectionsLayout);
+          fbb.startTable(26);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, uidOffset);
           fbb.addOffset(2, ownerIdOffset);
@@ -529,13 +631,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addBool(14, object.isArchived);
           fbb.addBool(15, object.isDeleted);
           fbb.addInt64(16, object.childCount);
+          fbb.addOffset(17, descriptionOffset);
+          fbb.addOffset(18, iconJsonOffset);
+          fbb.addOffset(19, itemsLayoutOffset);
+          fbb.addOffset(20, itemsSortDefaultOffset);
+          fbb.addOffset(21, openLinksInOffset);
+          fbb.addBool(22, object.showLinkPreviews);
+          fbb.addInt64(23, object.lastAccessedAt?.millisecondsSinceEpoch);
+          fbb.addOffset(24, childCollectionsLayoutOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-
+          final lastAccessedAtValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 50);
           final object = CollectionModel()
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..uid = const fb.StringReader(asciiOptimization: true)
@@ -569,7 +680,25 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..isDeleted =
                 const fb.BoolReader().vTableGet(buffer, rootOffset, 34, false)
             ..childCount =
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 36, 0);
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 36, 0)
+            ..description = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 38)
+            ..iconJson = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 40)
+            ..itemsLayout = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 42, '')
+            ..itemsSortDefault = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 44, '')
+            ..openLinksIn = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 46, '')
+            ..showLinkPreviews =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 48, false)
+            ..lastAccessedAt = lastAccessedAtValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(lastAccessedAtValue)
+            ..childCollectionsLayout =
+                const fb.StringReader(asciiOptimization: true)
+                    .vTableGet(buffer, rootOffset, 52, '');
 
           return object;
         }),
@@ -597,16 +726,28 @@ obx_int.ModelDefinition getObjectBoxModel() {
               : fbb.writeString(object.imageUrl!);
           final linkOffset =
               object.link == null ? null : fbb.writeString(object.link!);
-          final locationOffset = object.location == null
-              ? null
-              : fbb.writeString(object.location!);
           final tagsOffset =
               object.tags == null ? null : fbb.writeString(object.tags!);
-          final customFieldsJsonOffset = object.customFieldsJson == null
-              ? null
-              : fbb.writeString(object.customFieldsJson!);
           final collectionUidOffset = fbb.writeString(object.collectionUid);
-          fbb.startTable(18);
+          final annotationOffset = object.annotation == null
+              ? null
+              : fbb.writeString(object.annotation!);
+          final faviconUrlOffset = object.faviconUrl == null
+              ? null
+              : fbb.writeString(object.faviconUrl!);
+          final dominantColorOffset = object.dominantColor == null
+              ? null
+              : fbb.writeString(object.dominantColor!);
+          final siteNameOffset = object.siteName == null
+              ? null
+              : fbb.writeString(object.siteName!);
+          final canonicalUrlOffset = object.canonicalUrl == null
+              ? null
+              : fbb.writeString(object.canonicalUrl!);
+          final contentTypeOffset = object.contentType == null
+              ? null
+              : fbb.writeString(object.contentType!);
+          fbb.startTable(30);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, uidOffset);
           fbb.addOffset(2, ownerIdOffset);
@@ -615,22 +756,37 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addOffset(5, imagePathOffset);
           fbb.addOffset(6, imageUrlOffset);
           fbb.addOffset(7, linkOffset);
-          fbb.addOffset(8, locationOffset);
           fbb.addOffset(9, tagsOffset);
-          fbb.addOffset(10, customFieldsJsonOffset);
           fbb.addInt64(11, object.dbStatus);
           fbb.addOffset(12, collectionUidOffset);
           fbb.addFloat64(13, object.position);
           fbb.addInt64(14, object.createdAt.millisecondsSinceEpoch);
           fbb.addInt64(15, object.updatedAt.millisecondsSinceEpoch);
           fbb.addInt64(16, object.collection.targetId);
+          fbb.addOffset(17, annotationOffset);
+          fbb.addOffset(18, faviconUrlOffset);
+          fbb.addOffset(19, dominantColorOffset);
+          fbb.addOffset(20, siteNameOffset);
+          fbb.addOffset(21, canonicalUrlOffset);
+          fbb.addOffset(22, contentTypeOffset);
+          fbb.addInt64(23, object.publishedAt?.millisecondsSinceEpoch);
+          fbb.addBool(24, object.isPinned);
+          fbb.addInt64(25, object.clickCount);
+          fbb.addInt64(26, object.lastAccessedAt?.millisecondsSinceEpoch);
+          fbb.addBool(27, object.isDeleted);
+          fbb.addInt64(28, object.deletedAt?.millisecondsSinceEpoch);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-
+          final publishedAtValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 50);
+          final lastAccessedAtValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 56);
+          final deletedAtValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 60);
           final object = ItemModel()
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..uid = const fb.StringReader(asciiOptimization: true)
@@ -647,12 +803,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 .vTableGetNullable(buffer, rootOffset, 16)
             ..link = const fb.StringReader(asciiOptimization: true)
                 .vTableGetNullable(buffer, rootOffset, 18)
-            ..location = const fb.StringReader(asciiOptimization: true)
-                .vTableGetNullable(buffer, rootOffset, 20)
             ..tags = const fb.StringReader(asciiOptimization: true)
                 .vTableGetNullable(buffer, rootOffset, 22)
-            ..customFieldsJson = const fb.StringReader(asciiOptimization: true)
-                .vTableGetNullable(buffer, rootOffset, 24)
             ..dbStatus =
                 const fb.Int64Reader().vTableGet(buffer, rootOffset, 26, 0)
             ..collectionUid = const fb.StringReader(asciiOptimization: true)
@@ -662,7 +814,34 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..createdAt = DateTime.fromMillisecondsSinceEpoch(
                 const fb.Int64Reader().vTableGet(buffer, rootOffset, 32, 0))
             ..updatedAt = DateTime.fromMillisecondsSinceEpoch(
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 34, 0));
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 34, 0))
+            ..annotation = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 38)
+            ..faviconUrl = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 40)
+            ..dominantColor = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 42)
+            ..siteName = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 44)
+            ..canonicalUrl = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 46)
+            ..contentType = const fb.StringReader(asciiOptimization: true)
+                .vTableGetNullable(buffer, rootOffset, 48)
+            ..publishedAt = publishedAtValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(publishedAtValue)
+            ..isPinned =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 52, false)
+            ..clickCount =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 54, 0)
+            ..lastAccessedAt = lastAccessedAtValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(lastAccessedAtValue)
+            ..isDeleted =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 58, false)
+            ..deletedAt = deletedAtValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(deletedAtValue);
           object.collection.targetId =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 36, 0);
           object.collection.attach(store);
@@ -843,6 +1022,38 @@ class CollectionModel_ {
   /// See [CollectionModel.childCount].
   static final childCount =
       obx.QueryIntegerProperty<CollectionModel>(_entities[2].properties[16]);
+
+  /// See [CollectionModel.description].
+  static final description =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[17]);
+
+  /// See [CollectionModel.iconJson].
+  static final iconJson =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[18]);
+
+  /// See [CollectionModel.itemsLayout].
+  static final itemsLayout =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[19]);
+
+  /// See [CollectionModel.itemsSortDefault].
+  static final itemsSortDefault =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[20]);
+
+  /// See [CollectionModel.openLinksIn].
+  static final openLinksIn =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[21]);
+
+  /// See [CollectionModel.showLinkPreviews].
+  static final showLinkPreviews =
+      obx.QueryBooleanProperty<CollectionModel>(_entities[2].properties[22]);
+
+  /// See [CollectionModel.lastAccessedAt].
+  static final lastAccessedAt =
+      obx.QueryDateProperty<CollectionModel>(_entities[2].properties[23]);
+
+  /// See [CollectionModel.childCollectionsLayout].
+  static final childCollectionsLayout =
+      obx.QueryStringProperty<CollectionModel>(_entities[2].properties[24]);
 }
 
 /// [ItemModel] entity fields to define ObjectBox queries.
@@ -879,41 +1090,81 @@ class ItemModel_ {
   static final link =
       obx.QueryStringProperty<ItemModel>(_entities[3].properties[7]);
 
-  /// See [ItemModel.location].
-  static final location =
-      obx.QueryStringProperty<ItemModel>(_entities[3].properties[8]);
-
   /// See [ItemModel.tags].
   static final tags =
-      obx.QueryStringProperty<ItemModel>(_entities[3].properties[9]);
-
-  /// See [ItemModel.customFieldsJson].
-  static final customFieldsJson =
-      obx.QueryStringProperty<ItemModel>(_entities[3].properties[10]);
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[8]);
 
   /// See [ItemModel.dbStatus].
   static final dbStatus =
-      obx.QueryIntegerProperty<ItemModel>(_entities[3].properties[11]);
+      obx.QueryIntegerProperty<ItemModel>(_entities[3].properties[9]);
 
   /// See [ItemModel.collectionUid].
   static final collectionUid =
-      obx.QueryStringProperty<ItemModel>(_entities[3].properties[12]);
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[10]);
 
   /// See [ItemModel.position].
   static final position =
-      obx.QueryDoubleProperty<ItemModel>(_entities[3].properties[13]);
+      obx.QueryDoubleProperty<ItemModel>(_entities[3].properties[11]);
 
   /// See [ItemModel.createdAt].
   static final createdAt =
-      obx.QueryDateProperty<ItemModel>(_entities[3].properties[14]);
+      obx.QueryDateProperty<ItemModel>(_entities[3].properties[12]);
 
   /// See [ItemModel.updatedAt].
   static final updatedAt =
-      obx.QueryDateProperty<ItemModel>(_entities[3].properties[15]);
+      obx.QueryDateProperty<ItemModel>(_entities[3].properties[13]);
 
   /// See [ItemModel.collection].
   static final collection = obx.QueryRelationToOne<ItemModel, CollectionModel>(
-      _entities[3].properties[16]);
+      _entities[3].properties[14]);
+
+  /// See [ItemModel.annotation].
+  static final annotation =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[15]);
+
+  /// See [ItemModel.faviconUrl].
+  static final faviconUrl =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[16]);
+
+  /// See [ItemModel.dominantColor].
+  static final dominantColor =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[17]);
+
+  /// See [ItemModel.siteName].
+  static final siteName =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[18]);
+
+  /// See [ItemModel.canonicalUrl].
+  static final canonicalUrl =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[19]);
+
+  /// See [ItemModel.contentType].
+  static final contentType =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[20]);
+
+  /// See [ItemModel.publishedAt].
+  static final publishedAt =
+      obx.QueryDateProperty<ItemModel>(_entities[3].properties[21]);
+
+  /// See [ItemModel.isPinned].
+  static final isPinned =
+      obx.QueryBooleanProperty<ItemModel>(_entities[3].properties[22]);
+
+  /// See [ItemModel.clickCount].
+  static final clickCount =
+      obx.QueryIntegerProperty<ItemModel>(_entities[3].properties[23]);
+
+  /// See [ItemModel.lastAccessedAt].
+  static final lastAccessedAt =
+      obx.QueryDateProperty<ItemModel>(_entities[3].properties[24]);
+
+  /// See [ItemModel.isDeleted].
+  static final isDeleted =
+      obx.QueryBooleanProperty<ItemModel>(_entities[3].properties[25]);
+
+  /// See [ItemModel.deletedAt].
+  static final deletedAt =
+      obx.QueryDateProperty<ItemModel>(_entities[3].properties[26]);
 }
 
 /// [SearchHistoryModel] entity fields to define ObjectBox queries.

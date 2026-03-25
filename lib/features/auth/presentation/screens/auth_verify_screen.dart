@@ -6,6 +6,7 @@ import 'package:pinput/pinput.dart';
 import 'auth_email_screen.dart';
 import '../providers/auth_notifier.dart';
 import '../providers/auth_providers.dart';
+import '../../../../core/providers/core_providers.dart';
 
 class AuthVerifyScreen extends ConsumerStatefulWidget {
   final AuthVerifyScreenParams params;
@@ -21,6 +22,7 @@ class AuthVerifyScreen extends ConsumerStatefulWidget {
 
 class _AuthVerifyScreenState extends ConsumerState<AuthVerifyScreen> {
   final _otpController = TextEditingController();
+  bool _wasGuestBeforeVerify = false;
 
   @override
   void dispose() {
@@ -29,6 +31,11 @@ class _AuthVerifyScreenState extends ConsumerState<AuthVerifyScreen> {
   }
 
   Future<void> _verify(String otp) async {
+    // Preserve guest local data on account attachment:
+    // if the user started OTP verification while in guest mode, we will
+    // route them through `/migration` after auth completes.
+    _wasGuestBeforeVerify =
+        await ref.read(appSettingsRepositoryProvider).isGuestMode();
     await ref.read(authNotifierProvider.notifier).verifyOTP(
           email: widget.params.email,
           otp: otp,
@@ -56,7 +63,11 @@ class _AuthVerifyScreenState extends ConsumerState<AuthVerifyScreen> {
     ref.listen(authStateProvider, (_, next) {
       final user = next.valueOrNull;
       if (user != null && !user.isGuest && context.mounted) {
-        context.go('/');
+        if (_wasGuestBeforeVerify) {
+          context.go('/migration');
+        } else {
+          context.go('/');
+        }
       }
     });
 

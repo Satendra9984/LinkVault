@@ -102,11 +102,10 @@ class CloudDowngradeService {
             ..imagePath = null // Local path won't exist for cloud images
             ..imageUrl = row['image_url']
             ..link = row['link']
-            ..location = row['location']
             ..tags = row['tags']
             ..dbStatus = (ItemStatus.values
                     .firstWhere((e) => e.name == row['status'],
-                        orElse: () => ItemStatus.pending))
+                        orElse: () => ItemStatus.unread))
                 .index
             ..collectionUid = row['collection_id'] as String? ?? ''
             ..position = (row['position'] as num?)?.toDouble() ?? 0.0

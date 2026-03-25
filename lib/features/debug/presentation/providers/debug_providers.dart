@@ -66,7 +66,7 @@ class DebugTools {
         ownerId: user?.supabaseId,
         title: 'Mock Item ${i + 1}',
         description: 'This is a mock description generated for testing purposes.',
-        status: i % 3 == 0 ? ItemStatus.visited : ItemStatus.pending,
+        status: i % 3 == 0 ? ItemStatus.read : ItemStatus.unread,
         position: DateTime.now().millisecondsSinceEpoch.toDouble() + i,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

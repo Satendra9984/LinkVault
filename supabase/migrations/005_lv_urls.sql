@@ -12,6 +12,11 @@ CREATE TABLE IF NOT EXISTS public.lv_urls (
   dominant_color TEXT,
   tags TEXT,
   annotation TEXT,
+  -- Optional future URL metadata (recommended by URLItem contract)
+  site_name TEXT,
+  canonical_url TEXT,
+  content_type TEXT,
+  published_at TIMESTAMPTZ,
   status TEXT NOT NULL DEFAULT 'unread'
     CHECK (status IN ('unread', 'read', 'archived')),
   is_pinned BOOLEAN NOT NULL DEFAULT FALSE,

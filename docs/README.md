@@ -1,6 +1,6 @@
 # LinkVault Documentation Portal
 
-Version: 2.1  
+Version: 2.4  
 Last Updated: 2026-03-24  
 Project Status: Documentation-First Execution Planning  
 Canonical Docs Root: `docs/`
@@ -14,9 +14,9 @@ If you are new to the project, read in this order:
 1. [Documentation Audit and Source-of-Truth Matrix](./00_PROJECT_OVERVIEW/Documentation_Audit_and_Source_of_Truth_Matrix.md)
 2. [Phase Roadmap, Tasks, Evaluation Gates, and Test Catalog](./00_PROJECT_OVERVIEW/Phase_Roadmap_Tasks_and_Test_Catalog.md) *(v1.1 execution source for P0-P6 gates and test IDs)*
 3. [Master Project Plan](./00_PROJECT_OVERVIEW/Master_Project_Plan.md) *(strategic and sprint narrative aligned to roadmap)*
-4. [Product Requirements Document](./01_PRODUCT/Product_Requirements_Document.md)
+4. [Product Requirements Document](./01_PRODUCT/Product_Requirements_Document.md) (v1.2+ Home & Library — [ADR-0003](./10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md))
 4b. [Monetization model — free cloud, quotas, unit economics](./05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · [ADR-0002](./10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md)
-5. [Technical Architecture](./03_ARCHITECTURE/Technical_Architecture.md)
+5. [Technical Architecture](./03_ARCHITECTURE/Technical_Architecture.md) · [Home and Collections UX](./03_ARCHITECTURE/Home_and_Collections_UX_Architecture.md) · [ADR-0003](./10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md) · [UI/UX flows & wireframes](./02_DESIGN/UI_UX_Flow_Document.md) · [Home visual contract](./02_DESIGN/Home_Collections_Visual_Contract.md)
 6. [Supabase Schema and Migrations](./04_DATA_AND_MIGRATION/Supabase_Schema_and_Migrations.md)
 7. [Data Persistence State Machine](./04_DATA_AND_MIGRATION/Data_Persistence_State_Machine.md)
 8. [Execution Readiness Report](./10_DECISIONS_AND_RISKS/Execution_Readiness_Report.md)
@@ -49,7 +49,7 @@ docs/
 |---|---|---|
 | `00_PROJECT_OVERVIEW` | Strategy, roadmap, governance context | Product + Engineering |
 | `01_PRODUCT` | Functional/non-functional requirements | Product |
-| `02_DESIGN` | UX language and design contracts | Product + Design |
+| `02_DESIGN` | UX flows, wireframes, contracts ([UI_UX_Flow_Document](./02_DESIGN/UI_UX_Flow_Document.md), [Home_Collections_Visual_Contract](./02_DESIGN/Home_Collections_Visual_Contract.md)) | Product + Design |
 | `03_ARCHITECTURE` | Runtime architecture and coding contracts | Engineering |
 | `04_DATA_AND_MIGRATION` | Schema, sync, migration, reconciliation | Engineering |
 | `05_MONETIZATION` | Revenue and entitlement behavior | Product + Engineering |
@@ -128,9 +128,12 @@ A full template is provided in:
 - [Master Plan](./00_PROJECT_OVERVIEW/Master_Project_Plan.md)
 - [Cursor Usage SOP](./00_PROJECT_OVERVIEW/Cursor_Usage_SOP.md)
 - [Architecture](./03_ARCHITECTURE/Technical_Architecture.md)
+- [Home & Collections UX](./03_ARCHITECTURE/Home_and_Collections_UX_Architecture.md)
+- [UI/UX flows & wireframes](./02_DESIGN/UI_UX_Flow_Document.md)
+- [Home visual contract](./02_DESIGN/Home_Collections_Visual_Contract.md)
 - [Developer Bible](./03_ARCHITECTURE/Developer_Bible.md)
 - [Data and Migration Suite](./04_DATA_AND_MIGRATION/)
 - [Security and Compliance](./07_SECURITY_AND_COMPLIANCE/)
 - [Testing and Quality](./08_TESTING_AND_QUALITY/)
 - [Release and Operations](./09_RELEASE_AND_OPERATIONS/)
-- [ADRs and Risks](./10_DECISIONS_AND_RISKS/)
+- [ADRs and Risks](./10_DECISIONS_AND_RISKS/) — [ADR-0003 Home & folder model](./10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md)

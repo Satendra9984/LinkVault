@@ -69,6 +69,9 @@ Suggested test IDs (for backlog / QA sheets):
 ### Regression (non-collections)
 
 - Auth/profile flows still reach home after Sprint 5-6 changes.
+- Router contract regression:
+  - Authed navigation: `/` shows `HomeDashboardScreen`; `/collections` shows root `CollectionsListScreen` (Library).
+  - Guest mode: deep links to `/collections` still resolve, and Home remains reachable via auth flow completion.
 - Items CRUD inside nested `collection_id` unchanged for happy path names
 
 ## Exit criteria

@@ -1,6 +1,6 @@
 # LinkVault — Product Requirements Document (PRD)
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Last Updated:** March 24, 2026  
 **Status:** Approved for Development  
 **Target Launch:** Q3 2026
@@ -171,10 +171,10 @@ A mobile-first, offline-first link vault where:
 
 **Journey 2: Daily Browsing**
 ```
-1. Opens LinkVault
-2. Watches 30-sec rewarded ad (Day 4+ free tier)
+1. Opens LinkVault → lands on Home (pinned + recent collections/URLs; Library entry)
+2. Watches 30-sec rewarded ad (Day 4+ free tier) when gate applies
 3. Gets 24hr unlimited access
-4. Browses "Dev Resources → Flutter" collection
+4. Opens Library → navigates into "Dev Resources → Flutter"
 5. Taps a URL → opens in browser
 6. Saves 2 new links from recent YouTube video
 7. Searches for "supabase tutorial" → finds link from 3 weeks ago
@@ -248,9 +248,28 @@ A mobile-first, offline-first link vault where:
 | US-6.2 | As a user, I want to upgrade to premium | Tap "Upgrade"; paywall shows monthly/annual pricing; IAP completes via RevenueCat | P0 |
 | US-6.3 | As a premium user, I want to restore my purchase | Restore Purchases button in settings; verifies with store | P0 |
 
+**Epic 7: Home & Library Navigation** *(added v1.2 — see ADR-0003)*
+
+| ID | User Story | Acceptance Criteria | Priority |
+|---|---|---|---|
+| US-7.1 | As a user, I want a Home screen that highlights what matters | After auth, `/` shows dashboard sections (pinned + recent collections; URLs when implemented); clear entry to Library/root folders | P0 |
+| US-7.2 | As a user, I want to open all root-level folders from Home | One tap from Home to root `CollectionsListScreen` (e.g. `/collections`); consistent with architecture doc | P0 |
+| US-7.3 | As a user, I want recent collections based on what I opened | `last_accessed_at` (or agreed fallback) drives ordering; section capped (15) per ADR-0003 | P1 |
+| US-7.4 | As a user, I want pinned URLs visible globally and in-folder | Pinned URLs on Home when implemented; within a folder, pinned URLs sort first / optional strip per visual contract | P1 |
+| US-7.5 | As a user, I want nested folders without losing context | Repeating collections pattern + breadcrumb/title; interim: URLs on separate screen until unified folder hub (ADR-0003) | P0 |
+
 ---
 
 ## 4. Functional Requirements
+
+### 4.0 Navigation & Home (P0–P1) — *v1.2 delta*
+
+Canonical architecture: [Home_and_Collections_UX_Architecture.md](../03_ARCHITECTURE/Home_and_Collections_UX_Architecture.md). Decisions: [ADR-0003](../10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md). Visual layout: [Home_Collections_Visual_Contract.md](../02_DESIGN/Home_Collections_Visual_Contract.md).
+
+- ✅ Post-auth landing: **`/` = Home dashboard** (not an undifferentiated root grid only).
+- ✅ **Library** path exposes **root-level folders** (`parent_id` null), e.g. `/collections`.
+- ✅ Home sections: **pinned collections**, **recent collections** (cap 15); **pinned/recent URLs** when Epic delivered.
+- ⏳ **Unified folder hub** (child folders + URLs on one screen): **target** per ADR-0003; **interim** split between collections list and items list until hub ships.
 
 ### 4.1 Collections (P0)
 
@@ -413,5 +432,6 @@ Two streams:
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.2 | March 24, 2026 | **Home & Library:** Epic 7 user stories; §4.0 navigation/home requirements; Journey 2 updated. Aligned to [ADR-0003](../10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md). |
 | 1.1 | March 24, 2026 | Monetization: guest local-only; **free account = Supabase + quotas + Day Pass**; premium = higher limits + no ads. |
 | 1.0 | March 20, 2026 | Initial PRD — full reboot |

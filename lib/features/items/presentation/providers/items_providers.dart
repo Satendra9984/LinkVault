@@ -14,7 +14,11 @@ import '../../domain/usecases/get_paginated_items_usecase.dart';
 import '../../domain/usecases/create_item_usecase.dart';
 import '../../domain/usecases/update_item_usecase.dart';
 import '../../domain/usecases/delete_item_usecase.dart';
+import '../../domain/usecases/mark_item_read_and_track_usecase.dart';
 import '../../domain/usecases/toggle_item_status_usecase.dart';
+import '../../domain/usecases/toggle_item_archive_usecase.dart';
+import '../../domain/usecases/toggle_item_pin_usecase.dart';
+import '../../domain/usecases/reorder_items_usecase.dart';
 
 // Same routing rules as [collectionsRepositoryProvider] (ADR-0002).
 final itemsRepositoryProvider = Provider<IItemsRepository>((ref) {
@@ -69,26 +73,78 @@ final toggleItemStatusUseCaseProvider =
   return ToggleItemStatusUseCase(ref.watch(itemsRepositoryProvider));
 });
 
+final markItemReadAndTrackUseCaseProvider =
+    Provider<MarkItemReadAndTrackUseCase>((ref) {
+  return MarkItemReadAndTrackUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+final toggleItemPinUseCaseProvider = Provider<ToggleItemPinUseCase>((ref) {
+  return ToggleItemPinUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+final toggleItemArchiveUseCaseProvider =
+    Provider<ToggleItemArchiveUseCase>((ref) {
+  return ToggleItemArchiveUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+final reorderItemsUseCaseProvider = Provider<ReorderItemsUseCase>((ref) {
+  return ReorderItemsUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+enum UrlSortOption { position, dateAdded, dateEdited }
+enum UnifiedTab { childCollections, urls }
+enum UrlViewMode { list, cards, icons }
+
+int compareBySortOption(UrlSortOption sort, Item a, Item b) {
+  return switch (sort) {
+    UrlSortOption.position => a.position.compareTo(b.position),
+    UrlSortOption.dateAdded => b.createdAt.compareTo(a.createdAt),
+    UrlSortOption.dateEdited => b.updatedAt.compareTo(a.updatedAt),
+  };
+}
+
 class ItemsState {
   final List<Item> items;
   final bool hasMore;
   final bool isLoadingMore;
+  final ItemStatus? statusFilter;
+  final UrlSortOption sortOption;
+  final UrlViewMode viewMode;
+  final UnifiedTab activeTab;
+  /// How many raw rows we've fetched from the repository (used to keep
+  /// pagination stable when client-side filtering is enabled).
+  final int fetchedCount;
 
   ItemsState({
     required this.items,
     this.hasMore = true,
     this.isLoadingMore = false,
+    this.statusFilter,
+    this.sortOption = UrlSortOption.dateAdded,
+    this.viewMode = UrlViewMode.list,
+    this.activeTab = UnifiedTab.urls,
+    this.fetchedCount = 0,
   });
 
   ItemsState copyWith({
     List<Item>? items,
     bool? hasMore,
     bool? isLoadingMore,
+    ItemStatus? statusFilter,
+    UrlSortOption? sortOption,
+    UrlViewMode? viewMode,
+    UnifiedTab? activeTab,
+    int? fetchedCount,
   }) {
     return ItemsState(
       items: items ?? this.items,
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      statusFilter: statusFilter ?? this.statusFilter,
+      sortOption: sortOption ?? this.sortOption,
+      viewMode: viewMode ?? this.viewMode,
+      activeTab: activeTab ?? this.activeTab,
+      fetchedCount: fetchedCount ?? this.fetchedCount,
     );
   }
 }
@@ -97,8 +153,18 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   static const int _pageSize = 20;
   String get _collectionId => arg;
 
+  // MVVM: filtering/sorting state lives in the notifier, not the widget.
+  ItemStatus? _statusFilter;
+  UrlSortOption _sortOption = UrlSortOption.dateAdded;
+  UrlViewMode _viewMode = UrlViewMode.list;
+  UnifiedTab _activeTab = UnifiedTab.urls;
+
   @override
   Future<ItemsState> build(String arg) async {
+    _statusFilter = null;
+    _sortOption = UrlSortOption.dateAdded;
+    _viewMode = UrlViewMode.list;
+    _activeTab = UnifiedTab.urls;
     return _fetchPage(0, []);
   }
 
@@ -111,10 +177,22 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
         throw Exception(failure.message);
       },
       (newItems) {
+        final filteredPage = _statusFilter == null
+            ? newItems
+            : newItems.where((i) => i.status == _statusFilter).toList();
+
+        final combined = <Item>[...currentItems, ...filteredPage];
+        combined.sort((a, b) => compareBySortOption(_sortOption, a, b));
+
         return ItemsState(
-          items: [...currentItems, ...newItems],
+          items: combined,
           hasMore: newItems.length == _pageSize,
           isLoadingMore: false,
+          statusFilter: _statusFilter,
+          sortOption: _sortOption,
+          viewMode: _viewMode,
+          activeTab: _activeTab,
+          fetchedCount: offset + newItems.length,
         );
       },
     );
@@ -131,12 +209,57 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     state = AsyncData(currentState.copyWith(isLoadingMore: true));
 
     try {
-      final offset = currentState.items.length;
+      final offset = currentState.fetchedCount;
       final newState = await _fetchPage(offset, currentState.items);
       state = AsyncData(newState);
     } catch (e, st) {
       state = AsyncError(e, st);
     }
+  }
+
+  Future<void> setStatusFilter(ItemStatus? filter) async {
+    _statusFilter = filter;
+    state = const AsyncLoading();
+    try {
+      final newState = await _fetchPage(0, []);
+      state = AsyncData(newState);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> setSortOption(UrlSortOption sortOption) async {
+    _sortOption = sortOption;
+    state = const AsyncLoading();
+    try {
+      final newState = await _fetchPage(0, []);
+      state = AsyncData(newState);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> setViewMode(UrlViewMode viewMode) async {
+    _viewMode = viewMode;
+    final current = state.value;
+    if (current != null) {
+      state = AsyncData(current.copyWith(viewMode: _viewMode));
+      return;
+    }
+    state = const AsyncLoading();
+    try {
+      final newState = await _fetchPage(0, []);
+      state = AsyncData(newState);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> setActiveTab(UnifiedTab tab) async {
+    _activeTab = tab;
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(current.copyWith(activeTab: _activeTab));
   }
 
   Future<void> refresh() async {
@@ -153,8 +276,14 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     if (state.value == null) return;
 
     final currentItems = state.value!.items;
-    final newItems = [newItem, ...currentItems];
-    state = AsyncData(state.value!.copyWith(items: newItems));
+    final nextItems = <Item>[newItem, ...currentItems];
+    nextItems.sort((a, b) => compareBySortOption(_sortOption, a, b));
+    state = AsyncData(
+      state.value!.copyWith(
+        items: nextItems,
+        fetchedCount: state.value!.fetchedCount + 1,
+      ),
+    );
   }
 
   void updateItemInState(Item updatedItem) {
@@ -166,6 +295,7 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     if (index != -1) {
       final newItems = List<Item>.from(currentItems);
       newItems[index] = updatedItem;
+      newItems.sort((a, b) => compareBySortOption(_sortOption, a, b));
       state = AsyncData(state.value!.copyWith(items: newItems));
     }
   }

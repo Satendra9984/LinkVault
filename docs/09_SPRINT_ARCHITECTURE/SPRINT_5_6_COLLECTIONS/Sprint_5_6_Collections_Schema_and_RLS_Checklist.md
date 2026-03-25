@@ -2,13 +2,14 @@
 
 **Use this doc when applying LinkVault SQL to your Supabase project** (dev → staging → prod). Migrations live in the repo; they are not auto-applied until you run them.
 
-**Operator quick tasks:** (1) Apply **`001` → `010`** in order. (2) Run smoke scenarios in [rls_smoke_test.sql](c:/Users/LENOVO/development/saas/link_vault/supabase/sql/rls_smoke_test.sql) with real user UUIDs. (3) Verify **010** quota behavior for a non-premium test user (150 collections / 5000 URLs) and premium bypass via `lv_user_profiles`. (4) Plan a job or webhook to keep **`is_premium`** aligned with RevenueCat.
+**Operator quick tasks:** (1) Apply **`001` → `013`** in order. (2) Run smoke scenarios in [rls_smoke_test.sql](c:/Users/LENOVO/development/saas/link_vault/supabase/sql/rls_smoke_test.sql) with real user UUIDs. (3) Verify **010** quota behavior for a non-premium test user (150 collections / 5000 URLs) and premium bypass via `lv_user_profiles`. (4) Plan a job or webhook to keep **`is_premium`** aligned with RevenueCat.
 
 ---
 
 Primary migration files under [c:/Users/LENOVO/development/saas/link_vault/supabase/migrations](c:/Users/LENOVO/development/saas/link_vault/supabase/migrations):
 
 - `004_lv_collections.sql` — table + base RLS + indexes
+- `012_lv_collections_ux_and_url_defaults.sql` — **description**, **last_accessed_at**, **items_layout**, **items_sort_default**, **icon_json**, **open_links_in**, **show_link_previews** (see [Collections_Extended_Schema_and_UX_Fields.md](Collections_Extended_Schema_and_UX_Fields.md))
 - `005_lv_urls.sql` — table + base RLS + indexes
 - `006_triggers.sql` — `updated_at`, initial `url_count` trigger
 - `009_sprint56_collections_rls_and_counts_hardening.sql` — **url_count move + soft-delete**, **child_count**, **stricter `lv_urls` update WITH CHECK**
@@ -25,13 +26,15 @@ Verify columns exist as deployed:
 - `is_pinned`, `is_archived`, `position` (`FLOAT8`)
 - `url_count`, `child_count`
 - `is_deleted`, `deleted_at`, `created_at`, `updated_at`
+- After **012**: `description`, `last_accessed_at`, `items_layout`, `items_sort_default`, `icon_json`, `open_links_in`, `show_link_previews`
+- After **013**: `items_layout` allows `compact_grid`; `child_collections_layout`
 
-Note: There is no separate `icon` / `color` column — use **`icon_name`** and **`color_hex`** to match migrations and avoid app/DB drift.
+Note: There is no legacy `icon` / `color` column — use **`icon_name`** and **`color_hex`**; optional rich payload in **`icon_json`**.
 
 ### `public.lv_urls` (005)
 
 - `id`, `owner_id`, `collection_id`, `url`
-- Metadata: `title`, `description`, `thumbnail_url`, `favicon_url`, `dominant_color`, `tags`, `annotation`, `status`
+- Metadata: `title`, `description`, `thumbnail_url`, `favicon_url`, `dominant_color`, `tags`, `annotation`, `site_name`, `canonical_url`, `content_type`, `published_at`, `status`
 - `is_pinned`, `click_count`, `position`, `is_deleted`, `deleted_at`, `last_accessed_at`, timestamps
 
 ## Triggers / functions

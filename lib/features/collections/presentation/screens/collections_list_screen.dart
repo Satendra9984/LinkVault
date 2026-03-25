@@ -43,7 +43,7 @@ class CollectionsListScreen extends ConsumerWidget {
               elevation: innerBoxIsScrolled ? 2 : 0,
               centerTitle: true,
               title: Text(
-                'Home',
+                'Library',
                 style: theme.textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold) ??
                     TextStyle(
@@ -364,9 +364,11 @@ class CollectionsListScreen extends ConsumerWidget {
                 parentId: collection.parentId,
                 isShared: collection.isShared,
                 title: collection.title,
+                description: collection.description,
                 category: collection.category,
                 colorHex: collection.colorHex,
                 iconName: collection.iconName,
+                iconJson: collection.iconJson,
                 position: collection.position,
                 isPinned: !collection.isPinned,
                 isArchived: collection.isArchived,
@@ -374,9 +376,16 @@ class CollectionsListScreen extends ConsumerWidget {
                 childCount: collection.childCount,
                 createdAt: collection.createdAt,
                 updatedAt: DateTime.now(),
+                lastAccessedAt: collection.lastAccessedAt,
+                itemsLayout: collection.itemsLayout,
+                childCollectionsLayout: collection.childCollectionsLayout,
+                itemsSortDefault: collection.itemsSortDefault,
+                openLinksIn: collection.openLinksIn,
+                showLinkPreviews: collection.showLinkPreviews,
                 itemCount: collection.itemCount,
               );
               await ref.read(updateCollectionUseCaseProvider).call(updated);
+              ref.invalidate(collectionsListProvider);
             },
           ),
           ListTile(
@@ -392,9 +401,11 @@ class CollectionsListScreen extends ConsumerWidget {
                 parentId: collection.parentId,
                 isShared: collection.isShared,
                 title: collection.title,
+                description: collection.description,
                 category: collection.category,
                 colorHex: collection.colorHex,
                 iconName: collection.iconName,
+                iconJson: collection.iconJson,
                 position: collection.position,
                 isPinned: collection.isPinned,
                 isArchived: !collection.isArchived,
@@ -402,6 +413,12 @@ class CollectionsListScreen extends ConsumerWidget {
                 childCount: collection.childCount,
                 createdAt: collection.createdAt,
                 updatedAt: DateTime.now(),
+                lastAccessedAt: collection.lastAccessedAt,
+                itemsLayout: collection.itemsLayout,
+                childCollectionsLayout: collection.childCollectionsLayout,
+                itemsSortDefault: collection.itemsSortDefault,
+                openLinksIn: collection.openLinksIn,
+                showLinkPreviews: collection.showLinkPreviews,
                 itemCount: collection.itemCount,
               );
               await ref.read(updateCollectionUseCaseProvider).call(updated);
@@ -445,9 +462,12 @@ class CollectionsListScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              ref.read(deleteCollectionUseCaseProvider).call(collectionId);
-              context.pop();
+            onPressed: () async {
+              await ref
+                  .read(deleteCollectionUseCaseProvider)
+                  .call(collectionId);
+              ref.invalidate(collectionsListProvider);
+              if (context.mounted) context.pop();
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),

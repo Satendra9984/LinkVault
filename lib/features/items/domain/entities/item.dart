@@ -1,95 +1,142 @@
 import 'package:equatable/equatable.dart';
 
-enum ItemStatus { pending, visited, completed }
+// Domain status aligned with `public.lv_urls.status`.
+enum ItemStatus { unread, read, archived }
 
-enum CustomFieldType { text, number, url, date, boolean }
-
-class CustomField extends Equatable {
-  final String id;
-  final String name;
-  final CustomFieldType type;
-  final dynamic value;
-
-  const CustomField({
-    required this.id,
-    required this.name,
-    required this.type,
-    this.value,
-  });
-
-  @override
-  List<Object?> get props => [id, name, type, value];
-}
-
+/// Unified LV URL item contract (URLItem).
+///
+/// This is the single source-of-truth domain model for URL items across:
+/// - Supabase `public.lv_urls`
+/// - ObjectBox offline store
+/// - Form and UI flows
+///
+/// Curate-era "custom fields" are intentionally removed to avoid confusion.
 class Item extends Equatable {
   final String id;
   final String? ownerId;
+  final String collectionId;
+
+  // Core URL data
+  final String? link;
   final String title;
   final String? description;
-  final String? imagePath;
-  final String? imageUrl;
-  final String? link;
-  final String? location;
-  final String? tags; // Comma-separated e.g. "coffee,cafe,cozy"
-  final List<CustomField> customFields;
 
+  /// Preview image / thumbnail URL (maps to `lv_urls.thumbnail_url`).
+  final String? imageUrl;
+
+  /// Local-only thumbnail path for offline image picking.
+  final String? imagePath;
+
+  /// Favicon URL (maps to `lv_urls.favicon_url`).
+  final String? faviconUrl;
+
+  final String? dominantColor;
+  final String? tags;
+
+  /// Notes stored in `lv_urls.annotation`.
+  final String? annotation;
+
+  // Future fields (recommended)
+  final String? siteName;
+  final String? canonicalUrl;
+  final String? contentType;
+  final DateTime? publishedAt;
+
+  // URL lifecycle / ordering / analytics
   final ItemStatus status;
+  final bool isPinned;
   final double position;
+  final int clickCount;
+  final DateTime? lastAccessedAt;
+
+  // Soft delete
+  final bool isDeleted;
+  final DateTime? deletedAt;
+
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String collectionId; // Foreign key
 
   const Item({
     required this.id,
     this.ownerId,
+    required this.collectionId,
+    this.link,
     required this.title,
     this.description,
-    this.imagePath,
     this.imageUrl,
-    this.link,
-    this.location,
+    this.imagePath,
+    this.faviconUrl,
+    this.dominantColor,
     this.tags,
-    this.customFields = const [],
+    this.annotation,
     required this.status,
-    required this.position,
+    this.isPinned = false,
+    this.position = 0.0,
+    this.clickCount = 0,
+    this.lastAccessedAt,
+    this.isDeleted = false,
+    this.deletedAt,
+    this.siteName,
+    this.canonicalUrl,
+    this.contentType,
+    this.publishedAt,
     required this.createdAt,
     required this.updatedAt,
-    required this.collectionId,
   });
 
   Item copyWith({
     String? id,
     String? ownerId,
+    String? collectionId,
+    String? link,
     String? title,
     String? description,
-    String? imagePath,
     String? imageUrl,
-    String? link,
-    String? location,
+    String? imagePath,
+    String? faviconUrl,
+    String? dominantColor,
     String? tags,
-    List<CustomField>? customFields,
+    String? annotation,
     ItemStatus? status,
+    bool? isPinned,
     double? position,
+    int? clickCount,
+    DateTime? lastAccessedAt,
+    bool? isDeleted,
+    DateTime? deletedAt,
+    String? siteName,
+    String? canonicalUrl,
+    String? contentType,
+    DateTime? publishedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? collectionId,
   }) {
     return Item(
       id: id ?? this.id,
       ownerId: ownerId ?? this.ownerId,
+      collectionId: collectionId ?? this.collectionId,
+      link: link ?? this.link,
       title: title ?? this.title,
       description: description ?? this.description,
-      imagePath: imagePath ?? this.imagePath,
       imageUrl: imageUrl ?? this.imageUrl,
-      link: link ?? this.link,
-      location: location ?? this.location,
+      imagePath: imagePath ?? this.imagePath,
+      faviconUrl: faviconUrl ?? this.faviconUrl,
+      dominantColor: dominantColor ?? this.dominantColor,
       tags: tags ?? this.tags,
-      customFields: customFields ?? this.customFields,
+      annotation: annotation ?? this.annotation,
       status: status ?? this.status,
+      isPinned: isPinned ?? this.isPinned,
       position: position ?? this.position,
+      clickCount: clickCount ?? this.clickCount,
+      lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      siteName: siteName ?? this.siteName,
+      canonicalUrl: canonicalUrl ?? this.canonicalUrl,
+      contentType: contentType ?? this.contentType,
+      publishedAt: publishedAt ?? this.publishedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      collectionId: collectionId ?? this.collectionId,
     );
   }
 
@@ -97,18 +144,28 @@ class Item extends Equatable {
   List<Object?> get props => [
         id,
         ownerId,
+        collectionId,
+        link,
         title,
         description,
-        imagePath,
         imageUrl,
-        link,
-        location,
+        imagePath,
+        faviconUrl,
+        dominantColor,
         tags,
-        customFields,
+        annotation,
+        siteName,
+        canonicalUrl,
+        contentType,
+        publishedAt,
         status,
+        isPinned,
         position,
+        clickCount,
+        lastAccessedAt,
+        isDeleted,
+        deletedAt,
         createdAt,
         updatedAt,
-        collectionId,
       ];
 }

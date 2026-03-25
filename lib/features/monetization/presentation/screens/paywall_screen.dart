@@ -69,7 +69,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
       next.whenData((state) {
         if (state.status == PaywallStatus.success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Welcome to Curate Premium! 🎉')),
+            const SnackBar(content: Text('Welcome to LinkVault Premium!')),
           );
           context.go('/migration');
         }
@@ -208,7 +208,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CURATE',
+          'LINKVAULT',
           style: TextStyle(
             fontSize: 12,
             letterSpacing: 4.0,
@@ -218,7 +218,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Curate your life,\nwithout limits.',
+          'Your links,\nwithout limits.',
           style: TextStyle(
             fontSize: 40,
             fontFamily: 'Fraunces',

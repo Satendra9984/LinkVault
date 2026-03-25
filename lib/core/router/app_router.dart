@@ -9,7 +9,9 @@ import '../../features/auth/presentation/screens/auth_verify_screen.dart';
 import '../../features/monetization/presentation/screens/paywall_screen.dart';
 import '../../features/monetization/presentation/screens/migration_screen.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
+import '../../features/collections/domain/entities/collection.dart';
 import '../../features/collections/presentation/screens/collections_list_screen.dart';
+import '../../features/home/presentation/screens/home_dashboard_screen.dart';
 import '../../features/collections/presentation/screens/create_collection_screen.dart';
 import '../../features/collections/presentation/screens/edit_collection_screen.dart';
 import '../../features/collections/presentation/screens/search_collections_screen.dart';
@@ -22,6 +24,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/about_screen.dart';
 import '../../features/profile/presentation/screens/legal_policy_screen.dart';
 import '../../features/debug/presentation/screens/debug_screen.dart';
 import '../providers/core_providers.dart';
@@ -182,7 +185,7 @@ GoRouter createAppRouter(ProviderContainer container) {
       // ── Main app routes (protected) ───────────────────────────────────────
       GoRoute(
         path: '/',
-        builder: (context, state) => const CollectionsListScreen(),
+        builder: (context, state) => const HomeDashboardScreen(),
       ),
       GoRoute(
         path: '/search',
@@ -207,6 +210,10 @@ GoRouter createAppRouter(ProviderContainer container) {
               builder: (context, state) => const EditProfileScreen(),
             ),
             GoRoute(
+              path: 'about',
+              builder: (context, state) => const AboutScreen(),
+            ),
+            GoRoute(
               path: 'legal',
               builder: (context, state) => const LegalPolicyScreen(),
             ),
@@ -221,9 +228,15 @@ GoRouter createAppRouter(ProviderContainer container) {
         routes: [
           GoRoute(
             path: 'create',
-            builder: (context, state) => CreateCollectionScreen(
-              parentId: state.uri.queryParameters['parent'],
-            ),
+            builder: (context, state) {
+              final extra = state.extra;
+              final parent =
+                  extra is Collection ? extra : null;
+              return CreateCollectionScreen(
+                parentId: state.uri.queryParameters['parent'] ?? parent?.id,
+                parentCollection: parent,
+              );
+            },
           ),
           GoRoute(
             path: ':id',

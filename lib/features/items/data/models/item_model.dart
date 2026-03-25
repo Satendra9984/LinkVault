@@ -17,16 +17,35 @@ class ItemModel {
   String? imagePath;
   String? imageUrl;
   String? link;
-  String? location;
+  /// Notes stored in `lv_urls.annotation`.
+  String? annotation;
   String? tags;
 
-  String? customFieldsJson;
+  // URL identity / preview
+  String? faviconUrl;
+  String? dominantColor;
+  String? siteName;
 
-  int dbStatus = ItemStatus.pending.index;
+  // Future URL metadata
+  String? canonicalUrl;
+  String? contentType;
+  @Property(type: PropertyType.date)
+  DateTime? publishedAt;
+
+  int dbStatus = ItemStatus.unread.index;
 
   @Transient()
   ItemStatus get status => ItemStatus.values[dbStatus];
   set status(ItemStatus s) => dbStatus = s.index;
+
+  bool isPinned = false;
+  int clickCount = 0;
+  @Property(type: PropertyType.date)
+  DateTime? lastAccessedAt;
+
+  bool isDeleted = false;
+  @Property(type: PropertyType.date)
+  DateTime? deletedAt;
 
   @Index()
   late String collectionUid;

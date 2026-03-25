@@ -62,7 +62,7 @@ class AdGateScreen extends ConsumerWidget {
 
               Text(
                 'Your free trial has ended. Watch a short ad each day to keep '
-                'full access to Curate, or upgrade to Premium for an ad-free '
+                'full access to LinkVault, or upgrade to Premium for an ad-free '
                 'experience forever.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: cs.onSurfaceVariant,

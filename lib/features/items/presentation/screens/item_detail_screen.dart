@@ -2,12 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/item.dart';
 import '../providers/items_providers.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../../core/config/app_config.dart';
-import '../../../../core/monetization/tier_quota_guard.dart';
+import '../widgets/url_favicon_tile.dart';
 
 import 'package:collection/collection.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,7 +22,6 @@ class ItemDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsAsync = ref.watch(itemsNotifierProvider(collectionId));
-    final isPremium = ref.watch(isPremiumProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -86,15 +82,37 @@ class ItemDetailScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
 
+                            // URL identity
+                            if (item.link != null && item.link!.isNotEmpty) ...[
+                              Row(
+                                children: [
+                                  UrlFaviconTile(item: item, size: 22),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _extractDomain(item.link!),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+
                             // Status Badge
                             _buildStatusChip(item, theme),
                             const SizedBox(height: 32),
 
-                            // Description
-                            if (item.description != null &&
-                                item.description!.isNotEmpty) ...[
+                            // Notes (lv_urls.annotation)
+                            if (item.annotation != null &&
+                                item.annotation!.isNotEmpty) ...[
                               Text(
-                                "DESCRIPTION",
+                                "NOTES",
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -104,7 +122,7 @@ class ItemDetailScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                item.description!,
+                                item.annotation!,
                                 style: TextStyle(
                                   fontSize: 16,
                                   height: 1.6,
@@ -129,23 +147,6 @@ class ItemDetailScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 12),
                               _buildLinkRow(item.link!, isDark),
-                              const SizedBox(height: 32),
-                            ],
-
-                            // Location
-                            if (item.location != null &&
-                                item.location!.isNotEmpty) ...[
-                              Text(
-                                "LOCATION",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildLocationRow(item.location!, isDark),
                               const SizedBox(height: 32),
                             ],
 
@@ -175,21 +176,8 @@ class ItemDetailScreen extends ConsumerWidget {
                               const SizedBox(height: 32),
                             ],
 
-                            // Custom Fields
-                            if (item.customFields.isNotEmpty) ...[
-                              Text(
-                                "DETAILS",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ...item.customFields
-                                  .map((f) => _buildCustomFieldRow(f, isDark)),
-                            ],
+                            // Curate-style custom fields/extra sections are intentionally not shown
+                            // for the URL-detail UX (notes + tags are the per-URL fields).
                           ],
                         ),
                       ),
@@ -224,7 +212,7 @@ class ItemDetailScreen extends ConsumerWidget {
                                   '/collections/$collectionId/items/${item.id}/edit'),
                             ),
                             const SizedBox(width: 8),
-                            _buildPopupMenu(context, ref, item, isPremium),
+                            _buildPopupMenu(context, ref, item),
                           ],
                         ),
                       ],
@@ -299,15 +287,15 @@ class ItemDetailScreen extends ConsumerWidget {
     IconData statusIcon;
 
     switch (item.status) {
-      case ItemStatus.pending:
+      case ItemStatus.unread:
         statusColor = Colors.orange;
         statusIcon = Icons.schedule_rounded;
         break;
-      case ItemStatus.visited:
+      case ItemStatus.read:
         statusColor = Colors.green;
         statusIcon = Icons.check_circle_outline_rounded;
         break;
-      case ItemStatus.completed:
+      case ItemStatus.archived:
         statusColor = theme.colorScheme.primary;
         statusIcon = Icons.star_border_rounded;
         break;
@@ -383,51 +371,6 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLocationRow(String location, bool isDark) {
-    return InkWell(
-      onTap: () async {
-        final query = Uri.encodeComponent(location);
-        final url = Uri.parse('https://maps.google.com/?q=$query');
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.black26 : Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.location_on_rounded,
-                  size: 18, color: Colors.blueGrey),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                location,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-            const Icon(Icons.map_rounded, size: 16, color: Colors.grey),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTagChip(String tag, ThemeData theme, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -453,99 +396,7 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCustomFieldRow(CustomField field, bool isDark) {
-    IconData fieldIcon;
-    switch (field.type) {
-      case CustomFieldType.text:
-        fieldIcon = Icons.notes_rounded;
-        break;
-      case CustomFieldType.number:
-        fieldIcon = Icons.numbers_rounded;
-        break;
-      case CustomFieldType.url:
-        fieldIcon = Icons.link_rounded;
-        break;
-      case CustomFieldType.date:
-        fieldIcon = Icons.calendar_today_rounded;
-        break;
-      case CustomFieldType.boolean:
-        fieldIcon = Icons.check_box_outlined;
-        break;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: InkWell(
-        onTap: () async {
-          if (field.type == CustomFieldType.url) {
-            final urlStr = field.value.toString();
-            final url = Uri.tryParse(urlStr.startsWith('http') ? urlStr : 'https://$urlStr');
-            if (url != null && await canLaunchUrl(url)) {
-              await launchUrl(url, mode: LaunchMode.externalApplication);
-            }
-          } else if (field.name.toLowerCase().contains('phone')) {
-            final url = Uri.tryParse('tel:${field.value}');
-            if (url != null && await canLaunchUrl(url)) {
-              await launchUrl(url);
-            }
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.03)
-                : Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.white12 : Colors.grey.shade200,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(fieldIcon, size: 20, color: Colors.grey[500]),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      field.name.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[500],
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      field.value.toString(),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? Colors.white : Colors.black87,
-                        decoration: (field.type == CustomFieldType.url || field.name.toLowerCase().contains('phone')) 
-                            ? TextDecoration.underline : null,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (field.type == CustomFieldType.url)
-                 const Icon(Icons.open_in_new_rounded, size: 16, color: Colors.grey),
-              if (field.name.toLowerCase().contains('phone'))
-                 const Icon(Icons.phone_rounded, size: 16, color: Colors.grey),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPopupMenu(
-      BuildContext context, WidgetRef ref, Item item, bool isPremium) {
+  Widget _buildPopupMenu(BuildContext context, WidgetRef ref, Item item) {
     return PopupMenuButton<String>(
       icon: Container(
         padding: const EdgeInsets.all(8),
@@ -558,38 +409,55 @@ class ItemDetailScreen extends ConsumerWidget {
       ),
       offset: const Offset(0, 48),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      onSelected: (action) {
-        if (action == 'duplicate') {
-          _duplicateItem(context, ref, item);
-        } else if (action == 'share') {
-          _shareItem(context, isPremium);
+      onSelected: (action) async {
+        if (action == 'toggle_pin') {
+          await ref.read(toggleItemPinUseCaseProvider).call(item.id);
+          // Refresh keeps the UI consistent after the mutation.
+          ref
+              .read(itemsNotifierProvider(item.collectionId).notifier)
+              .refresh();
+        } else if (action == 'toggle_archive') {
+          await ref.read(toggleItemArchiveUseCaseProvider).call(item.id);
+          final newStatus = item.status == ItemStatus.archived
+              ? ItemStatus.unread
+              : ItemStatus.archived;
+          final updatedItem = item.copyWith(
+            status: newStatus,
+            updatedAt: DateTime.now(),
+          );
+          ref
+              .read(itemsNotifierProvider(item.collectionId).notifier)
+              .updateItemInState(updatedItem);
         } else if (action == 'delete') {
           _confirmDelete(context, ref, item.id);
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'duplicate',
+        PopupMenuItem(
+          value: 'toggle_pin',
           child: Row(
             children: [
-              Icon(Icons.copy_rounded, size: 20),
-              SizedBox(width: 12),
-              Text('Duplicate'),
+              const Icon(Icons.push_pin_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text('Toggle Pin'),
             ],
           ),
         ),
-        // Share — hidden until Sprint 10 social features ship
-        if (AppConfig.instance.isDev)
-          const PopupMenuItem(
-            value: 'share',
-            child: Row(
-              children: [
-                Icon(Icons.share_rounded, size: 20),
-                SizedBox(width: 12),
-                Text('Share (Premium)'),
-              ],
-            ),
+        PopupMenuItem(
+          value: 'toggle_archive',
+          child: Row(
+            children: [
+              Icon(
+                item.status == ItemStatus.archived
+                    ? Icons.unarchive_outlined
+                    : Icons.archive_outlined,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(item.status == ItemStatus.archived ? 'Unarchive' : 'Archive'),
+            ],
           ),
+        ),
         const PopupMenuItem(
           value: 'delete',
           child: Row(
@@ -602,79 +470,6 @@ class ItemDetailScreen extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Future<void> _duplicateItem(
-      BuildContext context, WidgetRef ref, Item item) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final router = GoRouter.of(context);
-
-    final newItem = Item(
-      id: const Uuid().v4(),
-      ownerId: item.ownerId,
-      title: '${item.title} (copy)',
-      description: item.description,
-      imagePath: item.imagePath,
-      imageUrl: item.imageUrl,
-      link: item.link,
-      status: item.status,
-      position: item.position + 0.1,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      collectionId: item.collectionId,
-      customFields: item.customFields, // Important to clone custom fields!
-    );
-
-    final quota = await TierQuotaGuard.ensureCanCreateItem(
-      isPremium: ref.read(isPremiumProvider),
-      user: ref.read(currentUserProvider),
-      itemsRepo: ref.read(itemsRepositoryProvider),
-    );
-    await quota.fold(
-      (failure) async {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
-      },
-      (_) async {
-        await ref.read(createItemUseCaseProvider).call(newItem);
-        ref
-            .read(itemsNotifierProvider(item.collectionId).notifier)
-            .addItemToState(newItem);
-        scaffoldMessenger
-            .showSnackBar(const SnackBar(content: Text('Item duplicated')));
-        router.pop();
-      },
-    );
-  }
-
-  void _shareItem(BuildContext context, bool isPremium) {
-    if (!isPremium) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Premium Feature'),
-          content: const Text(
-              'Upgrade to Premium to share individual items with friends.'),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Later'),
-            ),
-            TextButton(
-              onPressed: () {
-                context.pop();
-                // Navigate to paywall
-              },
-              child: const Text('Upgrade'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Generating sharing link...')));
-    }
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, String itemId) {
@@ -710,12 +505,25 @@ class ItemDetailScreen extends ConsumerWidget {
 
   String _getStatusText(ItemStatus status) {
     switch (status) {
-      case ItemStatus.pending:
-        return 'Pending';
-      case ItemStatus.visited:
-        return 'Visited';
-      case ItemStatus.completed:
-        return 'Completed';
+      case ItemStatus.unread:
+        return 'Unread';
+      case ItemStatus.read:
+        return 'Read';
+      case ItemStatus.archived:
+        return 'Archived';
+    }
+  }
+
+  String _extractDomain(String rawUrl) {
+    final normalized =
+        rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+            ? rawUrl
+            : 'https://$rawUrl';
+    try {
+      final host = Uri.parse(normalized).host;
+      return host.startsWith('www.') ? host.substring(4) : host;
+    } catch (_) {
+      return rawUrl;
     }
   }
 }
