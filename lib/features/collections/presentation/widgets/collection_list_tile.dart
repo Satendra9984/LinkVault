@@ -7,12 +7,14 @@ class CollectionListTile extends StatelessWidget {
   final Collection collection;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final bool compact;
 
   const CollectionListTile({
     super.key,
     required this.collection,
     required this.onTap,
     required this.onLongPress,
+    this.compact = false,
   });
 
   @override
@@ -37,16 +39,19 @@ class CollectionListTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       onLongPress: onLongPress,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      dense: compact,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 12.0 : 16.0,
+        vertical: compact ? 4.0 : 8.0,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: borderColor, width: 1),
       ),
       tileColor: backgroundColor,
       leading: Container(
-        width: 48,
-        height: 48,
+        width: compact ? 40 : 48,
+        height: compact ? 40 : 48,
         decoration: BoxDecoration(
           color: noCover
               ? theme.colorScheme.surfaceContainerHighest
@@ -65,7 +70,7 @@ class CollectionListTile extends StatelessWidget {
           child: noCover
               ? Text(
                   collection.iconName,
-                  style: const TextStyle(fontSize: 24),
+                  style: TextStyle(fontSize: compact ? 20 : 24),
                 )
               : ColorFiltered(
                   colorFilter: ColorFilter.mode(
@@ -76,7 +81,7 @@ class CollectionListTile extends StatelessWidget {
                   ),
                   child: Text(
                     collection.iconName,
-                    style: const TextStyle(fontSize: 24),
+                    style: TextStyle(fontSize: compact ? 20 : 24),
                   ),
                 ),
         ),
@@ -84,17 +89,17 @@ class CollectionListTile extends StatelessWidget {
       title: Text(
         collection.title,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: compact ? 14 : 16,
           fontWeight: FontWeight.w600,
           color: theme.colorScheme.onSurface,
         ),
       ),
       subtitle: Text(
         collectionSummarySubtitle(collection),
-        maxLines: 2,
+        maxLines: compact ? 1 : 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: compact ? 11 : 12,
           color: theme.colorScheme.onSurfaceVariant,
         ),
       ),

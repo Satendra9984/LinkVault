@@ -1,15 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/item.dart';
 import '../providers/items_providers.dart';
+import '../providers/items_hub_notifier.dart';
 import '../widgets/url_favicon_tile.dart';
 
 import 'package:collection/collection.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
+  static const _radiusLg = 16.0;
   final String collectionId;
   final String itemId;
 
@@ -66,20 +69,16 @@ class ItemDetailScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.vertical(
                               top: Radius.circular(hasImage ? 32 : 0)),
                         ),
-                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                        padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Title
-                            Text(
-                              item.title,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
+                            Text(item.title,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
+                                )),
                             const SizedBox(height: 16),
 
                             // URL identity
@@ -105,8 +104,36 @@ class ItemDetailScreen extends ConsumerWidget {
                             ],
 
                             // Status Badge
-                            _buildStatusChip(item, theme),
+                            Row(
+                              children: [
+                                _buildStatusChip(item, theme),
+                                const Spacer(),
+                                Switch(
+                                  value: item.isPinned,
+                                  onChanged: (_) async {
+                                    await ref
+                                        .read(itemsHubNotifierProvider.notifier)
+                                        .togglePin(
+                                          collectionId: collectionId,
+                                          itemId: item.id,
+                                        );
+                                  },
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Pinned',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 32),
+
+                            _buildMetadataBlock(context, ref, item),
+                            const SizedBox(height: 24),
 
                             // Notes (lv_urls.annotation)
                             if (item.annotation != null &&
@@ -136,17 +163,44 @@ class ItemDetailScreen extends ConsumerWidget {
 
                             // Link
                             if (item.link != null && item.link!.isNotEmpty) ...[
-                              Text(
-                                "LINK",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                  letterSpacing: 1.2,
-                                ),
+                              FilledButton.icon(
+                                onPressed: () => _openLink(item.link!),
+                                icon: const Icon(Icons.open_in_new_rounded),
+                                label: const Text('Open in browser'),
                               ),
                               const SizedBox(height: 12),
-                              _buildLinkRow(item.link!, isDark),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () async {
+                                        await Clipboard.setData(
+                                          ClipboardData(text: item.link!),
+                                        );
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('URL copied'),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      icon: const Icon(Icons.content_copy_rounded),
+                                      label: const Text('Copy URL'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => context.push(
+                                        '/collections/$collectionId/items/${item.id}/edit',
+                                      ),
+                                      icon: const Icon(Icons.edit_outlined),
+                                      label: const Text('Edit'),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 32),
                             ],
 
@@ -326,49 +380,67 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLinkRow(String link, bool isDark) {
-    return InkWell(
-      onTap: () async {
-        final url = Uri.tryParse(link.startsWith('http') ? link : 'https://$link');
-        if (url != null && await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.black26 : Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.link_rounded, size: 18),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                link,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  decoration: TextDecoration.underline,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const Icon(Icons.open_in_new_rounded, size: 16, color: Colors.grey),
-          ],
-        ),
+  Widget _buildMetadataBlock(BuildContext context, WidgetRef ref, Item item) {
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+    final added = _relativeTime(now, item.createdAt);
+    final lastVisited = item.lastAccessedAt == null
+        ? 'Never'
+        : _relativeTime(now, item.lastAccessedAt!);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(_radiusLg),
+      ),
+      child: Column(
+        children: [
+          _metaRow('Collection', item.collectionId),
+          const SizedBox(height: 8),
+          _metaRow('Added', added),
+          const SizedBox(height: 8),
+          _metaRow('Last visited', lastVisited),
+          const SizedBox(height: 8),
+          _metaRow('Visited', '${item.clickCount} times'),
+        ],
       ),
     );
+  }
+
+  Widget _metaRow(String label, String value) {
+    return Row(
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const Spacer(),
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openLink(String link) async {
+    final url = Uri.tryParse(link.startsWith('http') ? link : 'https://$link');
+    if (url != null && await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  String _relativeTime(DateTime now, DateTime value) {
+    final diff = now.difference(value);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inDays < 30) return '${diff.inDays}d ago';
+    final months = (diff.inDays / 30).floor();
+    return '${months}mo ago';
   }
 
   Widget _buildTagChip(String tag, ThemeData theme, bool isDark) {
@@ -411,23 +483,15 @@ class ItemDetailScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onSelected: (action) async {
         if (action == 'toggle_pin') {
-          await ref.read(toggleItemPinUseCaseProvider).call(item.id);
-          // Refresh keeps the UI consistent after the mutation.
-          ref
-              .read(itemsNotifierProvider(item.collectionId).notifier)
-              .refresh();
+          await ref.read(itemsHubNotifierProvider.notifier).togglePin(
+                collectionId: item.collectionId,
+                itemId: item.id,
+              );
         } else if (action == 'toggle_archive') {
-          await ref.read(toggleItemArchiveUseCaseProvider).call(item.id);
-          final newStatus = item.status == ItemStatus.archived
-              ? ItemStatus.unread
-              : ItemStatus.archived;
-          final updatedItem = item.copyWith(
-            status: newStatus,
-            updatedAt: DateTime.now(),
-          );
-          ref
-              .read(itemsNotifierProvider(item.collectionId).notifier)
-              .updateItemInState(updatedItem);
+          await ref.read(itemsHubNotifierProvider.notifier).toggleArchive(
+                collectionId: item.collectionId,
+                item: item,
+              );
         } else if (action == 'delete') {
           _confirmDelete(context, ref, item.id);
         }
@@ -489,10 +553,10 @@ class ItemDetailScreen extends ConsumerWidget {
             onPressed: () async {
               dialogCtx.pop(); // Close dialog immediately
 
-              await ref.read(deleteItemUseCaseProvider).call(itemId);
-              ref
-                  .read(itemsNotifierProvider(collectionId).notifier)
-                  .removeItemFromState(itemId);
+              await ref.read(itemsHubNotifierProvider.notifier).deleteItem(
+                    collectionId: collectionId,
+                    itemId: itemId,
+                  );
 
               router.pop(); // Go back to items list
             },

@@ -1,4 +1,5 @@
 import 'entities/collection.dart';
+import 'library_root_collection.dart';
 
 /// Validates [proposedParentId] for a collection [editingCollectionId].
 ///
@@ -9,8 +10,20 @@ String? validateCollectionParentAssignment({
   required String? proposedParentId,
   required List<Collection> allCollections,
 }) {
-  if (proposedParentId == null || proposedParentId.isEmpty) {
-    return null;
+  if (proposedParentId == null || proposedParentId.trim().isEmpty) {
+    final rootId = LibraryRootCollection.libraryRootIdIfExactlyOne(allCollections);
+    final selfId = editingCollectionId?.trim();
+    final editingRoot = selfId != null &&
+        selfId.isNotEmpty &&
+        rootId != null &&
+        selfId == rootId;
+    if (editingRoot) {
+      return null;
+    }
+    if (editingCollectionId == null || editingCollectionId.trim().isEmpty) {
+      return 'Pick a parent folder inside your Library.';
+    }
+    return 'Every folder must be inside your Library. Pick a parent.';
   }
 
   final byId = {for (final c in allCollections) c.id: c};

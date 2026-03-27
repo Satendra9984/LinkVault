@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_categories.dart';
-import '../../../../core/config/app_config.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../providers/forms/collection_form_notifier.dart';
@@ -34,17 +33,20 @@ class _CreateCollectionScreenState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final notifier = ref.read(collectionFormNotifierProvider.notifier);
-        final effectiveParentId =
-            widget.parentId ?? widget.parentCollection?.id;
-        notifier.initialize(
-          null,
-          parentIdForNew: effectiveParentId,
-          parentTitleHint: widget.parentCollection?.title,
-        );
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final notifier = ref.read(collectionFormNotifierProvider.notifier);
+      final root = await ref.read(libraryRootCollectionProvider.future);
+      if (!mounted) return;
+      final effectiveParentId =
+          widget.parentId ?? widget.parentCollection?.id ?? root.id;
+      final hint = widget.parentCollection?.title ??
+          (effectiveParentId == root.id ? root.title : null);
+      notifier.initialize(
+        null,
+        parentIdForNew: effectiveParentId,
+        parentTitleHint: hint,
+      );
     });
   }
 
@@ -97,7 +99,7 @@ class _CreateCollectionScreenState
                         color: theme.colorScheme.primary),
                   ),
                   Text(
-                    'New list',
+                    'New collection',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -115,6 +117,58 @@ class _CreateCollectionScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: inputBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: accentColor.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              state.iconName,
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  state.title.trim().isEmpty
+                                      ? 'Collection name'
+                                      : state.title.trim(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '0 links',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: () => _showParentPicker(
@@ -139,12 +193,10 @@ class _CreateCollectionScreenState
                                         fontSize: 12)),
                                 const SizedBox(height: 2),
                                 Text(
-                                  state.parentId == null
-                                      ? 'Root (Home)'
-                                      : (state.parentTitleHint != null &&
-                                              state.parentTitleHint!.isNotEmpty
-                                          ? state.parentTitleHint!
-                                          : 'Nested folder'),
+                                  state.parentTitleHint != null &&
+                                          state.parentTitleHint!.isNotEmpty
+                                      ? state.parentTitleHint!
+                                      : 'Nested folder',
                                   style:
                                       TextStyle(color: textColor, fontSize: 16),
                                 ),
@@ -406,7 +458,7 @@ class _CreateCollectionScreenState
     );
   }
 
-  void _showIconPicker(BuildContext context, dynamic notifier) {
+  void _showIconPicker(BuildContext context, CollectionFormNotifier notifier) {
     final icons = AppCategories.allPickerEmojis;
 
     showModalBottomSheet(
@@ -438,12 +490,14 @@ class _CreateCollectionScreenState
     );
   }
 
-  void _showParentPicker(
+  Future<void> _showParentPicker(
       BuildContext context,
       AsyncValue<List<Collection>> data,
       String? selectedParentId,
-      dynamic notifier) {
+      CollectionFormNotifier notifier) async {
     final collections = data.valueOrNull ?? const [];
+    final root = await ref.read(libraryRootCollectionProvider.future);
+    if (!context.mounted) return;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -452,17 +506,17 @@ class _CreateCollectionScreenState
           children: [
             ListTile(
               leading: const Icon(Icons.home_outlined),
-              title: const Text('Root (Home)'),
-              trailing: selectedParentId == null
+              title: Text(root.title),
+              trailing: selectedParentId == root.id
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
-                notifier.updateParentId(null);
+                notifier.updateParentId(root.id, titleHint: root.title);
                 context.pop();
               },
             ),
             ...collections
-                .where((c) => !c.isDeleted)
+                .where((c) => !c.isDeleted && c.id != root.id)
                 .map((collection) => ListTile(
                       leading: Text(collection.iconName),
                       title: Text(collection.title),
@@ -471,7 +525,8 @@ class _CreateCollectionScreenState
                           ? const Icon(Icons.check, color: Colors.green)
                           : null,
                       onTap: () {
-                        notifier.updateParentId(collection.id);
+                        notifier.updateParentId(collection.id,
+                            titleHint: collection.title);
                         context.pop();
                       },
                     )),

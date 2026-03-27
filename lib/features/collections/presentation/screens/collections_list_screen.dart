@@ -1,475 +1,747 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../domain/collection_fractional_reorder.dart';
+
 import '../../domain/collection_sibling_order.dart';
 import '../../domain/entities/collection.dart';
 import '../providers/collections_providers.dart';
-import '../providers/home_tab_providers.dart';
+import '../providers/collections_hub_notifier.dart';
+import '../providers/collections_list_ui_notifier.dart';
 import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/presentation/widgets/content_state_widgets.dart';
 import '../../../../core/presentation/widgets/empty_state_view.dart';
 import '../../../../core/presentation/widgets/day_pass_gate.dart';
 import '../../../../core/constants/app_assets.dart';
-import '../../../../core/config/app_config.dart';
+import '../../../../core/theme/color_palette.dart';
+import '../../../items/domain/entities/item.dart';
+import '../../../items/presentation/providers/items_providers.dart';
+import '../../../items/presentation/widgets/url_preview_tile.dart';
 
-class CollectionsListScreen extends ConsumerWidget {
+/// **Rollback artifact — not routed.** `/collections` uses [CollectionsBranchRootScreen]
+/// → [ItemsListScreen] under the persisted library root (`LibraryRootCollection`).
+/// Kept temporarily so router can be reverted without reintroducing dead code.
+class CollectionsListScreen extends ConsumerStatefulWidget {
   const CollectionsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the fully computed/sorted list instead of the raw firehose
-    final collectionsAsync = ref.watch(homeCollectionsProvider);
-    final rawCollectionsAsync =
-        ref.watch(collectionsListProvider); // For FAB visibility logic
-    final currentTab = ref.watch(homeTabNotifierProvider);
+  ConsumerState<CollectionsListScreen> createState() =>
+      _CollectionsListScreenState();
+}
 
-    final isPremium = ref.watch(isPremiumProvider);
-    final isGrid = ref.watch(collectionsViewModeProvider);
+class _CollectionsListScreenState
+    extends ConsumerState<CollectionsListScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  bool _fabVisible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll(ScrollNotification n) {
+    if (n is ScrollUpdateNotification) {
+      final goingDown = (n.scrollDelta ?? 0) > 0;
+      if (goingDown != !_fabVisible) {
+        setState(() => _fabVisible = !goingDown);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final collectionsAsync = ref.watch(collectionsListProvider);
+    final rootItemsAsync = ref.watch(_rootLinksProvider);
     final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      floatingActionButton: _buildFab(context, collectionsAsync),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
+              automaticallyImplyLeading: false,
+              pinned: false,
               floating: true,
               snap: true,
+              scrolledUnderElevation: innerBoxIsScrolled ? 2 : 0,
               backgroundColor: theme.scaffoldBackgroundColor,
-              surfaceTintColor: theme
-                  .scaffoldBackgroundColor, // Prevents transparent mode overlay color
-              elevation: innerBoxIsScrolled ? 2 : 0,
-              centerTitle: true,
-              title: Text(
-                'Library',
-                style: theme.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold) ??
-                    TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
+              surfaceTintColor: theme.scaffoldBackgroundColor,
+              expandedHeight: 112,
+              flexibleSpace: FlexibleSpaceBar(
+                collapseMode: CollapseMode.pin,
+                background: SafeArea(
+                  bottom: false,
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 52),
+                      child: Text(
+                        'Collections',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: primary,
+                        ),
+                      ),
                     ),
-              ),
-              leading: GestureDetector(
-                onTap: () => context.push('/profile'),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: CircleAvatar(
-                    backgroundColor:
-                        theme.colorScheme.primary.withValues(alpha: 0.1),
-                    child: Icon(Icons.person_outline,
-                        color: theme.colorScheme.primary, size: 20),
                   ),
                 ),
               ),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.search, color: theme.colorScheme.primary),
-                  onPressed: () => context.push('/search_collections'),
+                  icon: Icon(Icons.add_circle_outline_rounded, color: primary),
+                  tooltip: 'New folder',
+                  onPressed: () async {
+                    final ok = await DayPassGate.check(context, ref);
+                    if (!ok || !context.mounted) return;
+                    context.push('/collections/create');
+                  },
                 ),
-                // Notifications — hidden until Sprint 10 social features ship
-                if (AppConfig.instance.isDev)
-                  IconButton(
-                    icon: Icon(Icons.notifications_none,
-                        color: theme.colorScheme.primary),
-                    onPressed: () => context.push('/activity'),
-                  ),
               ],
-              // Tabs (Recent / Private / Shared) — hidden until Sprint 10
-              bottom: AppConfig.instance.isDev
-                  ? PreferredSize(
-                      preferredSize: const Size.fromHeight(60),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16.0, right: 16.0, bottom: 8.0),
-                        child: _buildCustomTabs(theme, ref, currentTab),
-                      ),
-                    )
-                  : null,
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: primary,
+                  unselectedLabelColor:
+                      theme.colorScheme.onSurfaceVariant,
+                  indicatorColor: primary,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorWeight: 2,
+                  tabs: [
+                    Tab(
+                      text: collectionsAsync.whenData((list) {
+                        final rootCount = list
+                            .where((c) =>
+                                c.parentId == null &&
+                                !c.isDeleted &&
+                                !c.isArchived)
+                            .length;
+                        return 'Folders ($rootCount)';
+                      }).valueOrNull ??
+                          'Folders',
+                    ),
+                    Tab(
+                      text: rootItemsAsync.whenData((items) {
+                        return 'Links (${items.length})';
+                      }).valueOrNull ??
+                          'Links',
+                    ),
+                  ],
+                ),
+              ),
             ),
           ];
         },
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: collectionsAsync.when(
-            data: (filteredCollections) {
-              // 1. If global list is completely empty, show full empty state
-              return rawCollectionsAsync.maybeWhen(
-                data: (raw) {
-                  if (raw.isEmpty) {
-                    return _buildEmptyState(context);
-                  }
-
-                  // 2. We have collections, display the filtered view
-                  final rootCollections = filteredCollections
-                      .where((collection) =>
-                          collection.parentId == null &&
-                          !collection.isDeleted &&
-                          !collection.isArchived)
-                      .toList();
-                  return _buildCollectionsView(
-                    context,
-                    ref,
-                    rootCollections,
-                    isGrid,
-                    isPremium,
-                    isSharedTab: currentTab == HomeTab.shared,
-                  );
-                },
-                orElse: () => const Center(child: CircularProgressIndicator()),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stack) => EmptyStateView(
-              imageAsset: AppAssets.errorNetwork,
-              title: 'Oops! Something went wrong',
-              message: 'Check your internet connection and try again.',
-              buttonText: 'Retry',
-              onButtonPressed: () {
-                // Refresh the list provider
-                ref.invalidate(collectionsListProvider);
-              },
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _FoldersTab(
+              collectionsAsync: collectionsAsync,
+              onScroll: _onScroll,
             ),
-          ),
+            _RootLinksTab(
+              itemsAsync: rootItemsAsync,
+              onScroll: _onScroll,
+            ),
+          ],
         ),
-      ),
-      floatingActionButton: rawCollectionsAsync.maybeWhen(
-        data: (collections) => collections.isEmpty
-            ? null
-            : FloatingActionButton(
-                heroTag: 'collections_fab',
-                onPressed: () async {
-                  final ok = await DayPassGate.check(context, ref);
-                  if (!ok || !context.mounted) return;
-                  context.push('/collections/create');
-                },
-                backgroundColor: theme.colorScheme.primary,
-                child: const Icon(Icons.add, color: Colors.white),
-              ),
-        orElse: () => null,
       ),
     );
   }
 
-  Widget _buildCustomTabs(ThemeData theme, WidgetRef ref, HomeTab currentTab) {
-    final isGrid = ref.watch(collectionsViewModeProvider);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            _buildTabButton(theme, ref, HomeTab.recent, currentTab, 'Recent'),
-            const SizedBox(width: 8),
-            _buildTabButton(theme, ref, HomeTab.private, currentTab, 'Private'),
-            const SizedBox(width: 8),
-            _buildTabButton(theme, ref, HomeTab.shared, currentTab, 'Shared'),
-          ],
-        ),
-        IconButton(
-          onPressed: () {
-            ref.read(collectionsViewModeProvider.notifier).state = !isGrid;
+  Widget? _buildFab(
+      BuildContext context, AsyncValue<List<Collection>> collectionsAsync) {
+    if (!_fabVisible) return null;
+    final isFolders = _tabController.index == 0;
+
+    if (isFolders) {
+      return FloatingActionButton.extended(
+        heroTag: 'root_hub_fab_folder',
+        onPressed: () async {
+          final ok = await DayPassGate.check(context, ref);
+          if (!ok || !context.mounted) return;
+          context.push('/collections/create');
+        },
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.create_new_folder_outlined),
+        label: const Text('New folder'),
+      );
+    }
+
+    return FloatingActionButton.extended(
+      heroTag: 'root_hub_fab_link',
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Save links to a collection first using + New folder')),
+        );
+      },
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      icon: const Icon(Icons.add_link_rounded),
+      label: const Text('Add link'),
+    );
+  }
+}
+
+// ── Folders tab ──────────────────────────────────────────────────────────────
+
+class _FoldersTab extends ConsumerStatefulWidget {
+  const _FoldersTab({
+    required this.collectionsAsync,
+    required this.onScroll,
+  });
+
+  final AsyncValue<List<Collection>> collectionsAsync;
+  final Function(ScrollNotification) onScroll;
+
+  @override
+  ConsumerState<_FoldersTab> createState() => _FoldersTabState();
+}
+
+class _FoldersTabState extends ConsumerState<_FoldersTab> {
+  List<Collection> _filter(List<Collection> all) {
+    final roots = all
+        .where((c) => c.parentId == null && !c.isDeleted && !c.isArchived)
+        .toList();
+    final q = ref
+        .watch(collectionsListUiNotifierProvider)
+        .folderSearchQuery
+        .trim()
+        .toLowerCase();
+    if (q.isEmpty) return roots;
+    return roots
+        .where((c) => c.title.toLowerCase().contains(q))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isPremium = ref.watch(isPremiumProvider);
+    final uiState = ref.watch(collectionsListUiNotifierProvider);
+    final uiNotifier = ref.read(collectionsListUiNotifierProvider.notifier);
+
+    return widget.collectionsAsync.when(
+      data: (all) {
+        final roots = _filter(all);
+
+      return NotificationListener<ScrollNotification>(
+          onNotification: (n) {
+            widget.onScroll(n);
+            return false;
           },
-          icon: Icon(
-            isGrid ? Icons.view_list : Icons.grid_view,
-            color: theme.colorScheme.onSurfaceVariant,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Search + layout toggle toolbar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          onChanged: uiNotifier.updateFolderSearchQuery,
+                          decoration: InputDecoration(
+                            hintText: 'Search folders…',
+                            prefixIcon: Icon(Icons.search_rounded,
+                                color:
+                                    theme.colorScheme.onSurfaceVariant,
+                                size: 20),
+                            isDense: true,
+                            filled: true,
+                            fillColor: theme.colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.6),
+                            border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          uiState.isGrid ? Icons.view_list : Icons.grid_view,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: uiNotifier.toggleGrid,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Empty state
+              if (all.isEmpty)
+                SliverFillRemaining(
+                  child: EmptyStateView(
+                    imageAsset: AppAssets.emptyCollections,
+                    title: 'No folders here yet',
+                    message:
+                        'Create a folder to start organizing your links.',
+                    buttonText: '+ New folder',
+                    onButtonPressed: () =>
+                        context.push('/collections/create'),
+                  ),
+                )
+              else if (roots.isEmpty)
+                SliverFillRemaining(
+                  child: EmptyStateView(
+                    imageAsset: AppAssets.emptyCollections,
+                    title: 'No folders here yet',
+                    message:
+                        'Create a folder to start organizing your links.',
+                    buttonText: '+ New folder',
+                    onButtonPressed: () =>
+                        context.push('/collections/create'),
+                  ),
+                )
+              else if (uiState.isGrid)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.15,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) {
+                        final c = roots[i];
+                        return CollectionCard(
+                          collection: c,
+                          onTap: () async {
+                            final ok = await DayPassGate.check(
+                                context, ref);
+                            if (!ok || !context.mounted) return;
+                            context.push(
+                                '/collections/${c.id}',
+                                extra: c.title);
+                          },
+                          onLongPress: () => _showOptions(
+                              context, ref, c, isPremium),
+                        );
+                      },
+                      childCount: roots.length,
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                  sliver: _ReorderableList(
+                    collections: roots,
+                    isPremium: isPremium,
+                  ),
+                ),
+            ],
           ),
-          tooltip: isGrid ? 'List View' : 'Grid View',
+        );
+      },
+      loading: () => const CollectionGridSkeleton(),
+      error: (err, _) => EmptyStateView(
+        imageAsset: AppAssets.errorNetwork,
+        title: 'Oops! Something went wrong',
+        message: 'Check your internet connection and try again.',
+        buttonText: 'Retry',
+        onButtonPressed: () => ref.invalidate(collectionsListProvider),
+      ),
+    );
+  }
+
+  void _showOptions(BuildContext context, WidgetRef ref, Collection c,
+      bool isPremium) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => _CollectionOptionsSheet(
+          collection: c, ref: ref, isPremium: isPremium),
+    );
+  }
+}
+
+class _ReorderableList extends ConsumerWidget {
+  const _ReorderableList(
+      {required this.collections, required this.isPremium});
+
+  final List<Collection> collections;
+  final bool isPremium;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ordered = List<Collection>.from(collections)
+      ..sort(compareCollectionsSiblings);
+
+    return SliverReorderableList(
+      onReorder: (oldIndex, newIndex) async {
+        var to = newIndex;
+        if (to > oldIndex) to--;
+        if (oldIndex == to) return;
+        await ref.read(collectionsHubNotifierProvider.notifier).reorderSiblings(
+              siblings: ordered,
+              oldIndex: oldIndex,
+              newIndex: to,
+            );
+      },
+      itemCount: ordered.length,
+      itemBuilder: (context, index) {
+        final c = ordered[index];
+        return ReorderableDragStartListener(
+          key: ValueKey(c.id),
+          index: index,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: CollectionListTile(
+              collection: c,
+              onTap: () async {
+                final ok = await DayPassGate.check(context, ref);
+                if (!ok || !context.mounted) return;
+                context.push('/collections/${c.id}', extra: c.title);
+              },
+              onLongPress: () => showModalBottomSheet(
+                context: context,
+                builder: (ctx) => _CollectionOptionsSheet(
+                    collection: c, ref: ref, isPremium: isPremium),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Links tab placeholder ─────────────────────────────────────────────────────
+
+final _rootLinksProvider = FutureProvider<List<Item>>((ref) async {
+  final itemsResult = await ref.read(getAllItemsUseCaseProvider).call();
+  final allCollections = ref.watch(collectionsListProvider).valueOrNull ?? const [];
+  final existingCollectionIds = allCollections.map((c) => c.id).toSet();
+
+  return itemsResult.fold(
+    (_) => <Item>[],
+    (items) {
+      final filtered = items.where((item) {
+        final rawId = item.collectionId.trim();
+        if (rawId.isEmpty) return true;
+        if (rawId == 'root' || rawId == 'ROOT') return true;
+        return !existingCollectionIds.contains(rawId);
+      }).toList();
+      filtered.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return filtered;
+    },
+  );
+});
+
+class _RootLinksTab extends ConsumerStatefulWidget {
+  const _RootLinksTab({
+    required this.itemsAsync,
+    required this.onScroll,
+  });
+
+  final AsyncValue<List<Item>> itemsAsync;
+  final Function(ScrollNotification) onScroll;
+
+  @override
+  ConsumerState<_RootLinksTab> createState() => _RootLinksTabState();
+}
+
+class _RootLinksTabState extends ConsumerState<_RootLinksTab> {
+  List<Item> _filtered(List<Item> items) {
+    final ui = ref.read(collectionsListUiNotifierProvider);
+    final q = ui.rootLinksSearchQuery.trim().toLowerCase();
+    return items.where((item) {
+      if (ui.rootLinksStatusFilter != null &&
+          item.status != ui.rootLinksStatusFilter) {
+        return false;
+      }
+      if (q.isEmpty) return true;
+      final title = item.title.toLowerCase();
+      final link = (item.link ?? '').toLowerCase();
+      return title.contains(q) || link.contains(q);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final uiState = ref.watch(collectionsListUiNotifierProvider);
+    final uiNotifier = ref.read(collectionsListUiNotifierProvider.notifier);
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: (n) {
+        widget.onScroll(n);
+        return false;
+      },
+      child: widget.itemsAsync.when(
+        data: (items) {
+          final filtered = _filtered(items);
+          if (items.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bookmark_border_rounded,
+                        size: 56, color: cs.onSurfaceVariant),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No root links yet',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Links not assigned to a folder will appear here.',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: TextField(
+                    onChanged: uiNotifier.updateRootLinksSearchQuery,
+                    decoration: InputDecoration(
+                      hintText: 'Search links…',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: uiState.rootLinksSearchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: uiNotifier.clearRootLinksSearchQuery,
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilterChip(
+                        label: const Text('All'),
+                        selected: uiState.rootLinksStatusFilter == null,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksStatusFilter(null),
+                      ),
+                      FilterChip(
+                        label: const Text('Unread'),
+                        selected: uiState.rootLinksStatusFilter == ItemStatus.unread,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksStatusFilter(ItemStatus.unread),
+                      ),
+                      FilterChip(
+                        label: const Text('Read'),
+                        selected: uiState.rootLinksStatusFilter == ItemStatus.read,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksStatusFilter(ItemStatus.read),
+                      ),
+                      ChoiceChip(
+                        label: const Text('List'),
+                        selected: uiState.rootLinksViewMode == UrlViewMode.list,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksViewMode(UrlViewMode.list),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Cards'),
+                        selected: uiState.rootLinksViewMode == UrlViewMode.cards,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksViewMode(UrlViewMode.cards),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Icons'),
+                        selected: uiState.rootLinksViewMode == UrlViewMode.icons,
+                        onSelected: (_) =>
+                            uiNotifier.setRootLinksViewMode(UrlViewMode.icons),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              if (filtered.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'No links match current filters.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                )
+              else if (uiState.rootLinksViewMode == UrlViewMode.list)
+                SliverList.builder(
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: UrlPreviewTile(
+                      item: filtered[index],
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Assign this link to a folder to open detail.'),
+                          ),
+                        );
+                      },
+                      onLongPress: () {},
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                  sliver: SliverGrid(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => UrlPreviewTile(
+                        item: filtered[index],
+                        compact: uiState.rootLinksViewMode == UrlViewMode.icons,
+                        onTap: () {},
+                        onLongPress: () {},
+                      ),
+                      childCount: filtered.length,
+                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: uiState.rootLinksViewMode == UrlViewMode.icons ? 3 : 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio:
+                          uiState.rootLinksViewMode == UrlViewMode.icons
+                              ? 1.1
+                              : 0.78,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'Could not load root links.',
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Collection options bottom sheet ──────────────────────────────────────────
+
+class _CollectionOptionsSheet extends ConsumerWidget {
+  const _CollectionOptionsSheet({
+    required this.collection,
+    required this.ref,
+    required this.isPremium,
+  });
+
+  final Collection collection;
+  final WidgetRef ref;
+  final bool isPremium;
+
+  @override
+  Widget build(BuildContext context, WidgetRef widgetRef) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.edit),
+          title: const Text('Edit'),
+          onTap: () async {
+            context.pop();
+            final ok = await DayPassGate.check(context, widgetRef);
+            if (!ok || !context.mounted) return;
+            context.push('/collections/${collection.id}/edit');
+          },
+        ),
+        ListTile(
+          leading: Icon(collection.isPinned
+              ? Icons.push_pin
+              : Icons.push_pin_outlined),
+          title: Text(collection.isPinned ? 'Unpin' : 'Pin to top'),
+          onTap: () async {
+            context.pop();
+            await widgetRef
+                .read(collectionsHubNotifierProvider.notifier)
+                .togglePin(collection);
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.delete, color: Colors.red),
+          title: const Text('Delete',
+              style: TextStyle(color: Colors.red)),
+          onTap: () {
+            context.pop();
+            _confirmDelete(context, widgetRef, collection.id);
+          },
         ),
       ],
     );
   }
 
-  Widget _buildTabButton(ThemeData theme, WidgetRef ref, HomeTab tab,
-      HomeTab currentTab, String title) {
-    final isSelected = currentTab == tab;
-    return GestureDetector(
-      onTap: () {
-        ref.read(homeTabNotifierProvider.notifier).setTab(tab);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return EmptyStateView(
-      imageAsset: AppAssets.emptyCollections,
-      title: 'Start curating your life',
-      message: 'Create your first collection to organize your items.',
-      buttonText: 'Create Collection',
-      onButtonPressed: () => context.push('/collections/create'),
-    );
-  }
-
-  Widget _buildCollectionsView(BuildContext context, WidgetRef ref,
-      List<Collection> collections, bool isGrid, bool isPremium,
-      {bool isSharedTab = false}) {
-    if (isSharedTab && !isPremium) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_outline, size: 64, color: Colors.amber),
-            const SizedBox(height: 16),
-            const Text('Premium Feature',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Upgrade to share collections with friends.',
-                style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.push('/paywall'),
-              child: const Text('Upgrade to Premium'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (collections.isEmpty) {
-      if (isSharedTab) {
-        return EmptyStateView(
-          imageAsset:
-              AppAssets.emptyCollections, // Reusing existing illustration
-          title: 'No Shared Collections',
-          message: 'Collections shared with you will appear here.',
-        );
-      }
-      return EmptyStateView(
-        imageAsset: AppAssets.emptyCollections,
-        title: 'Start curating your life',
-        message: 'Create your first collection to organize your items.',
-      );
-    }
-
-    if (isGrid) {
-      return GridView.builder(
-        padding: const EdgeInsets.only(
-            top: 8, bottom: 80), // Added bottom padding for FAB
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio:
-              1.15, // Made cards less tall for better data density
-        ),
-        itemCount: collections.length,
-        itemBuilder: (context, index) {
-          final collection = collections[index];
-          return CollectionCard(
-            collection: collection,
-            onTap: () async {
-              final ok = await DayPassGate.check(context, ref);
-              if (!ok || !context.mounted) return;
-              context.push('/collections/${collection.id}',
-                  extra: collection.title);
-            },
-            onLongPress: () {
-              // Show edit/delete options
-              _showCollectionOptions(context, ref, collection, isPremium);
-            },
-          );
-        },
-      );
-    } else {
-      final orderedForList = List<Collection>.from(collections)
-        ..sort(compareCollectionsSiblings);
-      return ReorderableListView.builder(
-        padding: const EdgeInsets.only(top: 8, bottom: 80),
-        itemCount: orderedForList.length,
-        onReorder: (oldIndex, newIndex) async {
-          var to = newIndex;
-          if (to > oldIndex) to--;
-          if (oldIndex == to) return;
-          final repo = ref.read(collectionsRepositoryProvider);
-          final result = computeSiblingReorderPositions(
-            siblings: orderedForList,
-            oldIndex: oldIndex,
-            newIndex: to,
-          );
-          if (result.rebalanceAll != null) {
-            for (final e in result.rebalanceAll!.entries) {
-              await repo.updateCollectionPosition(e.key, e.value);
-            }
-          } else {
-            await repo.updateCollectionPosition(
-                result.primaryId, result.primaryPosition);
-          }
-        },
-        itemBuilder: (context, index) {
-          final collection = orderedForList[index];
-          return Padding(
-            key: ValueKey(collection.id),
-            padding: const EdgeInsets.only(bottom: 12),
-            child: CollectionListTile(
-              collection: collection,
-              onTap: () async {
-                final ok = await DayPassGate.check(context, ref);
-                if (!ok || !context.mounted) return;
-                context.push('/collections/${collection.id}',
-                    extra: collection.title);
-              },
-              onLongPress: () {
-                _showCollectionOptions(context, ref, collection, isPremium);
-              },
-            ),
-          );
-        },
-      );
-    }
-  }
-
-  void _showCollectionOptions(BuildContext context, WidgetRef ref,
-      Collection collection, bool isPremium) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.edit),
-            title: const Text('Edit'),
-            onTap: () async {
-              context.pop();
-              final ok = await DayPassGate.check(context, ref);
-              if (!ok || !context.mounted) return;
-              context.push('/collections/${collection.id}/edit');
-            },
-          ),
-          ListTile(
-            leading:
-                Icon(collection.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
-            title: Text(collection.isPinned ? 'Unpin' : 'Pin to top'),
-            onTap: () async {
-              context.pop();
-              final updated = Collection(
-                id: collection.id,
-                ownerId: collection.ownerId,
-                parentId: collection.parentId,
-                isShared: collection.isShared,
-                title: collection.title,
-                description: collection.description,
-                category: collection.category,
-                colorHex: collection.colorHex,
-                iconName: collection.iconName,
-                iconJson: collection.iconJson,
-                position: collection.position,
-                isPinned: !collection.isPinned,
-                isArchived: collection.isArchived,
-                isDeleted: collection.isDeleted,
-                childCount: collection.childCount,
-                createdAt: collection.createdAt,
-                updatedAt: DateTime.now(),
-                lastAccessedAt: collection.lastAccessedAt,
-                itemsLayout: collection.itemsLayout,
-                childCollectionsLayout: collection.childCollectionsLayout,
-                itemsSortDefault: collection.itemsSortDefault,
-                openLinksIn: collection.openLinksIn,
-                showLinkPreviews: collection.showLinkPreviews,
-                itemCount: collection.itemCount,
-              );
-              await ref.read(updateCollectionUseCaseProvider).call(updated);
-              ref.invalidate(collectionsListProvider);
-            },
-          ),
-          ListTile(
-            leading: Icon(collection.isArchived
-                ? Icons.unarchive_outlined
-                : Icons.archive_outlined),
-            title: Text(collection.isArchived ? 'Unarchive' : 'Archive'),
-            onTap: () async {
-              context.pop();
-              final updated = Collection(
-                id: collection.id,
-                ownerId: collection.ownerId,
-                parentId: collection.parentId,
-                isShared: collection.isShared,
-                title: collection.title,
-                description: collection.description,
-                category: collection.category,
-                colorHex: collection.colorHex,
-                iconName: collection.iconName,
-                iconJson: collection.iconJson,
-                position: collection.position,
-                isPinned: collection.isPinned,
-                isArchived: !collection.isArchived,
-                isDeleted: collection.isDeleted,
-                childCount: collection.childCount,
-                createdAt: collection.createdAt,
-                updatedAt: DateTime.now(),
-                lastAccessedAt: collection.lastAccessedAt,
-                itemsLayout: collection.itemsLayout,
-                childCollectionsLayout: collection.childCollectionsLayout,
-                itemsSortDefault: collection.itemsSortDefault,
-                openLinksIn: collection.openLinksIn,
-                showLinkPreviews: collection.showLinkPreviews,
-                itemCount: collection.itemCount,
-              );
-              await ref.read(updateCollectionUseCaseProvider).call(updated);
-            },
-          ),
-          if (isPremium)
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: const Text('Share Options'),
-              onTap: () {
-                context.pop();
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text(
-                        'Advanced sharing coming in Sprint 10. Toggle isShared inside Edit for now.')));
-              },
-            ),
-          ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: const Text('Delete', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              context.pop();
-              _confirmDelete(context, ref, collection.id);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   void _confirmDelete(
-      BuildContext context, WidgetRef ref, String collectionId) {
+      BuildContext context, WidgetRef widgetRef, String id) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Delete Collection?'),
-        content:
-            const Text('This will delete the collection and all its items.'),
+        content: const Text(
+            'This will delete the collection and all its items.'),
         actions: [
           TextButton(
-            onPressed: () => context.pop(),
-            child: const Text('Cancel'),
-          ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel')),
           TextButton(
-            onPressed: () async {
-              await ref
-                  .read(deleteCollectionUseCaseProvider)
-                  .call(collectionId);
-              ref.invalidate(collectionsListProvider);
-              if (context.mounted) context.pop();
+            onPressed: () {
+              widgetRef
+                  .read(collectionsHubNotifierProvider.notifier)
+                  .deleteCollection(id);
+              Navigator.of(context).pop();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete',
+                style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

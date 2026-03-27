@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
+import '../../domain/entities/item.dart';
 import '../providers/forms/item_form_notifier.dart';
 
 /// Create / Edit screen for a single Item.
@@ -156,6 +157,41 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
 
                         const SizedBox(height: 12),
 
+                        // ── Description (page summary) ─────────────────
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: _LabeledField(
+                            label: 'Description',
+                            labelColor: microLabelColor,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Page summary — often filled from the link preview',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: microLabelColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SmartFormField(
+                                  hint: 'Optional summary text',
+                                  initialValue: state.description,
+                                  onChanged: notifier.updateDescription,
+                                  maxLines: 3,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: valueTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
                         // ── Preview identity block ──────────────────────
                         _FieldCard(
                           isDark: isDark,
@@ -202,7 +238,7 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                             child: SmartFormField(
                               hint: 'Add a note...',
                               initialValue: state.annotation,
-                              onChanged: notifier.updateLocation,
+                              onChanged: notifier.updateAnnotation,
                               maxLines: 3,
                               style: TextStyle(
                                 fontSize: 15,
@@ -227,6 +263,166 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                               onChanged: notifier.updateTags,
                               style: TextStyle(
                                   fontSize: 15, color: valueTextColor),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ── Status ─────────────────────────────────────
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: _LabeledField(
+                            label: 'Status',
+                            labelColor: microLabelColor,
+                            child: DropdownButtonFormField<ItemStatus>(
+                              key: ValueKey(state.status),
+                              initialValue: state.status,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                              items: ItemStatus.values
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(_itemStatusLabel(s)),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) {
+                                if (v != null) notifier.updateStatus(v);
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ── Advanced metadata (optional / future fields) ─
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: Theme(
+                            data: theme.copyWith(dividerColor: Colors.transparent),
+                            child: ExpansionTile(
+                              tilePadding: EdgeInsets.zero,
+                              childrenPadding:
+                                  const EdgeInsets.only(top: 4, bottom: 8),
+                              title: Text(
+                                'Advanced metadata',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: valueTextColor,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Site name, canonical URL, type, publish date',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: microLabelColor,
+                                ),
+                              ),
+                              children: [
+                                _LabeledField(
+                                  label: 'Site name',
+                                  labelColor: microLabelColor,
+                                  child: SmartFormField(
+                                    hint: 'e.g. Medium',
+                                    initialValue: state.siteName,
+                                    onChanged: notifier.updateSiteName,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: valueTextColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _LabeledField(
+                                  label: 'Canonical URL',
+                                  labelColor: microLabelColor,
+                                  child: SmartFormField(
+                                    hint: 'https://…',
+                                    initialValue: state.canonicalUrl,
+                                    onChanged: notifier.updateCanonicalUrl,
+                                    keyboardType: TextInputType.url,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: valueTextColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _LabeledField(
+                                  label: 'Content type',
+                                  labelColor: microLabelColor,
+                                  child: SmartFormField(
+                                    hint: 'article, video, pdf…',
+                                    initialValue: state.contentType,
+                                    onChanged: notifier.updateContentType,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: valueTextColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Published',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: microLabelColor,
+                                      letterSpacing: 0.1,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    state.publishedAt == null
+                                        ? 'No date set'
+                                        : MaterialLocalizations.of(context)
+                                            .formatFullDate(state.publishedAt!),
+                                    style: TextStyle(color: valueTextColor),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (state.publishedAt != null)
+                                        IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () =>
+                                              notifier.updatePublishedAt(null),
+                                        ),
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.calendar_today_outlined),
+                                        onPressed: () async {
+                                          final now = DateTime.now();
+                                          final picked =
+                                              await showDatePicker(
+                                            context: context,
+                                            initialDate:
+                                                state.publishedAt ?? now,
+                                            firstDate: DateTime(1970),
+                                            lastDate: DateTime(now.year + 2),
+                                          );
+                                          if (picked != null) {
+                                            notifier.updatePublishedAt(picked);
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -383,6 +579,17 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
         ),
       ),
     );
+  }
+}
+
+String _itemStatusLabel(ItemStatus s) {
+  switch (s) {
+    case ItemStatus.unread:
+      return 'Unread';
+    case ItemStatus.read:
+      return 'Read';
+    case ItemStatus.archived:
+      return 'Archived';
   }
 }
 

@@ -1,16 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/infrastructure/providers.dart';
-import '../../../../core/providers/network_providers.dart';
+import '../../../../core/providers/data_backend_selection_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../settings/presentation/providers/settings_providers.dart';
-import '../../../monetization/presentation/providers/subscription_status_provider.dart';
 import '../../domain/entities/item.dart';
 import '../../domain/repositories/i_items_repository.dart';
 import '../../data/repositories/items_repository_impl.dart';
 import '../../data/repositories/supabase_items_repository.dart';
 import '../../data/repositories/read_only_items_repository.dart';
 import '../../domain/usecases/get_paginated_items_usecase.dart';
+import '../../domain/usecases/get_all_items_usecase.dart';
+import '../../domain/usecases/get_item_usecase.dart';
 import '../../domain/usecases/create_item_usecase.dart';
 import '../../domain/usecases/update_item_usecase.dart';
 import '../../domain/usecases/delete_item_usecase.dart';
@@ -22,25 +21,14 @@ import '../../domain/usecases/reorder_items_usecase.dart';
 
 // Same routing rules as [collectionsRepositoryProvider] (ADR-0002).
 final itemsRepositoryProvider = Provider<IItemsRepository>((ref) {
-  final hasMigratedToCloud = ref.watch(hasMigratedToCloudProvider);
-  final currentUser = ref.watch(currentUserProvider);
-  final isOnline = ref.watch(isOnlineProvider);
-  final isAuthenticated = currentUser != null;
-  final isPremium = ref.watch(isPremiumProvider);
-  final isActive =
-      ref.watch(isSubscriptionActiveProvider).valueOrNull ?? false;
-
-  final useCloud = isAuthenticated &&
-      isOnline &&
-      (!isPremium || hasMigratedToCloud);
-
-  final supabaseUserId = currentUser?.supabaseId;
-  if (useCloud && supabaseUserId != null) {
+  final backend = ref.watch(dataBackendSelectionProvider);
+  final supabaseUserId = backend.supabaseUserId;
+  if (backend.useCloud && supabaseUserId != null) {
     final cloudRepo = SupabaseItemsRepository(
       Supabase.instance.client,
       userId: supabaseUserId,
     );
-    if (isPremium && !isActive) {
+    if (backend.isReadOnlyCloud) {
       return ReadOnlyItemsRepository(cloudRepo);
     }
     return cloudRepo;
@@ -56,8 +44,16 @@ final getPaginatedItemsUseCaseProvider =
   return GetPaginatedItemsUseCase(ref.watch(itemsRepositoryProvider));
 });
 
+final getAllItemsUseCaseProvider = Provider<GetAllItemsUseCase>((ref) {
+  return GetAllItemsUseCase(ref.watch(itemsRepositoryProvider));
+});
+
 final createItemUseCaseProvider = Provider<CreateItemUseCase>((ref) {
   return CreateItemUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+final getItemUseCaseProvider = Provider<GetItemUseCase>((ref) {
+  return GetItemUseCase(ref.watch(itemsRepositoryProvider));
 });
 
 final updateItemUseCaseProvider = Provider<UpdateItemUseCase>((ref) {
@@ -91,19 +87,41 @@ final reorderItemsUseCaseProvider = Provider<ReorderItemsUseCase>((ref) {
   return ReorderItemsUseCase(ref.watch(itemsRepositoryProvider));
 });
 
-enum UrlSortOption { position, dateAdded, dateEdited }
+enum UrlSortOption {
+  position,
+  dateAdded,
+  dateEdited,
+  mostVisited,
+  alphabeticalAsc,
+  alphabeticalDesc,
+}
 enum UnifiedTab { childCollections, urls }
 enum UrlViewMode { list, cards, icons }
+
+/// Links tab data: lazy-loaded when user switches to Links (or [ensureUrlsLoaded]).
+enum UrlsDataPhase {
+  notStarted,
+  loading,
+  loaded,
+  error,
+}
 
 int compareBySortOption(UrlSortOption sort, Item a, Item b) {
   return switch (sort) {
     UrlSortOption.position => a.position.compareTo(b.position),
     UrlSortOption.dateAdded => b.createdAt.compareTo(a.createdAt),
     UrlSortOption.dateEdited => b.updatedAt.compareTo(a.updatedAt),
+    UrlSortOption.mostVisited => b.clickCount.compareTo(a.clickCount),
+    UrlSortOption.alphabeticalAsc =>
+      a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+    UrlSortOption.alphabeticalDesc =>
+      b.title.toLowerCase().compareTo(a.title.toLowerCase()),
   };
 }
 
 class ItemsState {
+  static const Object _kUnset = Object();
+
   final List<Item> items;
   final bool hasMore;
   final bool isLoadingMore;
@@ -111,6 +129,8 @@ class ItemsState {
   final UrlSortOption sortOption;
   final UrlViewMode viewMode;
   final UnifiedTab activeTab;
+  final UrlsDataPhase urlsDataPhase;
+  final String? urlsErrorMessage;
   /// How many raw rows we've fetched from the repository (used to keep
   /// pagination stable when client-side filtering is enabled).
   final int fetchedCount;
@@ -122,7 +142,9 @@ class ItemsState {
     this.statusFilter,
     this.sortOption = UrlSortOption.dateAdded,
     this.viewMode = UrlViewMode.list,
-    this.activeTab = UnifiedTab.urls,
+    this.activeTab = UnifiedTab.childCollections,
+    this.urlsDataPhase = UrlsDataPhase.notStarted,
+    this.urlsErrorMessage,
     this.fetchedCount = 0,
   });
 
@@ -134,6 +156,8 @@ class ItemsState {
     UrlSortOption? sortOption,
     UrlViewMode? viewMode,
     UnifiedTab? activeTab,
+    UrlsDataPhase? urlsDataPhase,
+    Object? urlsErrorMessage = _kUnset,
     int? fetchedCount,
   }) {
     return ItemsState(
@@ -144,6 +168,10 @@ class ItemsState {
       sortOption: sortOption ?? this.sortOption,
       viewMode: viewMode ?? this.viewMode,
       activeTab: activeTab ?? this.activeTab,
+      urlsDataPhase: urlsDataPhase ?? this.urlsDataPhase,
+      urlsErrorMessage: urlsErrorMessage == _kUnset
+          ? this.urlsErrorMessage
+          : urlsErrorMessage as String?,
       fetchedCount: fetchedCount ?? this.fetchedCount,
     );
   }
@@ -157,15 +185,87 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   ItemStatus? _statusFilter;
   UrlSortOption _sortOption = UrlSortOption.dateAdded;
   UrlViewMode _viewMode = UrlViewMode.list;
-  UnifiedTab _activeTab = UnifiedTab.urls;
+  UnifiedTab _activeTab = UnifiedTab.childCollections;
 
   @override
   Future<ItemsState> build(String arg) async {
     _statusFilter = null;
     _sortOption = UrlSortOption.dateAdded;
     _viewMode = UrlViewMode.list;
-    _activeTab = UnifiedTab.urls;
-    return _fetchPage(0, []);
+    _activeTab = UnifiedTab.childCollections;
+    return ItemsState(
+      items: const [],
+      hasMore: false,
+      isLoadingMore: false,
+      statusFilter: _statusFilter,
+      sortOption: _sortOption,
+      viewMode: _viewMode,
+      activeTab: _activeTab,
+      urlsDataPhase: UrlsDataPhase.notStarted,
+      urlsErrorMessage: null,
+      fetchedCount: 0,
+    );
+  }
+
+  /// Applies defaults from [Collection] without fetching URLs (lazy Links tab).
+  void applyCollectionDisplayDefaults({
+    required UrlViewMode viewMode,
+    required UrlSortOption sortOption,
+  }) {
+    _viewMode = viewMode;
+    _sortOption = sortOption;
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      current.copyWith(
+        viewMode: _viewMode,
+        sortOption: _sortOption,
+      ),
+    );
+  }
+
+  /// Loads URL rows for this collection (first open of Links tab, edit screen, etc.).
+  Future<void> ensureUrlsLoaded({bool forceRefresh = false}) async {
+    var current = state.value;
+    if (current == null) return;
+    if (!forceRefresh &&
+        current.urlsDataPhase == UrlsDataPhase.loaded) {
+      return;
+    }
+    if (!forceRefresh && current.urlsDataPhase == UrlsDataPhase.loading) {
+      return;
+    }
+
+    state = AsyncData(
+      current.copyWith(
+        urlsDataPhase: UrlsDataPhase.loading,
+        urlsErrorMessage: null,
+        isLoadingMore: false,
+      ),
+    );
+    current = state.value;
+
+    try {
+      final newState = await _fetchPage(0, []);
+      state = AsyncData(
+        newState.copyWith(
+          urlsDataPhase: UrlsDataPhase.loaded,
+          urlsErrorMessage: null,
+          activeTab: _activeTab,
+        ),
+      );
+    } catch (e) {
+      final failed = state.value;
+      if (failed != null) {
+        state = AsyncData(
+          failed.copyWith(
+            urlsDataPhase: UrlsDataPhase.error,
+            urlsErrorMessage: e.toString(),
+            isLoadingMore: false,
+          ),
+        );
+      }
+    }
   }
 
   Future<ItemsState> _fetchPage(int offset, List<Item> currentItems) async {
@@ -192,6 +292,8 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
           sortOption: _sortOption,
           viewMode: _viewMode,
           activeTab: _activeTab,
+          urlsDataPhase: UrlsDataPhase.loaded,
+          urlsErrorMessage: null,
           fetchedCount: offset + newItems.length,
         );
       },
@@ -201,6 +303,7 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   Future<void> fetchNextPage() async {
     final currentState = state.value;
     if (currentState == null ||
+        currentState.urlsDataPhase != UrlsDataPhase.loaded ||
         !currentState.hasMore ||
         currentState.isLoadingMore) {
       return;
@@ -212,30 +315,64 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
       final offset = currentState.fetchedCount;
       final newState = await _fetchPage(offset, currentState.items);
       state = AsyncData(newState);
-    } catch (e, st) {
-      state = AsyncError(e, st);
+    } catch (e) {
+      state = AsyncData(
+        currentState.copyWith(
+          urlsDataPhase: UrlsDataPhase.error,
+          urlsErrorMessage: e.toString(),
+          isLoadingMore: false,
+        ),
+      );
     }
   }
 
   Future<void> setStatusFilter(ItemStatus? filter) async {
     _statusFilter = filter;
-    state = const AsyncLoading();
+    final base = state.value;
+    if (base == null) return;
+    state = AsyncData(
+      base.copyWith(
+        urlsDataPhase: UrlsDataPhase.loading,
+        urlsErrorMessage: null,
+      ),
+    );
     try {
       final newState = await _fetchPage(0, []);
-      state = AsyncData(newState);
-    } catch (e, st) {
-      state = AsyncError(e, st);
+      state = AsyncData(
+        newState.copyWith(urlsDataPhase: UrlsDataPhase.loaded),
+      );
+    } catch (e) {
+      state = AsyncData(
+        base.copyWith(
+          urlsDataPhase: UrlsDataPhase.error,
+          urlsErrorMessage: e.toString(),
+        ),
+      );
     }
   }
 
   Future<void> setSortOption(UrlSortOption sortOption) async {
     _sortOption = sortOption;
-    state = const AsyncLoading();
+    final base = state.value;
+    if (base == null) return;
+    state = AsyncData(
+      base.copyWith(
+        urlsDataPhase: UrlsDataPhase.loading,
+        urlsErrorMessage: null,
+      ),
+    );
     try {
       final newState = await _fetchPage(0, []);
-      state = AsyncData(newState);
-    } catch (e, st) {
-      state = AsyncError(e, st);
+      state = AsyncData(
+        newState.copyWith(urlsDataPhase: UrlsDataPhase.loaded),
+      );
+    } catch (e) {
+      state = AsyncData(
+        base.copyWith(
+          urlsDataPhase: UrlsDataPhase.error,
+          urlsErrorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -246,13 +383,6 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
       state = AsyncData(current.copyWith(viewMode: _viewMode));
       return;
     }
-    state = const AsyncLoading();
-    try {
-      final newState = await _fetchPage(0, []);
-      state = AsyncData(newState);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
   }
 
   Future<void> setActiveTab(UnifiedTab tab) async {
@@ -260,15 +390,33 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     final current = state.value;
     if (current == null) return;
     state = AsyncData(current.copyWith(activeTab: _activeTab));
+    if (tab == UnifiedTab.urls) {
+      await ensureUrlsLoaded();
+    }
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      current.copyWith(
+        urlsDataPhase: UrlsDataPhase.loading,
+        urlsErrorMessage: null,
+      ),
+    );
     try {
       final newState = await _fetchPage(0, []);
-      state = AsyncData(newState);
-    } catch (e, st) {
-      state = AsyncError(e, st);
+      state = AsyncData(
+        newState.copyWith(urlsDataPhase: UrlsDataPhase.loaded),
+      );
+    } catch (e) {
+      state = AsyncData(
+        current.copyWith(
+          urlsDataPhase: UrlsDataPhase.error,
+          urlsErrorMessage: e.toString(),
+          isLoadingMore: false,
+        ),
+      );
     }
   }
 
@@ -282,6 +430,7 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
       state.value!.copyWith(
         items: nextItems,
         fetchedCount: state.value!.fetchedCount + 1,
+        urlsDataPhase: UrlsDataPhase.loaded,
       ),
     );
   }

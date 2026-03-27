@@ -37,14 +37,19 @@ class _AuthEmailScreenState extends ConsumerState<AuthEmailScreen> {
     _currentType = widget.params.initialType;
   }
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  bool get _isSignUp => _currentType == AppOtpType.signup;
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     final email = _emailController.text.trim();
     final notifier = ref.read(authNotifierProvider.notifier);
-
     await notifier.signInWithOTP(email: email, type: _currentType);
-
     if (ref.read(authNotifierProvider).otpSent) {
       if (!mounted) return;
       context.go(
@@ -55,22 +60,18 @@ class _AuthEmailScreenState extends ConsumerState<AuthEmailScreen> {
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final busy = authState.isLoading;
 
     ref.listen(authNotifierProvider, (_, next) {
       if (next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
-            backgroundColor: theme.colorScheme.error,
+            backgroundColor: cs.error,
           ),
         );
         ref.read(authNotifierProvider.notifier).clearError();
@@ -86,90 +87,175 @@ class _AuthEmailScreenState extends ConsumerState<AuthEmailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _currentType == AppOtpType.signup ? 'Create Account' : 'Sign In',
-        ),
         leading: BackButton(onPressed: () => context.pop()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Form(
             key: _formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+
+                // ── Headline ───────────────────────────────────────────
                 Text(
-                  _currentType == AppOtpType.signup
-                      ? 'Enter your email address to create a new account.'
-                      : 'Enter your email address to receive a secure login code.',
-                  style: theme.textTheme.bodyMedium,
+                  _isSignUp ? 'Create your account' : 'Welcome back',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'If you used Curate before, sign in with the same email. We will set up your LinkVault profile automatically.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  "We'll send a code to your email to verify.",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
+
+                const SizedBox(height: 32),
+                const Divider(),
                 const SizedBox(height: 24),
+
+                // ── Email field ────────────────────────────────────────
+                Text(
+                  'Email address',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: cs.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailController,
+                  enabled: !busy,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    hintText: 'you@email.com',
+                    filled: true,
+                    fillColor: cs.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: cs.outlineVariant),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: cs.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: cs.primary, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: cs.error, width: 2),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: cs.error, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                  ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return 'Email is required';
+                      return 'Enter a valid email';
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(v)) {
-                      return 'Enter a valid email address';
+                        .hasMatch(v.trim())) {
+                      return 'Enter a valid email';
                     }
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 32),
-                FilledButton(
-                  onPressed: authState.isLoading ? null : _submit,
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Continue'),
+
+                // ── Continue button ────────────────────────────────────
+                SizedBox(
+                  height: 52,
+                  child: FilledButton(
+                    onPressed: busy ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: busy
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text(
+                            'Continue',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 16),
+                          ),
+                  ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // ── Toggle sign in / sign up ───────────────────────────
+                GestureDetector(
+                  onTap: busy
+                      ? null
+                      : () => setState(() {
+                            _currentType = _isSignUp
+                                ? AppOtpType.magiclink
+                                : AppOtpType.signup;
+                          }),
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: theme.textTheme.bodySmall,
+                      children: [
+                        TextSpan(
+                          text: _isSignUp
+                              ? 'Already have an account? '
+                              : "Don't have an account? ",
+                        ),
+                        TextSpan(
+                          text: _isSignUp ? 'Sign in →' : 'Sign up →',
+                          style: TextStyle(
+                            color: cs.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 32),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _currentType = _currentType == AppOtpType.signup
-                          ? AppOtpType.magiclink
-                          : AppOtpType.signup;
-                    });
-                  },
+
+                // ── Privacy note ───────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
-                    _currentType == AppOtpType.signup
-                        ? 'Already have an account? Sign In'
-                        : 'Don\'t have an account? Sign Up',
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                    'Your links stay local until you choose to sync.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your local data stays on this device. We will never overwrite local data silently.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),

@@ -3,7 +3,9 @@ import '../../../../objectbox.g.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../domain/collection_display_defaults.dart';
 import '../../domain/entities/collection.dart';
+import '../../domain/library_root_collection.dart';
 import '../../domain/collection_sibling_order.dart';
 import '../../domain/repositories/i_collections_repository.dart';
 import '../../../items/data/models/item_model.dart';
@@ -14,6 +16,11 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   final Store store;
   late final Box<CollectionModel> _box;
   late final Box<ItemModel> _itemBox;
+  static final Map<int, Future<Either<Failure, Collection>>> _ensureInFlight =
+      {};
+  static int _ensureAttempts = 0;
+  static int _ensureSuccesses = 0;
+  static int _ensureFailures = 0;
 
   CollectionsRepositoryImpl(this.store) {
     _box = store.box<CollectionModel>();
@@ -75,6 +82,32 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
   @override
   Future<Either<Failure, void>> deleteCollection(String id) async {
     try {
+      final allRes = await getAllCollections();
+      final guard = allRes.fold<Failure?>((_) => null, (list) {
+        Collection? target;
+        for (final c in list) {
+          if (c.id == id) {
+            target = c;
+            break;
+          }
+        }
+        if (target != null &&
+            !target.isDeleted &&
+            (target.parentId == null || target.parentId!.trim().isEmpty)) {
+          return const ValidationFailure(
+            'Top-level collections cannot be deleted directly. Repair library root first.',
+          );
+        }
+        final rootId = LibraryRootCollection.libraryRootIdIfExactlyOne(list);
+        if (rootId != null && id == rootId) {
+          return const ValidationFailure(
+            'The Library folder cannot be deleted.',
+          );
+        }
+        return null;
+      });
+      if (guard != null) return Left(guard);
+
       AppLogger.d('[collections] deleteCollection local id=$id');
       store.runInTransaction(TxMode.write, () {
         final existing = _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
@@ -204,5 +237,121 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
       return Left(DatabaseFailure('Failed to record collection access',
           error: e, stackTrace: stackTrace));
     }
+  }
+
+  Collection _newLibraryRootEntity(String id) {
+    final now = DateTime.now();
+    return Collection(
+      id: id,
+      title: LibraryRootCollection.defaultTitle,
+      category: LibraryRootCollection.defaultCategory,
+      colorHex: '#6366F1',
+      iconName: LibraryRootCollection.defaultIcon,
+      position: 0,
+      createdAt: now,
+      updatedAt: now,
+      itemsLayout: CollectionLayoutMode.list,
+      childCollectionsLayout: CollectionLayoutMode.list,
+      itemsSortDefault: CollectionItemsSortDefault.manual,
+      openLinksIn: CollectionOpenLinksIn.inApp,
+      showLinkPreviews: true,
+      parentId: null,
+    );
+  }
+
+  void _repairLegacyRootItemsInTx(String libraryRootId) {
+    for (final legacy in LibraryRootCollection.legacyRootItemCollectionIds) {
+      final q = _itemBox.query(ItemModel_.collectionUid.equals(legacy)).build();
+      final items = q.find();
+      q.close();
+      for (final m in items) {
+        m.collectionUid = libraryRootId;
+        _itemBox.put(m);
+      }
+    }
+  }
+
+  Future<Either<Failure, Collection>> _doEnsureLibraryRootCollection() async {
+    try {
+      Collection? resolved;
+      store.runInTransaction(TxMode.write, () {
+        final models = _box.getAll();
+        final entities =
+            models.map(CollectionMapper.toEntity).where((c) => !c.isDeleted).toList();
+        var tops = entities
+            .where((c) =>
+                c.parentId == null || c.parentId!.trim().isEmpty)
+            .toList();
+
+        if (tops.length > 1) {
+          final newId = const Uuid().v4();
+          final rootEntity = _newLibraryRootEntity(newId);
+          _box.put(CollectionMapper.toModel(rootEntity));
+          for (final c in tops) {
+            final m =
+                _box.query(CollectionModel_.uid.equals(c.id)).build().findFirst();
+            if (m != null) {
+              m.parentId = newId;
+              m.updatedAt = DateTime.now();
+              _box.put(m);
+            }
+          }
+          _repairLegacyRootItemsInTx(newId);
+          resolved = rootEntity;
+          AppLogger.d(
+              '[collections] ensureLibraryRoot local: created root + reparented ${tops.length} legacy tops');
+        } else if (tops.length == 1) {
+          final existingRoot = tops.single;
+          _repairLegacyRootItemsInTx(existingRoot.id);
+          resolved = existingRoot;
+          AppLogger.d(
+              '[collections] ensureLibraryRoot local: existing root ${existingRoot.id}');
+        } else {
+          final newId = const Uuid().v4();
+          final rootEntity = _newLibraryRootEntity(newId);
+          _box.put(CollectionMapper.toModel(rootEntity));
+          _repairLegacyRootItemsInTx(newId);
+          resolved = rootEntity;
+          AppLogger.d('[collections] ensureLibraryRoot local: created root $newId');
+        }
+      });
+      final out = resolved;
+      if (out == null) {
+        return Left(DatabaseFailure('Failed to resolve library root'));
+      }
+      return Right(out);
+    } catch (e, stackTrace) {
+      AppLogger.e('[collections] ensureLibraryRoot local failed', e, stackTrace);
+      return Left(DatabaseFailure('Failed to ensure library root',
+          error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Collection>> ensureLibraryRootCollection() {
+    final key = store.hashCode;
+    final inFlight = _ensureInFlight[key];
+    if (inFlight != null) {
+      return inFlight;
+    }
+    _ensureAttempts++;
+    final started = DateTime.now();
+    final future = _doEnsureLibraryRootCollection();
+    _ensureInFlight[key] = future;
+    future.then((result) {
+      result.fold(
+        (_) => _ensureFailures++,
+        (_) => _ensureSuccesses++,
+      );
+    });
+    future.whenComplete(() {
+      if (identical(_ensureInFlight[key], future)) {
+        _ensureInFlight.remove(key);
+      }
+      final elapsed = DateTime.now().difference(started).inMilliseconds;
+      AppLogger.d(
+          '[collections] ensureLibraryRoot local metrics attempts=$_ensureAttempts success=$_ensureSuccesses failed=$_ensureFailures elapsedMs=$elapsed');
+    });
+    return future;
   }
 }

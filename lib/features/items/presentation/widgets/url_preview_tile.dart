@@ -61,6 +61,15 @@ class UrlPreviewTile extends StatelessWidget {
     return null;
   }
 
+  Color? _parseDominantColor(String? hex) {
+    if (hex == null || hex.trim().isEmpty) return null;
+    final raw = hex.replaceAll('#', '');
+    final normalized = raw.length == 6 ? 'FF$raw' : raw;
+    final value = int.tryParse(normalized, radix: 16);
+    if (value == null) return null;
+    return Color(value);
+  }
+
   String _domain(String? rawUrl) {
     if (rawUrl == null || rawUrl.trim().isEmpty) return '';
     final normalized = rawUrl.startsWith('http') ? rawUrl : 'https://$rawUrl';
@@ -97,8 +106,10 @@ class UrlPreviewTile extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
               ),
               child: compact
-                  ? Padding(
-                padding: const EdgeInsets.all(12),
+                  ? SizedBox(
+                height: 44,
+                child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Row(
                   children: [
                     UrlFaviconTile(item: item, size: 22),
@@ -114,27 +125,18 @@ class UrlPreviewTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          if (domain.isNotEmpty)
-                            Text(
-                              domain,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      _getStatusIcon(item.status),
+                      Icons.open_in_new_rounded,
                       size: 16,
-                      color: statusColor,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ),
+              ),
               )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,10 +153,17 @@ class UrlPreviewTile extends StatelessWidget {
                                     width: double.infinity,
                                   )
                                 : Container(
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade200,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          _parseDominantColor(item.dominantColor) ??
+                                              Theme.of(context).colorScheme.surfaceContainerHighest,
+                                          Theme.of(context).colorScheme.surface,
+                                        ],
+                                      ),
+                                    ),
                                     child: const Icon(Icons.image_outlined),
                                   ),
                           ),
@@ -170,8 +179,26 @@ class UrlPreviewTile extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      item.title,
+                                      domain,
                                       maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.title,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w700,
@@ -196,20 +223,30 @@ class UrlPreviewTile extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                              if (domain.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                Text(
-                                  domain,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.16),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      _getStatusText(item.status),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: statusColor,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ],
                           ),
                         ),

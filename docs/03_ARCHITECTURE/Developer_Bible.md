@@ -53,6 +53,12 @@ Not allowed:
 
 Screens/providers cannot write through repositories directly.
 
+### 4.1) Form Pattern Clarification
+
+`form_bloc_*` naming in legacy notes is conceptual only. Implementation standard is
+Riverpod notifier-driven forms (`*FormState` + `*FormNotifier` + `ref.listen` in
+the screen) with notifier methods delegating to use-cases/query providers.
+
 ### 5) Environment and Secrets Discipline
 
 - no hardcoded keys in Dart

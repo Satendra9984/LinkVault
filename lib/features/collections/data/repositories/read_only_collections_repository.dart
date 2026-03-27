@@ -64,4 +64,25 @@ class ReadOnlyCollectionsRepository implements ICollectionsRepository {
   @override
   Future<Either<Failure, void>> recordCollectionAccess(String id) =>
       _inner.recordCollectionAccess(id);
+
+  @override
+  Future<Either<Failure, Collection>> ensureLibraryRootCollection() async {
+    final all = await _inner.getAllCollections();
+    return all.fold(
+      (f) => Left(f),
+      (list) {
+        final tops = list
+            .where((c) =>
+                !c.isDeleted &&
+                (c.parentId == null || c.parentId!.trim().isEmpty))
+            .toList();
+        if (tops.length == 1) {
+          return Right(tops.single);
+        }
+        AppLogger.w(
+            '[collections] ensureLibraryRoot blocked (read-only cloud) tops=${tops.length}');
+        return const Left(_error);
+      },
+    );
+  }
 }

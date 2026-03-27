@@ -12,6 +12,14 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/presentation/widgets/empty_state_view.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../data/models/search_history_model.dart';
+import '../../../items/domain/entities/item.dart';
+import '../../../items/presentation/providers/items_providers.dart';
+import '../../../items/presentation/widgets/url_preview_tile.dart';
+
+final _allItemsForSearchProvider = FutureProvider<List<Item>>((ref) async {
+  final result = await ref.read(itemsRepositoryProvider).getAllItems();
+  return result.fold((_) => <Item>[], (items) => items);
+});
 
 class SearchCollectionsScreen extends ConsumerStatefulWidget {
   const SearchCollectionsScreen({super.key});
@@ -23,6 +31,7 @@ class SearchCollectionsScreen extends ConsumerStatefulWidget {
 
 class _SearchCollectionsScreenState
     extends ConsumerState<SearchCollectionsScreen> {
+  static const _radiusPill = 24.0;
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -37,6 +46,7 @@ class _SearchCollectionsScreenState
     final searchNotifier = ref.read(searchNotifierProvider.notifier);
     final filteredCollectionsAsync =
         ref.watch(filteredSearchCollectionsProvider);
+    final allItemsAsync = ref.watch(_allItemsForSearchProvider);
     final historyAsync = ref.watch(searchHistoryProvider);
 
     final isPremium = ref.watch(isPremiumProvider);
@@ -61,7 +71,7 @@ class _SearchCollectionsScreenState
 
               // Filter Chips
               _buildFilterChips(theme, searchState, searchNotifier),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Content: History (when empty) or Results (when typing)
               Expanded(
@@ -73,57 +83,124 @@ class _SearchCollectionsScreenState
                             const Center(child: CircularProgressIndicator()),
                         error: (_, __) => const SizedBox.shrink(),
                       )
-                    : filteredCollectionsAsync.when(
-                        data: (collections) {
-                          if (collections.isEmpty) {
-                            return EmptyStateView(
-                              imageAsset: AppAssets.emptySearch,
-                              title: 'No results found',
-                              message: 'Try adjusting your search or filters.',
-                              buttonText: 'Clear Search',
-                              onButtonPressed: () {
-                                searchNotifier.updateQuery('');
-                                _controller.clear();
-                              },
-                            );
-                          }
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 16.0),
-                                child: Text(
-                                  'Search results',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onSurface),
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildSearchResults(
-                                    context, ref, collections, isGrid, isPremium),
-                              ),
-                            ],
-                          );
-                        },
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (err, stack) => EmptyStateView(
-                          imageAsset: AppAssets.errorNetwork,
-                          title: 'Oops! Something went wrong',
-                          message:
-                              'Check your internet connection and try again.',
-                          buttonText: 'Retry',
-                          onButtonPressed: () {
-                            ref.invalidate(filteredSearchCollectionsProvider);
-                          },
-                        ),
+                    : _buildUnifiedResults(
+                        context,
+                        ref,
+                        filteredCollectionsAsync,
+                        allItemsAsync,
+                        searchState.query,
+                        isGrid,
+                        isPremium,
                       ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildUnifiedResults(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<Collection>> collectionsAsync,
+    AsyncValue<List<Item>> itemsAsync,
+    String query,
+    bool isGrid,
+    bool isPremium,
+  ) {
+    return collectionsAsync.when(
+      data: (collections) => itemsAsync.when(
+        data: (items) {
+          final q = query.trim().toLowerCase();
+          final matchedItems = items.where((item) {
+            final title = item.title.toLowerCase();
+            final link = (item.link ?? '').toLowerCase();
+            final description = (item.description ?? '').toLowerCase();
+            final tags = (item.tags ?? '').toLowerCase();
+            return title.contains(q) ||
+                link.contains(q) ||
+                description.contains(q) ||
+                tags.contains(q);
+          }).toList();
+
+          if (collections.isEmpty && matchedItems.isEmpty) {
+            return EmptyStateView(
+              imageAsset: AppAssets.emptySearch,
+              title: 'No results found',
+              message: 'Try adjusting your search or filters.',
+              buttonText: 'Clear Search',
+              onButtonPressed: () {
+                ref.read(searchNotifierProvider.notifier).updateQuery('');
+                _controller.clear();
+              },
+            );
+          }
+
+          return ListView(
+            children: [
+              if (collections.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Collections (${collections.length})',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                SizedBox(
+                  height: isGrid ? 320 : 280,
+                  child: _buildSearchResults(
+                    context,
+                    ref,
+                    collections,
+                    isGrid,
+                    isPremium,
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (matchedItems.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Links (${matchedItems.length})',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                ...matchedItems.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: UrlPreviewTile(
+                      item: item,
+                      onTap: () {
+                        context.push('/collections/${item.collectionId}/items/${item.id}');
+                      },
+                      onLongPress: () {},
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => const SizedBox.shrink(),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => EmptyStateView(
+        imageAsset: AppAssets.errorNetwork,
+        title: 'Oops! Something went wrong',
+        message: 'Check your internet connection and try again.',
+        buttonText: 'Retry',
+        onButtonPressed: () {
+          ref.invalidate(filteredSearchCollectionsProvider);
+          ref.invalidate(_allItemsForSearchProvider);
+        },
       ),
     );
   }
@@ -213,16 +290,12 @@ class _SearchCollectionsScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          onTap: () => context.pop(),
-          child: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
-        ),
         Text(
           'Search',
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
         IconButton(
           onPressed: () {
@@ -308,13 +381,13 @@ class _SearchCollectionsScreenState
         fillColor: theme.inputDecorationTheme.fillColor ??
             theme.colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(_radiusPill),
             borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(_radiusPill),
             borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(_radiusPill),
             borderSide: BorderSide.none),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

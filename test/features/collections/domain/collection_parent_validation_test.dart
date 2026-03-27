@@ -17,33 +17,65 @@ Collection _col(String id, {String? parentId}) {
 }
 
 void main() {
-  test('S56-U-02: root parent is valid', () {
+  test('library root (sole null parent) may have null proposed parent', () {
+    final lib = _col('lib-id');
     expect(
       validateCollectionParentAssignment(
-        editingCollectionId: 'a',
+        editingCollectionId: 'lib-id',
         proposedParentId: null,
-        allCollections: [_col('a'), _col('b')],
+        allCollections: [lib],
       ),
       isNull,
     );
   });
 
+  test('nested folder cannot use null parent', () {
+    final lib = _col('lib-id');
+    final child = _col('a', parentId: 'lib-id');
+    expect(
+      validateCollectionParentAssignment(
+        editingCollectionId: 'a',
+        proposedParentId: null,
+        allCollections: [lib, child],
+      ),
+      isNotNull,
+    );
+  });
+
+  test('create requires explicit parent', () {
+    final lib = _col('lib-id');
+    expect(
+      validateCollectionParentAssignment(
+        editingCollectionId: null,
+        proposedParentId: null,
+        allCollections: [lib],
+      ),
+      isNotNull,
+    );
+  });
+
   test('S56-U-02: self parent invalid', () {
+    final lib = _col('lib-id');
     expect(
       validateCollectionParentAssignment(
         editingCollectionId: 'a',
         proposedParentId: 'a',
-        allCollections: [_col('a')],
+        allCollections: [lib, _col('a', parentId: 'lib-id')],
       ),
       isNotNull,
     );
   });
 
   test('S56-U-02: descendant parent invalid', () {
-    final all = [_col('root'), _col('a', parentId: 'root'), _col('b', parentId: 'a')];
+    final lib = _col('lib-id');
+    final all = [
+      lib,
+      _col('a', parentId: 'lib-id'),
+      _col('b', parentId: 'a'),
+    ];
     expect(
       validateCollectionParentAssignment(
-        editingCollectionId: 'root',
+        editingCollectionId: 'lib-id',
         proposedParentId: 'b',
         allCollections: all,
       ),

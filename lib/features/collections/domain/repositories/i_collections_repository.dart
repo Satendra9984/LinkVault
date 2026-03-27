@@ -14,4 +14,10 @@ abstract class ICollectionsRepository {
 
   /// Sets [Collection.lastAccessedAt] (and typically `updated_at` remotely).
   Future<Either<Failure, void>> recordCollectionAccess(String id);
+
+  /// Ensures a single library root exists (`parent_id` null). Idempotent.
+  ///
+  /// Migrates legacy multi–top-level trees by reparenting former roots under
+  /// a new library row. Repairs legacy item collection IDs when needed.
+  Future<Either<Failure, Collection>> ensureLibraryRootCollection();
 }

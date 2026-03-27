@@ -35,8 +35,7 @@ class CollectionFormNotifier extends AutoDisposeNotifier<CollectionFormState> {
     }
 
     AppLogger.d('[collections] form initialize load id=$collectionId');
-    final repo = ref.read(collectionsRepositoryProvider);
-    final result = await repo.getCollectionById(collectionId);
+    final result = await ref.read(getCollectionByIdUseCaseProvider).call(collectionId);
 
     await result.fold(
       (failure) async {
@@ -50,7 +49,7 @@ class CollectionFormNotifier extends AutoDisposeNotifier<CollectionFormState> {
           String? parentHint;
           final pid = collection.parentId?.trim();
           if (pid != null && pid.isNotEmpty) {
-            final allRes = await repo.getAllCollections();
+            final allRes = await ref.read(getAllCollectionsUseCaseProvider).call();
             parentHint = allRes.fold((_) => null, (list) {
               for (final c in list) {
                 if (c.id == pid) return c.title;
@@ -131,8 +130,11 @@ class CollectionFormNotifier extends AutoDisposeNotifier<CollectionFormState> {
     state = state.copyWith(iconName: iconName);
   }
 
-  void updateParentId(String? parentId) {
-    state = state.copyWith(parentId: parentId, parentTitleHint: null);
+  void updateParentId(String? parentId, {String? titleHint}) {
+    state = state.copyWith(
+      parentId: parentId,
+      parentTitleHint: titleHint,
+    );
   }
 
   void updatePinned(bool isPinned) {
@@ -211,8 +213,7 @@ class CollectionFormNotifier extends AutoDisposeNotifier<CollectionFormState> {
     state =
         state.copyWith(isSubmitting: true, errorMessage: null, fieldErrors: {});
 
-    final allResult =
-        await ref.read(collectionsRepositoryProvider).getAllCollections();
+    final allResult = await ref.read(getAllCollectionsUseCaseProvider).call();
     final parentErr = allResult.fold(
       (f) => f.message,
       (all) => validateCollectionParentAssignment(
@@ -236,8 +237,8 @@ class CollectionFormNotifier extends AutoDisposeNotifier<CollectionFormState> {
     final openIn = CollectionOpenLinksIn.normalize(state.openLinksIn);
 
     if (existingCollectionId != null) {
-      final repo = ref.read(collectionsRepositoryProvider);
-      final result = await repo.getCollectionById(existingCollectionId);
+      final result =
+          await ref.read(getCollectionByIdUseCaseProvider).call(existingCollectionId);
 
       await result.fold((l) async {
         AppLogger.e('[collections] form submit get existing failed: ${l.message}');

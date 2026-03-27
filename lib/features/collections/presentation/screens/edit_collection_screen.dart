@@ -6,11 +6,13 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../providers/collections_providers.dart';
+import '../providers/collections_hub_notifier.dart';
 import '../providers/forms/collection_form_notifier.dart';
 import '../widgets/collection_category_sheet.dart';
 import '../widgets/collection_color_sheet.dart';
 import '../widgets/collection_extended_fields_section.dart';
 import '../../../items/presentation/providers/items_providers.dart';
+import '../../../items/presentation/providers/items_hub_notifier.dart';
 import '../../domain/collection_parent_validation.dart';
 import '../../domain/entities/collection.dart';
 
@@ -36,14 +38,17 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
-        ref
-            .read(collectionsRepositoryProvider)
-            .recordCollectionAccess(widget.collectionId);
+        await ref
+            .read(collectionsHubNotifierProvider.notifier)
+            .recordAccess(widget.collectionId);
         ref
             .read(collectionFormNotifierProvider.notifier)
             .initialize(widget.collectionId);
+        await ref
+            .read(itemsNotifierProvider(widget.collectionId).notifier)
+            .ensureUrlsLoaded();
       }
     });
   }
@@ -69,6 +74,10 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
     final state = ref.watch(collectionFormNotifierProvider);
     final notifier = ref.read(collectionFormNotifierProvider.notifier);
     final collectionsAsync = ref.watch(collectionsListProvider);
+    final libraryRootAsync = ref.watch(libraryRootCollectionProvider);
+    final libraryRootId = libraryRootAsync.valueOrNull?.id;
+    final isLibraryRoot =
+        libraryRootId != null && widget.collectionId == libraryRootId;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -113,7 +122,7 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                         color: theme.colorScheme.primary),
                   ),
                   Text(
-                    'Edit list',
+                    'Edit collection',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -345,50 +354,89 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          GestureDetector(
-                            onTap: () => _showParentPicker(context,
-                                collectionsAsync, state.parentId, notifier),
-                            child: Container(
+                          if (isLibraryRoot)
+                            Container(
+                              width: double.infinity,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 16),
                               decoration: BoxDecoration(
                                 color: inputBgColor,
                                 borderRadius: BorderRadius.circular(24),
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Parent collection',
-                                          style: TextStyle(
-                                              color: theme.colorScheme
-                                                  .onSurfaceVariant,
-                                              fontSize: 12)),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        state.parentId == null
-                                            ? 'Root (Home)'
-                                            : (state.parentTitleHint !=
-                                                        null &&
-                                                    state.parentTitleHint!
-                                                        .isNotEmpty
-                                                ? state.parentTitleHint!
-                                                : 'Nested folder'),
-                                        style: TextStyle(
-                                            color: textColor, fontSize: 16),
-                                      ),
-                                    ],
+                                  Text(
+                                    'Parent collection',
+                                    style: TextStyle(
+                                      color: theme
+                                          .colorScheme.onSurfaceVariant,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                  Icon(Icons.keyboard_arrow_down,
-                                      color: theme.colorScheme.primary),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Top-level (${libraryRootAsync.valueOrNull?.title ?? 'Library'})',
+                                    style: TextStyle(
+                                        color: textColor, fontSize: 16),
+                                  ),
                                 ],
                               ),
+                            )
+                          else
+                            GestureDetector(
+                              onTap: () => _showParentPicker(
+                                context,
+                                collectionsAsync,
+                                state.parentId,
+                                notifier,
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: inputBgColor,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Parent collection',
+                                            style: TextStyle(
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant,
+                                                fontSize: 12)),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          (libraryRootId != null &&
+                                                  state.parentId ==
+                                                      libraryRootId)
+                                              ? (libraryRootAsync
+                                                      .valueOrNull?.title ??
+                                                  'Library')
+                                              : (state.parentTitleHint !=
+                                                          null &&
+                                                      state.parentTitleHint!
+                                                          .isNotEmpty
+                                                  ? state.parentTitleHint!
+                                                  : 'Nested folder'),
+                                          style: TextStyle(
+                                              color: textColor,
+                                              fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
+                                    Icon(Icons.keyboard_arrow_down,
+                                        color: theme.colorScheme.primary),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 32),
 
                           // Shared Toggle — hidden until Sprint 10 social features ship
@@ -430,8 +478,42 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                           ),
 
                           const SizedBox(height: 32),
-                          const Divider(),
-                          const SizedBox(height: 16),
+                          if (!isLibraryRoot) ...[
+                            const Divider(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Danger zone',
+                              style: TextStyle(
+                                color: theme.colorScheme.error,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Deleting this collection will also delete all nested subfolders and links inside them.',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 13,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _deleteCollection,
+                                icon: const Icon(Icons.delete_outline),
+                                label: const Text('Delete collection'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.error,
+                                  side:
+                                      BorderSide(color: theme.colorScheme.error),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           _buildItemsManagementSection(context),
                         ],
                       ),
@@ -569,14 +651,16 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
           TextButton(
             onPressed: () async {
               context.pop();
-              final deleteUseCase = ref.read(deleteItemUseCaseProvider);
               for (final id in _selectedItems) {
-                await deleteUseCase.call(id);
+                await ref.read(itemsHubNotifierProvider.notifier).deleteItem(
+                      collectionId: widget.collectionId,
+                      itemId: id,
+                    );
               }
               setState(() {
                 _selectedItems.clear();
               });
-              ref
+              await ref
                   .read(itemsNotifierProvider(widget.collectionId).notifier)
                   .refresh();
             },
@@ -614,15 +698,17 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Collection?'),
-        content: const Text('This cannot be undone.'),
+        content: const Text(
+          'This cannot be undone. All child collections and links under this collection will be permanently deleted.',
+        ),
         actions: [
           TextButton(
               onPressed: () => context.pop(), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               ref
-                  .read(deleteCollectionUseCaseProvider)
-                  .call(widget.collectionId);
+                  .read(collectionsHubNotifierProvider.notifier)
+                  .deleteCollection(widget.collectionId);
               context.pop(); // dialog
               context.pop(); // screen
             },
@@ -633,7 +719,7 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
     );
   }
 
-  void _showIconPicker(BuildContext context, dynamic notifier) {
+  void _showIconPicker(BuildContext context, CollectionFormNotifier notifier) {
     final icons = AppCategories.allPickerEmojis;
     showModalBottomSheet(
       context: context,
@@ -661,13 +747,17 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
     );
   }
 
-  void _showParentPicker(BuildContext context, AsyncValue<List<Collection>> data,
-      String? selectedParentId, dynamic notifier) {
+  Future<void> _showParentPicker(BuildContext context,
+      AsyncValue<List<Collection>> data, String? selectedParentId,
+      CollectionFormNotifier notifier) async {
     final collections = data.valueOrNull ?? const <Collection>[];
     final excluded = excludedParentIdsForEditing(
       editingId: widget.collectionId,
       allCollections: collections,
     );
+    final root = await ref.read(libraryRootCollectionProvider.future);
+    if (!context.mounted) return;
+    final rootId = root.id;
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -676,17 +766,19 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.home_outlined),
-              title: const Text('Root (Home)'),
-              trailing: selectedParentId == null
+              title: Text(root.title),
+              trailing: selectedParentId == rootId
                   ? const Icon(Icons.check, color: Colors.green)
                   : null,
               onTap: () {
-                notifier.updateParentId(null);
+                notifier.updateParentId(rootId, titleHint: root.title);
                 context.pop();
               },
             ),
             ...collections
-                .where((collection) => !excluded.contains(collection.id))
+                .where((collection) =>
+                    !excluded.contains(collection.id) &&
+                    collection.id != rootId)
                 .map((collection) => ListTile(
                       leading: Text(collection.iconName),
                       title: Text(collection.title),
@@ -695,7 +787,8 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                           ? const Icon(Icons.check, color: Colors.green)
                           : null,
                       onTap: () {
-                        notifier.updateParentId(collection.id);
+                        notifier.updateParentId(collection.id,
+                            titleHint: collection.title);
                         context.pop();
                       },
                     )),

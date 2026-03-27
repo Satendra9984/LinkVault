@@ -8,12 +8,15 @@ class CollectionCard extends StatelessWidget {
   final Collection collection;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  /// Tighter padding and typography for compact grids (e.g. nested unified screen).
+  final bool compact;
 
   const CollectionCard({
     super.key,
     required this.collection,
     required this.onTap,
     required this.onLongPress,
+    this.compact = false,
   });
 
   @override
@@ -53,7 +56,7 @@ class CollectionCard extends StatelessWidget {
                 ]
               : null,
         ),
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(compact ? 12.0 : 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -64,7 +67,7 @@ class CollectionCard extends StatelessWidget {
                 // Shared indicator on the top-left
                 if (collection.isShared)
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(compact ? 4 : 6),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
@@ -77,8 +80,8 @@ class CollectionCard extends StatelessWidget {
 
                 // Category icon on the top-right
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: compact ? 32 : 40,
+                  height: compact ? 32 : 40,
                   decoration: BoxDecoration(
                     color: noCover
                         ? theme.colorScheme.surfaceContainerHighest
@@ -97,7 +100,7 @@ class CollectionCard extends StatelessWidget {
                     child: noCover
                         ? Text(
                             collection.iconName,
-                            style: const TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: compact ? 16 : 20),
                           )
                         : ColorFiltered(
                             colorFilter: ColorFilter.mode(
@@ -108,7 +111,7 @@ class CollectionCard extends StatelessWidget {
                             ),
                             child: Text(
                               collection.iconName,
-                              style: const TextStyle(fontSize: 20),
+                              style: TextStyle(fontSize: compact ? 16 : 20),
                             ),
                           ),
                   ),
@@ -119,7 +122,7 @@ class CollectionCard extends StatelessWidget {
             Text(
               collection.title,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: compact ? 13 : 15,
                 fontWeight: FontWeight.w700, 
                 color: theme.colorScheme.onSurface,
               ),
@@ -130,7 +133,7 @@ class CollectionCard extends StatelessWidget {
             Text(
               collectionSummarySubtitle(collection),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: compact ? 10 : 12,
                 fontWeight: FontWeight.w600,
                 color: isDarkMode && !noCover && parsed != null
                     ? accent

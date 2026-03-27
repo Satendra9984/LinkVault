@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_content.dart';
 import '../widgets/onboarding_controls.dart';
@@ -35,9 +36,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _completeOnboarding(OnboardingNotifier notifier) async {
     await notifier.completeOnboarding();
     if (mounted) {
-      // Always navigate to the Welcome/Auth screen after onboarding.
-      // The router redirect will automatically push already-authenticated
-      // users to '/' so no double-redirect occurs.
       context.go('/auth/welcome');
     }
   }
@@ -46,40 +44,56 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final onboardingState = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      // backgroundColor: Colors.white, // REMOVED: Respect theme
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Skip Button
-            Align(
-              alignment: Alignment.topRight,
+            // ── Main column: slides + controls ─────────────────────────────
+            Column(
+              children: [
+                // Reserve space for the Skip button row
+                const SizedBox(height: 48),
+
+                // Slides
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: onboardingState.slides.length,
+                    onPageChanged: notifier.updatePage,
+                    itemBuilder: (context, index) => OnboardingContent(
+                      data: onboardingState.slides[index],
+                    ),
+                  ),
+                ),
+
+                // Controls (dot indicator + CTA button)
+                OnboardingControls(
+                  currentPage: onboardingState.currentPage,
+                  totalPages: onboardingState.slides.length,
+                  onNextPressed: () =>
+                      _onNextPressed(notifier, onboardingState),
+                ),
+              ],
+            ),
+
+            // ── Skip button – fixed top-right ──────────────────────────────
+            Positioned(
+              top: 4,
+              right: 8,
               child: TextButton(
                 onPressed: () => _completeOnboarding(notifier),
-                child: const Text('Skip'),
+                child: Text(
+                  'Skip',
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
               ),
-            ),
-
-            // Content
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: onboardingState.slides.length,
-                onPageChanged: (index) {
-                  notifier.updatePage(index);
-                },
-                itemBuilder: (context, index) {
-                  return OnboardingContent(data: onboardingState.slides[index]);
-                },
-              ),
-            ),
-
-            // Controls
-            OnboardingControls(
-              currentPage: onboardingState.currentPage,
-              totalPages: onboardingState.slides.length,
-              onNextPressed: () => _onNextPressed(notifier, onboardingState),
             ),
           ],
         ),

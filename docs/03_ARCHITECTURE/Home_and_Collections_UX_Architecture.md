@@ -4,7 +4,7 @@ Version: 1.2
 Last Updated: 2026-03-25  
 Status: Active  
 Owner: Product + Engineering  
-Depends On: [Technical_Architecture.md](./Technical_Architecture.md), [Developer_Bible.md](./Developer_Bible.md), [Collections extended schema (Sprint 5–6)](../09_SPRINT_ARCHITECTURE/SPRINT_5_6_COLLECTIONS/Collections_Extended_Schema_and_UX_Fields.md), [Supabase_Schema_and_Migrations.md](../04_DATA_AND_MIGRATION/Supabase_Schema_and_Migrations.md), [ADR_0003](../10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md)  
+Depends On: [Technical_Architecture.md](./Technical_Architecture.md), [Developer_Bible.md](./Developer_Bible.md), [Unified_Collections_Items_Root_Architecture.md](./Unified_Collections_Items_Root_Architecture.md), [Collections extended schema (Sprint 5–6)](../09_SPRINT_ARCHITECTURE/SPRINT_5_6_COLLECTIONS/Collections_Extended_Schema_and_UX_Fields.md), [Supabase_Schema_and_Migrations.md](../04_DATA_AND_MIGRATION/Supabase_Schema_and_Migrations.md), [ADR_0003](../10_DECISIONS_AND_RISKS/ADR_0003_Home_Landing_and_Folder_Content_Model.md)  
 Blocks: Home pinned/recent **URLs**, unified folder hub, shell navigation polish
 
 ---

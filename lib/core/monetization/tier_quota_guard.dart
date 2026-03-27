@@ -48,7 +48,13 @@ class TierQuotaGuard {
     final max = _maxCollections(user);
     final result = await collectionsRepo.getAllCollections();
     return result.fold(Left.new, (list) {
-      final n = list.where((c) => !c.isDeleted).length;
+      // Exclude the persisted library root (sole `parent_id` null row).
+      final n = list
+          .where((c) =>
+              !c.isDeleted &&
+              c.parentId != null &&
+              c.parentId!.trim().isNotEmpty)
+          .length;
       if (n >= max) {
         return Left(
           ValidationFailure(
