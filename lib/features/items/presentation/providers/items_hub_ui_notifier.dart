@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/unified_collection_sheets.dart';
+import 'items_list_models.dart';
 import 'items_hub_ui_state.dart';
 
 class ItemsHubUiNotifier

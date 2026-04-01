@@ -10,6 +10,7 @@ import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/presentation/widgets/empty_state_view.dart';
+import '../../../../core/presentation/widgets/day_pass_gate.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../data/models/search_history_model.dart';
 import '../../../items/domain/entities/item.dart';
@@ -413,7 +414,9 @@ class _SearchCollectionsScreenState
           final collection = collections[index];
           return CollectionCard(
             collection: collection,
-            onTap: () {
+            onTap: () async {
+              final ok = await DayPassGate.check(context, ref);
+              if (!ok || !context.mounted) return;
               ref
                   .read(searchNotifierProvider.notifier)
                   .submitQuery(ref.read(searchNotifierProvider).query);
@@ -433,7 +436,9 @@ class _SearchCollectionsScreenState
           final collection = collections[index];
           return CollectionListTile(
             collection: collection,
-            onTap: () {
+            onTap: () async {
+              final ok = await DayPassGate.check(context, ref);
+              if (!ok || !context.mounted) return;
               ref
                   .read(searchNotifierProvider.notifier)
                   .submitQuery(ref.read(searchNotifierProvider).query);
@@ -453,14 +458,16 @@ class _SearchCollectionsScreenState
       String collectionId, bool isPremium) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Column(
+      builder: (sheetContext) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
             leading: const Icon(Icons.edit),
             title: const Text('Edit'),
-            onTap: () {
-              context.pop();
+            onTap: () async {
+              Navigator.of(sheetContext).pop();
+              final ok = await DayPassGate.check(context, ref);
+              if (!ok || !context.mounted) return;
               context.push('/collections/$collectionId/edit');
             },
           ),
@@ -469,7 +476,7 @@ class _SearchCollectionsScreenState
               leading: const Icon(Icons.share),
               title: const Text('Share Options'),
               onTap: () {
-                context.pop();
+                Navigator.of(sheetContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text(
                         'Advanced sharing coming in Sprint 10.')));
@@ -480,7 +487,7 @@ class _SearchCollectionsScreenState
             title:
                 const Text('Delete', style: TextStyle(color: Colors.red)),
             onTap: () {
-              context.pop();
+              Navigator.of(sheetContext).pop();
               _confirmDelete(context, ref, collectionId);
             },
           ),

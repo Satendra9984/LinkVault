@@ -29,6 +29,7 @@ class ItemMapper {
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
       collectionId: model.collectionUid,
+      openLinksInOverride: model.openLinksInOverride,
     );
   }
 
@@ -46,6 +47,7 @@ class ItemMapper {
       ..status = entity.status
       ..position = entity.position
       ..collectionUid = entity.collectionId
+      ..openLinksInOverride = entity.openLinksInOverride
       ..createdAt = entity.createdAt
       ..updatedAt = entity.updatedAt
       ..isPinned = entity.isPinned

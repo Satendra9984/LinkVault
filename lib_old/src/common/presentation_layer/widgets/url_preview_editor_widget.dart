@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -22,6 +23,10 @@ import 'package:link_vault/core/utils/string_utils.dart';
 import 'package:link_vault/src/rss_feeds/presentation/widgets/imagefile_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../../../core/res/colours.dart';
+import '../../../../core/utils/string_utils.dart';
+import 'network_image_builder_widget.dart';
 
 class URLPreviewEditorWidget extends StatefulWidget {
   const URLPreviewEditorWidget({
@@ -1127,24 +1132,13 @@ class _URLPreviewEditorWidgetState extends State<URLPreviewEditorWidget> {
                     } else {
                       // Logger.printLog('itspng or other');
 
-                      return Image.network(
-                        imageUrl,
+                      return CachedNetworkImage(
+                        imageUrl: imageUrl,
                         fit: BoxFit.contain,
-                        frameBuilder: (ctx, imageWidget, frame, _) {
-                          if (frame == null) {
-                            return const SizedBox.shrink();
-                          }
-                          return GestureDetector(
-                            onTap: () {
-                              callBack(imageUrl);
-                              Navigator.pop(context);
-                            },
-                            child: imageWidget,
-                          );
-                        },
-                        errorBuilder: (ctx, _, __) {
-                          return const Icon(Icons.broken_image, size: 50);
-                        },
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.broken_image, size: 50),
                       );
                     }
                   },

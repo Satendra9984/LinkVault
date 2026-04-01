@@ -5,7 +5,9 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/supabase_quota_messages.dart';
 import '../mappers/supabase_item_mapper.dart';
 import '../../domain/entities/item.dart';
+import '../../domain/models/url_items_query.dart';
 import '../../domain/repositories/i_items_repository.dart';
+import '../../domain/url_sort_option.dart';
 
 class SupabaseItemsRepository implements IItemsRepository {
   final SupabaseClient _supabase;
@@ -13,6 +15,119 @@ class SupabaseItemsRepository implements IItemsRepository {
 
   SupabaseItemsRepository(this._supabase, {String? userId})
       : _userId = userId ?? _supabase.auth.currentUser?.id;
+
+  static String _escapeIlikePattern(String raw) {
+    return raw
+        .replaceAll(r'\', r'\\')
+        .replaceAll('%', r'\%')
+        .replaceAll('_', r'\_')
+        .replaceAll(',', r'\,');
+  }
+
+  static String _lvStatusString(ItemStatus s) => switch (s) {
+        ItemStatus.unread => 'unread',
+        ItemStatus.read => 'read',
+        ItemStatus.archived => 'archived',
+      };
+
+  @override
+  Future<Either<Failure, UrlItemsPage>> queryUrlItems(UrlItemsQuery q) async {
+    try {
+      dynamic builder = _supabase.from('lv_urls').select();
+      builder =
+          builder.eq('collection_id', q.collectionId).eq('is_deleted', false);
+
+      if (q.status != null) {
+        builder = builder.eq('status', _lvStatusString(q.status!));
+      }
+      if (q.pinnedOnly) {
+        builder = builder.eq('is_pinned', true);
+      }
+      if (q.withDescriptionOnly) {
+        // Row has user-visible text if webpage summary or notes exist.
+        builder = builder.or(
+          'and(description.not.is.null,description.neq.),and(annotation.not.is.null,annotation.neq.)',
+        );
+      }
+      if (q.withImageOnly) {
+        builder = builder
+            .not('thumbnail_url', 'is', null)
+            .filter('thumbnail_url', 'neq', '');
+      }
+      final domain = q.domainContains.trim();
+      if (domain.isNotEmpty) {
+        final esc = _escapeIlikePattern(domain);
+        builder = builder.ilike('url', '%$esc%');
+      }
+      if (q.savedAfter != null) {
+        builder = builder.gte('created_at', q.savedAfter!.toIso8601String());
+      }
+      if (q.savedBefore != null) {
+        builder = builder.lte('created_at', q.savedBefore!.toIso8601String());
+      }
+      final search = q.searchQuery.trim();
+      if (search.isNotEmpty) {
+        final esc = _escapeIlikePattern(search);
+        final p = '%$esc%';
+        builder = builder.or('title.ilike.$p,url.ilike.$p');
+      }
+
+      builder = _applyUrlSort(builder, q.sort);
+
+      final limit = q.limit;
+      final offset = q.offset;
+      builder = builder.range(offset, offset + limit - 1);
+
+      final response = await builder as List<dynamic>;
+      final items =
+          response
+              .map((e) => SupabaseItemMapper.fromRow(e as Map<String, dynamic>))
+              .toList();
+      final hasMore = items.length == limit;
+      return Right(UrlItemsPage(items: items, hasMore: hasMore));
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) {
+        return Left(authFailure);
+      }
+      return Left(
+        NetworkFailure(
+          'Failed to query items',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  dynamic _applyUrlSort(dynamic builder, UrlSortOption sort) {
+    switch (sort) {
+      case UrlSortOption.position:
+        return builder
+            .order('position', ascending: true)
+            .order('id', ascending: true);
+      case UrlSortOption.dateAdded:
+        return builder
+            .order('created_at', ascending: false)
+            .order('id', ascending: false);
+      case UrlSortOption.dateEdited:
+        return builder
+            .order('updated_at', ascending: false)
+            .order('id', ascending: false);
+      case UrlSortOption.mostVisited:
+        return builder
+            .order('click_count', ascending: false)
+            .order('id', ascending: false);
+      case UrlSortOption.alphabeticalAsc:
+        return builder
+            .order('title', ascending: true)
+            .order('id', ascending: true);
+      case UrlSortOption.alphabeticalDesc:
+        return builder
+            .order('title', ascending: false)
+            .order('id', ascending: false);
+    }
+  }
 
   @override
   Future<Either<Failure, void>> createItem(Item item) async {
@@ -46,8 +161,7 @@ class SupabaseItemsRepository implements IItemsRepository {
       await _supabase.from('lv_urls').insert(data);
       return const Right(null);
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -71,8 +185,7 @@ class SupabaseItemsRepository implements IItemsRepository {
       }).eq('id', id);
       return const Right(null);
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -103,8 +216,7 @@ class SupabaseItemsRepository implements IItemsRepository {
 
       await _supabase
           .from('lv_urls')
-          .update({'is_pinned': newPinned})
-          .eq('id', id);
+          .update({'is_pinned': newPinned}).eq('id', id);
       return const Right(null);
     } catch (e, stackTrace) {
       final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
@@ -142,8 +254,7 @@ class SupabaseItemsRepository implements IItemsRepository {
 
       await _supabase
           .from('lv_urls')
-          .update({'status': newStatus})
-          .eq('id', id);
+          .update({'status': newStatus}).eq('id', id);
 
       return const Right(null);
     } catch (e, stackTrace) {
@@ -179,10 +290,10 @@ class SupabaseItemsRepository implements IItemsRepository {
         return const Right(null);
       }
 
+      // Omit last_accessed_at to reduce cloud write cost (status/click still update).
       await _supabase.from('lv_urls').update({
         'status': 'read',
         'click_count': clickCount + 1,
-        'last_accessed_at': DateTime.now().toIso8601String(),
       }).eq('id', id);
 
       return const Right(null);
@@ -230,9 +341,7 @@ class SupabaseItemsRepository implements IItemsRepository {
 
       if (updates.isEmpty) return const Right(null);
 
-      await _supabase
-          .from('lv_urls')
-          .upsert(updates, onConflict: 'id');
+      await _supabase.from('lv_urls').upsert(updates, onConflict: 'id');
       return const Right(null);
     } catch (e, stackTrace) {
       final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
@@ -250,18 +359,16 @@ class SupabaseItemsRepository implements IItemsRepository {
   @override
   Future<Either<Failure, Item?>> getItem(String id) async {
     try {
-      final response =
-          await _supabase
-              .from('lv_urls')
-              .select()
-              .eq('id', id)
-              .eq('is_deleted', false)
-              .maybeSingle();
+      final response = await _supabase
+          .from('lv_urls')
+          .select()
+          .eq('id', id)
+          .eq('is_deleted', false)
+          .maybeSingle();
       if (response == null) return const Right(null);
-      return Right(_fromMap(response));
+      return Right(SupabaseItemMapper.fromRow(response));
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -281,30 +388,14 @@ class SupabaseItemsRepository implements IItemsRepository {
     int limit,
     int offset,
   ) async {
-    try {
-      final response = await _supabase
-          .from('lv_urls')
-          .select()
-          .eq('collection_id', collectionId)
-          .eq('is_deleted', false)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
-      final items = response.map((data) => _fromMap(data)).toList();
-      return Right(items);
-    } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
-      if (authFailure != null) {
-        return Left(authFailure);
-      }
-      return Left(
-        NetworkFailure(
-          'Failed to get items',
-          error: e,
-          stackTrace: stackTrace,
-        ),
-      );
-    }
+    final page = await queryUrlItems(
+      UrlItemsQuery(
+        collectionId: collectionId,
+        limit: limit,
+        offset: offset,
+      ),
+    );
+    return page.map((p) => p.items);
   }
 
   @override
@@ -336,8 +427,7 @@ class SupabaseItemsRepository implements IItemsRepository {
       await _supabase.from('lv_urls').update(data).eq('id', item.id);
       return const Right(null);
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -366,8 +456,7 @@ class SupabaseItemsRepository implements IItemsRepository {
       }).eq('id', id);
       return const Right(null);
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -389,21 +478,19 @@ class SupabaseItemsRepository implements IItemsRepository {
         return const Left(NetworkFailure('User not authenticated'));
       }
 
-      final response =
-          await _supabase
-              .from('lv_urls')
-              .select()
-              .eq('owner_id', userId)
-              .eq('is_deleted', false);
+      final response = await _supabase
+          .from('lv_urls')
+          .select()
+          .eq('owner_id', userId)
+          .eq('is_deleted', false);
 
       final items = (response as List<dynamic>)
-          .map((data) => _fromMap(data as Map<String, dynamic>))
+          .map((data) => SupabaseItemMapper.fromRow(data as Map<String, dynamic>))
           .toList();
 
       return Right(items);
     } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
       if (authFailure != null) {
         return Left(authFailure);
       }
@@ -412,55 +499,4 @@ class SupabaseItemsRepository implements IItemsRepository {
     }
   }
 
-  Item _fromMap(Map<String, dynamic> map) {
-    final lvStatus = map['status'] as String?;
-    final mappedStatus = switch (lvStatus) {
-      'unread' => ItemStatus.unread,
-      'read' => ItemStatus.read,
-      'archived' => ItemStatus.archived,
-      _ => ItemStatus.unread,
-    };
-
-    final webDescription = map['description'] as String?;
-    final annotationNotes = map['annotation'] as String?;
-
-    // Back-compat:
-    // Older rows written by Curate-era code stored notes under `annotation`
-    // and left `description` null.
-    final mappedDescription = webDescription ?? annotationNotes;
-
-    final publishedAt = map['published_at'] as String?;
-    final lastAccessedAt = map['last_accessed_at'] as String?;
-    final deletedAt = map['deleted_at'] as String?;
-
-    return Item(
-      id: map['id'],
-      ownerId: map['owner_id'],
-      title: map['title'],
-      // Extracted webpage summary (with fallback to notes for older rows).
-      description: mappedDescription,
-      imagePath: null,
-      imageUrl: map['thumbnail_url'],
-      link: map['url'],
-      // User notes.
-      annotation: annotationNotes,
-      tags: map['tags'],
-      status: mappedStatus,
-      position: (map['position'] as num?)?.toDouble() ?? 0.0,
-      createdAt: DateTime.parse(map['created_at']),
-      updatedAt: DateTime.parse(map['updated_at']),
-      collectionId: map['collection_id'],
-      faviconUrl: map['favicon_url'] as String?,
-      dominantColor: map['dominant_color'] as String?,
-      isPinned: map['is_pinned'] as bool? ?? false,
-      clickCount: map['click_count'] as int? ?? 0,
-      lastAccessedAt: lastAccessedAt == null ? null : DateTime.parse(lastAccessedAt),
-      isDeleted: map['is_deleted'] as bool? ?? false,
-      deletedAt: deletedAt == null ? null : DateTime.parse(deletedAt),
-      siteName: map['site_name'] as String?,
-      canonicalUrl: map['canonical_url'] as String?,
-      contentType: map['content_type'] as String?,
-      publishedAt: publishedAt == null ? null : DateTime.parse(publishedAt),
-    );
-  }
 }

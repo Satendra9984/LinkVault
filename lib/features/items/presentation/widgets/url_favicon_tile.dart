@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/item.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UrlFaviconTile extends StatelessWidget {
   const UrlFaviconTile({
@@ -66,13 +67,15 @@ class UrlFaviconTile extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: Image.network(
-          _faviconUrl(normalized),
+        child: CachedNetworkImage(
+          imageUrl: _faviconUrl(normalized),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => fallback,
+          placeholder: (context, url) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorWidget: (context, url, error) => fallback,
         ),
       ),
     );
   }
 }
-

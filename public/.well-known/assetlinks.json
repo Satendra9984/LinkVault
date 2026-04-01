@@ -5,7 +5,7 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.example.link_vault",
+      "package_name": "com.vicharshala.link_vault",
       "sha256_cert_fingerprints": [
         "7D:CF:EA:EC:67:E9:E7:06:59:1B:02:FB:F3:99:A5:D5:BF:B5:E7:57:B9:5F:EA:5F:65:C3:86:82:90:59:0D:8C"
       ]

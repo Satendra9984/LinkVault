@@ -18,6 +18,13 @@ import '../../domain/usecases/get_collection_by_id_usecase.dart';
 import '../../domain/usecases/record_collection_access_usecase.dart';
 import '../../domain/usecases/update_collection_position_usecase.dart';
 
+/// Always reads/writes **local ObjectBox** (ignores cloud routing).
+/// Used for guest → account migration so uploads always come from device data.
+final localCollectionsRepositoryProvider =
+    Provider<ICollectionsRepository>((ref) {
+  return CollectionsRepositoryImpl(ref.watch(appDatabaseProvider).store);
+});
+
 // Repository selector — ADR-0002 aligned:
 // - Guest: local ObjectBox only.
 // - Authenticated + online: Supabase when free, or premium after migration.

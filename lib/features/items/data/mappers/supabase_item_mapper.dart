@@ -18,6 +18,55 @@ class SupabaseItemMapper {
     return 'https://www.google.com/s2/favicons?sz=64&domain_url=$normalized';
   }
 
+  /// Parse a `lv_urls` row from PostgREST into a domain [Item].
+  static Item fromRow(Map<String, dynamic> map) {
+    final lvStatus = map['status'] as String?;
+    final mappedStatus = switch (lvStatus) {
+      'unread' => ItemStatus.unread,
+      'read' => ItemStatus.read,
+      'archived' => ItemStatus.archived,
+      _ => ItemStatus.unread,
+    };
+
+    final webDescription = map['description'] as String?;
+    final annotationNotes = map['annotation'] as String?;
+    final mappedDescription = webDescription ?? annotationNotes;
+
+    final publishedAt = map['published_at'] as String?;
+    final lastAccessedAt = map['last_accessed_at'] as String?;
+    final deletedAt = map['deleted_at'] as String?;
+
+    return Item(
+      id: map['id']?.toString() ?? '',
+      ownerId: map['owner_id']?.toString(),
+      title: map['title'] as String? ?? '',
+      description: mappedDescription,
+      imagePath: null,
+      imageUrl: map['thumbnail_url'] as String?,
+      link: map['url'] as String?,
+      annotation: annotationNotes,
+      tags: map['tags'] as String?,
+      status: mappedStatus,
+      position: (map['position'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: DateTime.parse(map['updated_at'] as String),
+      collectionId: map['collection_id']?.toString() ?? '',
+      faviconUrl: map['favicon_url'] as String?,
+      dominantColor: map['dominant_color'] as String?,
+      isPinned: map['is_pinned'] as bool? ?? false,
+      clickCount: map['click_count'] as int? ?? 0,
+      lastAccessedAt:
+          lastAccessedAt == null ? null : DateTime.parse(lastAccessedAt),
+      isDeleted: map['is_deleted'] as bool? ?? false,
+      deletedAt: deletedAt == null ? null : DateTime.parse(deletedAt),
+      siteName: map['site_name'] as String?,
+      canonicalUrl: map['canonical_url'] as String?,
+      contentType: map['content_type'] as String?,
+      publishedAt: publishedAt == null ? null : DateTime.parse(publishedAt),
+      openLinksInOverride: map['open_links_in_override'] as String?,
+    );
+  }
+
   static String _toLvStatus(ItemStatus status) {
     // Temporary mapping until domain entity is fully aligned in a later todo.
     return switch (status) {
@@ -75,14 +124,15 @@ class SupabaseItemMapper {
       'canonical_url': entity.canonicalUrl,
       'content_type': entity.contentType,
       'published_at': entity.publishedAt?.toIso8601String(),
+      'open_links_in_override': entity.openLinksInOverride,
     };
   }
 
   /// JSON payload for `public.lv_urls` UPDATE.
   ///
-  /// IMPORTANT: Counters (`click_count`), analytics (`last_accessed_at`) and
-  /// pin state (`is_pinned`) are intentionally omitted here so that specialized
-  /// repository methods can update them atomically.
+  /// IMPORTANT: Counters (`click_count`) and analytics (`last_accessed_at`)
+  /// are omitted so specialized repository methods can update them atomically.
+  /// `is_pinned` and `open_links_in_override` are included for form saves.
   static Map<String, dynamic> toUpdateJson(
     Item entity, {
     String? uploadedImageUrl,
@@ -118,6 +168,12 @@ class SupabaseItemMapper {
 
       // Timestamps
       'updated_at': entity.updatedAt.toIso8601String(),
+
+      // Per-URL open behavior (nullable = inherit collection)
+      'open_links_in_override': entity.openLinksInOverride,
+
+      // Form/edit screen may update pin alongside other fields
+      'is_pinned': entity.isPinned,
     };
   }
 }

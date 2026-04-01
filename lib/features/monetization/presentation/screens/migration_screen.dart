@@ -5,15 +5,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../../application/cloud_migration_service.dart';
 import '../../../../core/infrastructure/providers.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../collections/presentation/providers/collections_providers.dart';
 import '../../../items/presentation/providers/items_providers.dart';
+import '../../../sync/presentation/providers/sync_coordinator_provider.dart';
 
 final migrationServiceProvider = Provider<CloudMigrationService>((ref) {
   return CloudMigrationService(
     supabase: Supabase.instance.client,
     appDatabase: ref.watch(appDatabaseProvider),
-    localCollectionsRepo: ref.watch(collectionsRepositoryProvider),
-    localItemsRepo: ref.watch(itemsRepositoryProvider),
+    localCollectionsRepo: ref.watch(localCollectionsRepositoryProvider),
+    localItemsRepo: ref.watch(localItemsRepositoryProvider),
   );
 });
 
@@ -68,18 +70,20 @@ class _MigrationScreenState extends ConsumerState<MigrationScreen> {
 
     if (!mounted) return;
 
-    result.fold(
-      (failure) {
+    await result.fold(
+      (failure) async {
         setState(() {
           _isError = true;
           _status = 'Sync Failed: ${failure.message}';
         });
       },
-      (_) {
-        // Force Riverpod to refresh the entire graph and swap the Repo Providers
+      (_) async {
+        await ref
+            .read(appSettingsRepositoryProvider)
+            .setMigratedToCloud(value: true);
         ref.invalidate(collectionsListProvider);
-        // Go to Home
-        context.go('/splash');
+        ref.invalidate(syncCoordinatorProvider);
+        if (context.mounted) context.go('/splash');
       },
     );
   }

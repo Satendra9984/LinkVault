@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_categories.dart';
-import '../../../../core/config/app_config.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../providers/collections_providers.dart';
@@ -11,8 +10,6 @@ import '../providers/forms/collection_form_notifier.dart';
 import '../widgets/collection_category_sheet.dart';
 import '../widgets/collection_color_sheet.dart';
 import '../widgets/collection_extended_fields_section.dart';
-import '../../../items/presentation/providers/items_providers.dart';
-import '../../../items/presentation/providers/items_hub_notifier.dart';
 import '../../domain/collection_parent_validation.dart';
 import '../../domain/entities/collection.dart';
 
@@ -31,12 +28,10 @@ class EditCollectionScreen extends ConsumerStatefulWidget {
 
 class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
   final ScrollController _scrollController = ScrollController();
-  Set<String> _selectedItems = {};
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
@@ -46,27 +41,14 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
         ref
             .read(collectionFormNotifierProvider.notifier)
             .initialize(widget.collectionId);
-        await ref
-            .read(itemsNotifierProvider(widget.collectionId).notifier)
-            .ensureUrlsLoaded();
       }
     });
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      ref
-          .read(itemsNotifierProvider(widget.collectionId).notifier)
-          .fetchNextPage();
-    }
   }
 
   @override
@@ -114,26 +96,27 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
                     onTap: () => context.pop(),
-                    child: Icon(Icons.arrow_back,
-                        color: theme.colorScheme.primary),
-                  ),
-                  Text(
-                    'Edit collection',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
+                    child: SizedBox(
+                      width: 48,
+                      child: Icon(Icons.arrow_back,
+                          color: theme.colorScheme.primary),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => _showEditOptionsModal(context),
-                    child:
-                        Icon(Icons.more_vert, color: theme.colorScheme.primary),
+                  Expanded(
+                    child: Text(
+                      'Edit collection',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
                   ),
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -437,44 +420,42 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                                 ),
                               ),
                             ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 16),
 
-                          // Shared Toggle — hidden until Sprint 10 social features ship
-                          if (AppConfig.instance.isDev)
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text('Shared Collection',
-                                  style: TextStyle(
-                                      color: textColor,
-                                      fontWeight: FontWeight.bold)),
-                              subtitle: Text(
-                                  'Allow friends to view this collection',
-                                  style: TextStyle(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      fontSize: 12)),
-                              value: state.isShared,
-                              activeThumbColor: theme.colorScheme.primary,
-                              onChanged: notifier.updateShared,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: inputBgColor,
+                              borderRadius: BorderRadius.circular(24),
                             ),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text('Pin collection',
-                                style: TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.bold)),
-                            value: state.isPinned,
-                            activeThumbColor: theme.colorScheme.primary,
-                            onChanged: notifier.updatePinned,
-                          ),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text('Archive collection',
-                                style: TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.bold)),
-                            value: state.isArchived,
-                            activeThumbColor: theme.colorScheme.primary,
-                            onChanged: notifier.updateArchived,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SwitchListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 0),
+                                  title: Text('Pin collection',
+                                      style: TextStyle(
+                                          color: textColor,
+                                          fontWeight: FontWeight.bold)),
+                                  value: state.isPinned,
+                                  activeThumbColor: theme.colorScheme.primary,
+                                  onChanged: notifier.updatePinned,
+                                ),
+                                SwitchListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 0),
+                                  title: Text('Archive collection',
+                                      style: TextStyle(
+                                          color: textColor,
+                                          fontWeight: FontWeight.bold)),
+                                  value: state.isArchived,
+                                  activeThumbColor: theme.colorScheme.primary,
+                                  onChanged: notifier.updateArchived,
+                                ),
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 32),
@@ -514,7 +495,6 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          _buildItemsManagementSection(context),
                         ],
                       ),
                     ),
@@ -553,139 +533,6 @@ class _EditCollectionScreenState extends ConsumerState<EditCollectionScreen> {
                               fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemsManagementSection(BuildContext context) {
-    final itemsAsync = ref.watch(itemsNotifierProvider(widget.collectionId));
-
-    return itemsAsync.when(
-      data: (state) {
-        final items = state.items;
-        if (items.isEmpty) return const SizedBox();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Items (${items.length})',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                if (_selectedItems.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _confirmBatchDelete(context),
-                  )
-                else
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        if (_selectedItems.length == items.length) {
-                          _selectedItems.clear();
-                        } else {
-                          _selectedItems = items.map((e) => e.id).toSet();
-                        }
-                      });
-                    },
-                    child: Text(_selectedItems.length == items.length
-                        ? 'Deselect all'
-                        : 'Select all'),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final isSelected = _selectedItems.contains(item.id);
-                return CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: isSelected,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedItems.add(item.id);
-                      } else {
-                        _selectedItems.remove(item.id);
-                      }
-                    });
-                  },
-                  title: Text(item.title),
-                  subtitle: Text(item.status.name),
-                );
-              },
-            ),
-            if (state.isLoadingMore)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(child: CircularProgressIndicator()),
-              )
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Text('Error loading items: $e'),
-    );
-  }
-
-  void _confirmBatchDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Selected Items?'),
-        content: Text(
-            'Are you sure you want to delete ${_selectedItems.length} items? This cannot be undone.'),
-        actions: [
-          TextButton(
-              onPressed: () => context.pop(), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              context.pop();
-              for (final id in _selectedItems) {
-                await ref.read(itemsHubNotifierProvider.notifier).deleteItem(
-                      collectionId: widget.collectionId,
-                      itemId: id,
-                    );
-              }
-              setState(() {
-                _selectedItems.clear();
-              });
-              await ref
-                  .read(itemsNotifierProvider(widget.collectionId).notifier)
-                  .refresh();
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditOptionsModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete Collection',
-                  style: TextStyle(color: Colors.red)),
-              onTap: () {
-                context.pop();
-                _deleteCollection();
-              },
             ),
           ],
         ),

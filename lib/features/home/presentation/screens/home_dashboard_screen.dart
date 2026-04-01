@@ -1,19 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/presentation/widgets/content_state_widgets.dart';
 import '../../../../core/presentation/widgets/day_pass_gate.dart';
+import '../../../collections/domain/collection_display_defaults.dart';
 import '../../../collections/domain/entities/collection.dart';
 import '../../../collections/presentation/providers/collections_providers.dart';
-import '../../../collections/presentation/widgets/collection_list_tile.dart';
-import '../../../collections/presentation/widgets/collection_subtitle.dart';
+import '../../../collections/presentation/widgets/collection_card.dart';
+import '../../../items/domain/entities/item.dart';
+import '../../../items/domain/link_open_behavior.dart';
+import '../../../items/presentation/providers/items_providers.dart';
+import '../../../items/presentation/widgets/url_icon_link_tile.dart';
 
-/// Landing screen at `/` — Quick stats, pinned collections, quick-resume.
-/// Layout follows the wireframe spec:
-///   AppBar → Quick-stats strip → Quick-resume card → Pinned collections →
-///   Pinned links (coming sprint) → Recent links (coming sprint) → Recent collections.
+/// Responsive grid metrics (aligned with [ItemsListScreen] hub grids).
+class _HomeGridMetrics {
+  const _HomeGridMetrics({
+    required this.crossAxisCount,
+    required this.childAspectRatio,
+  });
+
+  final int crossAxisCount;
+  final double childAspectRatio;
+}
+
+_HomeGridMetrics _homePinnedFoldersGridMetrics(double innerWidth) {
+  const spacing = 16.0;
+  const minCell = 88.0;
+  var count = ((innerWidth + spacing) / (minCell + spacing)).floor();
+  count = count.clamp(2, 6);
+  final cellW = (innerWidth - spacing * (count - 1)) / count;
+  final targetH = cellW * 0.48 + 58;
+  var ratio = cellW / targetH;
+  ratio = ratio.clamp(0.82, 1.08);
+  return _HomeGridMetrics(
+    crossAxisCount: count,
+    childAspectRatio: ratio,
+  );
+}
+
+_HomeGridMetrics _homePinnedLinksIconsGridMetrics(double innerWidth) {
+  const spacing = 16.0;
+  const minCell = 92.0;
+  var count = ((innerWidth + spacing) / (minCell + spacing)).floor();
+  count = count.clamp(2, 6);
+  final cellW = (innerWidth - spacing * (count - 1)) / count;
+  const targetH = 118.0;
+  var ratio = cellW / targetH;
+  ratio = ratio.clamp(0.72, 1.05);
+  return _HomeGridMetrics(
+    crossAxisCount: count,
+    childAspectRatio: ratio,
+  );
+}
+
+/// Landing screen at `/` — Quick stats and pinned content.
 class HomeDashboardScreen extends ConsumerWidget {
   const HomeDashboardScreen({super.key});
 
@@ -23,9 +66,7 @@ class HomeDashboardScreen extends ConsumerWidget {
   ) =>
       all
           .where((c) =>
-              c.parentId == libraryRootId &&
-              !c.isDeleted &&
-              !c.isArchived)
+              c.parentId == libraryRootId && !c.isDeleted && !c.isArchived)
           .toList();
 
   static List<Collection> _pinnedRoot(List<Collection> root) {
@@ -37,19 +78,92 @@ class HomeDashboardScreen extends ConsumerWidget {
     return pinned;
   }
 
-  static DateTime _recentKey(Collection c) => c.lastAccessedAt ?? c.updatedAt;
-
-  static List<Collection> _recentRoot(List<Collection> root, {int max = 15}) {
-    final candidates = root.where((c) => !c.isPinned).toList()
-      ..sort((a, b) => _recentKey(b).compareTo(_recentKey(a)));
-    return candidates.length <= max ? candidates : candidates.sublist(0, max);
+  static Collection? _collectionById(
+    List<Collection> all,
+    String id,
+  ) {
+    for (final c in all) {
+      if (c.id == id) return c;
+    }
+    return null;
   }
 
-  Future<void> _openCollection(
-      BuildContext context, WidgetRef ref, Collection c) async {
+  static Future<void> _openCollection(
+    BuildContext context,
+    WidgetRef ref,
+    Collection c,
+  ) async {
     final ok = await DayPassGate.check(context, ref);
     if (!ok || !context.mounted) return;
     context.push('/collections/${c.id}', extra: c.title);
+  }
+
+  static Future<void> _openPinnedItemLink(
+    BuildContext context,
+    WidgetRef ref,
+    Item item,
+    List<Collection> allCollections,
+  ) async {
+    final ok = await DayPassGate.check(context, ref);
+    if (!ok || !context.mounted) return;
+
+    if (item.status == ItemStatus.unread) {
+      await ref.read(markItemReadAndTrackUseCaseProvider).call(item.id);
+      ref.invalidate(homePinnedItemsProvider);
+    }
+
+    final raw = item.link?.trim();
+    if (raw == null || raw.isEmpty) {
+      if (!context.mounted) return;
+      context.push('/collections/${item.collectionId}/items/${item.id}');
+      return;
+    }
+
+    final normalized = raw.startsWith('http://') || raw.startsWith('https://')
+        ? raw
+        : 'https://$raw';
+    final uri = Uri.tryParse(normalized);
+    if (uri == null ||
+        !uri.hasScheme ||
+        (uri.host.isEmpty && uri.scheme != 'file')) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid link')),
+      );
+      return;
+    }
+
+    final collection = _collectionById(allCollections, item.collectionId);
+    final resolved = effectiveOpenLinksIn(
+      itemOpenLinksInOverride: item.openLinksInOverride,
+      collectionOpenLinksIn: collection?.openLinksIn,
+    );
+    final launchMode = resolved == CollectionOpenLinksIn.externalBrowser
+        ? LaunchMode.externalApplication
+        : LaunchMode.inAppBrowserView;
+
+    if (!await canLaunchUrl(uri)) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open link')),
+      );
+      return;
+    }
+
+    try {
+      final launched = await launchUrl(uri, mode: launchMode);
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open link')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open link')),
+        );
+      }
+    }
   }
 
   @override
@@ -57,6 +171,7 @@ class HomeDashboardScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final libraryRootAsync = ref.watch(libraryRootCollectionProvider);
     final collectionsAsync = ref.watch(collectionsListProvider);
+    final pinnedItemsAsync = ref.watch(homePinnedItemsProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -69,256 +184,216 @@ class HomeDashboardScreen extends ConsumerWidget {
           ),
         ),
         data: (libraryRoot) => collectionsAsync.when(
-        data: (all) {
-          final root = _childrenOfLibrary(all, libraryRoot.id);
-          final pinned = _pinnedRoot(root);
-          final recent = _recentRoot(root);
+          data: (all) {
+            final root = _childrenOfLibrary(all, libraryRoot.id);
+            final pinned = _pinnedRoot(root);
 
-          if (!all.any((c) => !c.isDeleted)) {
-            return _EmptyHomeBody(
-              onCreate: () {
-                ref.read(libraryRootCollectionProvider.future).then((lr) {
+            if (!all.any((c) => !c.isDeleted)) {
+              return _EmptyHomeBody(
+                onCreate: () async {
+                  final ok = await DayPassGate.check(context, ref);
+                  if (!ok || !context.mounted) return;
+                  final lr = await ref.read(libraryRootCollectionProvider.future);
                   if (!context.mounted) return;
                   context.push('/collections/create?parent=${lr.id}', extra: lr);
-                });
-              },
-            );
-          }
+                },
+              );
+            }
 
-          // Aggregate stats
-          final totalCollections = root.length;
-          final totalLinks = root.fold<int>(0, (s, c) => s + c.itemCount);
+            final totalCollections = root.length;
+            final totalLinks = root.fold<int>(0, (s, c) => s + c.itemCount);
 
-          return CustomScrollView(
-            slivers: [
-              // ── App bar ─────────────────────────────────────────────────
-              SliverAppBar(
-                floating: true,
-                snap: true,
-                backgroundColor: theme.scaffoldBackgroundColor,
-                surfaceTintColor: theme.scaffoldBackgroundColor,
-                automaticallyImplyLeading: false,
-                title: Text(
-                  'Home',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(Icons.notifications_none_outlined,
-                        color: theme.colorScheme.primary),
-                    onPressed: () {},
-                    tooltip: 'Notifications',
-                  ),
-                  if (AppConfig.instance.isDev)
-                    IconButton(
-                      icon: Icon(Icons.bug_report_outlined,
-                          color: theme.colorScheme.primary),
-                      onPressed: () => context.push('/profile/debug'),
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  floating: true,
+                  snap: true,
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  surfaceTintColor: theme.scaffoldBackgroundColor,
+                  automaticallyImplyLeading: false,
+                  title: Text(
+                    'Home',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
                     ),
-                ],
-              ),
-
-              // ── Quick stats strip ─────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Row(
-                    children: [
-                      _StatChip(
-                          value: '$totalCollections',
-                          label: 'Folders',
-                          icon: Icons.grid_view_rounded),
-                      const SizedBox(width: 10),
-                      _StatChip(
-                          value: '$totalLinks',
-                          label: 'Links',
-                          icon: Icons.link_rounded),
-                      const SizedBox(width: 10),
-                      _StatChip(
-                          value: '${pinned.length}',
-                          label: 'Pinned',
-                          icon: Icons.push_pin_outlined),
-                    ],
                   ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.notifications_none_outlined,
+                          color: theme.colorScheme.primary),
+                      onPressed: () {},
+                      tooltip: 'Notifications',
+                    ),
+                    if (AppConfig.instance.isDev)
+                      IconButton(
+                        icon: Icon(Icons.bug_report_outlined,
+                            color: theme.colorScheme.primary),
+                        onPressed: () => context.push('/profile/debug'),
+                      ),
+                  ],
                 ),
-              ),
 
-              // ── Quick resume ──────────────────────────────────────────
-              if (recent.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Material(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () => _openCollection(context, ref, recent[0]),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Row(
+                      children: [
+                        _StatChip(
+                            value: '$totalCollections',
+                            label: 'Folders',
+                            icon: Icons.grid_view_rounded),
+                        const SizedBox(width: 10),
+                        _StatChip(
+                            value: '$totalLinks',
+                            label: 'Links',
+                            icon: Icons.link_rounded),
+                        const SizedBox(width: 10),
+                        _StatChip(
+                            value: '${pinned.length}',
+                            label: 'Pinned',
+                            icon: Icons.push_pin_outlined),
+                      ],
+                    ),
+                  ),
+                ),
+
+                if (pinned.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: 'Pinned folders',
+                    action: TextButton(
+                      onPressed: () => context.go('/collections'),
+                      child: const Text('See all'),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    sliver: SliverLayoutBuilder(
+                      builder: (context, constraints) {
+                        final m = _homePinnedFoldersGridMetrics(
+                            constraints.crossAxisExtent);
+                        return SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: m.crossAxisCount,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: m.childAspectRatio,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, i) {
+                              final c = pinned[i];
+                              return CollectionCard(
+                                collection: c,
+                                compact: true,
+                                onTap: () =>
+                                    _openCollection(context, ref, c),
+                                onLongPress: () async {
+                                  final ok =
+                                      await DayPassGate.check(context, ref);
+                                  if (!ok || !context.mounted) return;
+                                  context.push('/collections/${c.id}/edit');
+                                },
+                              );
+                            },
+                            childCount: pinned.length,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+
+                _SectionHeader(
+                  title: 'Pinned links',
+                  action: TextButton(
+                    onPressed: () => context.go('/search'),
+                    child: const Text('Search'),
+                  ),
+                ),
+                pinnedItemsAsync.when(
+                  data: (pinnedItems) {
+                    if (pinnedItems.isEmpty) {
+                      return SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.play_circle_outline_rounded,
-                                color: theme.colorScheme.primary,
-                                size: 28,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Continue where you left off',
-                                      style: theme.textTheme.labelSmall?.copyWith(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      recent[0].title,
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(fontWeight: FontWeight.w700),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.chevron_right_rounded,
-                                  color: theme.colorScheme.primary),
-                            ],
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _EmptySectionCard(
+                            message:
+                                'Pin links to see them here. Open a folder and pin a link.',
+                            icon: Icons.push_pin_outlined,
                           ),
                         ),
+                      );
+                    }
+                    return SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      sliver: SliverLayoutBuilder(
+                        builder: (context, constraints) {
+                          final m = _homePinnedLinksIconsGridMetrics(
+                              constraints.crossAxisExtent);
+                          return SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: m.crossAxisCount,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: m.childAspectRatio,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final item = pinnedItems[index];
+                                return UrlIconLinkTile(
+                                  item: item,
+                                  onTap: () => _openPinnedItemLink(
+                                    context,
+                                    ref,
+                                    item,
+                                    all,
+                                  ),
+                                  onLongPress: () async {
+                                    final ok =
+                                        await DayPassGate.check(context, ref);
+                                    if (!ok || !context.mounted) return;
+                                    context.push(
+                                      '/collections/${item.collectionId}/items/${item.id}/edit',
+                                    );
+                                  },
+                                );
+                              },
+                              childCount: pinnedItems.length,
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                ),
-
-              // ── Pinned collections ────────────────────────────────────
-              if (pinned.isNotEmpty) ...[
-                _SectionHeader(
-                  title: 'Pinned folders',
-                  action: TextButton(
-                    onPressed: () => context.go('/collections'),
-                    child: const Text('See all'),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 132,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: pinned.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 12),
-                      itemBuilder: (context, i) => _PinnedCollectionChip(
-                        collection: pinned[i],
-                        onTap: () => _openCollection(context, ref, pinned[i]),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-
-              // ── Pinned links (placeholder) ────────────────────────────
-              _SectionHeader(
-                title: 'Pinned links',
-                action: TextButton(
-                  onPressed: () => context.go('/search'),
-                  child: const Text('Search'),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _EmptySectionCard(
-                    message: 'Pin links to see them here. Open a folder and pin a link.',
-                    icon: Icons.push_pin_outlined,
-                  ),
-                ),
-              ),
-
-              // ── Recent links (placeholder) ─────────────────────────────
-              _SectionHeader(
-                title: 'Recent links',
-                action: TextButton(
-                  onPressed: () => context.go('/search'),
-                  child: const Text('Browse'),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _EmptySectionCard(
-                    message: 'Links you recently opened will appear here.',
-                    icon: Icons.history_rounded,
-                  ),
-                ),
-              ),
-
-              // ── Recent collections ────────────────────────────────────
-              if (recent.isNotEmpty) ...[
-                _SectionHeader(title: 'Recent folders'),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: CollectionListTile(
-                          collection: recent[index],
-                          onTap: () =>
-                              _openCollection(context, ref, recent[index]),
-                          onLongPress: () async {
-                            final ok = await DayPassGate.check(context, ref);
-                            if (!ok || !context.mounted) return;
-                            context.push(
-                                '/collections/${recent[index].id}/edit');
-                          },
-                        ),
-                      ),
-                      childCount: recent.length > 5 ? 5 : recent.length,
-                    ),
-                  ),
-                ),
-                if (recent.length > 5)
-                  SliverToBoxAdapter(
+                    );
+                  },
+                  loading: () => const SliverToBoxAdapter(
                     child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                      child: TextButton(
-                        onPressed: () => context.go('/collections'),
-                        child: const Text('See all folders'),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
                   ),
-              ] else if (root.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _EmptySectionCard(
-                      message: 'Open folders from Collections to see them here.',
-                      icon: Icons.folder_open_outlined,
+                  error: (e, _) => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _EmptySectionCard(
+                        message: 'Could not load pinned links.',
+                        icon: Icons.error_outline,
+                      ),
                     ),
                   ),
                 ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 88)),
-            ],
-          );
-        },
-        loading: () => const HomeSectionSkeleton(),
-        error: (e, _) => AppErrorState(
-          error: e,
-          title: 'Could not load your library',
-          onRetry: () => ref.invalidate(collectionsListProvider),
-        ),
+                const SliverToBoxAdapter(child: SizedBox(height: 88)),
+              ],
+            );
+          },
+          loading: () => const HomeSectionSkeleton(),
+          error: (e, _) => AppErrorState(
+            error: e,
+            title: 'Could not load your library',
+            onRetry: () => ref.invalidate(collectionsListProvider),
+          ),
         ),
       ),
       floatingActionButton: libraryRootAsync.maybeWhen(
@@ -465,65 +540,12 @@ class _EmptySectionCard extends StatelessWidget {
   }
 }
 
-// ── Pinned collection chip ────────────────────────────────────────────────────
-
-class _PinnedCollectionChip extends StatelessWidget {
-  const _PinnedCollectionChip(
-      {required this.collection, required this.onTap});
-
-  final Collection collection;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      color: theme.colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: SizedBox(
-          width: 128,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(collection.iconName,
-                    style: const TextStyle(fontSize: 28)),
-                const Spacer(),
-                Text(
-                  collection.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  collectionSummarySubtitle(collection),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ── Empty home body ──────────────────────────────────────────────────────────
 
 class _EmptyHomeBody extends StatelessWidget {
   const _EmptyHomeBody({required this.onCreate});
 
-  final VoidCallback onCreate;
+  final Future<void> Function() onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -577,7 +599,7 @@ class _EmptyHomeBody extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
-                    onPressed: onCreate,
+                    onPressed: () async => onCreate(),
                     icon: const Icon(Icons.create_new_folder_outlined),
                     label: const Text('New folder'),
                   ),

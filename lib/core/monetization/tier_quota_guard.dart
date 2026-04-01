@@ -77,7 +77,8 @@ class TierQuotaGuard {
     final max = _maxUrls(user);
     final result = await itemsRepo.getAllItems();
     return result.fold(Left.new, (list) {
-      if (list.length >= max) {
+      final active = list.where((i) => !i.isDeleted).length;
+      if (active >= max) {
         return Left(
           ValidationFailure(
             "You've reached your plan limit of $max saved links. "

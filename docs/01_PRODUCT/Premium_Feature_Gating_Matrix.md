@@ -5,7 +5,8 @@
 
 This document defines which features are available on each tier and exactly how each gate is enforced in code.
 
-**Canonical monetization + persistence:** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](../05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · [ADR-0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).
+**Canonical monetization + persistence:** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](../05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · [ADR-0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).  
+**Subscription architecture context:** [Subscription_Architecture_System_Design.md](../05_MONETIZATION/Subscription_Architecture_System_Design.md) · [Shared_Subscription_Setup_Runbook.md](../05_MONETIZATION/Shared_Subscription_Setup_Runbook.md)
 
 ---
 
@@ -131,6 +132,15 @@ if (adStatus == AdPassStatus.passExpired && !isPremium) {
   context.go('/ad-gate');
 }
 ```
+
+### Curate-style parent-action gate + `/daypass` route
+
+For **contextual** actions (create folder, add link, open collection hub, etc.), screens call `DayPassGate.check(context, ref)` **before** navigation or mutation. Behavior:
+
+- `premium` / `freeTrial` / `active` / **`grace`** → returns `true` immediately (**grace is allowed**; no forced block).
+- `expired` → pushes **`/daypass`** (full-screen `DayPassScreen`, not a bottom sheet), awaits `context.pop(true|false)`.
+
+Implementation: `lib/core/presentation/widgets/day_pass_gate.dart`, `lib/features/monetization/presentation/screens/day_pass_screen.dart` (`DayPassScreenArgs.fromAccessGate`). **Router:** register `/collections/create` **before** `/collections/:id` in `lib/core/router/app_router.dart`, and treat `extra` on `:id` routes as `String` only when `extra is String` (avoid cast crashes).
 
 ---
 

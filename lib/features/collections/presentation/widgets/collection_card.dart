@@ -8,6 +8,7 @@ class CollectionCard extends StatelessWidget {
   final Collection collection;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+
   /// Tighter padding and typography for compact grids (e.g. nested unified screen).
   final bool compact;
 
@@ -44,7 +45,7 @@ class CollectionCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(20), // Highly rounded
+          borderRadius: BorderRadius.circular(compact ? 14 : 20),
           border: Border.all(color: borderColor, width: 1),
           boxShadow: isDarkMode && !noCover && parsed != null
               ? [
@@ -56,7 +57,7 @@ class CollectionCard extends StatelessWidget {
                 ]
               : null,
         ),
-        padding: EdgeInsets.all(compact ? 12.0 : 16.0),
+        padding: EdgeInsets.all(compact ? 8.0 : 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -73,15 +74,16 @@ class CollectionCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.group,
-                        size: 16, color: theme.colorScheme.onSurfaceVariant),
+                        size: compact ? 14 : 16,
+                        color: theme.colorScheme.onSurfaceVariant),
                   )
                 else
-                  const SizedBox(), // Spacer to keep icon on right
+                  const SizedBox.shrink(),
 
                 // Category icon on the top-right
                 Container(
-                  width: compact ? 32 : 40,
-                  height: compact ? 32 : 40,
+                  width: compact ? 24 : 40,
+                  height: compact ? 24 : 40,
                   decoration: BoxDecoration(
                     color: noCover
                         ? theme.colorScheme.surfaceContainerHighest
@@ -100,7 +102,7 @@ class CollectionCard extends StatelessWidget {
                     child: noCover
                         ? Text(
                             collection.iconName,
-                            style: TextStyle(fontSize: compact ? 16 : 20),
+                            style: TextStyle(fontSize: compact ? 12 : 20),
                           )
                         : ColorFiltered(
                             colorFilter: ColorFilter.mode(
@@ -111,36 +113,49 @@ class CollectionCard extends StatelessWidget {
                             ),
                             child: Text(
                               collection.iconName,
-                              style: TextStyle(fontSize: compact ? 16 : 20),
+                              style: TextStyle(fontSize: compact ? 12 : 20),
                             ),
                           ),
                   ),
                 ),
               ],
             ),
-            const Spacer(),
-            Text(
-              collection.title,
-              style: TextStyle(
-                fontSize: compact ? 13 : 15,
-                fontWeight: FontWeight.w700, 
-                color: theme.colorScheme.onSurface,
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      collection.title,
+                      style: TextStyle(
+                        fontSize: compact ? 11.5 : 15,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                        height: 1.15,
+                      ),
+                      maxLines: compact ? 2 : 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: compact ? 1 : 2),
+                    Text(
+                      collectionSummarySubtitle(collection),
+                      style: TextStyle(
+                        fontSize: compact ? 9 : 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                        color: isDarkMode && !noCover && parsed != null
+                            ? accent
+                            : theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.85),
+                      ),
+                      maxLines: compact ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              collectionSummarySubtitle(collection),
-              style: TextStyle(
-                fontSize: compact ? 10 : 12,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode && !noCover && parsed != null
-                    ? accent
-                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

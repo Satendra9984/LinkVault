@@ -8,42 +8,94 @@ import '../providers/day_pass_provider.dart';
 const _kCardStart = Color(0xFFFF6B4A);
 const _kCardEnd = Color(0xFFFF4016);
 
-/// DayPass management screen — pure View, reads [dayPassProvider] ViewModel.
-class DayPassScreen extends ConsumerWidget {
-  const DayPassScreen({super.key});
+/// Route [extra] for `/daypass` when opened from [DayPassGate] —
+/// enables `context.pop(true|false)` contract for [DayPassGate.check].
+class DayPassScreenArgs {
+  final bool fromAccessGate;
+  const DayPassScreenArgs({this.fromAccessGate = false});
+}
+
+/// DayPass management screen — reads [dayPassProvider] ViewModel.
+///
+/// When [fromAccessGate] is true (access gate flow), back/cancel returns
+/// `false`; when the user earns access (watch ad, premium, or grace), returns
+/// `true` via `context.pop(true)`.
+class DayPassScreen extends ConsumerStatefulWidget {
+  const DayPassScreen({super.key, this.fromAccessGate = false});
+
+  /// When true, this route was pushed by [DayPassGate] to resolve expired access.
+  final bool fromAccessGate;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DayPassScreen> createState() => _DayPassScreenState();
+}
+
+class _DayPassScreenState extends ConsumerState<DayPassScreen> {
+  bool _didPopGateResult = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.fromAccessGate) {
+      // Premium / trial / active / grace → allow proceeding (matrix: grace allowed).
+      ref.listen<AsyncValue<DayPassState>>(dayPassProvider, (prev, next) {
+        next.whenData((s) {
+          if (_didPopGateResult || !context.mounted) return;
+          if (s.status != DayPassStatus.expired) {
+            _didPopGateResult = true;
+            context.pop(true);
+          }
+        });
+      });
+    }
+
     final stateAsync = ref.watch(dayPassProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      // Let scaffold bg come from theme (dark=#0F0F0F, light=#F8F9FA)
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: cs.onSurface, size: 20),
-          onPressed: () => context.pop(),
+    void handleBack() {
+      if (widget.fromAccessGate) {
+        context.pop(false);
+      } else {
+        context.pop();
+      }
+    }
+
+    return PopScope(
+      canPop: !widget.fromAccessGate,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && widget.fromAccessGate && context.mounted) {
+          context.pop(false);
+        }
+      },
+      child: Scaffold(
+        // Let scaffold bg come from theme (dark=#0F0F0F, light=#F8F9FA)
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                color: cs.onSurface, size: 20),
+            onPressed: handleBack,
+          ),
+          title: Text(
+            'Daily Access Pass',
+            style: TextStyle(
+                color: cs.onSurface,
+                fontWeight: FontWeight.bold,
+                fontSize: 18),
+          ),
+          centerTitle: true,
         ),
-        title: Text(
-          'Daily Access Pass',
-          style: TextStyle(
-              color: cs.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
+        body: stateAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: cs.primary),
+          ),
+          error: (e, _) => Center(
+            child: Text('Something went wrong',
+                style: TextStyle(color: cs.onSurfaceVariant)),
+          ),
+          data: (s) => _DayPassBody(state: s),
         ),
-        centerTitle: true,
-      ),
-      body: stateAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: cs.primary),
-        ),
-        error: (e, _) => Center(
-          child: Text('Something went wrong',
-              style: TextStyle(color: cs.onSurfaceVariant)),
-        ),
-        data: (s) => _DayPassBody(state: s),
       ),
     );
   }

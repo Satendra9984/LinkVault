@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/item.dart';
+import '../../domain/models/url_items_query.dart';
 import '../../domain/repositories/i_items_repository.dart';
 
 /// Decorator that wraps any [IItemsRepository] and returns
@@ -18,6 +19,10 @@ class ReadOnlyItemsRepository implements IItemsRepository {
   );
 
   // ── Read operations — delegate ────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, UrlItemsPage>> queryUrlItems(UrlItemsQuery query) =>
+      _inner.queryUrlItems(query);
 
   @override
   Future<Either<Failure, List<Item>>> getPaginatedItems(

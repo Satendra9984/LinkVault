@@ -1,4 +1,5 @@
 import '../../../../objectbox.g.dart';
+import '../../../features/settings/data/models/app_settings_model.dart';
 import '../models/auth_settings_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -121,16 +122,25 @@ class AppSettingsRepository {
 
   // ── Reset (e.g., on sign-out) ─────────────────────────────────────────────
 
-  /// Clears guest mode, premium cache, and cloud migration flag on sign-out.
+  /// Clears guest mode, premium cache, and cloud migration flags on sign-out.
   /// Preserves onboarding flag and install date so new users on the same
-  /// device always start from objectbox until they complete their own migration.
+  /// device keep Day Pass trial continuity.
   Future<void> clearSessionData() async {
     final s = await _get();
     await _save(s
       ..isGuestMode = false
       ..isPremiumCached = false
       ..lastAdWatchedAt = null
-      ..lastAdFailed = false);
+      ..lastAdFailed = false
+      ..hasMigratedToCloud = false);
+
+    // Legacy [AppSettingsModel] row (used by [hasMigratedToCloudProvider]).
+    final appBox = _store.box<AppSettingsModel>();
+    final legacy = appBox.query().build().findFirst();
+    if (legacy != null) {
+      legacy.hasMigratedToCloud = false;
+      appBox.put(legacy);
+    }
   }
 
   // ── Cloud Migration ────────────────────────────────────────────────────────

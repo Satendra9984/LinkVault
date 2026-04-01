@@ -12,6 +12,7 @@ class ItemsHubNotifier extends AutoDisposeNotifier<void> {
   }) async {
     await ref.read(toggleItemPinUseCaseProvider).call(itemId);
     await ref.read(itemsNotifierProvider(collectionId).notifier).refresh();
+    ref.invalidate(homePinnedItemsProvider);
   }
 
   Future<void> toggleArchive({
@@ -37,9 +38,11 @@ class ItemsHubNotifier extends AutoDisposeNotifier<void> {
     final notifier = ref.read(itemsNotifierProvider(collectionId).notifier);
     if (refreshAfter) {
       await notifier.refresh();
+      ref.invalidate(homePinnedItemsProvider);
       return;
     }
     notifier.removeItemFromState(itemId);
+    ref.invalidate(homePinnedItemsProvider);
   }
 
   Future<void> markReadAndTrack({
@@ -80,6 +83,7 @@ class ItemsHubNotifier extends AutoDisposeNotifier<void> {
     );
     await ref.read(updateItemUseCaseProvider).call(updated);
     ref.read(itemsNotifierProvider(sourceCollectionId).notifier).removeItemFromState(item.id);
+    ref.invalidate(homePinnedItemsProvider);
   }
 }
 

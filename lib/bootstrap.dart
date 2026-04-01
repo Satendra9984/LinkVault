@@ -10,6 +10,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/monetization/data/services/admob_service.dart';
+import 'features/sync/domain/cloud_sync_trigger.dart';
+import 'features/sync/presentation/providers/sync_coordinator_provider.dart';
 
 /// Shared bootstrap logic called by both [main_dev.dart] and [main_production.dart].
 /// Assumes dotenv has already been loaded before this is called.
@@ -66,6 +68,20 @@ Future<void> bootstrap() async {
   debugPrint(
     '🔎 Env diagnostics: env=${AppConfig.instance.environmentName}, supabaseHost=${supabaseHost ?? 'invalid'}',
   );
+  final rewarded = AppConfig.instance.admobRewardedAdUnit;
+  final rewardedPreview = rewarded.isEmpty
+      ? 'MISSING'
+      : rewarded.length <= 24
+          ? rewarded
+          : '${rewarded.substring(0, 14)}…';
+  debugPrint(
+    '🔎 AdMob rewarded unit: $rewardedPreview (${AppConfig.instance.isDev ? "dev/test" : "prod"})',
+  );
+  if (AppConfig.instance.isAdMobRewardedMisconfigured) {
+    debugPrint(
+      '⚠️ AdMob: production build has empty ADMOB_REWARDED_AD_UNIT_ID_* — rewarded ads disabled.',
+    );
+  }
 
   runApp(
     ProviderScope(
@@ -84,23 +100,45 @@ class LinkVaultApp extends ConsumerStatefulWidget {
   ConsumerState<LinkVaultApp> createState() => _LinkVaultAppState();
 }
 
-class _LinkVaultAppState extends ConsumerState<LinkVaultApp> {
+class _LinkVaultAppState extends ConsumerState<LinkVaultApp>
+    with WidgetsBindingObserver {
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // ProviderScope.containerOf(context) gives us the container from the
     // ProviderScope above (in bootstrap). We need this to pass to
     // createAppRouter so the redirect guard can read providers.
     // We set listen: false because we only need the container once.
     final container = ProviderScope.containerOf(context, listen: false);
     _router = createAppRouter(container);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(syncCoordinatorProvider.notifier).runSync(
+            manual: false,
+            trigger: CloudSyncTrigger.bootstrap,
+          );
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(syncCoordinatorProvider.notifier).onAppResumed();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final themeState = ref.watch(themeProvider);
+    ref.watch(syncCoordinatorProvider);
 
     return MaterialApp.router(
       title: 'LinkVault',

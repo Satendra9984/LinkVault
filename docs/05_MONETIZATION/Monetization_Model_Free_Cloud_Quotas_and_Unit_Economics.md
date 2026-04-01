@@ -6,7 +6,7 @@ Status: Active
 Owner: Product + Engineering  
 Depends On: [Master_Project_Plan.md](../00_PROJECT_OVERVIEW/Master_Project_Plan.md), [Data_Persistence_State_Machine.md](../04_DATA_AND_MIGRATION/Data_Persistence_State_Machine.md), [Premium_Feature_Gating_Matrix.md](../01_PRODUCT/Premium_Feature_Gating_Matrix.md)  
 Blocks: Sprint 11–12 monetization + sync implementation; repository selector refactor  
-Related: [Monetization_Strategy_RevenueCat_Guide.md](Monetization_Strategy_RevenueCat_Guide.md)
+Related: [Monetization_Strategy_RevenueCat_Guide.md](Monetization_Strategy_RevenueCat_Guide.md), [Subscription_Architecture_System_Design.md](Subscription_Architecture_System_Design.md), [Shared_Subscription_Setup_Runbook.md](Shared_Subscription_Setup_Runbook.md)
 
 ---
 

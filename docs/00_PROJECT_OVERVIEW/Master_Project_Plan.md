@@ -1,8 +1,8 @@
 # LinkVault — Master Project Plan
 
-**Version:** 1.3  
-**Last Updated:** March 24, 2026  
-**Status:** Active — Sprint 5-6 (Collections) substantially complete in app + schema  
+**Version:** 1.5  
+**Last Updated:** March 30, 2026  
+**Status:** Active — Sprint 7-8 URL Hub stable; **Sprint 11–12 (Monetization + Cloud Sync)** implemented in app (see Sprint 11–12 section + [SPRINT_11_12_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_11_12_MONETIZATION_AND_SYNC/SPRINT_11_12_Implementation_Snapshot.md))  
 **Architecture:** Clean Architecture + Feature-First + Curate Foundation
 
 **Execution companion:** [Phase Roadmap, Tasks, Evaluation Gates, and Test Catalog](./Phase_Roadmap_Tasks_and_Test_Catalog.md) — phased checklists, exit gates, and test IDs aligned to this plan.
@@ -38,6 +38,23 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 | **Guest (Ad Day Pass)** | Core features, **local-only** storage (ObjectBox), offline-first — watch 1 ad/day after trial |
 | **Free account (Ad Day Pass)** | Core features, **cloud-backed** `lv_*` data with **enforced quotas**, cross-device for account — watch 1 ad/day after trial |
 | **Premium** | No ads + **higher / unlimited-style limits** + best sync and backup story |
+
+---
+
+## Current Implementation Snapshot (March 2026)
+
+**Implemented recently (app):**
+- Root collections now run through the Hub architecture (Library route retired); see [Library_Screen_Removal_Changelog.md](../09_SPRINT_ARCHITECTURE/SPRINT_7_8_UX_REFACTOR/Library_Screen_Removal_Changelog.md)
+- URL tap behavior respects collection `openLinksIn` (`in_app` vs `external_browser`)
+- URL long-press options include **View details** (old tap navigation preserved as explicit action)
+- Links preload on `ItemsListScreen` open (no longer waits for first Links-tab tap)
+- Non-tab flows render full-screen above shell using root navigator routing (bottom nav hidden where expected)
+- Edit Collection screen no longer fetches/displays child URL items inline
+- **Sprint 11–12:** delta sync service (`CloudDeltaSyncService`), Profile sync card, guest→cloud migration reads **local-only** repos and upserts **`lv_urls`**, downgrade uses **`lv_collections`/`lv_urls`**, RevenueCat `logOut` on sign-out, shared RC stream for subscription-active, AdMob dev test-ID fallback
+
+**Still open (Sprint 7-8 onward):**
+- Remaining URL-management QA signoff and any unchecked Sprint 7-8 checklist items below
+- Edge-to-edge safe-area hardening for focused search fields in sliver/tab scroll contexts
 
 ---
 
@@ -281,34 +298,43 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 **Week 7: URL List & Add**
 
-- [ ] URL list inside collection: list view + grid view toggle
-- [ ] URL card: favicon, title, domain, thumbnail, tags, pin badge
-- [ ] Add URL flow:
+- [x] URL list inside collection: list/card/icon modes + toggle in hub
+- [x] URL card/tile variants with favicon/title/domain/thumbnail support
+- [x] Add URL flow:
   - Paste URL → auto-fetch metadata (title, description, thumbnail, favicon, dominant color)
   - Manual override of title, description
   - Tags (comma-separated)
   - Annotation / notes field
   - Status: `unread`, `read`, `archived`
-- [ ] ObjectBox local repository
-- [ ] Supabase remote repository
-- [ ] CRUD use cases
-- [ ] Share-intent ingestion resilience (cold start + foreground stream + validation)
+- [x] ObjectBox local repository
+- [x] Supabase remote repository
+- [x] CRUD use cases
+- [x] Share-intent ingestion resilience (cold start + foreground stream + validation)
+- [x] Tap URL opens via collection setting `openLinksIn` (`in_app`/`external_browser`)
+- [x] Long-press options include **View details**
+- [x] Links preload on screen open (not only after Links-tab selection)
 
 **Week 8: URL Detail, Edit, Reorder**
 
-- [ ] URL detail screen: rich metadata display, open in browser, copy URL
-- [ ] Edit URL screen
-- [ ] Delete URL (with confirmation)
-- [ ] Drag-to-reorder within collection
-- [ ] Pin URL to top of collection
-- [ ] Click count tracking (`click_count++` on open)
-- [ ] Last accessed tracking
+- [x] URL detail screen: rich metadata display, open in browser, copy URL
+- [x] Edit URL screen
+- [x] Delete URL (with confirmation)
+- [x] Drag-to-reorder within collection
+- [x] Pin URL to top of collection
+- [x] Click count tracking (`click_count++` on open)
+- [x] Last accessed tracking
+
+**Router & navigation UX (Sprint 7-8 additions):**
+- [x] `StatefulShellRoute.indexedStack` keeps only tab roots in shell branches (`/`, `/collections`, `/search`, `/profile`)
+- [x] Full-screen routes moved to root navigator overlay (`/collections/create`, `/collections/:id/edit`, item create/detail/edit, profile subpages)
+- [x] Bottom nav stays hidden for full-screen flows while tab stack state is preserved
 
 **Verification:**
-- [ ] Add URL → metadata auto-fetched correctly
-- [ ] View, edit, delete URLs
-- [ ] Open URL in browser / in-app view (flutter_custom_tabs)
-- [ ] Click count increments
+- [x] Add URL → metadata auto-fetched correctly
+- [x] View, edit, delete URLs
+- [x] Open URL in browser / in-app view (`url_launcher` launch modes)
+- [x] Click count increments
+- [ ] Manual regression matrix signoff for Sprint 7-8 UX refactor screens
 
 ---
 
@@ -344,36 +370,36 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 **Week 11: Ad Day Pass & RevenueCat**
 
-- [ ] AdMob rewarded video integration
-- [ ] Ad gate screen (watch ad to continue)
-- [ ] Ad Day Pass logic:
+- [x] AdMob rewarded video integration *(dev falls back to Google test units if `.env` test IDs empty; prod warns if rewarded IDs missing)*
+- [x] Ad gate screen (watch ad to continue)
+- [x] Ad Day Pass logic:
   - Day 1-3: Free trial (no ads)
   - Day 4+: 1 ad per day for 24hr access
-  - 24hr grace: offline or ad load failure
-- [ ] RevenueCat setup (lv_premium_monthly, lv_premium_annual)
-- [ ] Paywall screen: benefits list, monthly/annual pricing
-- [ ] Tier enforcement throughout app
+  - 24hr grace: offline or ad load failure *(grace aligned with full-screen gate + `DayPassGate`)*
+- [x] RevenueCat setup (lv_premium_monthly, lv_premium_annual) *(dashboard / store product wiring still validated in sandbox manually)*
+- [x] Paywall screen: benefits list, monthly/annual pricing
+- [x] Tier enforcement throughout app *(client `TierQuotaGuard` + server triggers; unit tests for guard)*
 
 **Week 12: Cloud Sync**
 
-- [ ] **Free account:** data already on `lv_*`; **auto delta sync** on launch / resume when online (within quotas)
-- [ ] **Guest → account:** one-time **local ObjectBox → `lv_*` upload** (idempotent + resumable)
-- [ ] **Premium:** delta sync + optional **migration flag** only if upgrading from a legacy “local-only free” build or bulk backfill
-- [ ] **Server-side quota enforcement** for free tier (collections + URLs); premium bypass
-- [ ] Image thumbnails: cache locally; **Supabase Storage** policy aligned to tier (e.g. premium-first heavy usage)
-- [ ] Delta sync (pull/push by `updated_at`) + deterministic conflict resolution policy
-- [ ] Offline queue durability + flush on reconnect (authenticated tiers)
-- [ ] Manual sync action + post-migration reconciliation checks
-- [ ] Sync status indicator in UI (queue depth, last sync, failed state hint)
-- [ ] Downgrade behavior implemented exactly per PRD/state-machine decision
+- [x] **Free account:** data on `lv_*`; **auto delta sync** on launch / resume / reconnect when online (within quotas)
+- [x] **Guest → account:** one-time **local ObjectBox → `lv_*` upload** via dedicated local repos; **`lv_urls` upsert** (idempotent storage paths; safe retry if flag not set)
+- [x] **Premium:** same delta sync engine; **migration flag** for bulk guest→cloud path
+- [x] **Server-side quota enforcement** for free tier (collections + URLs); premium bypass *(existing migrations + client pre-checks)*
+- [ ] Image thumbnails: cache locally; **Supabase Storage** policy aligned to tier *(app uses `item-images` uploads; formal per-tier Storage RLS still verify in Supabase console)*
+- [x] Delta sync (pull/push by `updated_at`) + **LWW** conflict policy *(see `CloudDeltaSyncService` + `ConflictPolicy`)*
+- [x] Offline durability + flush: **local ObjectBox** holds writes offline; **delta push** on reconnect / resume *(no separate outbox table; pending ≈ local rows newer than last sync anchor)*
+- [x] Manual sync action + post-migration reconciliation *(manual “Sync now” on Profile; full drift report optional follow-up)*
+- [x] Sync status indicator in UI (pending estimate, last success, error hint)
+- [x] Downgrade **import/delete** targets **`lv_collections` / `lv_urls`** (fixed from Curate table names)
 
 **Verification:**
-- [ ] Day 0-3: No ad gate
-- [ ] Day 4+: Ad gate blocks access, watching ad grants 24hr pass
-- [ ] Premium purchase via RevenueCat sandbox works
-- [ ] Premium users: ad gate bypassed; **free account users:** cloud writes respect quotas and Day Pass rules
-- [ ] Failed migration keeps cloud-mode flag unset and supports safe retry
-- [ ] Downgrade behavior matches selected policy with no silent data loss
+- [ ] Day 0-3: No ad gate *(manual device QA)*
+- [ ] Day 4+: Ad gate blocks access, watching ad grants 24hr pass *(manual + AdMob sandbox)*
+- [ ] Premium purchase via RevenueCat sandbox works *(manual)*
+- [ ] Premium users: ad gate bypassed; **free account users:** cloud writes respect quotas and Day Pass rules *(manual)*
+- [x] Failed migration keeps cloud-mode flag unset and supports safe retry *(flag only on success; dual `AuthSettings` + `AppSettings` reset on sign-out)*
+- [ ] Downgrade behavior matches selected policy with no silent data loss *(manual QA on import + delete remote)*
 
 ---
 
@@ -442,7 +468,7 @@ enum UserTier {
 | Routing | `go_router` |
 | Monetization | `purchases_flutter` (RevenueCat) + `google_mobile_ads` |
 | URL metadata | `html` + `http` (custom parser) |
-| In-app browser | `flutter_custom_tabs` |
+| In-app/external link opening | `url_launcher` (`LaunchMode.inAppBrowserView` / `LaunchMode.externalApplication`) |
 | Sharing intent | `receive_sharing_intent` |
 | RSS parsing | `xml` |
 | OTP pin input | `pinput` |
@@ -499,6 +525,8 @@ enum UserTier {
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.5 | March 30, 2026 | **Sprint 11–12 delivery:** Day Pass grace parity, RevenueCat `logOut` on sign-out + single RC stream alias, AdMob dev fallbacks/diagnostics, quota tests, migration via **local-only** repos + `lv_urls`, cloud downgrade to `lv_*`, `CloudDeltaSyncService` + Profile sync UI, `SyncMetadataStore` (prefs) + sign-out clear. |
+| 1.4 | March 30, 2026 | Added Sprint 7-8 implementation snapshot and completed URL/UX/router checklist items: tap `openLinksIn`, long-press **View details**, preload-on-open, shell-vs-root full-screen routing, and Edit Collection simplification; added remaining QA/safe-area follow-ups. |
 | 1.3 | March 24, 2026 | **Sprint 5-6 plan checkboxes:** marked collections sprint items completed/tested in app + DB where applicable; noted gaps (grid reorder, delete dialog copy, full manual QA matrix, offline queue). |
 | 1.2 | March 24, 2026 | **Monetization model:** guest = local-only; **free account = Supabase + quotas + Day Pass**; premium = higher limits + no ads. Cross-links to `docs/05_MONETIZATION/Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md` and ADR-0002. |
 | 1.1 | March 24, 2026 | Aligned phase model and sprint expectations with execution companion; clarified migration/sync/downgrade, state-machine repository selection, and launch telemetry wording. |

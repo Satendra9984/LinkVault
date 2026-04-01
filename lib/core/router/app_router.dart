@@ -17,9 +17,12 @@ import '../../features/collections/presentation/screens/create_collection_screen
 import '../../features/collections/presentation/screens/edit_collection_screen.dart';
 import '../../features/items/presentation/screens/create_edit_item_screen.dart';
 import '../../features/items/presentation/screens/item_detail_screen.dart';
+import '../../features/items/presentation/screens/folders_filters_screen.dart';
 import '../../features/items/presentation/screens/items_list_screen.dart';
+import '../../features/items/presentation/screens/urls_filters_screen.dart';
 import '../../features/monetization/presentation/screens/ad_gate_screen.dart';
-import '../../features/monetization/presentation/screens/day_pass_screen.dart';
+import '../../features/monetization/presentation/screens/day_pass_screen.dart'
+    show DayPassScreen, DayPassScreenArgs;
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -32,7 +35,21 @@ import '../presentation/widgets/main_shell.dart';
 import '../providers/core_providers.dart';
 
 // Accessible regardless of auth state — excluded from redirect logic
-const _openRoutes = ['/paywall', '/ad-gate', '/migration'];
+const _openRoutes = ['/paywall', '/ad-gate', '/migration', '/daypass'];
+
+/// Root stack: full-screen routes (no bottom nav) use [parentNavigatorKey].
+final GlobalKey<NavigatorState> _rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'root');
+
+/// One nested navigator per [StatefulShellBranch] (tab).
+final GlobalKey<NavigatorState> _shellNavigatorHomeKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellHome');
+final GlobalKey<NavigatorState> _shellNavigatorCollectionsKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellCollections');
+final GlobalKey<NavigatorState> _shellNavigatorSearchKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellSearch');
+final GlobalKey<NavigatorState> _shellNavigatorProfileKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 
 // ── Router stream listener ────────────────────────────────────────────────────
 
@@ -59,6 +76,7 @@ class _AuthStateListenable extends ChangeNotifier {
 
 GoRouter createAppRouter(ProviderContainer container) {
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: _AuthStateListenable(container),
     redirect: (context, state) async {
@@ -170,12 +188,18 @@ GoRouter createAppRouter(ProviderContainer container) {
       ),
       GoRoute(
         path: '/daypass',
-        builder: (context, state) => const DayPassScreen(),
+        builder: (context, state) {
+          final extra = state.extra;
+          final fromGate = extra is DayPassScreenArgs && extra.fromAccessGate;
+          return DayPassScreen(fromAccessGate: fromGate);
+        },
       ),
 
-      // ── Collection push-routes (rendered on top of the shell / no bottom nav tab) ──
-      // These are accessed from within the Collections tab or Home, but
-      // they overlay the full screen (create/edit flow, item detail).
+      // ── Full-screen routes (root navigator; hide bottom nav) ─────────────
+      // `/collections/create` MUST be registered before `/collections/:id` or
+      // `id` captures the literal "create" and breaks `extra` typing.
+      // Longer paths before shorter ones under /collections/:id/items/...
+
       GoRoute(
         path: '/collections/create',
         builder: (context, state) {
@@ -187,6 +211,106 @@ GoRouter createAppRouter(ProviderContainer container) {
           );
         },
       ),
+      GoRoute(
+        path: '/collections/:id/filters/urls',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return UrlsFiltersScreen(collectionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/collections/:id/filters/folders',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return FoldersFiltersScreen(collectionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/collections/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final extra = state.extra;
+          final collectionName = extra is String ? extra : null;
+          return ItemsListScreen(
+            collectionId: id,
+            collectionName: collectionName,
+          );
+        },
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/collections/:id/edit',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return EditCollectionScreen(collectionId: id);
+        },
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/collections/:id/items/:itemId/edit',
+        builder: (context, state) {
+          final collectionId = state.pathParameters['id']!;
+          final itemId = state.pathParameters['itemId']!;
+          final extra = state.extra;
+          final collectionName = extra is String ? extra : null;
+          return CreateEditItemScreen(
+            collectionId: collectionId,
+            itemId: itemId,
+            collectionName: collectionName,
+          );
+        },
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/collections/:id/items/create',
+        builder: (context, state) {
+          final collectionId = state.pathParameters['id']!;
+          final extra = state.extra;
+          final collectionName = extra is String ? extra : null;
+          return CreateEditItemScreen(
+            collectionId: collectionId,
+            collectionName: collectionName,
+          );
+        },
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/collections/:id/items/:itemId',
+        builder: (context, state) {
+          final collectionId = state.pathParameters['id']!;
+          final itemId = state.pathParameters['itemId']!;
+          return ItemDetailScreen(
+            collectionId: collectionId,
+            itemId: itemId,
+          );
+        },
+      ),
+
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile/settings',
+        builder: (context, state) => const AppSettingsScreen(),
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile/about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile/legal',
+        builder: (context, state) => const LegalPolicyScreen(),
+      ),
+      GoRoute(
+        // parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile/debug',
+        builder: (context, state) => const DebugScreen(),
+      ),
 
       // ── Main app shell (persistent bottom nav for 4 tabs) ────────────────
       StatefulShellRoute.indexedStack(
@@ -195,6 +319,7 @@ GoRouter createAppRouter(ProviderContainer container) {
         branches: [
           // ── Branch 0: Home ──────────────────────────────────────────────
           StatefulShellBranch(
+            navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
                 path: '/',
@@ -205,74 +330,19 @@ GoRouter createAppRouter(ProviderContainer container) {
 
           // ── Branch 1: Collections ────────────────────────────────────────
           StatefulShellBranch(
+            navigatorKey: _shellNavigatorCollectionsKey,
             routes: [
               GoRoute(
                 path: '/collections',
                 builder: (context, state) =>
                     const CollectionsBranchRootScreen(),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) {
-                      final id = state.pathParameters['id']!;
-                      final collectionName = state.extra as String?;
-                      return ItemsListScreen(
-                        collectionId: id,
-                        collectionName: collectionName,
-                      );
-                    },
-                    routes: [
-                      GoRoute(
-                        path: 'edit',
-                        builder: (context, state) {
-                          final id = state.pathParameters['id']!;
-                          return EditCollectionScreen(collectionId: id);
-                        },
-                      ),
-                      GoRoute(
-                        path: 'items/create',
-                        builder: (context, state) {
-                          final collectionId = state.pathParameters['id']!;
-                          final collectionName = state.extra as String?;
-                          return CreateEditItemScreen(
-                            collectionId: collectionId,
-                            collectionName: collectionName,
-                          );
-                        },
-                      ),
-                      GoRoute(
-                        path: 'items/:itemId',
-                        builder: (context, state) {
-                          final collectionId = state.pathParameters['id']!;
-                          final itemId = state.pathParameters['itemId']!;
-                          return ItemDetailScreen(
-                            collectionId: collectionId,
-                            itemId: itemId,
-                          );
-                        },
-                      ),
-                      GoRoute(
-                        path: 'items/:itemId/edit',
-                        builder: (context, state) {
-                          final collectionId = state.pathParameters['id']!;
-                          final itemId = state.pathParameters['itemId']!;
-                          final collectionName = state.extra as String?;
-                          return CreateEditItemScreen(
-                            collectionId: collectionId,
-                            itemId: itemId,
-                            collectionName: collectionName,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ],
           ),
 
           // ── Branch 2: Search ─────────────────────────────────────────────
           StatefulShellBranch(
+            navigatorKey: _shellNavigatorSearchKey,
             routes: [
               GoRoute(
                 path: '/search',
@@ -283,32 +353,11 @@ GoRouter createAppRouter(ProviderContainer container) {
 
           // ── Branch 3: Profile ─────────────────────────────────────────────
           StatefulShellBranch(
+            navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'edit',
-                    builder: (context, state) => const EditProfileScreen(),
-                  ),
-                  GoRoute(
-                    path: 'settings',
-                    builder: (context, state) => const AppSettingsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'about',
-                    builder: (context, state) => const AboutScreen(),
-                  ),
-                  GoRoute(
-                    path: 'legal',
-                    builder: (context, state) => const LegalPolicyScreen(),
-                  ),
-                  GoRoute(
-                    path: 'debug',
-                    builder: (context, state) => const DebugScreen(),
-                  ),
-                ],
               ),
             ],
           ),

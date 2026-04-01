@@ -6,6 +6,7 @@ import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../../domain/entities/item.dart';
 import '../items_providers.dart';
 import '../../../../../core/services/url_parsing_service.dart';
+import '../../../../collections/domain/collection_display_defaults.dart';
 import 'item_form_state.dart';
 
 /// Manages all state for [CreateEditItemScreen].
@@ -26,7 +27,7 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
     if (!state.isInit) return;
 
     if (itemId == null) {
-      state = state.copyWith(isInit: false);
+      state = const ItemFormState(isInit: false);
       return;
     }
 
@@ -59,6 +60,9 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
           contentType: item.contentType,
           publishedAt: item.publishedAt,
           status: item.status,
+          isPinned: item.isPinned,
+          openLinksInOverride: item.openLinksInOverride,
+          clearPendingMoveCollectionId: true,
           isInit: false,
         );
       },
@@ -173,6 +177,32 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
     state = state.copyWith(status: status);
   }
 
+  void updateIsPinned(bool value) {
+    state = state.copyWith(isPinned: value);
+  }
+
+  /// Null = inherit collection default.
+  void updateOpenLinksInOverride(String? value) {
+    state = state.copyWith(
+      openLinksInOverride: value,
+      clearOpenLinksInOverride: value == null,
+    );
+  }
+
+  void setPendingMoveCollectionId(String? collectionId) {
+    state = state.copyWith(
+      pendingMoveCollectionId: collectionId,
+      clearPendingMoveCollectionId: collectionId == null,
+    );
+  }
+
+  static String? _sanitizeOpenOverride(String? raw) {
+    if (raw == null) return null;
+    final t = raw.trim();
+    if (t.isEmpty) return null;
+    return CollectionOpenLinksIn.values.contains(t) ? t : null;
+  }
+
   Future<void> submit({
     required String collectionId,
     String? existingItemId,
@@ -218,6 +248,9 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
     final cleanContentType = state.contentType?.trim().isEmpty == true
         ? null
         : state.contentType?.trim();
+    final openOverride = _sanitizeOpenOverride(state.openLinksInOverride);
+    final targetCollectionId =
+        state.pendingMoveCollectionId ?? collectionId;
 
     if (existingItemId != null) {
       final existingEither = await ref.read(getItemUseCaseProvider).call(existingItemId);
@@ -252,13 +285,14 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
             position: existing.position,
             createdAt: existing.createdAt,
             updatedAt: now,
-            collectionId: collectionId,
+            collectionId: targetCollectionId,
             ownerId: existing.ownerId,
-            isPinned: existing.isPinned,
+            isPinned: state.isPinned,
             clickCount: existing.clickCount,
             lastAccessedAt: existing.lastAccessedAt,
             isDeleted: existing.isDeleted,
             deletedAt: existing.deletedAt,
+            openLinksInOverride: openOverride,
           );
 
           final updateResult =
@@ -272,9 +306,19 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
               );
             },
             (_) {
-              ref
-                  .read(itemsNotifierProvider(collectionId).notifier)
-                  .updateItemInState(updated);
+              if (targetCollectionId != collectionId) {
+                ref
+                    .read(itemsNotifierProvider(collectionId).notifier)
+                    .removeItemFromState(updated.id);
+                ref
+                    .read(itemsNotifierProvider(targetCollectionId).notifier)
+                    .refresh();
+              } else {
+                ref
+                    .read(itemsNotifierProvider(collectionId).notifier)
+                    .updateItemInState(updated);
+              }
+              ref.invalidate(homePinnedItemsProvider);
               state = state.copyWith(isSubmitting: false, isSuccess: true);
             },
           );
@@ -313,11 +357,12 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
       createdAt: now,
       updatedAt: now,
       collectionId: collectionId,
-      isPinned: false,
+      isPinned: state.isPinned,
       clickCount: 0,
       lastAccessedAt: null,
       isDeleted: false,
       deletedAt: null,
+      openLinksInOverride: openOverride,
     );
 
     final createResult =
@@ -334,6 +379,7 @@ class ItemFormNotifier extends AutoDisposeNotifier<ItemFormState> {
         ref
             .read(itemsNotifierProvider(collectionId).notifier)
             .addItemToState(newItem);
+        ref.invalidate(homePinnedItemsProvider);
         state = state.copyWith(isSubmitting: false, isSuccess: true);
       },
     );

@@ -49,6 +49,10 @@ class Item extends Equatable {
   final int clickCount;
   final DateTime? lastAccessedAt;
 
+  /// If set, overrides the parent collection open-links setting; null = inherit.
+  /// Use `in_app` or `external_browser` (same as collection `open_links_in`).
+  final String? openLinksInOverride;
+
   // Soft delete
   final bool isDeleted;
   final DateTime? deletedAt;
@@ -74,6 +78,7 @@ class Item extends Equatable {
     this.position = 0.0,
     this.clickCount = 0,
     this.lastAccessedAt,
+    this.openLinksInOverride,
     this.isDeleted = false,
     this.deletedAt,
     this.siteName,
@@ -102,6 +107,8 @@ class Item extends Equatable {
     double? position,
     int? clickCount,
     DateTime? lastAccessedAt,
+    String? openLinksInOverride,
+    bool? clearOpenLinksInOverride,
     bool? isDeleted,
     DateTime? deletedAt,
     String? siteName,
@@ -129,6 +136,9 @@ class Item extends Equatable {
       position: position ?? this.position,
       clickCount: clickCount ?? this.clickCount,
       lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+      openLinksInOverride: clearOpenLinksInOverride == true
+          ? null
+          : (openLinksInOverride ?? this.openLinksInOverride),
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
       siteName: siteName ?? this.siteName,
@@ -163,6 +173,7 @@ class Item extends Equatable {
         position,
         clickCount,
         lastAccessedAt,
+        openLinksInOverride,
         isDeleted,
         deletedAt,
         createdAt,

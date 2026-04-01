@@ -1,12 +1,19 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/presentation/widgets/day_pass_gate.dart';
 import '../../../../core/presentation/widgets/smart_form_field.dart';
 import '../../../../core/theme/color_palette.dart';
+import '../../../collections/domain/collection_display_defaults.dart';
+import '../../../collections/domain/entities/collection.dart';
+import '../../../collections/presentation/providers/collections_providers.dart';
 import '../../domain/entities/item.dart';
 import '../providers/forms/item_form_notifier.dart';
+import '../providers/forms/item_form_state.dart';
 
 /// Create / Edit screen for a single Item.
 ///
@@ -42,10 +49,18 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(itemFormNotifierProvider.notifier).initialize(widget.itemId);
+    // Belt-and-suspenders: direct deep-link to create/edit must respect gating
+    // (parent actions already call [DayPassGate.check]; if status is non-expired
+    // this returns immediately without pushing /daypass).
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final ok = await DayPassGate.check(context, ref);
+      if (!mounted) return;
+      if (!ok) {
+        context.pop();
+        return;
       }
+      ref.read(itemFormNotifierProvider.notifier).initialize(widget.itemId);
     });
   }
 
@@ -90,13 +105,6 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
             fontSize: 18,
           ),
         ),
-        actions: [
-          if (isEdit)
-            IconButton(
-              icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-              onPressed: () {},
-            ),
-        ],
       ),
       body: state.isInit && isEdit
           ? const Center(child: CircularProgressIndicator())
@@ -269,6 +277,133 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
 
                         const SizedBox(height: 12),
 
+                        // ── Pin / Archive / Open behavior / Move ────────
+                        _FieldCard(
+                          isDark: isDark,
+                          cardColor: cardColor,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SwitchListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  'Pin link',
+                                  style: TextStyle(
+                                    color: valueTextColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Show at the top of the links list',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: microLabelColor,
+                                  ),
+                                ),
+                                value: state.isPinned,
+                                onChanged: notifier.updateIsPinned,
+                              ),
+                              Divider(
+                                  height: 1,
+                                  color: microLabelColor.withValues(alpha: 0.25)),
+                              SwitchListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  'Archived',
+                                  style: TextStyle(
+                                    color: valueTextColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Hide from default views unless filters allow',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: microLabelColor,
+                                  ),
+                                ),
+                                value: state.status == ItemStatus.archived,
+                                onChanged: (v) {
+                                  notifier.updateStatus(
+                                    v
+                                        ? ItemStatus.archived
+                                        : ItemStatus.read,
+                                  );
+                                },
+                              ),
+                              Divider(
+                                  height: 1,
+                                  color: microLabelColor.withValues(alpha: 0.25)),
+                              _LabeledField(
+                                label: 'Open link',
+                                labelColor: microLabelColor,
+                                child: DropdownButtonFormField<String?>(
+                                  key: ValueKey(
+                                      '${state.openLinksInOverride}_open'),
+                                  initialValue: state.openLinksInOverride,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text('Use folder default'),
+                                    ),
+                                    DropdownMenuItem<String?>(
+                                      value: CollectionOpenLinksIn.inApp,
+                                      child: Text('Always in app'),
+                                    ),
+                                    DropdownMenuItem<String?>(
+                                      value:
+                                          CollectionOpenLinksIn.externalBrowser,
+                                      child: Text('Always in browser'),
+                                    ),
+                                  ],
+                                  onChanged: notifier.updateOpenLinksInOverride,
+                                ),
+                              ),
+                              if (isEdit) ...[
+                                Divider(
+                                    height: 1,
+                                    color:
+                                        microLabelColor.withValues(alpha: 0.25)),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: Icon(Icons.drive_file_move_outline,
+                                      color: theme.colorScheme.primary),
+                                  title: Text(
+                                    'Move to collection',
+                                    style: TextStyle(
+                                      color: valueTextColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    _moveTargetSubtitle(ref, state,
+                                        widget.collectionId),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: microLabelColor,
+                                    ),
+                                  ),
+                                  trailing: Icon(Icons.chevron_right,
+                                      color: microLabelColor),
+                                  onTap: () => _showMoveCollectionPicker(
+                                    context,
+                                    ref,
+                                    notifier,
+                                    widget.collectionId,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
                         // ── Status ─────────────────────────────────────
                         _FieldCard(
                           isDark: isDark,
@@ -306,7 +441,8 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                           isDark: isDark,
                           cardColor: cardColor,
                           child: Theme(
-                            data: theme.copyWith(dividerColor: Colors.transparent),
+                            data: theme.copyWith(
+                                dividerColor: Colors.transparent),
                             child: ExpansionTile(
                               tilePadding: EdgeInsets.zero,
                               childrenPadding:
@@ -406,8 +542,7 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                                             Icons.calendar_today_outlined),
                                         onPressed: () async {
                                           final now = DateTime.now();
-                                          final picked =
-                                              await showDatePicker(
+                                          final picked = await showDatePicker(
                                             context: context,
                                             initialDate:
                                                 state.publishedAt ?? now,
@@ -474,6 +609,58 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                 const SizedBox(height: 16),
               ],
             ),
+    );
+  }
+
+  String _moveTargetSubtitle(
+    WidgetRef ref,
+    ItemFormState state,
+    String currentCollectionId,
+  ) {
+    final id = state.pendingMoveCollectionId ?? currentCollectionId;
+    final list = ref.read(collectionsListProvider).valueOrNull ?? [];
+    final match = list.firstWhereOrNull((c) => c.id == id);
+    return match?.title ?? 'Current folder';
+  }
+
+  Future<void> _showMoveCollectionPicker(
+    BuildContext context,
+    WidgetRef ref,
+    ItemFormNotifier notifier,
+    String currentCollectionId,
+  ) async {
+    final collections = (ref.read(collectionsListProvider).valueOrNull ??
+            const <Collection>[])
+        .where((c) => !c.isDeleted && c.id != currentCollectionId)
+        .toList();
+    if (!context.mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetContext).size.height * 0.75,
+          ),
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: collections.length,
+            itemBuilder: (ctx, index) {
+              final collection = collections[index];
+              return ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(collection.title),
+                subtitle: Text(collection.category),
+                onTap: () {
+                  notifier.setPendingMoveCollectionId(collection.id);
+                  Navigator.of(sheetContext).pop();
+                },
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -726,7 +913,14 @@ class _ImageLabeledRow extends StatelessWidget {
                         maxWidth: double.infinity,
                       ),
                       child: displayImage.startsWith('http')
-                          ? Image.network(displayImage, fit: BoxFit.contain)
+                          ? CachedNetworkImage(
+                              imageUrl: displayImage,
+                              fit: BoxFit.contain,
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            )
                           : Image.file(File(displayImage), fit: BoxFit.contain),
                     ),
                   ),
@@ -810,9 +1004,8 @@ class _UrlIdentityPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final domain = _domainFromLink(link);
-    final displayName = (siteName?.trim().isNotEmpty ?? false)
-        ? siteName!.trim()
-        : domain;
+    final displayName =
+        (siteName?.trim().isNotEmpty ?? false) ? siteName!.trim() : domain;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -835,10 +1028,13 @@ class _UrlIdentityPreview extends StatelessWidget {
                 width: 22,
                 height: 22,
                 child: faviconUrl != null && faviconUrl!.startsWith('http')
-                    ? Image.network(
-                        faviconUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: faviconUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _fallbackFavicon(),
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            _fallbackFavicon(),
                       )
                     : _fallbackFavicon(),
               ),

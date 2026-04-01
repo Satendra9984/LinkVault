@@ -1,23 +1,22 @@
-
 import 'package:fpdart/fpdart.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../../objectbox.g.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/infrastructure/database/app_database.dart';
+import '../../collections/data/mappers/collection_mapper.dart';
+import '../../collections/data/mappers/supabase_collection_mapper.dart';
 import '../../collections/data/models/collection_model.dart';
+import '../../items/data/mappers/item_mapper.dart';
+import '../../items/data/mappers/supabase_item_mapper.dart';
 import '../../items/data/models/item_model.dart';
-import '../../items/domain/entities/item.dart' show ItemStatus;
 import '../../settings/data/models/app_settings_model.dart';
+import '../../sync/application/sync_transient_retry.dart';
 
-/// Handles the **cloud downgrade offboarding** flow when a user cancels their
-/// subscription after having migrated data to the cloud.
+/// Cloud downgrade offboarding when a user cancels premium after migrating.
 ///
-/// Two flows:
-/// - [importFromCloud]: Fetch all Supabase data → write to local ObjectBox →
-///   reset [hasMigratedToCloud] flag. User becomes a local-only freemium user.
-/// - [deleteRemoteData]: Permanently wipe all Supabase data + Storage files
-///   for this user. Irreversible — must be confirmed by the user in the UI.
+/// Uses LinkVault tables `lv_collections` and `lv_urls` (not Curate `collections` / `items`).
 class CloudDowngradeService {
   final Logger _logger = Logger();
   final SupabaseClient _supabase;
@@ -29,13 +28,8 @@ class CloudDowngradeService {
   })  : _supabase = supabase,
         _store = appDatabase.store;
 
-  // ── Import from Cloud ───────────────────────────────────────────────────────
-
-  /// Fetches all of the user's data from Supabase and writes it to the local
-  /// ObjectBox store. Sets [hasMigratedToCloud] to `false` at the end so the
-  /// repository providers switch back to the local repository.
-  ///
-  /// This is safe to retry — ObjectBox puts by UID will overwrite existing rows.
+  /// Fetches cloud rows → ObjectBox, then clears [hasMigratedToCloud] so routing
+  /// returns to local repositories.
   Future<Either<Failure, void>> importFromCloud({
     void Function(double progress, String step)? onProgress,
   }) async {
@@ -46,16 +40,18 @@ class CloudDowngradeService {
       }
 
       onProgress?.call(0.1, 'Fetching your collections...');
-      final collectionsResponse = await _supabase
-          .from('collections')
-          .select()
-          .eq('owner_id', userId);
+      final collectionsResponse = await withTransientRetry(
+        operation: () async => _supabase
+            .from('lv_collections')
+            .select()
+            .eq('owner_id', userId),
+      );
 
-      onProgress?.call(0.4, 'Fetching your items...');
-      final itemsResponse = await _supabase
-          .from('items')
-          .select()
-          .eq('owner_id', userId);
+      onProgress?.call(0.4, 'Fetching your links...');
+      final urlsResponse = await withTransientRetry(
+        operation: () async =>
+            _supabase.from('lv_urls').select().eq('owner_id', userId),
+      );
 
       onProgress?.call(0.7, 'Saving to device...');
       _store.runInTransaction(TxMode.write, () {
@@ -63,60 +59,31 @@ class CloudDowngradeService {
         final itemBox = _store.box<ItemModel>();
 
         for (final row in collectionsResponse) {
-          // Check if already exists in ObjectBox by uid
+          final map = Map<String, dynamic>.from(row as Map);
+          final entity = SupabaseCollectionMapper.fromRow(map);
           final existing = collectionBox
-              .query(CollectionModel_.uid.equals(row['id'] as String))
+              .query(CollectionModel_.uid.equals(entity.id))
               .build()
               .findFirst();
 
-          final model = CollectionModel()
-            ..id = existing?.id ?? 0
-            ..uid = row['id'] as String
-            ..ownerId = row['owner_id'] as String?
-            ..title = row['name'] ?? row['title'] ?? 'Untitled'
-            ..category = row['category'] ?? 'General'
-            ..colorHex = row['color'] ?? row['color_hex'] ?? '#000000'
-            ..iconName = row['icon'] ?? row['icon_name'] ?? 'folder'
-            ..position = (row['position'] as num?)?.toDouble() ??
-                DateTime.now().millisecondsSinceEpoch.toDouble()
-            ..itemCount = row['item_count'] ?? 0
-            ..createdAt = DateTime.tryParse(row['created_at'] ?? '') ??
-                DateTime.now()
-            ..updatedAt = DateTime.tryParse(row['updated_at'] ?? '') ??
-                DateTime.now();
+          final model = CollectionMapper.toModel(entity)
+            ..id = existing?.id ?? 0;
           collectionBox.put(model);
         }
 
-        for (final row in itemsResponse) {
+        for (final row in urlsResponse) {
+          final map = Map<String, dynamic>.from(row as Map);
+          final entity = SupabaseItemMapper.fromRow(map);
           final existing = itemBox
-              .query(ItemModel_.uid.equals(row['id'] as String))
+              .query(ItemModel_.uid.equals(entity.id))
               .build()
               .findFirst();
 
-          final model = ItemModel()
-            ..id = existing?.id ?? 0
-            ..uid = row['id'] as String
-            ..ownerId = row['owner_id'] as String?
-            ..title = row['title'] ?? ''
-            ..description = row['description']
-            ..imagePath = null // Local path won't exist for cloud images
-            ..imageUrl = row['image_url']
-            ..link = row['link']
-            ..tags = row['tags']
-            ..dbStatus = (ItemStatus.values
-                    .firstWhere((e) => e.name == row['status'],
-                        orElse: () => ItemStatus.unread))
-                .index
-            ..collectionUid = row['collection_id'] as String? ?? ''
-            ..position = (row['position'] as num?)?.toDouble() ?? 0.0
-            ..createdAt = DateTime.tryParse(row['created_at'] ?? '') ??
-                DateTime.now()
-            ..updatedAt = DateTime.tryParse(row['updated_at'] ?? '') ??
-                DateTime.now();
+          final model = ItemMapper.toModel(entity)
+            ..id = existing?.id ?? 0;
           itemBox.put(model);
         }
 
-        // Reset migration flag so providers switch back to local repository
         final settingsBox = _store.box<AppSettingsModel>();
         final settings = settingsBox.query().build().findFirst() ??
             AppSettingsModel();
@@ -125,9 +92,8 @@ class CloudDowngradeService {
       });
 
       onProgress?.call(1.0, 'Import complete!');
-      _logger.i('[CloudDowngrade] Import succeeded: '
-          '${collectionsResponse.length} collections, '
-          '${itemsResponse.length} items');
+      _logger.i('[CloudDowngrade] Import: ${collectionsResponse.length} collections, '
+          '${urlsResponse.length} urls');
       return const Right(null);
     } catch (e, st) {
       _logger.e('[CloudDowngrade] Import failed', error: e, stackTrace: st);
@@ -136,13 +102,7 @@ class CloudDowngradeService {
     }
   }
 
-  // ── Delete Remote Data ──────────────────────────────────────────────────────
-
-  /// Permanently deletes all of the user's data from Supabase (collections,
-  /// items, and Storage images). Also resets the local [hasMigratedToCloud]
-  /// flag, making future app sessions run fully local.
-  ///
-  /// ⚠️ This is irreversible. Always require a typed confirmation in the UI.
+  /// Deletes remote `lv_urls` and `lv_collections` for this user (+ storage best-effort).
   Future<Either<Failure, void>> deleteRemoteData({
     void Function(double progress, String step)? onProgress,
   }) async {
@@ -152,11 +112,19 @@ class CloudDowngradeService {
         return const Left(NetworkFailure('User not authenticated.'));
       }
 
-      onProgress?.call(0.1, 'Deleting remote items...');
-      await _supabase.from('items').delete().eq('owner_id', userId);
+      onProgress?.call(0.1, 'Deleting remote links...');
+      await withTransientRetry(
+        operation: () =>
+            _supabase.from('lv_urls').delete().eq('owner_id', userId),
+      );
 
       onProgress?.call(0.4, 'Deleting remote collections...');
-      await _supabase.from('collections').delete().eq('owner_id', userId);
+      await withTransientRetry(
+        operation: () => _supabase
+            .from('lv_collections')
+            .delete()
+            .eq('owner_id', userId),
+      );
 
       onProgress?.call(0.7, 'Removing uploaded images...');
       try {
@@ -169,7 +137,6 @@ class CloudDowngradeService {
           await _supabase.storage.from('item-images').remove(paths);
         }
       } catch (e) {
-        // Non-fatal: bucket might be empty or not yet created
         _logger.w('[CloudDowngrade] Storage cleanup skipped: $e');
       }
 

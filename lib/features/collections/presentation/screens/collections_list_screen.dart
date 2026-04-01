@@ -299,8 +299,12 @@ class _FoldersTabState extends ConsumerState<_FoldersTab> {
                     message:
                         'Create a folder to start organizing your links.',
                     buttonText: '+ New folder',
-                    onButtonPressed: () =>
-                        context.push('/collections/create'),
+                    // Gated: create folder (Curate-style parent action).
+                    onButtonPressed: () async {
+                      final ok = await DayPassGate.check(context, ref);
+                      if (!ok || !context.mounted) return;
+                      context.push('/collections/create');
+                    },
                   ),
                 )
               else if (roots.isEmpty)
@@ -311,8 +315,11 @@ class _FoldersTabState extends ConsumerState<_FoldersTab> {
                     message:
                         'Create a folder to start organizing your links.',
                     buttonText: '+ New folder',
-                    onButtonPressed: () =>
-                        context.push('/collections/create'),
+                    onButtonPressed: () async {
+                      final ok = await DayPassGate.check(context, ref);
+                      if (!ok || !context.mounted) return;
+                      context.push('/collections/create');
+                    },
                   ),
                 )
               else if (uiState.isGrid)

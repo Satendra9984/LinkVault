@@ -273,13 +273,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             CircleAvatar(
               radius: 40,
               backgroundColor: cs.surfaceContainerHighest,
-              backgroundImage: profile?.avatarUrl != null
-                  ? CachedNetworkImageProvider(profile!.avatarUrl!)
-                  : null,
-              child: profile?.avatarUrl == null
-                  ? Icon(Icons.person,
-                      size: 40, color: cs.onSurfaceVariant)
-                  : null,
+              child: profile?.avatarUrl != null
+                  ? ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: profile!.avatarUrl!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Icon(
+                          Icons.person,
+                          size: 40,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        errorWidget: (_, __, ___) => Icon(
+                          Icons.person,
+                          size: 40,
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    )
+                  : Icon(Icons.person,
+                      size: 40, color: cs.onSurfaceVariant),
             ),
             if (isUploading)
               Container(

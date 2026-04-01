@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.link_vault"
+    namespace = "com.vicharshala.link_vault"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.link_vault"
+        applicationId = "com.vicharshala.link_vault"
         minSdk = 25
         targetSdk = 35
         versionCode = flutter.versionCode.toInt()

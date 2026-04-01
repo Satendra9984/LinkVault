@@ -4,11 +4,13 @@ import '../../../../objectbox.g.dart' hide StorageException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/infrastructure/database/app_database.dart';
-import '../../collections/data/mappers/supabase_collection_mapper.dart';
+import '../../collections/domain/library_root_collection.dart';
 import '../../collections/domain/repositories/i_collections_repository.dart';
 import '../../items/data/mappers/supabase_item_mapper.dart';
 import '../../items/domain/repositories/i_items_repository.dart';
 import '../../settings/data/models/app_settings_model.dart';
+import '../../sync/application/sync_transient_retry.dart';
+import 'cloud_migration_root_alignment.dart';
 import 'package:logger/logger.dart';
 
 class CloudMigrationService {
@@ -41,12 +43,26 @@ class CloudMigrationService {
       }
       final userId = user.id;
 
+      onProgress(0.08, 'Preparing local library folder...');
+      final ensureResult =
+          await _localCollectionsRepo.ensureLibraryRootCollection();
+      if (ensureResult.isLeft()) {
+        return Left(
+          ensureResult.fold((l) => l, (r) => throw StateError('unreachable')),
+        );
+      }
+
+      final repairResult = await _repairExtraLocalTopLevelFolders();
+      if (repairResult.isLeft()) {
+        return repairResult;
+      }
+
       onProgress(0.1, 'Reading local collections...');
       final collectionsResult = await _localCollectionsRepo.getAllCollections();
       if (collectionsResult.isLeft()) {
         return Left(collectionsResult.fold((l) => l, (r) => throw Exception()));
       }
-      final collections = collectionsResult.getOrElse((_) => []);
+      var collections = collectionsResult.getOrElse((_) => []);
 
       onProgress(0.2, 'Reading local items...');
       final itemsResult = await _localItemsRepo.getAllItems();
@@ -54,13 +70,80 @@ class CloudMigrationService {
       // mismatch), we still want collections continuity after guest->account.
       final items = itemsResult.isLeft() ? [] : itemsResult.getOrElse((_) => []);
 
-      // 1. Upsert Collections
+      // Align local root id with Supabase `ensure_library_root` so we never
+      // insert a second `parent_id IS NULL` row for this user (23505).
+      String? serverRootId;
+      String? localRootId;
+      if (collections.isNotEmpty) {
+        localRootId = LibraryRootCollection.libraryRootIdIfExactlyOne(
+              collections,
+            ) ??
+            CloudMigrationRootAlignment.canonicalTopLevelRootId(collections);
+        if (localRootId == null || localRootId.isEmpty) {
+          return const Left(
+            DatabaseFailure(
+              'Could not determine your Library folder locally. Try reopening Collections, then retry sync.',
+            ),
+          );
+        }
+
+        onProgress(0.25, 'Aligning with cloud library root...');
+        final raw = await withTransientRetry(
+          operation: () => _supabase.rpc(
+            'ensure_library_root',
+            params: {'p_owner_id': userId},
+          ),
+        );
+        serverRootId = raw?.toString();
+        if (serverRootId == null || serverRootId.isEmpty) {
+          return const Left(
+            DatabaseFailure(
+              'Could not resolve your cloud Library folder. Check your connection and try again.',
+            ),
+          );
+        }
+
+        collections = CloudMigrationRootAlignment.collectionsWithRemappedRootIds(
+          collections,
+          localRootId: localRootId,
+          serverRootId: serverRootId,
+        );
+
+        final sanity =
+            CloudMigrationRootAlignment.toSupabaseCollectionJson(collections, userId);
+        final rootRows =
+            CloudMigrationRootAlignment.countActiveRootRowsInJson(sanity);
+        if (rootRows != 1) {
+          _logger.w(
+            'CloudMigrationService: expected 1 active root row in payload, got $rootRows',
+          );
+          return const Left(
+            DatabaseFailure(
+              'Your local folder tree has multiple top-level libraries. Open Collections to repair, then retry sync.',
+            ),
+          );
+        }
+      }
+
+      // 1. Upsert Collections (batched + transient retry — idempotent on UUID PK)
       onProgress(0.3, 'Uploading collections (${collections.length})...');
       if (collections.isNotEmpty) {
-        final collectionData = collections
-            .map((c) => SupabaseCollectionMapper.toJson(c, userId))
-            .toList();
-        await _supabase.from('lv_collections').upsert(collectionData);
+        final collectionData =
+            CloudMigrationRootAlignment.toSupabaseCollectionJson(
+          collections,
+          userId,
+        );
+        const batchSize = 100;
+        for (var i = 0; i < collectionData.length; i += batchSize) {
+          final end = (i + batchSize < collectionData.length)
+              ? i + batchSize
+              : collectionData.length;
+          final batch = collectionData.sublist(i, end);
+          await withTransientRetry(
+            operation: () =>
+                _supabase.from('lv_collections').upsert(batch),
+          );
+        }
       }
 
       // 2. Upload Images for Items (Sequential to not overload memory)
@@ -103,10 +186,18 @@ class CloudMigrationService {
             }
           }
 
+          final itemForCloud = CloudMigrationRootAlignment.itemWithRemappedRootCollection(
+            item,
+            localRootId: localRootId,
+            serverRootId: serverRootId,
+          );
+
           mappedItems.add(
-            SupabaseItemMapper.toInsertJson(item,
-                ownerId: userId,
-                uploadedImageUrl: uploadedImageUrl),
+            SupabaseItemMapper.toInsertJson(
+              itemForCloud,
+              ownerId: userId,
+              uploadedImageUrl: uploadedImageUrl,
+            ),
           );
         }
       } catch (e) {
@@ -123,8 +214,11 @@ class CloudMigrationService {
             final end =
                 (i + 100 < mappedItems.length) ? i + 100 : mappedItems.length;
             final batch = mappedItems.sublist(i, end);
-            await _supabase.from('items')
-                .upsert(List<Map<String, dynamic>>.from(batch));
+            await withTransientRetry(
+              operation: () => _supabase.from('lv_urls').upsert(
+                    List<Map<String, dynamic>>.from(batch),
+                  ),
+            );
           }
         } catch (e) {
           // Items migration may not be ready yet (Sprint 7-8 gap); don't
@@ -138,9 +232,7 @@ class CloudMigrationService {
       _store.runInTransaction(TxMode.write, () {
         final box = _store.box<AppSettingsModel>();
         var settings = box.query().build().findFirst();
-        if (settings == null) {
-          settings = AppSettingsModel();
-        }
+        settings ??= AppSettingsModel();
         settings.hasMigratedToCloud = true;
         box.put(settings);
       });
@@ -165,4 +257,42 @@ class CloudMigrationService {
           DatabaseFailure(safeMessage, error: e, stackTrace: stackTrace));
     }
   }
+
+  /// Reparents extra non-deleted top-level folders under the canonical root.
+  Future<Either<Failure, void>> _repairExtraLocalTopLevelFolders() async {
+    final collectionsResult = await _localCollectionsRepo.getAllCollections();
+    if (collectionsResult.isLeft()) {
+      return Left(collectionsResult.fold((l) => l, (r) => throw Exception()));
+    }
+    final all = collectionsResult.getOrElse((_) => []);
+    final tops = all
+        .where(
+          (c) =>
+              !c.isDeleted &&
+              (c.parentId == null || c.parentId!.trim().isEmpty),
+        )
+        .toList();
+    if (tops.length <= 1) return const Right(null);
+
+    final canonical = CloudMigrationRootAlignment.canonicalTopLevelRootId(all);
+    if (canonical == null || canonical.isEmpty) {
+      return const Left(
+        DatabaseFailure(
+          'Could not repair multiple top-level folders. Open Collections and try again.',
+        ),
+      );
+    }
+
+    for (final t in tops) {
+      if (t.id == canonical) continue;
+      final patched = CloudMigrationRootAlignment.withParentId(t, canonical);
+      final updateResult =
+          await _localCollectionsRepo.updateCollection(patched);
+      if (updateResult.isLeft()) {
+        return Left(updateResult.fold((l) => l, (r) => throw Exception()));
+      }
+    }
+    return const Right(null);
+  }
+
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/app_config.dart';
+import '../../../../core/providers/core_providers.dart';
+import '../../../monetization/domain/usecases/check_ad_access_usecase.dart';
 import '../../domain/services/mock_dataset_profile.dart';
 import '../providers/debug_providers.dart';
 
@@ -35,6 +38,58 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _showDayPassDebug(BuildContext context) async {
+    final repo = ref.read(daypassRepositoryProvider);
+    final settings = ref.read(appSettingsRepositoryProvider);
+
+    final installDate = await repo.getInstallDate();
+    final expiresAt = await repo.getDayPassExpiresAt();
+    final remaining = await repo.getDayPassRemainingDuration();
+    final lastAdWatchedAt = await repo.getLastAdWatchedAt();
+    final lastAdFailed = await repo.lastAdFailed();
+    final isPremiumCached = await repo.getCachedPremiumStatus();
+    final isGuestMode = await settings.isGuestMode();
+    final hasMigratedToCloud = await settings.hasMigratedToCloud();
+
+    final status = await CheckAdAccessUseCase(repo).call();
+
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('DayPass / AppSettings debug'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('status: $status'),
+              const SizedBox(height: 8),
+              Text('installDate: ${installDate?.toIso8601String() ?? "null"}'),
+              Text('expiresAt: ${expiresAt?.toIso8601String() ?? "null"}'),
+              Text('remaining: ${remaining.inSeconds}s'),
+              const SizedBox(height: 8),
+              Text(
+                  'lastAdWatchedAt: ${lastAdWatchedAt?.toIso8601String() ?? "null"}'),
+              Text('lastAdFailed: $lastAdFailed'),
+              const SizedBox(height: 8),
+              Text('isPremiumCached: $isPremiumCached'),
+              Text('isGuestMode: $isGuestMode'),
+              Text('hasMigratedToCloud: $hasMigratedToCloud'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -117,6 +172,15 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                     'Ad timer reset successfully',
                   ),
                 ),
+                if (AppConfig.instance.isDev)
+                  ListTile(
+                    leading: const Icon(Icons.bug_report_outlined),
+                    title: const Text('DayPass / AppSettings debug'),
+                    subtitle: const Text(
+                      'Shows install date, expiry, remaining, last ad, grace, premium cache.',
+                    ),
+                    onTap: () => _showDayPassDebug(context),
+                  ),
                 const Divider(),
                 _buildSectionHeader('Data Management (DANGER)'),
                 ListTile(

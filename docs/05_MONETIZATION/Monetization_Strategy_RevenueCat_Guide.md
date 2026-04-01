@@ -4,7 +4,14 @@
 **Last Updated:** March 24, 2026  
 **Covers:** Revenue model · RevenueCat setup · AdMob Day Pass · Testing · Pitfalls
 
-**Companion (canonical tier + quotas + unit economics):** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · **ADR:** [ADR_0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).
+**Companion (canonical tier + quotas + unit economics):** [Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md](Monetization_Model_Free_Cloud_Quotas_and_Unit_Economics.md) · **ADR:** [ADR_0002](../10_DECISIONS_AND_RISKS/ADR_0002_Free_Tier_Supabase_Quotas_and_Day_Pass.md).  
+**Code-accurate architecture deep dive:** [RevenueCat_Setup_And_Architecture_LinkVault.md](RevenueCat_Setup_And_Architecture_LinkVault.md).
+
+## Start Here (Choose by intent)
+
+- **Concepts / system design:** [Subscription_Architecture_System_Design.md](Subscription_Architecture_System_Design.md)
+- **Platform setup runbook (RC + Supabase + stores):** [Shared_Subscription_Setup_Runbook.md](Shared_Subscription_Setup_Runbook.md)
+- **Implementation-oriented guide (this document):** Revenue model, key setup, paywall/testing pitfalls
 
 ---
 

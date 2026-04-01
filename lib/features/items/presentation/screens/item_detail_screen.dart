@@ -4,12 +4,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/item.dart';
+import '../../domain/link_open_behavior.dart';
+import '../../../collections/presentation/providers/collections_providers.dart';
+import '../../../collections/domain/collection_display_defaults.dart';
 import '../providers/items_providers.dart';
 import '../providers/items_hub_notifier.dart';
 import '../widgets/url_favicon_tile.dart';
 
 import 'package:collection/collection.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
   static const _radiusLg = 16.0;
@@ -93,7 +97,8 @@ class ItemDetailScreen extends ConsumerWidget {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        color: theme.colorScheme.onSurfaceVariant,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -164,9 +169,10 @@ class ItemDetailScreen extends ConsumerWidget {
                             // Link
                             if (item.link != null && item.link!.isNotEmpty) ...[
                               FilledButton.icon(
-                                onPressed: () => _openLink(item.link!),
+                                onPressed: () =>
+                                    _openItemLinkFromDetail(context, ref, item),
                                 icon: const Icon(Icons.open_in_new_rounded),
-                                label: const Text('Open in browser'),
+                                label: const Text('Open link'),
                               ),
                               const SizedBox(height: 12),
                               Row(
@@ -178,14 +184,16 @@ class ItemDetailScreen extends ConsumerWidget {
                                           ClipboardData(text: item.link!),
                                         );
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
                                               content: Text('URL copied'),
                                             ),
                                           );
                                         }
                                       },
-                                      icon: const Icon(Icons.content_copy_rounded),
+                                      icon: const Icon(
+                                          Icons.content_copy_rounded),
                                       label: const Text('Copy URL'),
                                     ),
                                   ),
@@ -309,7 +317,13 @@ class ItemDetailScreen extends ConsumerWidget {
 
   Widget _buildRawImage(Item item) {
     if (item.imageUrl != null) {
-      return Image.network(item.imageUrl!, fit: BoxFit.contain);
+      return CachedNetworkImage(
+        imageUrl: item.imageUrl!,
+        fit: BoxFit.contain,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Icon(Icons.error),
+      );
     } else if (item.imagePath != null && File(item.imagePath!).existsSync()) {
       return Image.file(File(item.imagePath!), fit: BoxFit.contain);
     }
@@ -318,11 +332,14 @@ class ItemDetailScreen extends ConsumerWidget {
 
   Widget _buildHeroImage(Item item, BuildContext context) {
     if (item.imageUrl != null) {
-      return Image.network(
-        item.imageUrl!,
+      return CachedNetworkImage(
+        imageUrl: item.imageUrl!,
         height: 400,
         width: double.infinity,
         fit: BoxFit.cover,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Icon(Icons.error),
       );
     } else if (item.imagePath != null && File(item.imagePath!).existsSync()) {
       return Image.file(
@@ -411,7 +428,8 @@ class ItemDetailScreen extends ConsumerWidget {
   Widget _metaRow(String label, String value) {
     return Row(
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Text(label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         const Spacer(),
         Flexible(
           child: Text(
@@ -426,10 +444,60 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openLink(String link) async {
-    final url = Uri.tryParse(link.startsWith('http') ? link : 'https://$link');
-    if (url != null && await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+  Future<void> _openItemLinkFromDetail(
+    BuildContext context,
+    WidgetRef ref,
+    Item item,
+  ) async {
+    final link = item.link;
+    if (link == null || link.trim().isEmpty) return;
+    final normalized =
+        link.startsWith('http://') || link.startsWith('https://')
+            ? link
+            : 'https://$link';
+    final url = Uri.tryParse(normalized);
+    if (url == null ||
+        !url.hasScheme ||
+        (url.host.isEmpty && url.scheme != 'file')) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid link')),
+        );
+      }
+      return;
+    }
+    final collections =
+        ref.read(collectionsListProvider).valueOrNull ?? [];
+    final coll =
+        collections.firstWhereOrNull((c) => c.id == item.collectionId);
+    final resolved = effectiveOpenLinksIn(
+      itemOpenLinksInOverride: item.openLinksInOverride,
+      collectionOpenLinksIn: coll?.openLinksIn,
+    );
+    final launchMode = resolved == CollectionOpenLinksIn.externalBrowser
+        ? LaunchMode.externalApplication
+        : LaunchMode.inAppBrowserView;
+    if (!await canLaunchUrl(url)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open link')),
+        );
+      }
+      return;
+    }
+    try {
+      final launched = await launchUrl(url, mode: launchMode);
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open link')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open link')),
+        );
+      }
     }
   }
 
@@ -518,7 +586,8 @@ class ItemDetailScreen extends ConsumerWidget {
                 size: 20,
               ),
               const SizedBox(width: 12),
-              Text(item.status == ItemStatus.archived ? 'Unarchive' : 'Archive'),
+              Text(
+                  item.status == ItemStatus.archived ? 'Unarchive' : 'Archive'),
             ],
           ),
         ),

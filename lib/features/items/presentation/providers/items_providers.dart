@@ -18,6 +18,22 @@ import '../../domain/usecases/toggle_item_status_usecase.dart';
 import '../../domain/usecases/toggle_item_archive_usecase.dart';
 import '../../domain/usecases/toggle_item_pin_usecase.dart';
 import '../../domain/usecases/reorder_items_usecase.dart';
+import '../../domain/usecases/query_url_items_usecase.dart';
+import '../../domain/models/url_items_query.dart';
+import '../../domain/url_sort_option.dart';
+
+export '../../domain/url_sort_option.dart';
+
+import 'items_hub_ui_notifier.dart';
+import 'items_list_models.dart';
+
+export 'items_list_models.dart';
+
+/// Always **local ObjectBox** — pair with [localCollectionsRepositoryProvider]
+/// for migration uploads.
+final localItemsRepositoryProvider = Provider<IItemsRepository>((ref) {
+  return ItemsRepositoryImpl(ref.watch(appDatabaseProvider).store);
+});
 
 // Same routing rules as [collectionsRepositoryProvider] (ADR-0002).
 final itemsRepositoryProvider = Provider<IItemsRepository>((ref) {
@@ -44,8 +60,41 @@ final getPaginatedItemsUseCaseProvider =
   return GetPaginatedItemsUseCase(ref.watch(itemsRepositoryProvider));
 });
 
+final queryUrlItemsUseCaseProvider = Provider<QueryUrlItemsUseCase>((ref) {
+  return QueryUrlItemsUseCase(ref.watch(itemsRepositoryProvider));
+});
+
 final getAllItemsUseCaseProvider = Provider<GetAllItemsUseCase>((ref) {
   return GetAllItemsUseCase(ref.watch(itemsRepositoryProvider));
+});
+
+/// Pinned URLs across the library for Home (read-only aggregate).
+///
+/// Auto-dispose refetches when Home is opened again after dispose.
+final homePinnedItemsProvider =
+    FutureProvider.autoDispose<List<Item>>((ref) async {
+  final result = await ref.watch(getAllItemsUseCaseProvider).call();
+  return result.fold(
+    (_) => <Item>[],
+    (items) {
+      final pinned = items
+          .where(
+            (i) =>
+                i.isPinned &&
+                !i.isDeleted &&
+                i.status != ItemStatus.archived,
+          )
+          .toList()
+        ..sort((a, b) {
+          final byPos = a.position.compareTo(b.position);
+          if (byPos != 0) return byPos;
+          return b.updatedAt.compareTo(a.updatedAt);
+        });
+      const maxItems = 36;
+      if (pinned.length <= maxItems) return pinned;
+      return pinned.sublist(0, maxItems);
+    },
+  );
 });
 
 final createItemUseCaseProvider = Provider<CreateItemUseCase>((ref) {
@@ -86,96 +135,6 @@ final toggleItemArchiveUseCaseProvider =
 final reorderItemsUseCaseProvider = Provider<ReorderItemsUseCase>((ref) {
   return ReorderItemsUseCase(ref.watch(itemsRepositoryProvider));
 });
-
-enum UrlSortOption {
-  position,
-  dateAdded,
-  dateEdited,
-  mostVisited,
-  alphabeticalAsc,
-  alphabeticalDesc,
-}
-enum UnifiedTab { childCollections, urls }
-enum UrlViewMode { list, cards, icons }
-
-/// Links tab data: lazy-loaded when user switches to Links (or [ensureUrlsLoaded]).
-enum UrlsDataPhase {
-  notStarted,
-  loading,
-  loaded,
-  error,
-}
-
-int compareBySortOption(UrlSortOption sort, Item a, Item b) {
-  return switch (sort) {
-    UrlSortOption.position => a.position.compareTo(b.position),
-    UrlSortOption.dateAdded => b.createdAt.compareTo(a.createdAt),
-    UrlSortOption.dateEdited => b.updatedAt.compareTo(a.updatedAt),
-    UrlSortOption.mostVisited => b.clickCount.compareTo(a.clickCount),
-    UrlSortOption.alphabeticalAsc =>
-      a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-    UrlSortOption.alphabeticalDesc =>
-      b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-  };
-}
-
-class ItemsState {
-  static const Object _kUnset = Object();
-
-  final List<Item> items;
-  final bool hasMore;
-  final bool isLoadingMore;
-  final ItemStatus? statusFilter;
-  final UrlSortOption sortOption;
-  final UrlViewMode viewMode;
-  final UnifiedTab activeTab;
-  final UrlsDataPhase urlsDataPhase;
-  final String? urlsErrorMessage;
-  /// How many raw rows we've fetched from the repository (used to keep
-  /// pagination stable when client-side filtering is enabled).
-  final int fetchedCount;
-
-  ItemsState({
-    required this.items,
-    this.hasMore = true,
-    this.isLoadingMore = false,
-    this.statusFilter,
-    this.sortOption = UrlSortOption.dateAdded,
-    this.viewMode = UrlViewMode.list,
-    this.activeTab = UnifiedTab.childCollections,
-    this.urlsDataPhase = UrlsDataPhase.notStarted,
-    this.urlsErrorMessage,
-    this.fetchedCount = 0,
-  });
-
-  ItemsState copyWith({
-    List<Item>? items,
-    bool? hasMore,
-    bool? isLoadingMore,
-    ItemStatus? statusFilter,
-    UrlSortOption? sortOption,
-    UrlViewMode? viewMode,
-    UnifiedTab? activeTab,
-    UrlsDataPhase? urlsDataPhase,
-    Object? urlsErrorMessage = _kUnset,
-    int? fetchedCount,
-  }) {
-    return ItemsState(
-      items: items ?? this.items,
-      hasMore: hasMore ?? this.hasMore,
-      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      statusFilter: statusFilter ?? this.statusFilter,
-      sortOption: sortOption ?? this.sortOption,
-      viewMode: viewMode ?? this.viewMode,
-      activeTab: activeTab ?? this.activeTab,
-      urlsDataPhase: urlsDataPhase ?? this.urlsDataPhase,
-      urlsErrorMessage: urlsErrorMessage == _kUnset
-          ? this.urlsErrorMessage
-          : urlsErrorMessage as String?,
-      fetchedCount: fetchedCount ?? this.fetchedCount,
-    );
-  }
-}
 
 class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   static const int _pageSize = 20;
@@ -227,9 +186,15 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   /// Loads URL rows for this collection (first open of Links tab, edit screen, etc.).
   Future<void> ensureUrlsLoaded({bool forceRefresh = false}) async {
     var current = state.value;
-    if (current == null) return;
-    if (!forceRefresh &&
-        current.urlsDataPhase == UrlsDataPhase.loaded) {
+    // Tab sync can run before the first [build] completes; yield until [AsyncData] exists.
+    if (current == null) {
+      for (var i = 0; i < 50 && current == null; i++) {
+        await Future<void>.delayed(Duration.zero);
+        current = state.value;
+      }
+      if (current == null) return;
+    }
+    if (!forceRefresh && current.urlsDataPhase == UrlsDataPhase.loaded) {
       return;
     }
     if (!forceRefresh && current.urlsDataPhase == UrlsDataPhase.loading) {
@@ -268,25 +233,39 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     }
   }
 
+  UrlItemsQuery _urlItemsQuery(int offset) {
+    final ui = ref.read(itemsHubUiNotifierProvider(_collectionId));
+    return UrlItemsQuery(
+      collectionId: _collectionId,
+      limit: _pageSize,
+      offset: offset,
+      status: _statusFilter,
+      sort: _sortOption,
+      searchQuery: ui.urlSearchQuery,
+      pinnedOnly: ui.urlPinnedOnly,
+      withDescriptionOnly: ui.urlWithDescriptionOnly,
+      withImageOnly: ui.urlWithImageOnly,
+      domainContains: ui.urlDomainQuery,
+      savedAfter: ui.urlSavedAfter,
+      savedBefore: ui.urlSavedBefore,
+    );
+  }
+
   Future<ItemsState> _fetchPage(int offset, List<Item> currentItems) async {
-    final useCase = ref.read(getPaginatedItemsUseCaseProvider);
-    final result = await useCase.call(_collectionId, _pageSize, offset);
+    final useCase = ref.read(queryUrlItemsUseCaseProvider);
+    final result = await useCase(_urlItemsQuery(offset));
 
     return result.fold(
       (failure) {
         throw Exception(failure.message);
       },
-      (newItems) {
-        final filteredPage = _statusFilter == null
-            ? newItems
-            : newItems.where((i) => i.status == _statusFilter).toList();
-
-        final combined = <Item>[...currentItems, ...filteredPage];
-        combined.sort((a, b) => compareBySortOption(_sortOption, a, b));
+      (page) {
+        final combined =
+            offset == 0 ? page.items : <Item>[...currentItems, ...page.items];
 
         return ItemsState(
           items: combined,
-          hasMore: newItems.length == _pageSize,
+          hasMore: page.hasMore,
           isLoadingMore: false,
           statusFilter: _statusFilter,
           sortOption: _sortOption,
@@ -294,10 +273,39 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
           activeTab: _activeTab,
           urlsDataPhase: UrlsDataPhase.loaded,
           urlsErrorMessage: null,
-          fetchedCount: offset + newItems.length,
+          fetchedCount: offset + page.items.length,
         );
       },
     );
+  }
+
+  /// Re-runs the first page using current hub UI filters (search, dates, etc.).
+  Future<void> refetchUrlsWithCurrentFilters() async {
+    final base = state.value;
+    if (base == null) return;
+    if (base.urlsDataPhase == UrlsDataPhase.notStarted) return;
+
+    state = AsyncData(
+      base.copyWith(
+        urlsDataPhase: UrlsDataPhase.loading,
+        urlsErrorMessage: null,
+        isLoadingMore: false,
+      ),
+    );
+    try {
+      final newState = await _fetchPage(0, []);
+      state = AsyncData(
+        newState.copyWith(urlsDataPhase: UrlsDataPhase.loaded),
+      );
+    } catch (e) {
+      state = AsyncData(
+        base.copyWith(
+          urlsDataPhase: UrlsDataPhase.error,
+          urlsErrorMessage: e.toString(),
+          isLoadingMore: false,
+        ),
+      );
+    }
   }
 
   Future<void> fetchNextPage() async {
@@ -328,33 +336,28 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
 
   Future<void> setStatusFilter(ItemStatus? filter) async {
     _statusFilter = filter;
-    final base = state.value;
-    if (base == null) return;
-    state = AsyncData(
-      base.copyWith(
-        urlsDataPhase: UrlsDataPhase.loading,
-        urlsErrorMessage: null,
-      ),
-    );
-    try {
-      final newState = await _fetchPage(0, []);
-      state = AsyncData(
-        newState.copyWith(urlsDataPhase: UrlsDataPhase.loaded),
-      );
-    } catch (e) {
-      state = AsyncData(
-        base.copyWith(
-          urlsDataPhase: UrlsDataPhase.error,
-          urlsErrorMessage: e.toString(),
-        ),
-      );
-    }
+    await _refetchFirstPage();
   }
 
   Future<void> setSortOption(UrlSortOption sortOption) async {
     _sortOption = sortOption;
+    await _refetchFirstPage();
+  }
+
+  /// Single refetch after filter sheet applies sort + status together.
+  Future<void> applySortAndStatusFromFilterSheet({
+    required UrlSortOption sortOption,
+    required ItemStatus? statusFilter,
+  }) async {
+    _sortOption = sortOption;
+    _statusFilter = statusFilter;
+    await _refetchFirstPage();
+  }
+
+  Future<void> _refetchFirstPage() async {
     final base = state.value;
     if (base == null) return;
+    if (base.urlsDataPhase == UrlsDataPhase.notStarted) return;
     state = AsyncData(
       base.copyWith(
         urlsDataPhase: UrlsDataPhase.loading,
@@ -388,8 +391,9 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   Future<void> setActiveTab(UnifiedTab tab) async {
     _activeTab = tab;
     final current = state.value;
-    if (current == null) return;
-    state = AsyncData(current.copyWith(activeTab: _activeTab));
+    if (current != null) {
+      state = AsyncData(current.copyWith(activeTab: _activeTab));
+    }
     if (tab == UnifiedTab.urls) {
       await ensureUrlsLoaded();
     }
@@ -425,7 +429,7 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
 
     final currentItems = state.value!.items;
     final nextItems = <Item>[newItem, ...currentItems];
-    nextItems.sort((a, b) => compareBySortOption(_sortOption, a, b));
+    nextItems.sort((a, b) => compareItemsByUrlSort(_sortOption, a, b));
     state = AsyncData(
       state.value!.copyWith(
         items: nextItems,
@@ -444,7 +448,7 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
     if (index != -1) {
       final newItems = List<Item>.from(currentItems);
       newItems[index] = updatedItem;
-      newItems.sort((a, b) => compareBySortOption(_sortOption, a, b));
+      newItems.sort((a, b) => compareItemsByUrlSort(_sortOption, a, b));
       state = AsyncData(state.value!.copyWith(items: newItems));
     }
   }

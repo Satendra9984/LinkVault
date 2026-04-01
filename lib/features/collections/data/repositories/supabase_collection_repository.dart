@@ -223,28 +223,11 @@ class SupabaseCollectionRepository implements ICollectionsRepository {
 
   @override
   Future<Either<Failure, void>> recordCollectionAccess(String id) async {
-    try {
-      if (_userId == null) {
-        AppLogger.w('[collections] recordCollectionAccess: no userId');
-        return const Left(NetworkFailure('User not authenticated'));
-      }
-      final now = DateTime.now().toUtc().toIso8601String();
-      await _supabase.from('lv_collections').update({
-        'last_accessed_at': now,
-        'updated_at': now,
-      }).eq('id', id).eq('owner_id', _userId);
-      AppLogger.t('[collections] recordCollectionAccess ok id=$id');
-      return const Right(null);
-    } catch (e, stackTrace) {
-      final authFailure =
-          tryMapSupabaseAuthFailure(e, stackTrace);
-      if (authFailure != null) {
-        return Left(authFailure);
-      }
-      AppLogger.e('[collections] recordCollectionAccess failed id=$id', e, stackTrace);
-      return Left(NetworkFailure('Failed to record collection access',
-          error: e, stackTrace: stackTrace));
-    }
+    // Access tracking is local-only (ObjectBox) to avoid per-open cloud writes.
+    // Cloud path still receives last_accessed_at via full collection sync when
+    // the row is updated for real edits.
+    AppLogger.t('[collections] recordCollectionAccess skipped (cloud) id=$id');
+    return const Right(null);
   }
 
   Collection _newLibraryRootEntity(String id) {

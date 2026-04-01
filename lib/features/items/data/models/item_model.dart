@@ -50,6 +50,9 @@ class ItemModel {
   @Index()
   late String collectionUid;
 
+  /// Null = inherit collection `open_links_in`.
+  String? openLinksInOverride;
+
   double position = 0.0;
 
   @Property(type: PropertyType.date)

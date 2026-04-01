@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../domain/usecases/sign_in_apple_usecase.dart';
 import '../../domain/usecases/sign_in_google_usecase.dart';
 import '../../domain/usecases/sign_in_otp_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../sync/data/sync_metadata_store.dart';
 import '../../domain/repositories/i_auth_repository.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import 'auth_providers.dart';
@@ -144,14 +146,27 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true, clearError: true);
+    final syncUid = ref.read(currentUserProvider)?.supabaseId;
     // Clear local session data (guest mode, premium cache) on sign-out
     await ref.read(appSettingsRepositoryProvider).clearSessionData();
+    if (syncUid != null) {
+      await SyncMetadataStore().clearForUser(syncUid);
+    }
     final result =
         await SignOutUseCase(ref.read(authRepositoryProvider)).call();
-    result.fold(
-      (failure) => state =
-          state.copyWith(isLoading: false, errorMessage: failure.message),
-      (_) => state = state.copyWith(isLoading: false),
+    await result.fold<Future<void>>(
+      (failure) async {
+        state =
+            state.copyWith(isLoading: false, errorMessage: failure.message);
+      },
+      (_) async {
+        try {
+          await Purchases.logOut();
+        } catch (e) {
+          AppLogger.w('AuthNotifier: Purchases.logOut failed (non-fatal): $e');
+        }
+        state = state.copyWith(isLoading: false);
+      },
     );
   }
 

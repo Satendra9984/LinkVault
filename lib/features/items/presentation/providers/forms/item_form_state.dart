@@ -30,6 +30,14 @@ class ItemFormState extends Equatable {
 
   final ItemStatus status;
 
+  final bool isPinned;
+
+  /// Null = inherit collection open-links setting.
+  final String? openLinksInOverride;
+
+  /// Edit-only: when non-null, item is saved into this collection (move).
+  final String? pendingMoveCollectionId;
+
   final bool isSubmitting;
   final bool isSuccess;
   final String? errorMessage;
@@ -50,6 +58,9 @@ class ItemFormState extends Equatable {
     this.contentType,
     this.publishedAt,
     this.status = ItemStatus.unread,
+    this.isPinned = false,
+    this.openLinksInOverride,
+    this.pendingMoveCollectionId,
     this.isSubmitting = false,
     this.isSuccess = false,
     this.errorMessage,
@@ -82,6 +93,11 @@ class ItemFormState extends Equatable {
     DateTime? publishedAt,
     bool? clearPublishedAt,
     ItemStatus? status,
+    bool? isPinned,
+    String? openLinksInOverride,
+    bool? clearOpenLinksInOverride,
+    String? pendingMoveCollectionId,
+    bool? clearPendingMoveCollectionId,
     bool? isSubmitting,
     bool? isSuccess,
     String? errorMessage,
@@ -109,6 +125,13 @@ class ItemFormState extends Equatable {
           : (contentType ?? this.contentType),
       publishedAt: clearPublishedAt == true ? null : (publishedAt ?? this.publishedAt),
       status: status ?? this.status,
+      isPinned: isPinned ?? this.isPinned,
+      openLinksInOverride: clearOpenLinksInOverride == true
+          ? null
+          : (openLinksInOverride ?? this.openLinksInOverride),
+      pendingMoveCollectionId: clearPendingMoveCollectionId == true
+          ? null
+          : (pendingMoveCollectionId ?? this.pendingMoveCollectionId),
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isSuccess: isSuccess ?? this.isSuccess,
       errorMessage: errorMessage,
@@ -132,6 +155,9 @@ class ItemFormState extends Equatable {
         contentType,
         publishedAt,
         status,
+        isPinned,
+        openLinksInOverride,
+        pendingMoveCollectionId,
         isSubmitting,
         isSuccess,
         errorMessage,

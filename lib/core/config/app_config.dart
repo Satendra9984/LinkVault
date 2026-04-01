@@ -41,18 +41,37 @@ class AppConfig {
       ? revenueCatIosKey
       : revenueCatAndroidKey;
 
+  /// Google-provided **sample** rewarded units (safe for dev when .env is empty).
+  static const String _googleTestRewardedIos =
+      'ca-app-pub-3940256099942544/1712485313';
+  static const String _googleTestRewardedAndroid =
+      'ca-app-pub-3940256099942544/5224354917';
+
   /// Returns the correct AdMob rewarded ad unit ID for the current platform.
-  /// In dev, returns the test ad unit ID automatically.
+  /// In dev, prefers `ADMOB_TEST_*` from .env, then Google's official test IDs.
   String get admobRewardedAdUnit {
     if (isDev) {
+      final fromEnv = defaultTargetPlatform == TargetPlatform.iOS
+          ? dotenv.env['ADMOB_TEST_REWARDED_AD_UNIT_ID_IOS']
+          : dotenv.env['ADMOB_TEST_REWARDED_AD_UNIT_ID_ANDROID'];
+      if (fromEnv != null && fromEnv.trim().isNotEmpty) {
+        return fromEnv.trim();
+      }
       return defaultTargetPlatform == TargetPlatform.iOS
-          ? dotenv.env['ADMOB_TEST_REWARDED_AD_UNIT_ID_IOS'] ?? ''
-          : dotenv.env['ADMOB_TEST_REWARDED_AD_UNIT_ID_ANDROID'] ?? '';
+          ? _googleTestRewardedIos
+          : _googleTestRewardedAndroid;
     }
     return defaultTargetPlatform == TargetPlatform.iOS
         ? admobRewardedAdUnitIos
         : admobRewardedAdUnitAndroid;
   }
+
+  /// True when production build has no rewarded unit configured (misconfiguration).
+  bool get isAdMobRewardedMisconfigured =>
+      isProduction &&
+      (defaultTargetPlatform == TargetPlatform.iOS
+          ? admobRewardedAdUnitIos.isEmpty
+          : admobRewardedAdUnitAndroid.isEmpty);
 
   /// Initializes the config from the loaded dotenv values.
   /// Must be called after [dotenv.load()] in main.

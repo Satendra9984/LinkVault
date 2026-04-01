@@ -227,7 +227,7 @@ class CollectionsRepositoryImpl implements ICollectionsRepository {
             _box.query(CollectionModel_.uid.equals(id)).build().findFirst();
         if (existing != null) {
           existing.lastAccessedAt = DateTime.now();
-          existing.updatedAt = DateTime.now();
+          // Do not bump updatedAt — avoids delta-sync pushes for browse-only access.
           _box.put(existing);
         }
       });

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/presentation/providers/auth_providers.dart';
-import '../../features/monetization/presentation/providers/subscription_status_provider.dart';
+import '../../features/monetization/presentation/providers/premium_provider.dart';
 import '../../features/settings/presentation/providers/settings_providers.dart';
 import 'network_providers.dart';
 
@@ -23,8 +23,7 @@ final dataBackendSelectionProvider = Provider<DataBackendSelection>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   final isOnline = ref.watch(isOnlineProvider);
   final isPremium = ref.watch(isPremiumProvider);
-  final isActive =
-      ref.watch(isSubscriptionActiveProvider).valueOrNull ?? false;
+  final isActive = ref.watch(revenueCatPremiumProvider).valueOrNull ?? false;
 
   final isAuthenticated = currentUser != null;
   final useCloud = isAuthenticated && isOnline && (!isPremium || hasMigratedToCloud);

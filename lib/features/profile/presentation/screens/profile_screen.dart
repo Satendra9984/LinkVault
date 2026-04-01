@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../providers/profile_notifier.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -12,6 +13,7 @@ import '../../../../core/theme/theme_provider.dart';
 import '../../../monetization/presentation/providers/ad_gate_provider.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../monetization/presentation/widgets/cloud_downgrade_card.dart';
+import '../../../sync/presentation/providers/sync_coordinator_provider.dart';
 import '../../../../core/config/app_config.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -183,6 +185,65 @@ class _ProfileBody extends ConsumerWidget {
   final dynamic profile;
   final bool isPremium;
 
+  Widget _cloudSyncSection(BuildContext context, WidgetRef ref) {
+    final migrated = ref.watch(hasMigratedToCloudProvider);
+    if (!migrated) return const SizedBox.shrink();
+    final sync = ref.watch(syncCoordinatorProvider);
+    final theme = Theme.of(context);
+    String two(int n) => n.toString().padLeft(2, '0');
+    String fmt(DateTime t) {
+      final l = t.toLocal();
+      return '${l.year}-${two(l.month)}-${two(l.day)} ${two(l.hour)}:${two(l.minute)}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SectionHeader(title: 'CLOUD SYNC'),
+        _Card(
+          child: ListTile(
+            leading: Icon(
+              sync.isRunning
+                  ? Icons.sync
+                  : sync.lastError != null
+                      ? Icons.cloud_off_outlined
+                      : Icons.cloud_sync_outlined,
+            ),
+            title: const Text('Sync status'),
+            subtitle: Text(
+              sync.isRunning
+                  ? 'Syncing with cloud…'
+                  : sync.lastError != null
+                      ? sync.lastError!
+                      : sync.lastSuccessAt != null
+                          ? 'Last OK: ${fmt(sync.lastSuccessAt!)} — ~${sync.pendingApprox} pending (local)'
+                          : 'Tap to run a manual sync',
+              style: theme.textTheme.bodySmall,
+            ),
+            trailing: sync.isRunning
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    tooltip: 'Sync now',
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () => ref
+                        .read(syncCoordinatorProvider.notifier)
+                        .runSync(manual: true),
+                  ),
+            onTap: sync.isRunning
+                ? null
+                : () => ref
+                    .read(syncCoordinatorProvider.notifier)
+                    .runSync(manual: true),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -193,6 +254,7 @@ class _ProfileBody extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
         const CloudDowngradeCard(),
+        _cloudSyncSection(context, ref),
 
         // ── User card ──────────────────────────────────────────────────
         Padding(
@@ -207,12 +269,27 @@ class _ProfileBody extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: profile.avatarUrl != null
-                      ? NetworkImage(profile.avatarUrl as String)
-                      : null,
-                  child: profile.avatarUrl == null
-                      ? const Icon(Icons.person, size: 30)
-                      : null,
+                  backgroundColor: cs.surfaceContainerHighest,
+                  child: profile.avatarUrl != null
+                      ? ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: profile.avatarUrl as String,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Icon(
+                              Icons.person,
+                              size: 30,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            errorWidget: (_, __, ___) => Icon(
+                              Icons.person,
+                              size: 30,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                      : const Icon(Icons.person, size: 30),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -661,12 +738,11 @@ class _DayPassSettingsTile extends ConsumerStatefulWidget {
 class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
   Timer? _timer;
   Duration _remaining = Duration.zero;
-  final bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _refresh();
+    _syncRemaining();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
@@ -676,7 +752,7 @@ class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
     super.dispose();
   }
 
-  Future<void> _refresh() async {
+  Future<void> _syncRemaining() async {
     final d = await ref.read(adGateProvider.notifier).remainingDuration();
     if (mounted) setState(() => _remaining = d);
   }
@@ -695,30 +771,82 @@ class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
     return '$h:$m:$s';
   }
 
+  String _titleFor(DayPassStatus s) => switch (s) {
+        DayPassStatus.premium => 'Premium active',
+        DayPassStatus.freeTrial => 'Free trial active',
+        DayPassStatus.active => 'DayPass active',
+        DayPassStatus.grace => 'Grace period',
+        DayPassStatus.expired => 'Access expired',
+      };
+
+  String _subtitleFor(DayPassStatus s) {
+    if (s == DayPassStatus.premium) {
+      return 'No ads — unlimited access';
+    }
+    if (s == DayPassStatus.expired) {
+      return 'Open Daily Access Pass to watch an ad or upgrade';
+    }
+    if (_remaining.inSeconds > 0 &&
+        (s == DayPassStatus.active ||
+            s == DayPassStatus.freeTrial ||
+            s == DayPassStatus.grace)) {
+      return 'Time remaining: ${_fmt(_remaining)}';
+    }
+    return 'Tap to manage your Daily Access Pass';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final hasPass = _remaining.inSeconds > 0;
-    return ListTile(
-      leading: const Icon(Icons.confirmation_number_outlined),
-      title: Text(hasPass ? 'DayPass active' : 'DayPass inactive',
-          style: widget.theme.textTheme.bodyMedium),
-      subtitle: Text(
-        hasPass
-            ? 'Expires in ${_fmt(_remaining)}'
-            : 'Watch an ad to unlock full access today',
-        style: widget.theme.textTheme.bodySmall,
+    ref.listen<AsyncValue<DayPassStatus>>(adGateProvider, (prev, next) {
+      next.whenData((_) => _syncRemaining());
+    });
+
+    final gateAsync = ref.watch(adGateProvider);
+    final theme = widget.theme;
+
+    return gateAsync.when(
+      loading: () => ListTile(
+        leading: const Icon(Icons.confirmation_number_outlined),
+        title:
+            Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
+        subtitle: const Text('Loading status…'),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        trailing: const SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
       ),
-      trailing: _loading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : FilledButton.tonal(
-              onPressed: () => context.push('/ad-gate'),
-              child: const Text('Get pass'),
+      error: (_, __) => ListTile(
+        leading: const Icon(Icons.confirmation_number_outlined),
+        title:
+            Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
+        subtitle: const Text('Could not load access status'),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        trailing: FilledButton.tonal(
+          onPressed: () => context.push('/daypass'),
+          child: const Text('Open'),
+        ),
+        onTap: () => context.push('/daypass'),
+      ),
+      data: (status) {
+        return ListTile(
+          leading: const Icon(Icons.confirmation_number_outlined),
+          title: Text(_titleFor(status), style: theme.textTheme.bodyMedium),
+          subtitle: Text(
+            _subtitleFor(status),
+            style: theme.textTheme.bodySmall,
+          ),
+          trailing: FilledButton.tonal(
+            onPressed: () => context.push('/daypass'),
+            child: Text(
+              status == DayPassStatus.expired ? 'Get access' : 'Manage',
             ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          onTap: () => context.push('/daypass'),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        );
+      },
     );
   }
 }

@@ -259,7 +259,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(4, 328533937922981262),
       name: 'ItemModel',
-      lastPropertyId: const obx_int.IdUid(29, 7717661519180054530),
+      lastPropertyId: const obx_int.IdUid(30, 259879101094635734),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -400,6 +400,11 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(29, 7717661519180054530),
             name: 'deletedAt',
             type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(30, 259879101094635734),
+            name: 'openLinksInOverride',
+            type: 9,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -747,7 +752,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final contentTypeOffset = object.contentType == null
               ? null
               : fbb.writeString(object.contentType!);
-          fbb.startTable(30);
+          final openLinksInOverrideOffset = object.openLinksInOverride == null
+              ? null
+              : fbb.writeString(object.openLinksInOverride!);
+          fbb.startTable(31);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, uidOffset);
           fbb.addOffset(2, ownerIdOffset);
@@ -775,6 +783,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addInt64(26, object.lastAccessedAt?.millisecondsSinceEpoch);
           fbb.addBool(27, object.isDeleted);
           fbb.addInt64(28, object.deletedAt?.millisecondsSinceEpoch);
+          fbb.addOffset(29, openLinksInOverrideOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -841,7 +850,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 const fb.BoolReader().vTableGet(buffer, rootOffset, 58, false)
             ..deletedAt = deletedAtValue == null
                 ? null
-                : DateTime.fromMillisecondsSinceEpoch(deletedAtValue);
+                : DateTime.fromMillisecondsSinceEpoch(deletedAtValue)
+            ..openLinksInOverride =
+                const fb.StringReader(asciiOptimization: true)
+                    .vTableGetNullable(buffer, rootOffset, 62);
           object.collection.targetId =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 36, 0);
           object.collection.attach(store);
@@ -1165,6 +1177,10 @@ class ItemModel_ {
   /// See [ItemModel.deletedAt].
   static final deletedAt =
       obx.QueryDateProperty<ItemModel>(_entities[3].properties[26]);
+
+  /// See [ItemModel.openLinksInOverride].
+  static final openLinksInOverride =
+      obx.QueryStringProperty<ItemModel>(_entities[3].properties[27]);
 }
 
 /// [SearchHistoryModel] entity fields to define ObjectBox queries.
