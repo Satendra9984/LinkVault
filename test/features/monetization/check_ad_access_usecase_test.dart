@@ -9,6 +9,8 @@ class _FakeDayPassRepo implements IDayPassRepository {
     this.dayPassExpiresAt,
     DateTime? lastAdWatchedAt,
     this.adFailed = false,
+    this.guestMode = true,
+    this.accountInstallTrialConsumed = false,
   }) : _lastAdWatchedAt = lastAdWatchedAt;
 
   bool cachedPremium;
@@ -16,6 +18,8 @@ class _FakeDayPassRepo implements IDayPassRepository {
   DateTime? dayPassExpiresAt;
   final DateTime? _lastAdWatchedAt;
   bool adFailed;
+  bool guestMode;
+  bool accountInstallTrialConsumed;
   int setInstallDateIfNotSetCalls = 0;
 
   @override
@@ -51,6 +55,21 @@ class _FakeDayPassRepo implements IDayPassRepository {
   Future<void> setInstallDateIfNotSet() async {
     setInstallDateIfNotSetCalls++;
   }
+
+  @override
+  Future<bool> isGuestMode() async => guestMode;
+
+  @override
+  Future<bool> getAccountInstallTrialConsumed() async =>
+      accountInstallTrialConsumed;
+
+  @override
+  Future<void> setAccountInstallTrialConsumed(bool consumed) async {
+    accountInstallTrialConsumed = consumed;
+  }
+
+  @override
+  Future<Duration> getFreeTrialRemainingDuration() async => Duration.zero;
 }
 
 void main() {
@@ -62,6 +81,29 @@ void main() {
 
   test('returns freeTrial when install within 3 days', () async {
     final repo = _FakeDayPassRepo(
+      installDate: DateTime.now().subtract(const Duration(days: 1)),
+    );
+    final status = await CheckAdAccessUseCase(repo).call();
+    expect(status, DayPassStatus.freeTrial);
+  });
+
+  test('signed-in + account trial consumed: no freeTrial even if reinstall window',
+      () async {
+    final repo = _FakeDayPassRepo(
+      guestMode: false,
+      accountInstallTrialConsumed: true,
+      installDate: DateTime.now().subtract(const Duration(days: 1)),
+      dayPassExpiresAt: DateTime.now().subtract(const Duration(hours: 2)),
+      adFailed: false,
+    );
+    final status = await CheckAdAccessUseCase(repo).call();
+    expect(status, DayPassStatus.expired);
+  });
+
+  test('signed-in + not consumed: freeTrial when install within 3 days', () async {
+    final repo = _FakeDayPassRepo(
+      guestMode: false,
+      accountInstallTrialConsumed: false,
       installDate: DateTime.now().subtract(const Duration(days: 1)),
     );
     final status = await CheckAdAccessUseCase(repo).call();

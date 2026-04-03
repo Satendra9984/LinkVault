@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,8 +25,6 @@ import '../../../collections/domain/entities/collection.dart';
 import '../../../collections/domain/collection_display_defaults.dart';
 
 enum _EmptyLinksMode { noLinks, noFilterMatches, noSearchMatches }
-
-enum _LinksQuickDate { all, last7Days, last30Days, thisYear }
 
 /// Responsive grid for links / nested folders (min tile width + aspect targets).
 class _HubGridMetrics {
@@ -118,10 +115,6 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
   bool _urlsEmergencyPrefetchWithoutCollection = false;
   bool _fabVisible = true;
   bool _fabExtended = true;
-  Timer? _urlSearchDebounce;
-
-  /// Null = use per-link override + folder default ([effectiveOpenLinksIn]).
-  String? _linkTapOpenOverride;
   TabController? _hubTabController;
 
   void _onHubTabControllerChanged() {
@@ -173,18 +166,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
   void dispose() {
     _hubTabController?.removeListener(_onHubTabControllerChanged);
     _hubTabController = null;
-    _urlSearchDebounce?.cancel();
     super.dispose();
-  }
-
-  void _scheduleUrlQueryRefetch() {
-    _urlSearchDebounce?.cancel();
-    _urlSearchDebounce = Timer(const Duration(milliseconds: 400), () {
-      if (!mounted) return;
-      ref
-          .read(itemsNotifierProvider(widget.collectionId).notifier)
-          .refetchUrlsWithCurrentFilters();
-    });
   }
 
   List<Collection> _filterChildCollectionsBySearch(
@@ -886,19 +868,29 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     onRefresh: () async {
                       ref.invalidate(collectionsListProvider);
                     },
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        _buildChildFoldersToolbarSliver(
-                          currentCollection,
-                          uiState,
-                        ),
-                        _buildChildCollectionsContentSliver(
-                          filteredChildCollections,
-                          childCollections,
-                          currentCollection,
-                        ),
-                      ],
+                    child: Builder(
+                      builder: (nestedBodyContext) {
+                        return CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            SliverOverlapInjector(
+                              handle: NestedScrollView
+                                  .sliverOverlapAbsorberHandleFor(
+                                nestedBodyContext,
+                              ),
+                            ),
+                            _buildChildFoldersToolbarSliver(
+                              currentCollection,
+                              uiState,
+                            ),
+                            _buildChildCollectionsContentSliver(
+                              filteredChildCollections,
+                              childCollections,
+                              currentCollection,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ), // RefreshIndicator
                 ); // NotificationListener
@@ -906,95 +898,103 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                 return NestedScrollView(
                   headerSliverBuilder: (context, innerBoxIsScrolled) {
                     return [
-                      SliverAppBar(
-                        pinned: false,
-                        floating: true,
-                        snap: true,
-                        automaticallyImplyLeading: false,
-                        scrolledUnderElevation: innerBoxIsScrolled ? 2 : 0,
-                        elevation: innerBoxIsScrolled ? 2 : 0,
-                        backgroundColor: theme.scaffoldBackgroundColor,
-                        surfaceTintColor: Colors.transparent,
-                        leading: tabContext.canPop()
-                            ? IconButton(
-                                icon: Icon(Icons.arrow_back, color: primary),
-                                onPressed: () => tabContext.pop(),
-                              )
-                            : null,
-                        actions: [
-                          IconButton(
-                            icon: Icon(Icons.more_vert, color: primary),
-                            onPressed: () => _showCollectionActionsBottomSheet(
-                              tabController: tabController,
-                            ),
-                          ),
-                        ],
-                        // stretch: true,
-                        expandedHeight: 140,
-                        flexibleSpace: FlexibleSpaceBar(
-                          collapseMode: CollapseMode.pin,
-                          background: SafeArea(
-                            bottom: false,
-                            child: Align(
-                              alignment: Alignment.topLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 56,
-                                  right: 16,
-                                  bottom: 52,
-                                  // top: 8,
-                                ),
-                                child: collectionsAsync.maybeWhen(
-                                  data: (cols) => _buildHubHeaderContent(
-                                    cols,
-                                    currentCollection,
-                                    primary,
-                                    childCollections.length,
+                      SliverOverlapAbsorber(
+                        handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                          context,
+                        ),
+                        sliver: SliverAppBar(
+                          pinned: true,
+                          floating: false,
+                          snap: false,
+                          automaticallyImplyLeading: false,
+                          scrolledUnderElevation: innerBoxIsScrolled ? 2 : 0,
+                          elevation: innerBoxIsScrolled ? 2 : 0,
+                          backgroundColor: theme.scaffoldBackgroundColor,
+                          surfaceTintColor: Colors.transparent,
+                          leading: tabContext.canPop()
+                              ? IconButton(
+                                  icon: Icon(Icons.arrow_back, color: primary),
+                                  onPressed: () => tabContext.pop(),
+                                )
+                              : null,
+                          actions: widget.isRoot
+                              ? const <Widget>[]
+                              : [
+                                  IconButton(
+                                    icon: Icon(Icons.more_vert, color: primary),
+                                    onPressed: () =>
+                                        _showCollectionActionsBottomSheet(
+                                      tabController: tabController,
+                                    ),
                                   ),
-                                  orElse: () => Text(
-                                    titleText,
-                                    style: TextStyle(
-                                      color: primary,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 22,
+                                ],
+                          // stretch: true,
+                          expandedHeight: 140,
+                          flexibleSpace: FlexibleSpaceBar(
+                            collapseMode: CollapseMode.pin,
+                            background: SafeArea(
+                              bottom: false,
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 56,
+                                    right: 16,
+                                    bottom: 52,
+                                    // top: 8,
+                                  ),
+                                  child: collectionsAsync.maybeWhen(
+                                    data: (cols) => _buildHubHeaderContent(
+                                      cols,
+                                      currentCollection,
+                                      primary,
+                                      childCollections.length,
+                                    ),
+                                    orElse: () => Text(
+                                      titleText,
+                                      style: TextStyle(
+                                        color: primary,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 22,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        bottom: widget.isRoot
-                            ? null
-                            : PreferredSize(
-                                preferredSize: const Size.fromHeight(48),
-                                child: TabBar(
-                                  controller: tabController,
-                                  labelColor: primary,
-                                  indicatorWeight: 2,
-                                  labelStyle: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                  unselectedLabelColor:
-                                      theme.colorScheme.onSurfaceVariant,
-                                  onTap: (index) {
-                                    final tab = index == 0
-                                        ? UnifiedTab.childCollections
-                                        : UnifiedTab.urls;
-                                    ref
-                                        .read(itemsNotifierProvider(
-                                                widget.collectionId)
-                                            .notifier)
-                                        .setActiveTab(tab);
-                                  },
-                                  tabs: _buildHubTabs(
-                                    state,
-                                    filteredChildCollections.length,
-                                    state.items.length,
+                          bottom: widget.isRoot
+                              ? null
+                              : PreferredSize(
+                                  preferredSize: const Size.fromHeight(48),
+                                  child: TabBar(
+                                    controller: tabController,
+                                    labelColor: primary,
+                                    indicatorWeight: 2,
+                                    labelStyle: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                    unselectedLabelColor:
+                                        theme.colorScheme.onSurfaceVariant,
+                                    onTap: (index) {
+                                      final tab = index == 0
+                                          ? UnifiedTab.childCollections
+                                          : UnifiedTab.urls;
+                                      ref
+                                          .read(itemsNotifierProvider(
+                                                  widget.collectionId)
+                                              .notifier)
+                                          .setActiveTab(tab);
+                                    },
+                                    tabs: _buildHubTabs(
+                                      state,
+                                      filteredChildCollections.length,
+                                      state.items.length,
+                                    ),
                                   ),
                                 ),
-                              ),
+                        ),
                       ),
                     ];
                   },
@@ -1054,74 +1054,104 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
       case UrlsDataPhase.notStarted:
         return RefreshIndicator(
           onRefresh: onRefresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      'Saved links load when you open this tab.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+          child: Builder(
+            builder: (nestedBodyContext) {
+              return CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                      nestedBodyContext,
                     ),
                   ),
-                ),
-              ),
-            ],
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Saved links load when you open this tab.',
+                          textAlign: TextAlign.center,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         );
       case UrlsDataPhase.loading:
         return RefreshIndicator(
           onRefresh: onRefresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              _buildUrlsToolbarSliver(state, currentCollection, uiState),
-              _buildUrlsLoadingSkeletonSliver(),
-            ],
+          child: Builder(
+            builder: (nestedBodyContext) {
+              return CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                      nestedBodyContext,
+                    ),
+                  ),
+                  _buildUrlsToolbarSliver(state, currentCollection, uiState),
+                  _buildUrlsLoadingSkeletonSliver(),
+                ],
+              );
+            },
           ),
         );
       case UrlsDataPhase.error:
         return RefreshIndicator(
           onRefresh: onRefresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              _buildUrlsToolbarSliver(state, currentCollection, uiState),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          state.urlsErrorMessage ?? 'Could not load links',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                          onPressed: () {
-                            ref
-                                .read(itemsNotifierProvider(widget.collectionId)
-                                    .notifier)
-                                .ensureUrlsLoaded(forceRefresh: true);
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
+          child: Builder(
+            builder: (nestedBodyContext) {
+              return CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                      nestedBodyContext,
                     ),
                   ),
-                ),
-              ),
-            ],
+                  _buildUrlsToolbarSliver(state, currentCollection, uiState),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              state.urlsErrorMessage ?? 'Could not load links',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton(
+                              onPressed: () {
+                                ref
+                                    .read(itemsNotifierProvider(
+                                            widget.collectionId)
+                                        .notifier)
+                                    .ensureUrlsLoaded(forceRefresh: true);
+                              },
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         );
       case UrlsDataPhase.loaded:
@@ -1139,23 +1169,32 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
           },
           child: RefreshIndicator(
             onRefresh: onRefresh,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                if (uiState.isReorderMode) _buildReorderBannerSliver(),
-                _buildUrlsToolbarSliver(state, currentCollection, uiState),
-                ..._buildItemSlivers(state),
-                if (state.isLoadingMore)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: CircularProgressIndicator()),
+            child: Builder(
+              builder: (nestedBodyContext) {
+                return CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverOverlapInjector(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        nestedBodyContext,
+                      ),
                     ),
-                  ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 88),
-                ),
-              ],
+                    if (uiState.isReorderMode) _buildReorderBannerSliver(),
+                    _buildUrlsToolbarSliver(state, currentCollection, uiState),
+                    ..._buildItemSlivers(state),
+                    if (state.isLoadingMore)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 88),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -1219,7 +1258,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     final filterBadge = _urlsFiltersDifferFromDefaults(state, uiState);
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
         child: Material(
           color: surface.withValues(alpha: 0.65),
           borderRadius: BorderRadius.circular(_radiusLg),
@@ -1229,13 +1268,23 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
               builder: (context, constraints) {
                 final uiNotifier = ref.read(
                     itemsHubUiNotifierProvider(widget.collectionId).notifier);
+                final itemsNotifier = ref
+                    .read(itemsNotifierProvider(widget.collectionId).notifier);
+                final mq = MediaQuery.of(context);
+                final topInset = mq.viewPadding.top > mq.padding.top
+                    ? mq.viewPadding.top
+                    : mq.padding.top;
                 final searchField = TextFormField(
                   initialValue: uiState.urlSearchQuery,
-                  onChanged: (value) {
-                    uiNotifier.updateUrlSearchQuery(value);
-                    _scheduleUrlQueryRefetch();
+                  onChanged: uiNotifier.updateUrlSearchQuery,
+                  onFieldSubmitted: (_) {
+                    itemsNotifier.refetchUrlsWithCurrentFilters();
                   },
                   textInputAction: TextInputAction.search,
+                  scrollPadding: EdgeInsets.only(
+                    top: topInset + kToolbarHeight + (widget.isRoot ? 24 : 72),
+                    bottom: 120,
+                  ),
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -1248,17 +1297,26 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     //   Icons.search_rounded,
                     //   color: theme.colorScheme.onSurfaceVariant,
                     // ),
-                    suffixIcon: uiState.urlSearchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded),
-                            onPressed: () {
-                              uiNotifier.clearUrlSearchQuery();
-                              ref
-                                  .read(
-                                      itemsNotifierProvider(widget.collectionId)
-                                          .notifier)
-                                  .refetchUrlsWithCurrentFilters();
-                            },
+                    suffixIcon: uiState.urlSearchQuery.trim().isNotEmpty
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Search',
+                                icon: const Icon(Icons.search_rounded),
+                                onPressed: () {
+                                  itemsNotifier.refetchUrlsWithCurrentFilters();
+                                },
+                              ),
+                              IconButton(
+                                tooltip: 'Clear',
+                                icon: const Icon(Icons.clear_rounded),
+                                onPressed: () {
+                                  uiNotifier.clearUrlSearchQuery();
+                                  itemsNotifier.refetchUrlsWithCurrentFilters();
+                                },
+                              ),
+                            ],
                           )
                         : null,
                   ),
@@ -1275,68 +1333,70 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     ),
                   ),
                 );
-                final dateButton = PopupMenuButton<_LinksQuickDate>(
-                  tooltip: 'Quick date',
-                  onSelected: (date) {
-                    final now = DateTime.now();
-                    switch (date) {
-                      case _LinksQuickDate.all:
-                        uiNotifier.setUrlSavedAfter(null);
-                        uiNotifier.setUrlSavedBefore(null);
-                        break;
-                      case _LinksQuickDate.last7Days:
-                        uiNotifier.setUrlSavedAfter(
-                          now.subtract(const Duration(days: 7)),
-                        );
-                        uiNotifier.setUrlSavedBefore(null);
-                        break;
-                      case _LinksQuickDate.last30Days:
-                        uiNotifier.setUrlSavedAfter(
-                          now.subtract(const Duration(days: 30)),
-                        );
-                        uiNotifier.setUrlSavedBefore(null);
-                        break;
-                      case _LinksQuickDate.thisYear:
-                        uiNotifier.setUrlSavedAfter(DateTime(now.year, 1, 1));
-                        uiNotifier.setUrlSavedBefore(null);
-                        break;
-                    }
-                    ref
-                        .read(
-                            itemsNotifierProvider(widget.collectionId).notifier)
-                        .refetchUrlsWithCurrentFilters();
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: _LinksQuickDate.all,
-                      child: Text('All dates'),
-                    ),
-                    PopupMenuItem(
-                      value: _LinksQuickDate.last7Days,
-                      child: Text('Last 7 days'),
-                    ),
-                    PopupMenuItem(
-                      value: _LinksQuickDate.last30Days,
-                      child: Text('Last 30 days'),
-                    ),
-                    PopupMenuItem(
-                      value: _LinksQuickDate.thisYear,
-                      child: Text('This year'),
-                    ),
-                  ],
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Badge(
-                      isLabelVisible: uiState.urlSavedAfter != null ||
-                          uiState.urlSavedBefore != null,
-                      smallSize: 8,
-                      child: Icon(
-                        Icons.date_range_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                );
+
+                // final dateButton = PopupMenuButton<_LinksQuickDate>(
+                //   tooltip: 'Quick date',
+                //   onSelected: (date) {
+                //     final now = DateTime.now();
+                //     switch (date) {
+                //       case _LinksQuickDate.all:
+                //         uiNotifier.setUrlSavedAfter(null);
+                //         uiNotifier.setUrlSavedBefore(null);
+                //         break;
+                //       case _LinksQuickDate.last7Days:
+                //         uiNotifier.setUrlSavedAfter(
+                //           now.subtract(const Duration(days: 7)),
+                //         );
+                //         uiNotifier.setUrlSavedBefore(null);
+                //         break;
+                //       case _LinksQuickDate.last30Days:
+                //         uiNotifier.setUrlSavedAfter(
+                //           now.subtract(const Duration(days: 30)),
+                //         );
+                //         uiNotifier.setUrlSavedBefore(null);
+                //         break;
+                //       case _LinksQuickDate.thisYear:
+                //         uiNotifier.setUrlSavedAfter(DateTime(now.year, 1, 1));
+                //         uiNotifier.setUrlSavedBefore(null);
+                //         break;
+                //     }
+                //     ref
+                //         .read(
+                //             itemsNotifierProvider(widget.collectionId).notifier)
+                //         .refetchUrlsWithCurrentFilters();
+                //   },
+                //   itemBuilder: (context) => const [
+                //     PopupMenuItem(
+                //       value: _LinksQuickDate.all,
+                //       child: Text('All dates'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: _LinksQuickDate.last7Days,
+                //       child: Text('Last 7 days'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: _LinksQuickDate.last30Days,
+                //       child: Text('Last 30 days'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: _LinksQuickDate.thisYear,
+                //       child: Text('This year'),
+                //     ),
+                //   ],
+                //   child: Padding(
+                //     padding: const EdgeInsets.symmetric(horizontal: 6),
+                //     child: Badge(
+                //       isLabelVisible: uiState.urlSavedAfter != null ||
+                //           uiState.urlSavedBefore != null,
+                //       smallSize: 8,
+                //       child: Icon(
+                //         Icons.date_range_rounded,
+                //         color: theme.colorScheme.primary,
+                //       ),
+                //     ),
+                //   ),
+                // );
+
                 final sortButton = PopupMenuButton<UrlSortOption>(
                   tooltip: 'Quick sort',
                   onSelected: (sort) {
@@ -1386,7 +1446,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [filterButton, dateButton, sortButton],
+                      children: [filterButton],
                     ),
                   ],
                 );
@@ -1407,7 +1467,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     final filterBadge = _childFiltersActive(uiState);
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
         child: Material(
           color: surface.withValues(alpha: 0.65),
           borderRadius: BorderRadius.circular(_radiusLg),
@@ -1417,10 +1477,18 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
               builder: (context, constraints) {
                 final uiNotifier = ref.read(
                     itemsHubUiNotifierProvider(widget.collectionId).notifier);
+                final mq = MediaQuery.of(context);
+                final topInset = mq.viewPadding.top > mq.padding.top
+                    ? mq.viewPadding.top
+                    : mq.padding.top;
                 final searchField = TextFormField(
                   initialValue: uiState.childSearchQuery,
                   onChanged: uiNotifier.updateChildSearchQuery,
                   textInputAction: TextInputAction.search,
+                  scrollPadding: EdgeInsets.only(
+                    top: topInset + kToolbarHeight + (widget.isRoot ? 24 : 72),
+                    bottom: 120,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search folders…',
                     border: InputBorder.none,
@@ -1455,47 +1523,48 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     ),
                   ),
                 );
-                final sortButton = PopupMenuButton<ChildFolderSort>(
-                  tooltip: 'Quick sort',
-                  onSelected: (sort) {
-                    uiNotifier.setChildFolderSort(sort);
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: ChildFolderSort.titleAsc,
-                      child: Text('Title A-Z'),
-                    ),
-                    PopupMenuItem(
-                      value: ChildFolderSort.titleDesc,
-                      child: Text('Title Z-A'),
-                    ),
-                    PopupMenuItem(
-                      value: ChildFolderSort.itemCountDesc,
-                      child: Text('Most links'),
-                    ),
-                    PopupMenuItem(
-                      value: ChildFolderSort.createdDesc,
-                      child: Text('Recently added'),
-                    ),
-                    PopupMenuItem(
-                      value: ChildFolderSort.updatedDesc,
-                      child: Text('Recently updated'),
-                    ),
-                  ],
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Icon(
-                      Icons.swap_vert_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                );
+                // final sortButton = PopupMenuButton<ChildFolderSort>(
+                //   tooltip: 'Quick sort',
+                //   onSelected: (sort) {
+                //     uiNotifier.setChildFolderSort(sort);
+                //   },
+                //   itemBuilder: (context) => const [
+                //     PopupMenuItem(
+                //       value: ChildFolderSort.titleAsc,
+                //       child: Text('Title A-Z'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: ChildFolderSort.titleDesc,
+                //       child: Text('Title Z-A'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: ChildFolderSort.itemCountDesc,
+                //       child: Text('Most links'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: ChildFolderSort.createdDesc,
+                //       child: Text('Recently added'),
+                //     ),
+                //     PopupMenuItem(
+                //       value: ChildFolderSort.updatedDesc,
+                //       child: Text('Recently updated'),
+                //     ),
+                //   ],
+                //   child: Padding(
+                //     padding: const EdgeInsets.symmetric(horizontal: 6),
+                //     child: Icon(
+                //       Icons.swap_vert_rounded,
+                //       color: theme.colorScheme.primary,
+                //     ),
+                //   ),
+                // );
+               
                 return Row(
                   children: [
                     Expanded(child: searchField),
                     Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [filterButton, sortButton],
+                      children: [filterButton],
                     ),
                   ],
                 );
@@ -1991,7 +2060,9 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
       },
       child: InkWell(
         onTap: () => _openItemLink(item),
-        onLongPress: () => _showItemOptions(context, item),
+        onLongPress: () {
+          _openEditItem(item);
+        },
         borderRadius: BorderRadius.circular(_radiusMd),
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 6),
@@ -2122,7 +2193,9 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     return UrlIconLinkTile(
       item: item,
       onTap: () => _openItemLink(item),
-      onLongPress: () => _showItemOptions(context, item),
+      onLongPress: () {
+        _openEditItem(item);
+      },
     );
   }
 
@@ -2130,7 +2203,9 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     return UrlPreviewTile(
       item: item,
       onTap: () => _openItemLink(item),
-      onLongPress: () => _showItemOptions(context, item),
+      onLongPress: () {
+        _openEditItem(item);
+      },
     );
   }
 
@@ -2160,6 +2235,14 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     context.push('/collections/${widget.collectionId}/items/${item.id}');
   }
 
+  /// Long-press on a URL row opens edit (overflow menu still offers full sheet).
+  Future<void> _openEditItem(Item item) async {
+    final ok = await DayPassGate.check(context, ref);
+    if (!ok || !context.mounted) return;
+    if (!mounted) return;
+    context.push('/collections/${widget.collectionId}/items/${item.id}/edit');
+  }
+
   Uri? _httpUriFromItem(Item item) {
     final raw = item.link?.trim();
     if (raw == null || raw.isEmpty) return null;
@@ -2175,13 +2258,15 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     return uri;
   }
 
+  /// Launches [uri] using priority-based open behavior only: per-link override,
+  /// then folder default ([effectiveOpenLinksIn]). Tile tap and "Open link now"
+  /// both use this path.
   Future<void> _launchUriForItem(Uri uri, Item item) async {
     final collection = _currentCollectionFromCache();
-    final resolved = _linkTapOpenOverride ??
-        effectiveOpenLinksIn(
-          itemOpenLinksInOverride: item.openLinksInOverride,
-          collectionOpenLinksIn: collection?.openLinksIn,
-        );
+    final resolved = effectiveOpenLinksIn(
+      itemOpenLinksInOverride: item.openLinksInOverride,
+      collectionOpenLinksIn: collection?.openLinksIn,
+    );
     final launchMode = resolved == CollectionOpenLinksIn.externalBrowser
         ? LaunchMode.externalApplication
         : LaunchMode.inAppBrowserView;
@@ -2210,7 +2295,8 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     }
   }
 
-  /// Opens the URL using list tap preference, then per-link override, then folder default.
+  /// Opens the URL using the same priority-based behavior as [_launchUriForItem]
+  /// (per-link override, then folder default).
   Future<void> _openItemLink(Item item) async {
     final ok = await DayPassGate.check(context, ref);
     if (!ok || !context.mounted) return;
@@ -2285,8 +2371,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final sheetMuted =
-        Theme.of(context).colorScheme.onSurfaceVariant;
+    final sheetMuted = Theme.of(context).colorScheme.onSurfaceVariant;
     final domain = _extractDomain(item.link ?? '');
 
     showModalBottomSheet(
@@ -2319,91 +2404,6 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.article_outlined, color: textColor),
-                  title: Text(
-                    'View details',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () async {
-                    Navigator.of(context).pop();
-                    if (!mounted) return;
-                    await _openItemDetail(item);
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'When you tap a link',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: sheetMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.06)
-                              : Colors.black.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.08)
-                                : Colors.black.withValues(alpha: 0.06),
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String?>(
-                            isExpanded: true,
-                            value: _linkTapOpenOverride,
-                            hint: Text(
-                              'Smart (link + folder)',
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 14,
-                              ),
-                            ),
-                            items: [
-                              DropdownMenuItem<String?>(
-                                value: null,
-                                child: Text(
-                                  'Smart (link + folder)',
-                                  style: TextStyle(color: textColor),
-                                ),
-                              ),
-                              DropdownMenuItem<String?>(
-                                value: CollectionOpenLinksIn.inApp,
-                                child: Text(
-                                  'Always in app',
-                                  style: TextStyle(color: textColor),
-                                ),
-                              ),
-                              DropdownMenuItem<String?>(
-                                value: CollectionOpenLinksIn.externalBrowser,
-                                child: Text(
-                                  'Always in browser',
-                                  style: TextStyle(color: textColor),
-                                ),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              setState(() => _linkTapOpenOverride = v);
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ListTile(
                   leading: Icon(Icons.open_in_new_rounded, color: textColor),
                   title: Text(
                     'Open link now',
@@ -2413,7 +2413,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'Uses the option above',
+                    "Uses this link's setting, then the folder default",
                     style: TextStyle(
                       fontSize: 12,
                       color: sheetMuted,
@@ -2446,116 +2446,18 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.content_copy_rounded, color: textColor),
+                  leading: Icon(Icons.article_outlined, color: textColor),
                   title: Text(
-                    'Copy URL',
+                    'View details',
                     style: TextStyle(
                       color: textColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   onTap: () async {
-                    context.pop();
-                    final link = item.link ?? '';
-                    if (link.isEmpty) return;
-                    await Clipboard.setData(ClipboardData(text: link));
+                    Navigator.of(context).pop();
                     if (!mounted) return;
-                    ScaffoldMessenger.of(this.context).showSnackBar(
-                      const SnackBar(content: Text('URL copied')),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.push_pin_outlined, color: textColor),
-                  title: Text(
-                    item.isPinned ? 'Unpin from top' : 'Pin to top',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () async {
-                    context.pop();
-                    await ref.read(itemsHubNotifierProvider.notifier).togglePin(
-                          collectionId: widget.collectionId,
-                          itemId: item.id,
-                        );
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    item.status == ItemStatus.read
-                        ? Icons.mark_email_unread_outlined
-                        : Icons.mark_email_read_outlined,
-                    color: textColor,
-                  ),
-                  title: Text(
-                    item.status == ItemStatus.read
-                        ? 'Mark unread'
-                        : 'Mark as read',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () async {
-                    context.pop();
-                    if (item.status == ItemStatus.unread) {
-                      await ref
-                          .read(itemsHubNotifierProvider.notifier)
-                          .markReadAndTrack(
-                            collectionId: widget.collectionId,
-                            itemId: item.id,
-                          );
-                    } else {
-                      await ref
-                          .read(itemsHubNotifierProvider.notifier)
-                          .toggleReadStatus(
-                            collectionId: widget.collectionId,
-                            item: item,
-                          );
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.folder_open_rounded, color: textColor),
-                  title: Text(
-                    'Move to collection',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () async {
-                    context.pop();
-                    await _showMoveToCollectionSheet(item);
-                  },
-                ),
-                const Divider(height: 8),
-                ListTile(
-                  leading: Icon(
-                    item.status == ItemStatus.archived
-                        ? Icons.unarchive_outlined
-                        : Icons.archive_outlined,
-                    color: textColor,
-                  ),
-                  title: Text(
-                    item.status == ItemStatus.archived
-                        ? 'Unarchive'
-                        : 'Archive',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () async {
-                    context.pop();
-                    await ref
-                        .read(itemsHubNotifierProvider.notifier)
-                        .toggleArchive(
-                          collectionId: widget.collectionId,
-                          item: item,
-                        );
+                    await _openItemDetail(item);
                   },
                 ),
                 ListTile(
@@ -2569,20 +2471,6 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                     if (!ok || !context.mounted) return;
                     context.push(
                         '/collections/${widget.collectionId}/items/${item.id}/edit');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text(
-                    'Delete link',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () {
-                    context.pop();
-                    _confirmDelete(context, item.id);
                   },
                 ),
               ],
@@ -2615,50 +2503,6 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showMoveToCollectionSheet(Item item) async {
-    final collections =
-        (ref.read(collectionsListProvider).valueOrNull ?? const <Collection>[])
-            .where((c) => !c.isDeleted && c.id != widget.collectionId)
-            .toList();
-    if (!mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(sheetContext).size.height * 0.75,
-          ),
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: collections.length,
-            itemBuilder: (context, index) {
-              final collection = collections[index];
-              return ListTile(
-                leading: const Icon(Icons.folder_outlined),
-                title: Text(collection.title),
-                subtitle: Text(collection.category),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await ref.read(itemsHubNotifierProvider.notifier).moveItem(
-                        sourceCollectionId: widget.collectionId,
-                        item: item,
-                        targetCollectionId: collection.id,
-                      );
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(content: Text('Moved to ${collection.title}')),
-                  );
-                },
-              );
-            },
-          ),
-        ),
       ),
     );
   }

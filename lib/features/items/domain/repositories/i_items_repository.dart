@@ -29,4 +29,11 @@ abstract class IItemsRepository {
   Future<Either<Failure, void>> updateItemPosition(
       String id, double newPosition);
   Future<Either<Failure, List<Item>>> getAllItems();
+
+  /// Finds an item in [collectionId] whose [link] matches after normalization
+  /// (used for import de-duplication when backup IDs differ).
+  Future<Either<Failure, Item?>> findItemByCollectionAndNormalizedLink(
+    String collectionId,
+    String link,
+  );
 }

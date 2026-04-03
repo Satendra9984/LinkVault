@@ -18,6 +18,12 @@ abstract class IProfileRepository {
     bool? activitySharingEnabled,
   });
 
+  /// Persists install-trial consumption for anti–reinstall abuse (signed-in only).
+  Future<Either<Failure, UserProfile>> updateInstallTrialConsumed({
+    required String userId,
+    required bool consumed,
+  });
+
   Future<Either<Failure, String>> uploadAvatar({
     required String userId,
     required File avatarFile,

@@ -43,4 +43,19 @@ class DayPassRepositoryImpl implements IDayPassRepository {
   @override
   Future<void> cachePremiumStatus({required bool isPremium}) =>
       _settings.cachePremiumStatus(isPremium: isPremium);
+
+  @override
+  Future<bool> isGuestMode() => _settings.isGuestMode();
+
+  @override
+  Future<bool> getAccountInstallTrialConsumed() =>
+      _settings.getInstallTrialConsumedRemote();
+
+  @override
+  Future<void> setAccountInstallTrialConsumed(bool consumed) =>
+      _settings.setInstallTrialConsumedRemote(value: consumed);
+
+  @override
+  Future<Duration> getFreeTrialRemainingDuration() =>
+      _settings.getFreeTrialRemainingDuration();
 }

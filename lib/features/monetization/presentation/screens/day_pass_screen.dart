@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/day_pass_provider.dart';
 
 // ── Brand accent — same in both modes (orange gradient) ──────────────────────
@@ -32,9 +33,48 @@ class DayPassScreen extends ConsumerStatefulWidget {
 
 class _DayPassScreenState extends ConsumerState<DayPassScreen> {
   bool _didPopGateResult = false;
+  bool _didPremiumGatePop = false;
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = ref.watch(isPremiumProvider);
+    if (isPremium) {
+      if (widget.fromAccessGate && !_didPremiumGatePop) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() => _didPremiumGatePop = true);
+          context.pop(true);
+        });
+      }
+      final cs = Theme.of(context).colorScheme;
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Premium active'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                color: cs.onSurface, size: 20),
+            onPressed: () {
+              if (widget.fromAccessGate) {
+                context.pop(true);
+              } else {
+                context.pop();
+              }
+            },
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'You have LinkVault Premium — Daily Access Pass and ads don’t apply.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 16, height: 1.4),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (widget.fromAccessGate) {
       // Premium / trial / active / grace → allow proceeding (matrix: grace allowed).
       ref.listen<AsyncValue<DayPassState>>(dayPassProvider, (prev, next) {
@@ -233,7 +273,11 @@ class _HeroCard extends StatelessWidget {
             state.status == DayPassStatus.grace) &&
         state.remaining > Duration.zero;
 
-    final progress = (state.remaining.inSeconds / (24 * 3600)).clamp(0.0, 1.0);
+    final totalSeconds = state.status == DayPassStatus.freeTrial
+        ? 3 * 24 * 3600
+        : 24 * 3600;
+    final progress =
+        (state.remaining.inSeconds / totalSeconds).clamp(0.0, 1.0);
 
     return Stack(
       fit: StackFit.expand,
@@ -343,7 +387,9 @@ class _HeroCard extends StatelessWidget {
                     _ProgressBar(progress: progress),
                     const SizedBox(height: 6),
                     Text(
-                      '${(progress * 100).toStringAsFixed(0)}% of 24h remaining',
+                      state.status == DayPassStatus.freeTrial
+                          ? '${(progress * 100).toStringAsFixed(0)}% of trial remaining'
+                          : '${(progress * 100).toStringAsFixed(0)}% of 24h remaining',
                       style:
                           const TextStyle(color: Colors.white70, fontSize: 11),
                     ),
@@ -688,7 +734,7 @@ class _HowItWorks extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Curate is built by a small indie team. Ads help cover '
+                  'LinkVault is built by a small indie team. Ads help cover '
                   'server & development costs so the app stays free to use.',
                   style: TextStyle(
                     color: cs.onSurfaceVariant,

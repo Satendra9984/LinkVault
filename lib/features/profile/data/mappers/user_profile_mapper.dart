@@ -10,6 +10,7 @@ class UserProfileMapper {
       bio: json['bio'] as String?,
       activitySharingEnabled: json['activity_sharing_enabled'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String),
+      installTrialConsumed: json['install_trial_consumed'] as bool? ?? false,
     );
   }
 

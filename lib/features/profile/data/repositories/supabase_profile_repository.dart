@@ -114,6 +114,31 @@ class SupabaseProfileRepository implements IProfileRepository {
   }
 
   @override
+  Future<Either<Failure, UserProfile>> updateInstallTrialConsumed({
+    required String userId,
+    required bool consumed,
+  }) async {
+    try {
+      final data = await _supabase
+          .from('lv_user_profiles')
+          .update({
+            'install_trial_consumed': consumed,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', userId)
+          .select()
+          .single();
+
+      return Right(UserProfileMapper.fromJson(data));
+    } on PostgrestException catch (e) {
+      return Left(DatabaseFailure(e.message));
+    } catch (e, st) {
+      return Left(
+          UnexpectedFailure('Install trial update failed', error: e, stackTrace: st));
+    }
+  }
+
+  @override
   Future<Either<Failure, String>> uploadAvatar({
     required String userId,
     required File avatarFile,

@@ -1,19 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user_profile.dart';
-import '../../domain/repositories/i_profile_repository.dart';
-import '../../data/repositories/supabase_profile_repository.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import '../../../../core/providers/core_providers.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../monetization/presentation/providers/ad_gate_provider.dart';
+import '../../../monetization/presentation/providers/day_pass_provider.dart';
+import '../../../sync/data/sync_metadata_store.dart';
+import '../../domain/entities/user_profile.dart';
 import '../../domain/usecases/get_profile_use_case.dart';
 import '../../domain/usecases/update_profile_use_case.dart';
 import '../../domain/usecases/upload_avatar_use_case.dart';
-import '../../../../core/utils/app_logger.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as sb;
-
-// Provides the Data Repository
-final profileRepositoryProvider = Provider<IProfileRepository>((ref) {
-  return SupabaseProfileRepository(sb.Supabase.instance.client);
-});
 
 // Provides Use Cases
 final getProfileUseCaseProvider = Provider<GetProfileUseCase>((ref) {
@@ -117,12 +115,31 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
       }, (_) async {
         AppLogger.i('profile_self_heal_retry user=$userId');
         final secondLoad = await getProfile.call(userId);
-        return secondLoad.fold(
-          (secondFailure) => ProfileState(errorMessage: secondFailure.message),
-          (profileObj) => ProfileState(profile: profileObj),
+        return await secondLoad.fold(
+          (secondFailure) async => ProfileState(errorMessage: secondFailure.message),
+          (profileObj) async {
+            await _mirrorInstallTrialToLocal(profileObj);
+            return ProfileState(profile: profileObj);
+          },
         );
       });
-    }, (profileObj) async => ProfileState(profile: profileObj));
+    }, (profileObj) async {
+      await _mirrorInstallTrialToLocal(profileObj);
+      return ProfileState(profile: profileObj);
+    });
+  }
+
+  Future<void> _mirrorInstallTrialToLocal(UserProfile profile) async {
+    try {
+      await ref.read(appSettingsRepositoryProvider).setInstallTrialConsumedRemote(
+            value: profile.installTrialConsumed,
+          );
+      ref.invalidate(adGateProvider);
+      ref.invalidate(dayPassProvider);
+    } catch (e, st) {
+      AppLogger.w('install_trial_mirror_failed $e');
+      AppLogger.e('install_trial_mirror_trace', e, st);
+    }
   }
 
   Future<void> retryLoadProfile() async {
@@ -151,11 +168,15 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
           activitySharingEnabled: activitySharing,
         );
 
-    result.fold((f) {
-      state = AsyncValue.data(ProfileState(errorMessage: f.message));
-    }, (updatedProfile) {
-      state = AsyncValue.data(ProfileState(profile: updatedProfile));
-    });
+    await result.match(
+      (f) async {
+        state = AsyncValue.data(ProfileState(errorMessage: f.message));
+      },
+      (updatedProfile) async {
+        await _mirrorInstallTrialToLocal(updatedProfile);
+        state = AsyncValue.data(ProfileState(profile: updatedProfile));
+      },
+    );
   }
 
   Future<void> uploadAvatar(File file) async {
@@ -190,17 +211,30 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
     state = AsyncValue.data(currentObj?.copyWith(isLoading: true) ??
         const ProfileState(isLoading: true));
 
+    final syncUid = ref.read(currentUserProvider)?.supabaseId;
     final authRepo = ref.read(authRepositoryProvider);
     final result = await authRepo.deleteAccount();
 
-    result.fold((f) {
-      state = AsyncValue.data(
-          currentObj?.copyWith(isLoading: false, errorMessage: f.message) ??
-              ProfileState(isLoading: false, errorMessage: f.message));
-    }, (_) {
-      // The auth watch state will handle redirecting the user to Welcome screen.
-      state = AsyncValue.data(const ProfileState(isLoading: false));
-    });
+    await result.fold(
+      (f) async {
+        state = AsyncValue.data(
+            currentObj?.copyWith(isLoading: false, errorMessage: f.message) ??
+                ProfileState(isLoading: false, errorMessage: f.message));
+      },
+      (_) async {
+        try {
+          await ref.read(appSettingsRepositoryProvider).clearSessionData();
+          if (syncUid != null) {
+            await SyncMetadataStore().clearForUser(syncUid);
+          }
+          await Purchases.logOut();
+        } catch (e, st) {
+          AppLogger.w('post_delete_account_cleanup_failed $e');
+          AppLogger.e('post_delete_account_cleanup_trace', e, st);
+        }
+        state = AsyncValue.data(const ProfileState(isLoading: false));
+      },
+    );
   }
 }
 

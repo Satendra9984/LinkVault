@@ -304,8 +304,9 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                                 onChanged: notifier.updateIsPinned,
                               ),
                               Divider(
-                                  height: 1,
-                                  color: microLabelColor.withValues(alpha: 0.25)),
+                                height: 1,
+                                color: microLabelColor.withValues(alpha: 0.25),
+                              ),
                               SwitchListTile(
                                 contentPadding: EdgeInsets.zero,
                                 title: Text(
@@ -325,50 +326,113 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                                 value: state.status == ItemStatus.archived,
                                 onChanged: (v) {
                                   notifier.updateStatus(
-                                    v
-                                        ? ItemStatus.archived
-                                        : ItemStatus.read,
+                                    v ? ItemStatus.archived : ItemStatus.read,
                                   );
                                 },
                               ),
                               Divider(
-                                  height: 1,
-                                  color: microLabelColor.withValues(alpha: 0.25)),
-                              _LabeledField(
-                                label: 'Open link',
-                                labelColor: microLabelColor,
-                                child: DropdownButtonFormField<String?>(
-                                  key: ValueKey(
-                                      '${state.openLinksInOverride}_open'),
-                                  initialValue: state.openLinksInOverride,
-                                  isExpanded: true,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    isDense: true,
+                                height: 1,
+                                color: microLabelColor.withValues(alpha: 0.25),
+                              ),
+                              SizedBox(height: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    'Open link',
+                                    style: TextStyle(
+                                      // fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: valueTextColor,
+                                      letterSpacing: 0.1,
+                                    ),
                                   ),
-                                  items: const [
-                                    DropdownMenuItem<String?>(
-                                      value: null,
-                                      child: Text('Use folder default'),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Folder default unless you choose always in app or browser.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: microLabelColor,
                                     ),
-                                    DropdownMenuItem<String?>(
-                                      value: CollectionOpenLinksIn.inApp,
-                                      child: Text('Always in app'),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: theme
+                                          .colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: theme.colorScheme.outlineVariant,
+                                      ),
                                     ),
-                                    DropdownMenuItem<String?>(
-                                      value:
-                                          CollectionOpenLinksIn.externalBrowser,
-                                      child: Text('Always in browser'),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String?>(
+                                          key: ValueKey(
+                                            '${state.openLinksInOverride}_open',
+                                          ),
+                                          value: state.openLinksInOverride,
+                                          isExpanded: true,
+                                          iconEnabledColor: theme
+                                              .colorScheme.onSurfaceVariant,
+                                          underline: SizedBox.shrink(),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: valueTextColor,
+                                          ),
+                                          dropdownColor: theme
+                                              .colorScheme.surfaceContainerHigh,
+                                          items: [
+                                            DropdownMenuItem<String?>(
+                                              value: null,
+                                              child: Text(
+                                                'Use folder default',
+                                                style: TextStyle(
+                                                  color: valueTextColor,
+                                                ),
+                                              ),
+                                            ),
+                                            DropdownMenuItem<String?>(
+                                              value:
+                                                  CollectionOpenLinksIn.inApp,
+                                              child: Text(
+                                                'Always in app',
+                                                style: TextStyle(
+                                                  color: valueTextColor,
+                                                ),
+                                              ),
+                                            ),
+                                            DropdownMenuItem<String?>(
+                                              value: CollectionOpenLinksIn
+                                                  .externalBrowser,
+                                              child: Text(
+                                                'Always in browser',
+                                                style: TextStyle(
+                                                  color: valueTextColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                          onChanged: notifier
+                                              .updateOpenLinksInOverride,
+                                        ),
+                                      ),
                                     ),
-                                  ],
-                                  onChanged: notifier.updateOpenLinksInOverride,
-                                ),
+                                  ),
+                               
+                                  
+                                ],
                               ),
                               if (isEdit) ...[
+                                const SizedBox(height: 12),
                                 Divider(
-                                    height: 1,
-                                    color:
-                                        microLabelColor.withValues(alpha: 0.25)),
+                                  height: 1,
+                                  color:
+                                      microLabelColor.withValues(alpha: 0.25),
+                                ),
                                 ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   leading: Icon(Icons.drive_file_move_outline,
@@ -381,8 +445,8 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    _moveTargetSubtitle(ref, state,
-                                        widget.collectionId),
+                                    _moveTargetSubtitle(
+                                        ref, state, widget.collectionId),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: microLabelColor,
@@ -629,10 +693,10 @@ class _CreateEditItemScreenState extends ConsumerState<CreateEditItemScreen> {
     ItemFormNotifier notifier,
     String currentCollectionId,
   ) async {
-    final collections = (ref.read(collectionsListProvider).valueOrNull ??
-            const <Collection>[])
-        .where((c) => !c.isDeleted && c.id != currentCollectionId)
-        .toList();
+    final collections =
+        (ref.read(collectionsListProvider).valueOrNull ?? const <Collection>[])
+            .where((c) => !c.isDeleted && c.id != currentCollectionId)
+            .toList();
     if (!context.mounted) return;
     await showModalBottomSheet<void>(
       context: context,

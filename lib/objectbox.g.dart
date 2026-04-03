@@ -60,7 +60,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(2, 5849219588462393305),
       name: 'AuthSettingsModel',
-      lastPropertyId: const obx_int.IdUid(11, 480709859896423710),
+      lastPropertyId: const obx_int.IdUid(21, 4281035018524914572),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -117,6 +117,56 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(11, 480709859896423710),
             name: 'themeMode',
             type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(12, 7089140915682422876),
+            name: 'openLinksDefault',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(13, 1678933515470206291),
+            name: 'showLinkPreviews',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(14, 5806689057190961794),
+            name: 'showFavicons',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(15, 1936332303172852327),
+            name: 'defaultFoldersLayout',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(16, 3838015432249501045),
+            name: 'defaultLinksLayout',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(17, 2394781358720835374),
+            name: 'autoSyncEnabled',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(18, 35364558311848885),
+            name: 'syncWifiOnly',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(19, 4885863622675835073),
+            name: 'notifyLinkSaved',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(20, 370391300658844216),
+            name: 'notifySyncComplete',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(21, 4281035018524914572),
+            name: 'installTrialConsumedRemote',
+            type: 1,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -530,7 +580,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         },
         objectToFB: (AuthSettingsModel object, fb.Builder fbb) {
           final themeModeOffset = fbb.writeString(object.themeMode);
-          fbb.startTable(12);
+          fbb.startTable(22);
           fbb.addInt64(0, object.id);
           fbb.addBool(1, object.hasSeenOnboarding);
           fbb.addBool(2, object.isGuestMode);
@@ -543,6 +593,16 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addBool(8, object.isPremiumCached);
           fbb.addBool(9, object.hasMigratedToCloud);
           fbb.addOffset(10, themeModeOffset);
+          fbb.addInt64(11, object.openLinksDefault);
+          fbb.addBool(12, object.showLinkPreviews);
+          fbb.addBool(13, object.showFavicons);
+          fbb.addInt64(14, object.defaultFoldersLayout);
+          fbb.addInt64(15, object.defaultLinksLayout);
+          fbb.addBool(16, object.autoSyncEnabled);
+          fbb.addBool(17, object.syncWifiOnly);
+          fbb.addBool(18, object.notifyLinkSaved);
+          fbb.addBool(19, object.notifySyncComplete);
+          fbb.addBool(20, object.installTrialConsumedRemote);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -583,7 +643,27 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..hasMigratedToCloud =
                 const fb.BoolReader().vTableGet(buffer, rootOffset, 22, false)
             ..themeMode = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 24, '');
+                .vTableGet(buffer, rootOffset, 24, '')
+            ..openLinksDefault =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 26, 0)
+            ..showLinkPreviews =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 28, false)
+            ..showFavicons =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 30, false)
+            ..defaultFoldersLayout =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 32, 0)
+            ..defaultLinksLayout =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 34, 0)
+            ..autoSyncEnabled =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 36, false)
+            ..syncWifiOnly =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 38, false)
+            ..notifyLinkSaved =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 40, false)
+            ..notifySyncComplete =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 42, false)
+            ..installTrialConsumedRemote =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 44, false);
 
           return object;
         }),
@@ -963,6 +1043,46 @@ class AuthSettingsModel_ {
   /// See [AuthSettingsModel.themeMode].
   static final themeMode =
       obx.QueryStringProperty<AuthSettingsModel>(_entities[1].properties[10]);
+
+  /// See [AuthSettingsModel.openLinksDefault].
+  static final openLinksDefault =
+      obx.QueryIntegerProperty<AuthSettingsModel>(_entities[1].properties[11]);
+
+  /// See [AuthSettingsModel.showLinkPreviews].
+  static final showLinkPreviews =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[12]);
+
+  /// See [AuthSettingsModel.showFavicons].
+  static final showFavicons =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[13]);
+
+  /// See [AuthSettingsModel.defaultFoldersLayout].
+  static final defaultFoldersLayout =
+      obx.QueryIntegerProperty<AuthSettingsModel>(_entities[1].properties[14]);
+
+  /// See [AuthSettingsModel.defaultLinksLayout].
+  static final defaultLinksLayout =
+      obx.QueryIntegerProperty<AuthSettingsModel>(_entities[1].properties[15]);
+
+  /// See [AuthSettingsModel.autoSyncEnabled].
+  static final autoSyncEnabled =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[16]);
+
+  /// See [AuthSettingsModel.syncWifiOnly].
+  static final syncWifiOnly =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[17]);
+
+  /// See [AuthSettingsModel.notifyLinkSaved].
+  static final notifyLinkSaved =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[18]);
+
+  /// See [AuthSettingsModel.notifySyncComplete].
+  static final notifySyncComplete =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[19]);
+
+  /// See [AuthSettingsModel.installTrialConsumedRemote].
+  static final installTrialConsumedRemote =
+      obx.QueryBooleanProperty<AuthSettingsModel>(_entities[1].properties[20]);
 }
 
 /// [CollectionModel] entity fields to define ObjectBox queries.

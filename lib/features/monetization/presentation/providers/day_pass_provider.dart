@@ -86,7 +86,9 @@ class DayPassNotifier extends AsyncNotifier<DayPassState> {
   Future<DayPassState> _loadState() async {
     final repo = ref.read(daypassRepositoryProvider);
     final status = await _checkAccess.call();
-    final remaining = await repo.getDayPassRemainingDuration();
+    final remaining = status == DayPassStatus.freeTrial
+        ? await repo.getFreeTrialRemainingDuration()
+        : await repo.getDayPassRemainingDuration();
     _startTimer();
     return DayPassState(status: status, remaining: remaining);
   }
@@ -113,7 +115,9 @@ class DayPassNotifier extends AsyncNotifier<DayPassState> {
   Future<void> _reloadStatus() async {
     final repo = ref.read(daypassRepositoryProvider);
     final status = await _checkAccess.call();
-    final remaining = await repo.getDayPassRemainingDuration();
+    final remaining = status == DayPassStatus.freeTrial
+        ? await repo.getFreeTrialRemainingDuration()
+        : await repo.getDayPassRemainingDuration();
     final current = state.valueOrNull;
     if (current != null) {
       state = AsyncData(current.copyWith(status: status, remaining: remaining));
@@ -144,7 +148,9 @@ class DayPassNotifier extends AsyncNotifier<DayPassState> {
 
     final repo = ref.read(daypassRepositoryProvider);
     final newStatus = await _checkAccess.call();
-    final newRemaining = await repo.getDayPassRemainingDuration();
+    final newRemaining = newStatus == DayPassStatus.freeTrial
+        ? await repo.getFreeTrialRemainingDuration()
+        : await repo.getDayPassRemainingDuration();
 
     state = AsyncData(DayPassState(
       status: newStatus,

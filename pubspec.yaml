@@ -109,6 +109,8 @@ flutter:
     - .env.production
     - assets/images/
     - assets/animations/
+    - docs/08_OPERATIONS/Privacy_Policy.md
+    - docs/08_OPERATIONS/Terms_Of_Service.md
 
     #  - assets/js/readability/readabilityjs/
     #  - assets/js/readability/readabilityjs/Readability.js

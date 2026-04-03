@@ -133,7 +133,7 @@ class _PaywallContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Curate Premium',
+                        'LinkVault Premium',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           color: colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,

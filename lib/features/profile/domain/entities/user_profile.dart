@@ -9,6 +9,9 @@ class UserProfile extends Equatable {
   final bool activitySharingEnabled;
   final DateTime createdAt;
 
+  /// Server flag: this account may not receive the 3-day install trial again.
+  final bool installTrialConsumed;
+
   const UserProfile({
     required this.userId,
     this.username = '',
@@ -17,6 +20,7 @@ class UserProfile extends Equatable {
     this.bio,
     this.activitySharingEnabled = true,
     required this.createdAt,
+    this.installTrialConsumed = false,
   });
 
   UserProfile copyWith({
@@ -24,6 +28,7 @@ class UserProfile extends Equatable {
     String? avatarUrl,
     String? bio,
     bool? activitySharingEnabled,
+    bool? installTrialConsumed,
   }) {
     return UserProfile(
       userId: userId,
@@ -34,6 +39,7 @@ class UserProfile extends Equatable {
       activitySharingEnabled:
           activitySharingEnabled ?? this.activitySharingEnabled,
       createdAt: createdAt,
+      installTrialConsumed: installTrialConsumed ?? this.installTrialConsumed,
     );
   }
 
@@ -46,5 +52,6 @@ class UserProfile extends Equatable {
         bio,
         activitySharingEnabled,
         createdAt,
+        installTrialConsumed,
       ];
 }

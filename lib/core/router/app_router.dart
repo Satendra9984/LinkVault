@@ -30,6 +30,7 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/app_settings_screen.dart';
 import '../../features/profile/presentation/screens/about_screen.dart';
 import '../../features/profile/presentation/screens/legal_policy_screen.dart';
+import '../../features/profile/presentation/screens/vault_storage_details_screen.dart';
 import '../../features/debug/presentation/screens/debug_screen.dart';
 import '../presentation/widgets/main_shell.dart';
 import '../providers/core_providers.dart';
@@ -84,6 +85,10 @@ GoRouter createAppRouter(ProviderContainer container) {
 
       // ── 1. Always allow splash, onboarding and open routes ─────────────
       if (loc == '/splash') return null;
+      // Premium users should not land on DayPass acquisition UX (deep links).
+      if (loc == '/daypass' && container.read(isPremiumProvider)) {
+        return '/';
+      }
       if (_openRoutes.contains(loc)) return null;
 
       // ── 2. Check onboarding ────────────────────────────────────────────
@@ -307,6 +312,10 @@ GoRouter createAppRouter(ProviderContainer container) {
         builder: (context, state) => const LegalPolicyScreen(),
       ),
       GoRoute(
+        path: '/profile/storage',
+        builder: (context, state) => const VaultStorageDetailsScreen(),
+      ),
+      GoRoute(
         // parentNavigatorKey: _rootNavigatorKey,
         path: '/profile/debug',
         builder: (context, state) => const DebugScreen(),
@@ -366,15 +375,3 @@ GoRouter createAppRouter(ProviderContainer container) {
     ],
   );
 }
-
-/// Default router instance for [bootstrap.dart].
-/// Replaced by [createAppRouter] when a [ProviderContainer] is available.
-final appRouter = GoRouter(
-  initialLocation: '/splash',
-  routes: [
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
-  ],
-);

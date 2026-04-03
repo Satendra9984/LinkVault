@@ -39,7 +39,7 @@
     },
     {
       "id": "2:5849219588462393305",
-      "lastPropertyId": "11:480709859896423710",
+      "lastPropertyId": "21:4281035018524914572",
       "name": "AuthSettingsModel",
       "properties": [
         {
@@ -97,6 +97,56 @@
           "id": "11:480709859896423710",
           "name": "themeMode",
           "type": 9
+        },
+        {
+          "id": "12:7089140915682422876",
+          "name": "openLinksDefault",
+          "type": 6
+        },
+        {
+          "id": "13:1678933515470206291",
+          "name": "showLinkPreviews",
+          "type": 1
+        },
+        {
+          "id": "14:5806689057190961794",
+          "name": "showFavicons",
+          "type": 1
+        },
+        {
+          "id": "15:1936332303172852327",
+          "name": "defaultFoldersLayout",
+          "type": 6
+        },
+        {
+          "id": "16:3838015432249501045",
+          "name": "defaultLinksLayout",
+          "type": 6
+        },
+        {
+          "id": "17:2394781358720835374",
+          "name": "autoSyncEnabled",
+          "type": 1
+        },
+        {
+          "id": "18:35364558311848885",
+          "name": "syncWifiOnly",
+          "type": 1
+        },
+        {
+          "id": "19:4885863622675835073",
+          "name": "notifyLinkSaved",
+          "type": 1
+        },
+        {
+          "id": "20:370391300658844216",
+          "name": "notifySyncComplete",
+          "type": 1
+        },
+        {
+          "id": "21:4281035018524914572",
+          "name": "installTrialConsumedRemote",
+          "type": 1
         }
       ],
       "relations": []

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/link_normalization.dart';
 import '../../../../core/errors/supabase_quota_messages.dart';
 import '../mappers/supabase_item_mapper.dart';
 import '../../domain/entities/item.dart';
@@ -499,4 +500,45 @@ class SupabaseItemsRepository implements IItemsRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Item?>> findItemByCollectionAndNormalizedLink(
+    String collectionId,
+    String link,
+  ) async {
+    try {
+      final userId = _userId;
+      if (userId == null) {
+        return const Left(NetworkFailure('User not authenticated'));
+      }
+      final target = normalizeLinkForDedup(link);
+      if (target.isEmpty) return const Right(null);
+
+      final response = await _supabase
+          .from('lv_urls')
+          .select()
+          .eq('owner_id', userId)
+          .eq('collection_id', collectionId)
+          .eq('is_deleted', false);
+
+      final rows = response as List<dynamic>;
+      for (final row in rows) {
+        final map = row as Map<String, dynamic>;
+        final url = map['url'] as String? ?? '';
+        if (normalizeLinkForDedup(url) == target) {
+          return Right(SupabaseItemMapper.fromRow(map));
+        }
+      }
+      return const Right(null);
+    } catch (e, stackTrace) {
+      final authFailure = tryMapSupabaseAuthFailure(e, stackTrace);
+      if (authFailure != null) return Left(authFailure);
+      return Left(
+        NetworkFailure(
+          'Failed to find item by link',
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
 }

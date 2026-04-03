@@ -1,26 +1,73 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../providers/profile_notifier.dart';
+import '../../../auth/presentation/providers/auth_notifier.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/domain/repositories/i_auth_repository.dart';
+import '../../../collections/presentation/providers/collections_providers.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../monetization/presentation/providers/ad_gate_provider.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../../../../core/providers/network_providers.dart';
 import '../../../monetization/presentation/widgets/cloud_downgrade_card.dart';
 import '../../../sync/presentation/providers/sync_coordinator_provider.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/infrastructure/storage/local_vault_storage_summary.dart';
+import '../providers/local_storage_usage_provider.dart';
+
+/// Google Play listing for in-app “Rate the app”.
+final Uri _linkVaultPlayStoreUri = Uri.parse(
+  'https://play.google.com/store/apps/details?id=com.vicharshala.link_vault',
+);
+
+Future<void> _openPlayStoreForRating(BuildContext context) async {
+  try {
+    final launched = await launchUrl(
+      _linkVaultPlayStoreUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the Play Store.')),
+      );
+    }
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the Play Store.')),
+      );
+    }
+  }
+}
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authAsync = ref.watch(authStateProvider);
+    if (authAsync.isLoading) {
+      final theme = Theme.of(context);
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text(
+            'Profile',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final isGuest = ref.watch(isGuestProvider);
     final profileState = ref.watch(profileNotifierProvider);
     final isPremium = ref.watch(isPremiumProvider);
@@ -120,8 +167,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () async {
-                await ref.read(authRepositoryProvider).signOut();
-                if (context.mounted) context.go('/auth/welcome');
+                await ref.read(authNotifierProvider.notifier).signOut();
               },
               child: const Text('Sign out'),
             ),
@@ -151,8 +197,7 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
-              Text('Create an account',
-                  style: theme.textTheme.headlineSmall),
+              Text('Create an account', style: theme.textTheme.headlineSmall),
               const SizedBox(height: 8),
               const Text(
                 'Sign up to sync collections, share with friends, and customize your profile.',
@@ -179,11 +224,23 @@ class ProfileScreen extends ConsumerWidget {
 
 // ── Profile body — owns all the sections ────────────────────────────────────
 
-class _ProfileBody extends ConsumerWidget {
+class _ProfileBody extends ConsumerStatefulWidget {
   const _ProfileBody({required this.profile, required this.isPremium});
 
   final dynamic profile;
   final bool isPremium;
+
+  @override
+  ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
+}
+
+class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  bool _dataBusy = false;
+
+  void _dismissProgressIfOpen(BuildContext context) {
+    final nav = Navigator.of(context, rootNavigator: true);
+    if (nav.canPop()) nav.pop();
+  }
 
   Widget _cloudSyncSection(BuildContext context, WidgetRef ref) {
     final migrated = ref.watch(hasMigratedToCloudProvider);
@@ -245,9 +302,12 @@ class _ProfileBody extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final profile = widget.profile;
+    final isPremium = widget.isPremium;
     final username = (profile.username as String?) ?? '';
 
     return ListView(
@@ -259,75 +319,77 @@ class _ProfileBody extends ConsumerWidget {
         // ── User card ──────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: cs.surfaceContainerHighest,
-                  child: profile.avatarUrl != null
-                      ? ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: profile.avatarUrl as String,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Icon(
-                              Icons.person,
-                              size: 30,
-                              color: cs.onSurfaceVariant,
-                            ),
-                            errorWidget: (_, __, ___) => Icon(
-                              Icons.person,
-                              size: 30,
-                              color: cs.onSurfaceVariant,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Material(
+              color: cs.surfaceContainerHighest.withValues(alpha: 0.55),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: cs.surfaceContainerHighest,
+                      child: profile.avatarUrl != null
+                          ? ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: profile.avatarUrl as String,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                errorWidget: (_, __, ___) => Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.person, size: 30),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            profile.displayName as String? ?? '',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        )
-                      : const Icon(Icons.person, size: 30),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        profile.displayName as String? ?? '',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                          if (username.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text('@$username',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                )),
+                          ],
+                          Consumer(builder: (context, ref, _) {
+                            final email = ref.watch(currentUserProvider)?.email;
+                            if (email == null || email.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Text(
+                              email,
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(color: cs.onSurfaceVariant),
+                            );
+                          }),
+                        ],
                       ),
-                      if (username.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text('@$username',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            )),
-                      ],
-                      Consumer(builder: (context, ref, _) {
-                        final email = ref.watch(currentUserProvider)?.email;
-                        if (email == null || email.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return Text(
-                          email,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: cs.onSurfaceVariant),
-                        );
-                      }),
-                    ],
-                  ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push('/profile/edit'),
+                      child: const Text('Edit →'),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => context.push('/profile/edit'),
-                  child: const Text('Edit →'),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -354,30 +416,34 @@ class _ProfileBody extends ConsumerWidget {
                 ),
         ),
 
-        // ── Storage (placeholder) ─────────────────────────────────────
+        // ── Storage (local ObjectBox + images) ────────────────────────
         _SectionHeader(title: 'STORAGE'),
         _Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 0.05,
-                    minHeight: 6,
-                    backgroundColor: cs.surfaceContainerHighest,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Local storage in use',
+          child: ListTile(
+            leading: const Icon(Icons.sd_storage_outlined),
+            title: const Text('Local storage'),
+            subtitle: ref.watch(localVaultStorageUsageProvider).when(
+              loading: () => Text(
+                'Measuring…',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: cs.onSurfaceVariant),
+              ),
+              error: (_, __) => Text(
+                'Couldn’t measure — tap for details',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: cs.onSurfaceVariant),
+              ),
+              data: (summary) {
+                final tier = vaultStorageTier(summary.totalBytes);
+                return Text(
+                  '${formatVaultStorageBytes(summary.totalBytes)} · ${tier.$2}',
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: cs.onSurfaceVariant),
-                ),
-              ],
+                );
+              },
             ),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () => context.push('/profile/storage'),
           ),
         ),
 
@@ -390,20 +456,21 @@ class _ProfileBody extends ConsumerWidget {
                 label: 'Theme',
                 trailing: _ThemeValueText(ref: ref),
                 onTap: () => context.push('/profile/settings'),
-              ),
-              _SettingsTile(
-                label: 'Open links',
-                trailing: const Text('In app',
-                    style: TextStyle(color: Colors.grey)),
-                onTap: () => context.push('/profile/settings'),
-              ),
-              _SettingsTile(
-                label: 'Default sort',
-                trailing:
-                    const Text('Manual', style: TextStyle(color: Colors.grey)),
-                onTap: () => context.push('/profile/settings'),
                 showDivider: false,
               ),
+              // _SettingsTile(
+              //   label: 'Open links',
+              //   trailing:
+              //       const Text('In app', style: TextStyle(color: Colors.grey)),
+              //   onTap: () => context.push('/profile/settings'),
+              // ),
+              // _SettingsTile(
+              //   label: 'Default sort',
+              //   trailing:
+              //       const Text('Manual', style: TextStyle(color: Colors.grey)),
+              //   onTap: () => context.push('/profile/settings'),
+              //   showDivider: false,
+              // ),
             ],
           ),
         ),
@@ -415,15 +482,21 @@ class _ProfileBody extends ConsumerWidget {
             children: [
               _SettingsTile(
                 label: 'Export data (JSON)',
-                onTap: () => _handleExportData(context, ref),
+                onTap: _dataBusy
+                    ? null
+                    : () => _handleExportData(context),
               ),
               _SettingsTile(
                 label: 'Import data',
-                onTap: () => _handleImportData(context, ref),
+                onTap: _dataBusy
+                    ? null
+                    : () => _handleImportData(context),
               ),
               _SettingsTile(
                 label: 'Clear all data',
-                onTap: () => _confirmClearData(context, ref),
+                onTap: _dataBusy
+                    ? null
+                    : () => _confirmClearData(context),
                 showDivider: false,
               ),
             ],
@@ -446,6 +519,16 @@ class _ProfileBody extends ConsumerWidget {
                 onTap: () => context.push('/profile/about'),
               ),
               _SettingsTile(
+                label: 'Help & feedback',
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Help & feedback is under construction — check back soon.',
+                    ),
+                  ),
+                ),
+              ),
+              _SettingsTile(
                 label: 'Privacy Policy',
                 onTap: () => context.push('/profile/legal'),
               ),
@@ -455,9 +538,7 @@ class _ProfileBody extends ConsumerWidget {
               ),
               _SettingsTile(
                 label: 'Rate the app',
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Opening store page soon!')),
-                ),
+                onTap: () => _openPlayStoreForRating(context),
                 showDivider: false,
               ),
             ],
@@ -483,8 +564,7 @@ class _ProfileBody extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GestureDetector(
             onTap: () async {
-              await ref.read(authRepositoryProvider).signOut();
-              if (context.mounted) context.go('/auth/welcome');
+              await ref.read(authNotifierProvider.notifier).signOut();
             },
             child: Text(
               'Sign out',
@@ -504,123 +584,236 @@ class _ProfileBody extends ConsumerWidget {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  void _handleExportData(BuildContext context, WidgetRef ref) async {
-    showDialog(
+  Future<void> _handleExportData(BuildContext context) async {
+    if (_dataBusy) return;
+    setState(() => _dataBusy = true);
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
     final result = await ref.read(exportDataUseCaseProvider).execute();
-    if (context.mounted) Navigator.of(context).pop();
+    if (context.mounted) _dismissProgressIfOpen(context);
+    if (mounted) setState(() => _dataBusy = false);
+
+    if (!context.mounted) return;
     result.fold(
       (failure) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(failure.message)));
-        }
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(failure.message)));
       },
       (filePath) {
-        if (context.mounted) {
-          // ignore: deprecated_member_use
-      Share.shareXFiles([XFile(filePath)]);
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('✅ Data exported successfully')));
-        }
+        ref.invalidate(localVaultStorageUsageProvider);
+        // ignore: deprecated_member_use
+        Share.shareXFiles([XFile(filePath)]);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data exported — choose where to save or share')),
+        );
       },
     );
   }
 
-  void _handleImportData(BuildContext context, WidgetRef ref) async {
-    final result = await FilePicker.platform.pickFiles(
+  Future<void> _handleImportData(BuildContext context) async {
+    if (_dataBusy) return;
+    final pick = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['curate', 'json'],
     );
-    if (result == null || result.files.isEmpty) return;
-    final filePath = result.files.first.path!;
+    if (pick == null || pick.files.isEmpty) return;
+    final filePath = pick.files.first.path;
+    if (filePath == null || filePath.isEmpty) return;
     if (!context.mounted) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Import Data?'),
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Import backup?'),
         content: const Text(
-          'This will append collections and items from the backup file. '
-          'Existing items will be preserved safely.',
+          'Collections and links from the file will be merged into your library. '
+          'Rows with the same ID are updated. Links that already exist in a folder '
+          '(same URL) are skipped to avoid duplicates.',
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Import')),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Import'),
+          ),
         ],
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    showDialog(
+
+    setState(() => _dataBusy = true);
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
     final importResult =
         await ref.read(importDataUseCaseProvider).execute(filePath);
-    if (context.mounted) Navigator.of(context).pop();
+    if (context.mounted) _dismissProgressIfOpen(context);
+    if (mounted) setState(() => _dataBusy = false);
+
+    if (!context.mounted) return;
     importResult.fold(
       (failure) {
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Import Failed'),
-              content: Text(failure.message),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'))
-              ],
-            ),
-          );
-        }
+        showDialog<void>(
+          context: context,
+          useRootNavigator: true,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Import failed'),
+            content: Text(failure.message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
       },
       (successResult) {
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('✅ Import Complete'),
-              content: Text(
-                  '${successResult.collectionsImported} collections and '
-                  '${successResult.itemsImported} items imported.'),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'))
-              ],
-            ),
+        final buf = StringBuffer()
+          ..writeln(
+            'Collections: ${successResult.collectionsCreated} new, '
+            '${successResult.collectionsUpdated} updated'
+            '${successResult.collectionsFailed > 0 ? ', ${successResult.collectionsFailed} failed' : ''}.',
+          )
+          ..writeln(
+            'Links: ${successResult.itemsCreated} new, '
+            '${successResult.itemsUpdated} updated, '
+            '${successResult.itemsSkippedDuplicate} skipped (duplicate URL), '
+            '${successResult.itemsSkippedOrphan} skipped (missing folder)'
+            '${successResult.itemsFailed > 0 ? ', ${successResult.itemsFailed} failed' : ''}.',
           );
-        }
+        showDialog<void>(
+          context: context,
+          useRootNavigator: true,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Import complete'),
+            content: SingleChildScrollView(child: Text(buf.toString())),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        ref.invalidate(collectionsListProvider);
+        ref.invalidate(libraryRootCollectionProvider);
+        ref.invalidate(localVaultStorageUsageProvider);
       },
     );
   }
 
-  void _confirmClearData(BuildContext context, WidgetRef ref) {
-    showDialog(
+  Future<void> _confirmClearData(BuildContext context) async {
+    if (_dataBusy) return;
+    final userId = ref.read(currentUserProvider)?.supabaseId;
+    final isOnline = ref.read(isOnlineProvider);
+
+    final goAhead = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Clear all data?'),
-        content: const Text(
-          'This will delete all local collections and links. This action cannot be undone.',
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear all library data?'),
+        content: Text(
+          userId == null
+              ? 'This removes all collections and links stored on this device.'
+              : 'This removes all collections and links on this device '
+                    'and in your cloud library for this account. '
+                    'Your profile and sign-in are kept.',
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Clear'),
+            child: const Text('Continue'),
           ),
         ],
+      ),
+    );
+    if (goAhead != true || !context.mounted) return;
+
+    final confirmDestructive = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('This cannot be undone'),
+        content: const Text(
+          'All folders and saved links will be deleted. '
+          'If you use cloud sync, your online library will be emptied too (when online).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Back'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete everything'),
+          ),
+        ],
+      ),
+    );
+    if (confirmDestructive != true || !context.mounted) return;
+
+    setState(() => _dataBusy = true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final outcome = await ref.read(clearAllLibraryDataUseCaseProvider).call(
+          userId: userId,
+          isOnline: isOnline,
+        );
+
+    if (context.mounted) _dismissProgressIfOpen(context);
+    if (mounted) setState(() => _dataBusy = false);
+
+    ref.invalidate(collectionsListProvider);
+    ref.invalidate(libraryRootCollectionProvider);
+    ref.invalidate(syncCoordinatorProvider);
+    ref.invalidate(localVaultStorageUsageProvider);
+
+    if (!context.mounted) return;
+
+    if (!outcome.localCleared && outcome.cloudErrorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(outcome.cloudErrorMessage!)),
+      );
+      return;
+    }
+
+    final cloudMsg = !outcome.cloudAttempted
+        ? ''
+        : outcome.cloudCleared
+            ? ' Cloud library cleared.'
+            : ' Cloud could not be fully cleared: ${outcome.cloudErrorMessage ?? 'unknown error'}.';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          outcome.localCleared
+              ? 'Device library cleared.$cloudMsg'
+              : 'Nothing was cleared.',
+        ),
+        duration: const Duration(seconds: 6),
       ),
     );
   }
@@ -649,21 +842,24 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+/// Shared profile section surface: consistent fill + rounded clips (no square ink/splash corners).
 class _Card extends StatelessWidget {
   const _Card({required this.child});
   final Widget child;
+
+  static const double _radius = 14;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(14),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_radius),
+        child: Material(
+          color: cs.surfaceContainerHighest.withValues(alpha: 0.55),
+          child: child,
         ),
-        child: child,
       ),
     );
   }
@@ -688,6 +884,7 @@ class _SettingsTile extends StatelessWidget {
     return Column(
       children: [
         ListTile(
+          enabled: onTap != null,
           title: Text(label, style: theme.textTheme.bodyMedium),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -701,8 +898,7 @@ class _SettingsTile extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           visualDensity: VisualDensity.compact,
         ),
-        if (showDivider)
-          const Divider(height: 1, indent: 16, endIndent: 16),
+        if (showDivider) const Divider(height: 1, indent: 16, endIndent: 16),
       ],
     );
   }
@@ -724,92 +920,80 @@ class _ThemeValueText extends ConsumerWidget {
   }
 }
 
-// ── DayPass settings tile — owns its own countdown timer ─────────────────────
+// ── DayPass settings tile — status + short copy (detail on Day Pass screen) ──
 
-class _DayPassSettingsTile extends ConsumerStatefulWidget {
+class _DayPassSettingsTile extends ConsumerWidget {
   final ThemeData theme;
   const _DayPassSettingsTile({required this.theme});
 
-  @override
-  ConsumerState<_DayPassSettingsTile> createState() =>
-      _DayPassSettingsTileState();
-}
-
-class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
-  Timer? _timer;
-  Duration _remaining = Duration.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    _syncRemaining();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _syncRemaining() async {
-    final d = await ref.read(adGateProvider.notifier).remainingDuration();
-    if (mounted) setState(() => _remaining = d);
-  }
-
-  void _tick() {
-    if (!mounted) return;
-    if (_remaining.inSeconds > 0) {
-      setState(() => _remaining -= const Duration(seconds: 1));
-    }
-  }
-
-  String _fmt(Duration d) {
-    final h = d.inHours.toString().padLeft(2, '0');
-    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
-    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$h:$m:$s';
-  }
-
-  String _titleFor(DayPassStatus s) => switch (s) {
+  static String _titleFor(DayPassStatus s) => switch (s) {
         DayPassStatus.premium => 'Premium active',
         DayPassStatus.freeTrial => 'Free trial active',
-        DayPassStatus.active => 'DayPass active',
+        DayPassStatus.active => 'Daily Access Pass active',
         DayPassStatus.grace => 'Grace period',
-        DayPassStatus.expired => 'Access expired',
+        DayPassStatus.expired => 'Access paused',
       };
 
-  String _subtitleFor(DayPassStatus s) {
-    if (s == DayPassStatus.premium) {
-      return 'No ads — unlimited access';
-    }
-    if (s == DayPassStatus.expired) {
-      return 'Open Daily Access Pass to watch an ad or upgrade';
-    }
-    if (_remaining.inSeconds > 0 &&
-        (s == DayPassStatus.active ||
-            s == DayPassStatus.freeTrial ||
-            s == DayPassStatus.grace)) {
-      return 'Time remaining: ${_fmt(_remaining)}';
-    }
-    return 'Tap to manage your Daily Access Pass';
+  static String _subtitleFor(DayPassStatus s) => switch (s) {
+        DayPassStatus.premium =>
+          'No ads. Full access to your library.',
+        DayPassStatus.expired =>
+          'Watch a short ad or upgrade to Premium to keep using the app.',
+        DayPassStatus.grace =>
+          'Limited access while offline or after an ad issue. Open Daily Access Pass when online.',
+        DayPassStatus.freeTrial =>
+          'No ads during your trial. After it ends, one ad per day can renew access. Details on Daily Access Pass.',
+        DayPassStatus.active =>
+          'Your pass is active. Open Daily Access Pass to renew early or see full status.',
+      };
+
+  static IconData _leadingIcon(DayPassStatus s) => switch (s) {
+        DayPassStatus.premium => Icons.workspace_premium_outlined,
+        DayPassStatus.freeTrial => Icons.auto_awesome_outlined,
+        DayPassStatus.active => Icons.confirmation_number_outlined,
+        DayPassStatus.grace => Icons.cloud_off_outlined,
+        DayPassStatus.expired => Icons.pause_circle_outline,
+      };
+
+  static Color? _leadingIconColor(ThemeData theme, DayPassStatus s) {
+    final cs = theme.colorScheme;
+    return switch (s) {
+      DayPassStatus.premium => cs.primary,
+      DayPassStatus.freeTrial => cs.tertiary,
+      DayPassStatus.active => cs.primary,
+      DayPassStatus.grace => cs.onSurfaceVariant,
+      DayPassStatus.expired => cs.error,
+    };
+  }
+
+  static String _chipLabel(DayPassStatus s) => switch (s) {
+        DayPassStatus.premium => 'Premium',
+        DayPassStatus.freeTrial => 'Trial',
+        DayPassStatus.active => 'Active',
+        DayPassStatus.grace => 'Grace',
+        DayPassStatus.expired => 'Paused',
+      };
+
+  static (Color fg, Color? bg) _chipColors(ThemeData theme, DayPassStatus s) {
+    final cs = theme.colorScheme;
+    return switch (s) {
+      DayPassStatus.premium => (cs.onPrimaryContainer, cs.primaryContainer),
+      DayPassStatus.freeTrial => (cs.onTertiaryContainer, cs.tertiaryContainer),
+      DayPassStatus.active => (cs.onPrimaryContainer, cs.primaryContainer),
+      DayPassStatus.grace => (cs.onSurfaceVariant, cs.surfaceContainerHighest),
+      DayPassStatus.expired => (cs.onErrorContainer, cs.errorContainer),
+    };
   }
 
   @override
-  Widget build(BuildContext context) {
-    ref.listen<AsyncValue<DayPassStatus>>(adGateProvider, (prev, next) {
-      next.whenData((_) => _syncRemaining());
-    });
-
+  Widget build(BuildContext context, WidgetRef ref) {
     final gateAsync = ref.watch(adGateProvider);
-    final theme = widget.theme;
 
     return gateAsync.when(
       loading: () => ListTile(
         leading: const Icon(Icons.confirmation_number_outlined),
-        title:
-            Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
-        subtitle: const Text('Loading status…'),
+        title: Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
+        subtitle: const Text('Checking your access status…'),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         trailing: const SizedBox(
           width: 22,
@@ -818,10 +1002,15 @@ class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
         ),
       ),
       error: (_, __) => ListTile(
-        leading: const Icon(Icons.confirmation_number_outlined),
-        title:
-            Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
-        subtitle: const Text('Could not load access status'),
+        leading: Icon(
+          Icons.confirmation_number_outlined,
+          color: theme.colorScheme.error,
+        ),
+        title: Text('Daily Access Pass', style: theme.textTheme.bodyMedium),
+        subtitle: const Text(
+          'Could not verify access. Open Daily Access Pass to retry or continue offline if eligible.',
+        ),
+        isThreeLine: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         trailing: FilledButton.tonal(
           onPressed: () => context.push('/daypass'),
@@ -830,21 +1019,51 @@ class _DayPassSettingsTileState extends ConsumerState<_DayPassSettingsTile> {
         onTap: () => context.push('/daypass'),
       ),
       data: (status) {
+        final iconColor = _leadingIconColor(theme, status);
+        final chip = _chipColors(theme, status);
         return ListTile(
-          leading: const Icon(Icons.confirmation_number_outlined),
-          title: Text(_titleFor(status), style: theme.textTheme.bodyMedium),
-          subtitle: Text(
-            _subtitleFor(status),
-            style: theme.textTheme.bodySmall,
+          
+          onTap: () => context.push('/daypass'),
+          leading: Icon(
+            _leadingIcon(status),
+            color: iconColor,
           ),
-          trailing: FilledButton.tonal(
-            onPressed: () => context.push('/daypass'),
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  _titleFor(status),
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Chip(
+                label: Text(
+                  _chipLabel(status),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: chip.$1,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                backgroundColor: chip.$2,
+                side: BorderSide.none,
+              ),
+            ],
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
-              status == DayPassStatus.expired ? 'Get access' : 'Manage',
+              _subtitleFor(status),
+              style: theme.textTheme.bodySmall,
             ),
           ),
-          onTap: () => context.push('/daypass'),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
         );
       },
     );

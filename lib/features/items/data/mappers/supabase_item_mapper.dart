@@ -76,6 +76,106 @@ class SupabaseItemMapper {
     };
   }
 
+  /// Full `lv_urls` row for backup [v2.0] JSON (nullable `owner_id`; no favicon synthesis).
+  static Map<String, dynamic> toLvUrlsBackupRow(Item entity) {
+    return {
+      'id': entity.id,
+      'owner_id': entity.ownerId,
+      'collection_id': entity.collectionId,
+      'url': entity.link,
+      'title': entity.title,
+      'description': entity.description,
+      'annotation': entity.annotation,
+      'tags': entity.tags,
+      'thumbnail_url': entity.imageUrl,
+      'favicon_url': entity.faviconUrl,
+      'dominant_color': entity.dominantColor,
+      'status': _toLvStatus(entity.status),
+      'is_pinned': entity.isPinned,
+      'position': entity.position,
+      'click_count': entity.clickCount,
+      'last_accessed_at': entity.lastAccessedAt?.toIso8601String(),
+      'is_deleted': entity.isDeleted,
+      'deleted_at': entity.deletedAt?.toIso8601String(),
+      'site_name': entity.siteName,
+      'canonical_url': entity.canonicalUrl,
+      'content_type': entity.contentType,
+      'published_at': entity.publishedAt?.toIso8601String(),
+      'open_links_in_override': entity.openLinksInOverride,
+      'created_at': entity.createdAt.toIso8601String(),
+      'updated_at': entity.updatedAt.toIso8601String(),
+    };
+  }
+
+  /// Parse a backup [v2.0] `lv_urls` row (alias keys + tolerant timestamps).
+  static Item fromLvUrlsBackupRow(Map<String, dynamic> map) {
+    final lvStatus = (map['status'] ?? 'unread').toString();
+    final mappedStatus = switch (lvStatus) {
+      'unread' => ItemStatus.unread,
+      'read' => ItemStatus.read,
+      'archived' => ItemStatus.archived,
+      'pending' => ItemStatus.unread,
+      'visited' => ItemStatus.read,
+      'completed' => ItemStatus.archived,
+      _ => ItemStatus.unread,
+    };
+
+    final webDescription = map['description'] as String?;
+    final annotationNotes = map['annotation'] as String?;
+    final mappedDescription = webDescription ?? annotationNotes;
+
+    final collectionId =
+        (map['collection_id'] ?? map['collectionId'])?.toString() ?? '';
+
+    DateTime parseReq(dynamic v) {
+      if (v == null) return DateTime.now();
+      final s = v.toString();
+      return DateTime.tryParse(s) ?? DateTime.now();
+    }
+
+    DateTime? parseOpt(dynamic v) {
+      if (v == null) return null;
+      final s = v.toString();
+      if (s.isEmpty) return null;
+      return DateTime.tryParse(s);
+    }
+
+    final publishedAt = parseOpt(map['published_at']);
+    final lastAccessedAt = parseOpt(map['last_accessed_at']);
+    final deletedAt = parseOpt(map['deleted_at']);
+
+    final linkRaw = (map['url'] ?? map['link'])?.toString();
+
+    return Item(
+      id: map['id']?.toString() ?? '',
+      ownerId: map['owner_id']?.toString(),
+      title: (map['title'] ?? map['name'])?.toString() ?? '',
+      description: mappedDescription,
+      imagePath: null,
+      imageUrl: map['thumbnail_url'] as String?,
+      link: linkRaw,
+      annotation: annotationNotes,
+      tags: map['tags'] as String?,
+      status: mappedStatus,
+      position: (map['position'] as num?)?.toDouble() ?? 0.0,
+      createdAt: parseReq(map['created_at']),
+      updatedAt: parseReq(map['updated_at']),
+      collectionId: collectionId,
+      faviconUrl: map['favicon_url'] as String?,
+      dominantColor: map['dominant_color'] as String?,
+      isPinned: map['is_pinned'] as bool? ?? false,
+      clickCount: (map['click_count'] as num?)?.toInt() ?? 0,
+      lastAccessedAt: lastAccessedAt,
+      isDeleted: map['is_deleted'] as bool? ?? false,
+      deletedAt: deletedAt,
+      siteName: map['site_name'] as String?,
+      canonicalUrl: map['canonical_url'] as String?,
+      contentType: map['content_type'] as String?,
+      publishedAt: publishedAt,
+      openLinksInOverride: map['open_links_in_override'] as String?,
+    );
+  }
+
   /// JSON payload for `public.lv_urls` INSERT.
   static Map<String, dynamic> toInsertJson(
     Item entity, {

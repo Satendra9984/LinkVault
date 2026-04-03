@@ -59,13 +59,20 @@ class _MarkdownLoader extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasData) {
-          return Markdown(
-            data: snapshot.data!,
-            styleSheet: MarkdownStyleSheet(
-              h1: Theme.of(context).textTheme.headlineMedium,
-              h2: Theme.of(context).textTheme.titleLarge,
-              h2Padding: const EdgeInsets.only(top: 16),
-              p: Theme.of(context).textTheme.bodyMedium,
+          // Use MarkdownBody (not Markdown): Markdown wraps an internal viewport;
+          // inside TabBarView + SingleChildScrollView that causes NEEDS-LAYOUT errors.
+          return Scrollbar(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: MarkdownBody(
+                data: snapshot.data!,
+                styleSheet: MarkdownStyleSheet(
+                  h1: Theme.of(context).textTheme.headlineMedium,
+                  h2: Theme.of(context).textTheme.titleLarge,
+                  h2Padding: const EdgeInsets.only(top: 16),
+                  p: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
             ),
           );
         }

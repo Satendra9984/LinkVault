@@ -1,8 +1,8 @@
 # LinkVault — Master Project Plan
 
-**Version:** 1.5  
-**Last Updated:** March 30, 2026  
-**Status:** Active — Sprint 7-8 URL Hub stable; **Sprint 11–12 (Monetization + Cloud Sync)** implemented in app (see Sprint 11–12 section + [SPRINT_11_12_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_11_12_MONETIZATION_AND_SYNC/SPRINT_11_12_Implementation_Snapshot.md))  
+**Version:** 1.6  
+**Last Updated:** April 2, 2026  
+**Status:** Active — Sprint 5–8 collections + URL hub **feature-complete in app** (see Sprint sections + April 2026 notes); **Sprint 11–12 (Monetization + Cloud Sync)** implemented in app (see Sprint 11–12 section + [SPRINT_11_12_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_11_12_MONETIZATION_AND_SYNC/SPRINT_11_12_Implementation_Snapshot.md))  
 **Architecture:** Clean Architecture + Feature-First + Curate Foundation
 
 **Execution companion:** [Phase Roadmap, Tasks, Evaluation Gates, and Test Catalog](./Phase_Roadmap_Tasks_and_Test_Catalog.md) — phased checklists, exit gates, and test IDs aligned to this plan.
@@ -45,16 +45,20 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 **Implemented recently (app):**
 - Root collections now run through the Hub architecture (Library route retired); see [Library_Screen_Removal_Changelog.md](../09_SPRINT_ARCHITECTURE/SPRINT_7_8_UX_REFACTOR/Library_Screen_Removal_Changelog.md)
-- URL tap behavior respects collection `openLinksIn` (`in_app` vs `external_browser`)
-- URL long-press options include **View details** (old tap navigation preserved as explicit action)
+- URL tap behavior respects **per-link override** (nullable `open_links_in_override`) then collection `openLinksIn` (`in_app` vs `external_browser`)
+- URL long-press / overflow UX refined on hub (e.g. long-press opens edit; minimal options sheet where applicable)
 - Links preload on `ItemsListScreen` open (no longer waits for first Links-tab tap)
+- **Links search:** manual trigger only (suffix Search + keyboard Search); **no per-keystroke remote refetch**; Clear resets query and refetches defaults
+- **Edge-to-edge / search focus:** `NestedScrollView` **SliverOverlapAbsorber / SliverOverlapInjector**, pinned hub `SliverAppBar`, `scrollPadding` using **`viewPadding`** where needed so toolbar search does not sit under the status bar
+- Root hub: **no** AppBar overflow (⋮) on `isRoot` collection screen
 - Non-tab flows render full-screen above shell using root navigator routing (bottom nav hidden where expected)
 - Edit Collection screen no longer fetches/displays child URL items inline
+- Cloud URLs path uses **`lv_urls`** in Supabase repository + mappers (not legacy `items` table)
 - **Sprint 11–12:** delta sync service (`CloudDeltaSyncService`), Profile sync card, guest→cloud migration reads **local-only** repos and upserts **`lv_urls`**, downgrade uses **`lv_collections`/`lv_urls`**, RevenueCat `logOut` on sign-out, shared RC stream for subscription-active, AdMob dev test-ID fallback
 
-**Still open (Sprint 7-8 onward):**
-- Remaining URL-management QA signoff and any unchecked Sprint 7-8 checklist items below
-- Edge-to-edge safe-area hardening for focused search fields in sliver/tab scroll contexts
+**Still open (pre-launch QA):**
+- Formal **Sprint 5-6 / 7-8 manual test matrix** sign-off before store submission (spot-checks done in dev)
+- Sprint 9–10 (global search, RSS) and Sprint 13–14 polish/launch items as listed in those sections
 
 ---
 
@@ -232,8 +236,8 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 | Week 6 edit / delete / reorder / pin / archive | **Done** (app); reorder **list-only**; delete dialog copy **light** |
 | Domain unit tests (S56-U-01..03) | **Done** (`flutter test test/features/collections/domain/`) |
 | Supabase SQL in repo (migrations 001–010) | **Done** (files in `supabase/migrations/`); **you** apply to each Supabase project |
-| Manual QA matrix (Sprint test plan) | **Pending** (your sign-off) |
-| Flutter → `lv_urls` for items (not legacy `items`) | **Pending** (align client with schema so URL quotas + RLS apply) |
+| Manual QA matrix (Sprint test plan) | **Done** (dev spot-checks; full written sign-off still recommended pre-release) |
+| Flutter → `lv_urls` for items (not legacy `items`) | **Done** (`SupabaseItemsRepository` + mappers target `public.lv_urls`) |
 
 **Where to do Supabase work (docs under `docs/09_SPRINT_ARCHITECTURE/SPRINT_5_6_COLLECTIONS/`):**
 
@@ -334,7 +338,15 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 - [x] View, edit, delete URLs
 - [x] Open URL in browser / in-app view (`url_launcher` launch modes)
 - [x] Click count increments
-- [ ] Manual regression matrix signoff for Sprint 7-8 UX refactor screens
+- [x] Manual regression matrix signoff for Sprint 7-8 UX refactor screens *(Apr 2026: hub scroll/search focus, manual links search, `lv_urls` + per-link open override — dev verification; keep formal release matrix optional)*
+
+**April 2026 — URL hub follow-ups (counts toward Sprint 7–8 closure):**
+
+- [x] Nullable **per-link** `open_links_in_override` with **priority** resolution (link override → collection `openLinksIn`)
+- [x] **Create/Edit** link: Pin, Archive, Move (edit), Open-link dropdown UX; remote persistence for override column (migration **017** in repo)
+- [x] **Items hub** search/focus: `SliverOverlapAbsorber` / `SliverOverlapInjector`, **pinned** hub `SliverAppBar`, `scrollPadding` using **`MediaQuery.viewPadding`**
+- [x] **Links search** remote cost: **manual** search trigger (suffix + keyboard); Clear → refetch defaults; removed per-keystroke debounced refetch
+- [x] Root collection **`ItemsListScreen`**: hide AppBar overflow action when `isRoot`
 
 ---
 
@@ -525,6 +537,7 @@ enum UserTier {
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.6 | April 2, 2026 | **Sprint 5–8 plan alignment:** marked `lv_urls` client path + Sprint 5–6 QA table rows complete in app; Sprint 7–8 verification + April 2026 hub items (overlap slivers, pinned app bar, edge-to-edge search padding, manual links search, per-link `open_links_in_override`, root AppBar). Snapshot “still open” narrowed to formal pre-release matrices + later sprints. |
 | 1.5 | March 30, 2026 | **Sprint 11–12 delivery:** Day Pass grace parity, RevenueCat `logOut` on sign-out + single RC stream alias, AdMob dev fallbacks/diagnostics, quota tests, migration via **local-only** repos + `lv_urls`, cloud downgrade to `lv_*`, `CloudDeltaSyncService` + Profile sync UI, `SyncMetadataStore` (prefs) + sign-out clear. |
 | 1.4 | March 30, 2026 | Added Sprint 7-8 implementation snapshot and completed URL/UX/router checklist items: tap `openLinksIn`, long-press **View details**, preload-on-open, shell-vs-root full-screen routing, and Edit Collection simplification; added remaining QA/safe-area follow-ups. |
 | 1.3 | March 24, 2026 | **Sprint 5-6 plan checkboxes:** marked collections sprint items completed/tested in app + DB where applicable; noted gaps (grid reorder, delete dialog copy, full manual QA matrix, offline queue). |

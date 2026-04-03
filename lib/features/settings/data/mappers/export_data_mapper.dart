@@ -1,6 +1,9 @@
 import '../../../collections/domain/entities/collection.dart';
 import '../../../items/domain/entities/item.dart';
 
+/// Legacy **v1.0** backup shape (`collections` / `items`).
+///
+/// Current app export uses **v2.0** with `lv_collections` / `lv_urls` (see export use case).
 class ExportDataMapper {
   /// Converts a [Collection] to the unified backup export JSON format.
   /// Retains camelCase to preserve backwards compatibility with older backups.

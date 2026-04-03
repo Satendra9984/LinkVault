@@ -51,6 +51,49 @@ class SupabaseCollectionMapper {
     return map;
   }
 
+  /// Full `lv_collections` row for backup [v2.0] JSON (nullable `owner_id`, includes `is_shared`).
+  ///
+  /// `deleted_at` is included for table parity; the domain model does not carry it yet (always null).
+  static Map<String, dynamic> toLvCollectionsBackupRow(Collection entity) {
+    final parent = entity.parentId;
+    final parentForDb =
+        (parent != null && parent.trim().isNotEmpty) ? parent : null;
+
+    final map = <String, dynamic>{
+      'id': entity.id,
+      'owner_id': entity.ownerId,
+      'parent_id': parentForDb,
+      'title': entity.title,
+      'description': _emptyToNull(entity.description),
+      'category': entity.category,
+      'color_hex': entity.colorHex,
+      'icon_name': entity.iconName,
+      'position': entity.position,
+      'is_pinned': entity.isPinned,
+      'is_archived': entity.isArchived,
+      'is_deleted': entity.isDeleted,
+      'deleted_at': null,
+      'url_count': entity.itemCount,
+      'child_count': entity.childCount,
+      'created_at': entity.createdAt.toIso8601String(),
+      'updated_at': entity.updatedAt.toIso8601String(),
+      'last_accessed_at': entity.lastAccessedAt?.toIso8601String(),
+      'items_layout': CollectionLayoutMode.normalize(entity.itemsLayout),
+      'child_collections_layout':
+          CollectionLayoutMode.normalize(entity.childCollectionsLayout),
+      'items_sort_default':
+          CollectionItemsSortDefault.normalize(entity.itemsSortDefault),
+      'open_links_in': CollectionOpenLinksIn.normalize(entity.openLinksIn),
+      'show_link_previews': entity.showLinkPreviews,
+      'is_shared': entity.isShared,
+    };
+
+    final iconJson = _decodeIconJson(entity.iconJson);
+    map['icon_json'] = iconJson;
+
+    return map;
+  }
+
   static String? _emptyToNull(String? s) {
     if (s == null) return null;
     final t = s.trim();

@@ -70,4 +70,9 @@ class ReadOnlyItemsRepository implements IItemsRepository {
   Future<Either<Failure, void>> updateItemPosition(
           String id, double newPosition) async =>
       const Left(_error);
+
+  @override
+  Future<Either<Failure, Item?>> findItemByCollectionAndNormalizedLink(
+          String collectionId, String link) =>
+      _inner.findItemByCollectionAndNormalizedLink(collectionId, link);
 }

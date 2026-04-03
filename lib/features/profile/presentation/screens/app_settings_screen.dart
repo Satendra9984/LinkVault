@@ -2,19 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/data/models/auth_settings_model.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 
-/// App Settings screen at `/profile/settings`.
-/// Groups: Appearance · Links · Collections · Sync (premium) · Notifications.
+/// App Settings at `/profile/settings` — appearance, sync (premium), notifications.
 class AppSettingsScreen extends ConsumerWidget {
   const AppSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final rowAsync = ref.watch(authSettingsRowStreamProvider);
+
+    return rowAsync.when(
+      data: (row) => _SettingsBody(settings: row),
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Scaffold(
+        appBar: AppBar(
+          leading: BackButton(onPressed: () => context.pop()),
+          title: const Text('Settings'),
+        ),
+        body: Center(child: Text('Could not load settings: $e')),
+      ),
+    );
+  }
+}
+
+class _SettingsBody extends ConsumerWidget {
+  const _SettingsBody({required this.settings});
+
+  final AuthSettingsModel settings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final themeState = ref.watch(themeProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    final themeState = ref.watch(themeProvider);
+    final repo = ref.watch(appSettingsRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +52,6 @@ class AppSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // ── Appearance ──────────────────────────────────────────────────
           _SectionHeader(title: 'APPEARANCE'),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -38,105 +65,46 @@ class AppSettingsScreen extends ConsumerWidget {
             ),
           ),
           const Divider(indent: 16, endIndent: 16),
-
-          // ── Links ────────────────────────────────────────────────────────
-          _SectionHeader(title: 'LINKS'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Open links by default', style: theme.textTheme.bodyMedium),
-                const SizedBox(height: 8),
-                _SegmentedOptionPicker(
-                  options: const ['In app', 'Browser'],
-                  selectedIndex: 0,
-                  onChanged: (_) {}, // TODO: persist to settings repo
-                ),
-              ],
-            ),
-          ),
-          SwitchListTile(
-            title: const Text('Show link previews'),
-            subtitle: const Text('Thumbnails on link cards'),
-            value: true,
-            onChanged: (_) {}, // TODO: persist
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          SwitchListTile(
-            title: const Text('Show favicons'),
-            value: true,
-            onChanged: (_) {},
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          const Divider(indent: 16, endIndent: 16),
-
-          // ── Collections ──────────────────────────────────────────────────
-          _SectionHeader(title: 'COLLECTIONS'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Default folders layout',
-                    style: theme.textTheme.bodyMedium),
-                const SizedBox(height: 8),
-                _SegmentedOptionPicker(
-                  options: const ['Grid', 'List', 'Compact'],
-                  selectedIndex: 0,
-                  onChanged: (_) {},
-                ),
-                const SizedBox(height: 16),
-                Text('Default links layout', style: theme.textTheme.bodyMedium),
-                const SizedBox(height: 8),
-                _SegmentedOptionPicker(
-                  options: const ['List', 'Cards', 'Icons'],
-                  selectedIndex: 0,
-                  onChanged: (_) {},
-                ),
-              ],
-            ),
-          ),
-          const Divider(indent: 16, endIndent: 16),
-
-          // ── Sync ─────────────────────────────────────────────────────────
           _SectionHeader(title: 'SYNC (PREMIUM ONLY)'),
           SwitchListTile(
             title: const Text('Auto-sync'),
-            value: isPremium,
-            onChanged: isPremium ? (_) {} : null,
+            subtitle:
+                const Text('When online, keep cloud in sync with your library'),
+            value: settings.autoSyncEnabled,
+            onChanged: isPremium ? (v) => repo.setAutoSyncEnabled(v) : null,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           ),
           SwitchListTile(
-            title: const Text('Sync on WiFi only'),
-            value: false,
-            onChanged: isPremium ? (_) {} : null,
+            title: const Text('Sync on Wi‑Fi only'),
+            subtitle: const Text('Reduce mobile data use for background sync'),
+            value: settings.syncWifiOnly,
+            onChanged: isPremium ? (v) => repo.setSyncWifiOnly(v) : null,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           ),
           if (!isPremium)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text(
-                'Upgrade to Premium to enable cloud sync.',
+                'Upgrade to Premium to enable cloud sync options.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
           const Divider(indent: 16, endIndent: 16),
-
-          // ── Notifications ────────────────────────────────────────────────
           _SectionHeader(title: 'NOTIFICATIONS'),
           SwitchListTile(
             title: const Text('New link saved'),
-            value: false,
-            onChanged: (_) {},
+            subtitle: const Text('Reserved for a future release'),
+            value: settings.notifyLinkSaved,
+            onChanged: (v) => repo.setNotifyLinkSaved(v),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           ),
           SwitchListTile(
             title: const Text('Sync complete'),
-            value: false,
-            onChanged: (_) {},
+            subtitle: const Text('Reserved for a future release'),
+            value: settings.notifySyncComplete,
+            onChanged: (v) => repo.setNotifySyncComplete(v),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 24),
@@ -145,8 +113,6 @@ class AppSettingsScreen extends ConsumerWidget {
     );
   }
 }
-
-// ── Reusable helpers ─────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
@@ -196,42 +162,6 @@ class _SegmentedThemePicker extends ConsumerWidget {
       selected: {current},
       onSelectionChanged: (sel) =>
           ref.read(themeProvider.notifier).setMode(sel.first),
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return cs.primary.withValues(alpha: 0.15);
-          }
-          return null;
-        }),
-      ),
-    );
-  }
-}
-
-class _SegmentedOptionPicker extends StatelessWidget {
-  const _SegmentedOptionPicker({
-    required this.options,
-    required this.selectedIndex,
-    required this.onChanged,
-  });
-
-  final List<String> options;
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return SegmentedButton<int>(
-      showSelectedIcon: false,
-      segments: options.indexed.map((e) {
-        return ButtonSegment<int>(
-          value: e.$1,
-          label: Text(e.$2),
-        );
-      }).toList(),
-      selected: {selectedIndex},
-      onSelectionChanged: (sel) => onChanged(sel.first),
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {

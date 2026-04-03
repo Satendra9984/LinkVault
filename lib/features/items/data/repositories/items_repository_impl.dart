@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart' hide Order;
 import '../../../../objectbox.g.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/link_normalization.dart';
 import '../../domain/entities/item.dart';
 import '../../domain/models/url_items_query.dart';
 import '../../domain/repositories/i_items_repository.dart';
@@ -330,6 +331,35 @@ class ItemsRepositoryImpl implements IItemsRepository {
       return Right(models.map(ItemMapper.toEntity).toList());
     } catch (e, stackTrace) {
       return Left(DatabaseFailure('Failed to get all items',
+          error: e, stackTrace: stackTrace));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Item?>> findItemByCollectionAndNormalizedLink(
+    String collectionId,
+    String link,
+  ) async {
+    try {
+      final target = normalizeLinkForDedup(link);
+      if (target.isEmpty) return const Right(null);
+      final q = _box
+          .query(
+            ItemModel_.collectionUid
+                .equals(collectionId)
+                .and(ItemModel_.isDeleted.equals(false)),
+          )
+          .build();
+      final models = q.find();
+      q.close();
+      for (final m in models) {
+        if (normalizeLinkForDedup(m.link) == target) {
+          return Right(ItemMapper.toEntity(m));
+        }
+      }
+      return const Right(null);
+    } catch (e, stackTrace) {
+      return Left(DatabaseFailure('Failed to find item by link',
           error: e, stackTrace: stackTrace));
     }
   }

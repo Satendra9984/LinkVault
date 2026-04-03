@@ -9,6 +9,34 @@ import '../../domain/usecases/watch_ad_for_access_usecase.dart';
 // ── Re-export for convenience ─────────────────────────────────────────────────
 export '../../domain/usecases/check_ad_access_usecase.dart' show DayPassStatus;
 
+/// After the 3-day window, persist consumption for signed-in users (server + local).
+Future<void> syncInstallTrialConsumedIfPastWindow(Ref ref) async {
+  final user = ref.read(currentUserProvider);
+  if (user?.supabaseId == null) return;
+  final settings = ref.read(appSettingsRepositoryProvider);
+  if (await settings.isGuestMode()) return;
+  if (await settings.getInstallTrialConsumedRemote()) return;
+  final install = await settings.getInstallDate();
+  if (install == null) return;
+  final days = DateTime.now().difference(install).inHours / 24;
+  if (days < 3) return;
+
+  final result = await ref.read(profileRepositoryProvider).updateInstallTrialConsumed(
+        userId: user!.supabaseId!,
+        consumed: true,
+      );
+
+  await result.match(
+    (f) async {
+      AppLogger.w('AdGate: install trial server sync failed: ${f.message}');
+    },
+    (profile) async {
+      await settings.setInstallTrialConsumedRemote(value: profile.installTrialConsumed);
+      AppLogger.d('AdGate: install trial marked consumed on server');
+    },
+  );
+}
+
 // ── Providers ─────────────────────────────────────────────────────────────────
 
 /// Resolves the current [DayPassStatus]. Used in GoRouter redirect and
@@ -19,7 +47,10 @@ final adGateProvider = AsyncNotifierProvider<AdGateNotifier, DayPassStatus>(
 
 /// Lightweight [FutureProvider] for use inside the GoRouter redirect callback.
 final adGateStatusProvider = FutureProvider<DayPassStatus>((ref) async {
+  final isPremium = ref.read(isPremiumProvider);
   final repo = ref.read(daypassRepositoryProvider);
+  await repo.cachePremiumStatus(isPremium: isPremium);
+  await syncInstallTrialConsumedIfPastWindow(ref);
   return CheckAdAccessUseCase(repo).call();
 });
 
@@ -30,10 +61,10 @@ class AdGateNotifier extends AsyncNotifier<DayPassStatus> {
   Future<DayPassStatus> build() async {
     // Sync premium cache whenever auth changes.
     final isPremium = ref.watch(isPremiumProvider);
-    await ref
-        .read(daypassRepositoryProvider)
-        .cachePremiumStatus(isPremium: isPremium);
-    return CheckAdAccessUseCase(ref.read(daypassRepositoryProvider)).call();
+    final repo = ref.read(daypassRepositoryProvider);
+    await repo.cachePremiumStatus(isPremium: isPremium);
+    await syncInstallTrialConsumedIfPastWindow(ref);
+    return CheckAdAccessUseCase(repo).call();
   }
 
   // ── Watch Ad ──────────────────────────────────────────────────────────────
@@ -63,6 +94,7 @@ class AdGateNotifier extends AsyncNotifier<DayPassStatus> {
           AppLogger.w('AdGate: another ad already in progress');
       }
 
+      await syncInstallTrialConsumedIfPastWindow(ref);
       final newStatus =
           await CheckAdAccessUseCase(ref.read(daypassRepositoryProvider))
               .call();
@@ -78,11 +110,21 @@ class AdGateNotifier extends AsyncNotifier<DayPassStatus> {
   /// Re-evaluates access status (e.g. after returning from paywall).
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => CheckAdAccessUseCase(ref.read(daypassRepositoryProvider)).call());
+    state = await AsyncValue.guard(() async {
+      final repo = ref.read(daypassRepositoryProvider);
+      await syncInstallTrialConsumedIfPastWindow(ref);
+      return CheckAdAccessUseCase(repo).call();
+    });
   }
 
-  /// Returns how much time remains on the current DayPass.
-  Future<Duration> remainingDuration() =>
-      ref.read(daypassRepositoryProvider).getDayPassRemainingDuration();
+  /// Remaining time for install trial, DayPass stack, or legacy ad window.
+  Future<Duration> remainingDuration() async {
+    final repo = ref.read(daypassRepositoryProvider);
+    await syncInstallTrialConsumedIfPastWindow(ref);
+    final status = await CheckAdAccessUseCase(repo).call();
+    if (status == DayPassStatus.freeTrial) {
+      return repo.getFreeTrialRemainingDuration();
+    }
+    return repo.getDayPassRemainingDuration();
+  }
 }

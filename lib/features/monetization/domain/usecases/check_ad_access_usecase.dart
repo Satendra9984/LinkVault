@@ -37,13 +37,20 @@ class CheckAdAccessUseCase {
     // 2. Ensure install date is stamped (first call on fresh install).
     await _repository.setInstallDateIfNotSet();
     final installDate = await _repository.getInstallDate();
+    final isGuest = await _repository.isGuestMode();
+    final accountTrialConsumed =
+        await _repository.getAccountInstallTrialConsumed();
 
     if (installDate != null) {
       final daysSinceInstall =
           DateTime.now().difference(installDate).inHours / 24;
-      if (daysSinceInstall < 3) {
+      // Guests: device-local 3-day window. Signed-in: blocked if account already
+      // consumed the install trial on the server (survives reinstall).
+      final eligibleForInstallTrial =
+          daysSinceInstall < 3 && (isGuest || !accountTrialConsumed);
+      if (eligibleForInstallTrial) {
         AppLogger.d(
-            'DayPass: free trial (${daysSinceInstall.toStringAsFixed(1)} days since install)');
+            'DayPass: free trial (${daysSinceInstall.toStringAsFixed(1)} days since install, guest=$isGuest accountConsumed=$accountTrialConsumed)');
         return DayPassStatus.freeTrial;
       }
     }

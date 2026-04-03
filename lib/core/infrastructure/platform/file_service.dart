@@ -3,6 +3,17 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 
 class FileService {
+  /// Returns file size in bytes, or null if the path is missing / unsupported.
+  Future<int?> fileLengthBytes(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (!await file.exists()) return null;
+      return await file.length();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<String> saveToFile(String fileName, String content) async {
     final directory = await _getDocumentDirectory();
     final file = File('${directory.path}/$fileName');

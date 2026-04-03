@@ -43,6 +43,15 @@ class AppSettingsRepository {
   Future<void> setGuestMode({required bool value}) async =>
       _save((await _get())..isGuestMode = value);
 
+  // ── Install trial (account mirror; see [AuthSettingsModel.installTrialConsumedRemote])
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Future<bool> getInstallTrialConsumedRemote() async =>
+      (await _get()).installTrialConsumedRemote;
+
+  Future<void> setInstallTrialConsumedRemote({required bool value}) async =>
+      _save((await _get())..installTrialConsumedRemote = value);
+
   // ── Install Date (DayPass 3-day trial) ───────────────────────────────────
 
   Future<DateTime?> getInstallDate() async => (await _get()).installDate;
@@ -53,6 +62,15 @@ class AppSettingsRepository {
     if (s.installDate == null) {
       await _save(s..installDate = DateTime.now());
     }
+  }
+
+  /// Time until the 3-day install trial ends (from [installDate]), or zero if past end.
+  Future<Duration> getFreeTrialRemainingDuration() async {
+    final install = await getInstallDate();
+    if (install == null) return Duration.zero;
+    final trialEnd = install.add(const Duration(days: 3));
+    final r = trialEnd.difference(DateTime.now());
+    return r.isNegative ? Duration.zero : r;
   }
 
   // ── DayPass ───────────────────────────────────────────────────────────────
@@ -120,6 +138,56 @@ class AppSettingsRepository {
     await _save(s..themeMode = mode);
   }
 
+  // ── Settings screen (link / layout / sync / notifications) ────────────────
+
+  Future<int> getOpenLinksDefault() async => (await _get()).openLinksDefault;
+
+  Future<void> setOpenLinksDefault(int index) async =>
+      _save((await _get())..openLinksDefault = index);
+
+  Future<bool> getShowLinkPreviews() async => (await _get()).showLinkPreviews;
+
+  Future<void> setShowLinkPreviews(bool value) async =>
+      _save((await _get())..showLinkPreviews = value);
+
+  Future<bool> getShowFavicons() async => (await _get()).showFavicons;
+
+  Future<void> setShowFavicons(bool value) async =>
+      _save((await _get())..showFavicons = value);
+
+  Future<int> getDefaultFoldersLayout() async =>
+      (await _get()).defaultFoldersLayout;
+
+  Future<void> setDefaultFoldersLayout(int index) async =>
+      _save((await _get())..defaultFoldersLayout = index);
+
+  Future<int> getDefaultLinksLayout() async =>
+      (await _get()).defaultLinksLayout;
+
+  Future<void> setDefaultLinksLayout(int index) async =>
+      _save((await _get())..defaultLinksLayout = index);
+
+  Future<bool> getAutoSyncEnabled() async => (await _get()).autoSyncEnabled;
+
+  Future<void> setAutoSyncEnabled(bool value) async =>
+      _save((await _get())..autoSyncEnabled = value);
+
+  Future<bool> getSyncWifiOnly() async => (await _get()).syncWifiOnly;
+
+  Future<void> setSyncWifiOnly(bool value) async =>
+      _save((await _get())..syncWifiOnly = value);
+
+  Future<bool> getNotifyLinkSaved() async => (await _get()).notifyLinkSaved;
+
+  Future<void> setNotifyLinkSaved(bool value) async =>
+      _save((await _get())..notifyLinkSaved = value);
+
+  Future<bool> getNotifySyncComplete() async =>
+      (await _get()).notifySyncComplete;
+
+  Future<void> setNotifySyncComplete(bool value) async =>
+      _save((await _get())..notifySyncComplete = value);
+
   // ── Reset (e.g., on sign-out) ─────────────────────────────────────────────
 
   /// Clears guest mode, premium cache, and cloud migration flags on sign-out.
@@ -130,8 +198,10 @@ class AppSettingsRepository {
     await _save(s
       ..isGuestMode = false
       ..isPremiumCached = false
+      ..installTrialConsumedRemote = false
       ..lastAdWatchedAt = null
       ..lastAdFailed = false
+      ..dayPassExpiresAt = null
       ..hasMigratedToCloud = false);
 
     // Legacy [AppSettingsModel] row (used by [hasMigratedToCloudProvider]).

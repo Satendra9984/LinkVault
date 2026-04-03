@@ -32,6 +32,17 @@ abstract class IDayPassRepository {
   /// every gate check).
   Future<bool> getCachedPremiumStatus();
 
+  /// Guest mode (local-only session) — install trial is not account-locked.
+  Future<bool> isGuestMode();
+
+  /// Mirrors server `install_trial_consumed` for signed-in users (see profile sync).
+  Future<bool> getAccountInstallTrialConsumed();
+
+  Future<void> setAccountInstallTrialConsumed(bool consumed);
+
+  /// Remaining time in the 3-day install trial window (from install date).
+  Future<Duration> getFreeTrialRemainingDuration();
+
   // ── Write ────────────────────────────────────────────────────────────────────
 
   /// Updates `dayPassExpiresAt` by stacking +24 h onto the current expiry
