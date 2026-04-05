@@ -1,12 +1,61 @@
 import 'package:flutter/material.dart';
 
+class _SkeletonBox extends StatefulWidget {
+  const _SkeletonBox({
+    this.width,
+    required this.height,
+    this.radius = 10,
+    this.margin,
+  });
+
+  final double? width;
+  final double height;
+  final double radius;
+  final EdgeInsetsGeometry? margin;
+
+  @override
+  State<_SkeletonBox> createState() => _SkeletonBoxState();
+}
+
+class _SkeletonBoxState extends State<_SkeletonBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1050),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base = Theme.of(context).colorScheme.surfaceContainerHighest;
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.45, end: 0.85).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      ),
+      child: Container(
+        width: widget.width,
+        height: widget.height,
+        margin: widget.margin,
+        decoration: BoxDecoration(
+          color: base,
+          borderRadius: BorderRadius.circular(widget.radius),
+        ),
+      ),
+    );
+  }
+}
+
 /// Skeleton placeholder for URL / list rows while async data loads.
 class ItemsListSkeleton extends StatelessWidget {
   const ItemsListSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme.surfaceContainerHighest;
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -17,34 +66,24 @@ class ItemsListSkeleton extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
-                    Container(
+                    const _SkeletonBox(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
-                        color: c,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          const _SkeletonBox(
                             height: 14,
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: c,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                            radius: 4,
+                            margin: EdgeInsets.only(bottom: 8),
                           ),
-                          Container(
+                          const _SkeletonBox(
                             height: 10,
                             width: 120,
-                            decoration: BoxDecoration(
-                              color: c.withValues(alpha: 0.75),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                            radius: 4,
                           ),
                         ],
                       ),
@@ -67,7 +106,6 @@ class CollectionGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme.surfaceContainerHighest;
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -77,11 +115,10 @@ class CollectionGridSkeleton extends StatelessWidget {
         childAspectRatio: 1.15,
       ),
       itemCount: 6,
-      itemBuilder: (_, __) => Container(
-        decoration: BoxDecoration(
-          color: c,
-          borderRadius: BorderRadius.circular(20),
-        ),
+      itemBuilder: (_, __) => const _SkeletonBox(
+        width: null,
+        height: 140,
+        radius: 20,
       ),
     );
   }
@@ -93,11 +130,10 @@ class HomeSectionSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme.surfaceContainerHighest;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(height: 24, width: 160, color: c),
+        const _SkeletonBox(height: 24, width: 160, radius: 6),
         const SizedBox(height: 16),
         SizedBox(
           height: 132,
@@ -105,29 +141,23 @@ class HomeSectionSkeleton extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: 4,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (_, __) => Container(
+            itemBuilder: (_, __) => const _SkeletonBox(
               width: 128,
-              decoration: BoxDecoration(
-                color: c,
-                borderRadius: BorderRadius.circular(20),
-              ),
+              height: 132,
+              radius: 20,
             ),
           ),
         ),
         const SizedBox(height: 32),
-        Container(height: 24, width: 140, color: c),
+        const _SkeletonBox(height: 24, width: 140, radius: 6),
         const SizedBox(height: 12),
         ...List.generate(
           4,
-          (i) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: c,
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
+          (i) => const _SkeletonBox(
+            width: null,
+            height: 64,
+            radius: 16,
+            margin: EdgeInsets.only(bottom: 8),
           ),
         ),
       ],

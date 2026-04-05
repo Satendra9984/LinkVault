@@ -113,6 +113,12 @@ class _StubItemsRepo implements IItemsRepository {
     double newPosition,
   ) async =>
       throw UnimplementedError();
+      
+        @override
+        Future<Either<Failure, Item?>> findItemByCollectionAndNormalizedLink(String collectionId, String link) {
+          // TODO: implement findItemByCollectionAndNormalizedLink
+          throw UnimplementedError();
+        }
 }
 
 Collection _coll(String id, {String? parentId}) => Collection(

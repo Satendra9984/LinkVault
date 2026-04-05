@@ -143,14 +143,14 @@ class ItemsNotifier extends FamilyAsyncNotifier<ItemsState, String> {
   // MVVM: filtering/sorting state lives in the notifier, not the widget.
   ItemStatus? _statusFilter;
   UrlSortOption _sortOption = UrlSortOption.dateAdded;
-  UrlViewMode _viewMode = UrlViewMode.list;
+  UrlViewMode _viewMode = UrlViewMode.icons;
   UnifiedTab _activeTab = UnifiedTab.childCollections;
 
   @override
   Future<ItemsState> build(String arg) async {
     _statusFilter = null;
     _sortOption = UrlSortOption.dateAdded;
-    _viewMode = UrlViewMode.list;
+    _viewMode = UrlViewMode.icons;
     _activeTab = UnifiedTab.childCollections;
     return ItemsState(
       items: const [],

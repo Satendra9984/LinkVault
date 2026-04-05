@@ -8,7 +8,7 @@ import '../models/search_history_model.dart';
 class SearchHistoryRepository {
   final Box<SearchHistoryModel> _box;
 
-  static const int maxEntries = 10;
+  static const int maxEntries = 20;
 
   SearchHistoryRepository(Store store)
       : _box = store.box<SearchHistoryModel>();

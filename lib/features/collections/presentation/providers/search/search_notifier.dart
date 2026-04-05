@@ -21,8 +21,10 @@ final searchHistoryProvider =
   return ref.watch(searchHistoryRepositoryProvider).watchHistory();
 });
 
-// ── Search Notifier ────────────────────────────────────────────────────────
-
+// ── Search Notifier (legacy) ───────────────────────────────────────────────
+/// `/search` uses [globalSearchNotifierProvider]. This notifier remains for
+/// backward compatibility; new code should not depend on [searchNotifierProvider].
+@Deprecated('Use globalSearchNotifierProvider for global search UI state')
 class SearchNotifier extends AutoDisposeNotifier<SearchState> {
   @override
   SearchState build() => const SearchState();
@@ -58,6 +60,7 @@ class SearchNotifier extends AutoDisposeNotifier<SearchState> {
   }
 }
 
+@Deprecated('Use globalSearchNotifierProvider for global search UI state')
 final searchNotifierProvider =
     NotifierProvider.autoDispose<SearchNotifier, SearchState>(
   SearchNotifier.new,

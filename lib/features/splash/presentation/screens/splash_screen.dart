@@ -74,7 +74,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              AppAssets.appLogoReference,
+              AppAssets.appLogo,
               width: 120,
               height: 120,
             ),

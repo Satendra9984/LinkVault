@@ -491,8 +491,6 @@ class _RootLinksTabState extends ConsumerState<_RootLinksTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
     final uiState = ref.watch(collectionsListUiNotifierProvider);
     final uiNotifier = ref.read(collectionsListUiNotifierProvider.notifier);
 
@@ -505,32 +503,10 @@ class _RootLinksTabState extends ConsumerState<_RootLinksTab> {
         data: (items) {
           final filtered = _filtered(items);
           if (items.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bookmark_border_rounded,
-                        size: 56, color: cs.onSurfaceVariant),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No root links yet',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Links not assigned to a folder will appear here.',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: cs.onSurfaceVariant),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+            return const EmptyStateView(
+              imageAsset: AppAssets.emptySearch,
+              title: 'No root links yet',
+              message: 'Links not assigned to a folder will appear here.',
             );
           }
 
@@ -605,13 +581,15 @@ class _RootLinksTabState extends ConsumerState<_RootLinksTab> {
               if (filtered.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: Text(
-                      'No links match current filters.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
+                  child: EmptyStateView(
+                    imageAsset: AppAssets.emptySearch,
+                    title: 'No links match current filters',
+                    message: 'Try a different query or clear status filters.',
+                    buttonText: 'Clear filters',
+                    onButtonPressed: () {
+                      uiNotifier.clearRootLinksSearchQuery();
+                      uiNotifier.setRootLinksStatusFilter(null);
+                    },
                   ),
                 )
               else if (uiState.rootLinksViewMode == UrlViewMode.list)
@@ -659,22 +637,16 @@ class _RootLinksTabState extends ConsumerState<_RootLinksTab> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              'Could not load root links.',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: cs.onSurfaceVariant),
-            ),
-          ),
+        loading: () => const ItemsListSkeleton(),
+        error: (err, _) => AppErrorState(
+          error: err,
+          title: 'Could not load root links',
+          onRetry: () => ref.invalidate(_rootLinksProvider),
         ),
       ),
     );
   }
 }
-
 // ── Collection options bottom sheet ──────────────────────────────────────────
 
 class _CollectionOptionsSheet extends ConsumerWidget {

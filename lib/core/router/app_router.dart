@@ -12,6 +12,8 @@ import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/collections/domain/entities/collection.dart';
 import '../../features/collections/presentation/screens/collections_branch_root_screen.dart';
 import '../../features/collections/presentation/screens/search_collections_screen.dart';
+import '../../features/collections/presentation/screens/search_filters_collections_screen.dart';
+import '../../features/collections/presentation/screens/search_filters_links_screen.dart';
 import '../../features/home/presentation/screens/home_dashboard_screen.dart';
 import '../../features/collections/presentation/screens/create_collection_screen.dart';
 import '../../features/collections/presentation/screens/edit_collection_screen.dart';
@@ -356,6 +358,18 @@ GoRouter createAppRouter(ProviderContainer container) {
               GoRoute(
                 path: '/search',
                 builder: (context, state) => const SearchCollectionsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'filters/collections',
+                    builder: (context, state) =>
+                        const SearchFiltersCollectionsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'filters/links',
+                    builder: (context, state) =>
+                        const SearchFiltersLinksScreen(),
+                  ),
+                ],
               ),
             ],
           ),

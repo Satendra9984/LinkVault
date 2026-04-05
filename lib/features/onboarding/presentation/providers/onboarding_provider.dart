@@ -39,19 +39,24 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       currentPage: 0,
       slides: [
         OnboardingSlide(
-          title: 'Save Links',
+          title: 'Welcome to LinkVault',
+          imagePath: AppAssets.onboardingWelcome,
+          description: 'Your personal vault for every link that matters.',
+        ),
+        OnboardingSlide(
+          title: 'Save in 2 Taps',
           imagePath: AppAssets.onboardingSave,
           description: 'Capture any URL in seconds so it never gets lost.',
         ),
         OnboardingSlide(
-          title: 'Organize',
+          title: 'Organize Everything',
           imagePath: AppAssets.onboardingOrganize,
-          description: 'Put links into collections and keep everything tidy.',
+          description: 'Put links into collections — folders inside folders.',
         ),
         OnboardingSlide(
-          title: 'Sync Anywhere',
+          title: 'Access Anywhere',
           imagePath: AppAssets.onboardingAct,
-          description: 'Ready on every device (cloud sync coming in later sprints).',
+          description: 'Offline-first. Your links are always ready, everywhere.',
         ),
       ],
     );

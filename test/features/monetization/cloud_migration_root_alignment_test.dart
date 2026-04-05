@@ -130,6 +130,52 @@ void main() {
       expect(identical(remapped, input), isTrue);
       expect(remapped.single.id, localRoot);
     });
+
+    // Bug 2 regression: first delta-sync pull inserts server root S into
+    // ObjectBox. Push phase then has [L, S, children] where both L and S have
+    // parentId=null. Without dedup the remap produces two rows with id=S and
+    // parent_id=null → assertValidRootRows fires.
+    test(
+        'deduplicates pulled server root S when local root L is also present',
+        () {
+      final localRootCollection =
+          _col(id: localRoot, parentId: null, title: 'Library');
+      final serverRootCollection = _col(
+        id: serverRoot,
+        parentId: null,
+        title: 'Library',
+        createdAt: DateTime.utc(2025, 6, 1), // pulled from server, newer
+      );
+      final child = _col(
+        id: 'child-1',
+        parentId: serverRoot, // child was updated by prior sync to point at S
+        title: 'Work',
+      );
+
+      // Input mirrors ObjectBox state after migration + first pull:
+      // L (local ghost, parentId=null) + S (pulled server root, parentId=null)
+      // + child (parentId=S from pull).
+      final remapped =
+          CloudMigrationRootAlignment.collectionsWithRemappedRootIds(
+        [localRootCollection, serverRootCollection, child],
+        localRootId: localRoot,
+        serverRootId: serverRoot,
+      );
+
+      // S (from localRootCollection remapped) must appear exactly once.
+      final rootRows = remapped.where((c) => c.id == serverRoot).toList();
+      expect(rootRows, hasLength(1));
+      expect(rootRows.single.parentId, isNull);
+
+      // Child should be present unchanged.
+      final childRows = remapped.where((c) => c.id == 'child-1').toList();
+      expect(childRows, hasLength(1));
+
+      // JSON payload must have exactly 1 active root.
+      final json =
+          CloudMigrationRootAlignment.toSupabaseCollectionJson(remapped, userId);
+      expect(CloudMigrationRootAlignment.countActiveRootRowsInJson(json), 1);
+    });
   });
 
   group('CloudMigrationRootAlignment.itemWithRemappedRootCollection', () {

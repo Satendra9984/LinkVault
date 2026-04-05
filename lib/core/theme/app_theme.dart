@@ -4,17 +4,28 @@ import 'type_system.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      primary: AppColors.primary, // Explicit: prevents fromSeed from tinting
+      onPrimary: Colors.white,
+      surface: AppColors.surface,
+      onSurface: AppColors.text,
+      onSurfaceVariant: const Color(0xFF35343A),
+      surfaceContainerLowest: AppColors.background,
+      error: AppColors.error,
+      brightness: Brightness.light,
+    );
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        primary: AppColors.primary, // Explicit: prevents fromSeed from tinting
-        onPrimary: Colors.white,
-        surface: AppColors.surface,
-        onSurface: AppColors.text,
-        surfaceContainerLowest: AppColors.background,
-        error: AppColors.error,
-        brightness: Brightness.light,
+      colorScheme: scheme,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
       scaffoldBackgroundColor: AppColors.background,
       textTheme: AppTypography.textTheme,
@@ -76,19 +87,30 @@ class AppTheme {
     const darkBackground = Color(0xFF0F0F0F);
     const darkSurface = Color(0xFF1C1C1E); // iOS-style dark card
     const darkSurfaceVariant = Color(0xFF2C2C2E);
+    final darkScheme = ColorScheme.fromSeed(
+      seedColor: darkPrimary,
+      primary: darkPrimary,
+      onPrimary: Colors.white,
+      surface: darkSurface,
+      onSurface: Colors.white,
+      onSurfaceVariant: const Color(0xFFCFC7C4),
+      surfaceContainerLowest: darkBackground,
+      surfaceContainerLow: darkSurfaceVariant,
+      error: AppColors.error,
+      brightness: Brightness.dark,
+    );
 
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: darkPrimary,
-        primary: darkPrimary,
-        onPrimary: Colors.white,
-        surface: darkSurface,
-        onSurface: Colors.white,
-        surfaceContainerLowest: darkBackground,
-        surfaceContainerLow: darkSurfaceVariant,
-        error: AppColors.error,
-        brightness: Brightness.dark,
+      colorScheme: darkScheme,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
       scaffoldBackgroundColor: darkBackground,
       textTheme: AppTypography.textTheme.apply(

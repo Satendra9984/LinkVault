@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:link_vault/core/constants/app_assets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/color_palette.dart';
 import '../../../../core/presentation/widgets/content_state_widgets.dart';
@@ -15,6 +16,7 @@ import '../providers/items_hub_ui_notifier.dart';
 import '../providers/items_hub_ui_state.dart';
 import '../widgets/url_favicon_tile.dart';
 import '../widgets/url_icon_link_tile.dart';
+import '../widgets/url_list_row_tile.dart';
 import '../widgets/url_preview_tile.dart';
 import '../widgets/unified_collection_sheets.dart';
 import '../../../collections/presentation/providers/collections_providers.dart';
@@ -220,7 +222,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
       ItemsState state, ItemsHubUiState uiState) {
     return state.statusFilter != null ||
         state.sortOption != UrlSortOption.dateAdded ||
-        state.viewMode != UrlViewMode.list ||
+        state.viewMode != UrlViewMode.icons ||
         _urlsExtrasActive(uiState);
   }
 
@@ -967,30 +969,34 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                               ? null
                               : PreferredSize(
                                   preferredSize: const Size.fromHeight(48),
-                                  child: TabBar(
-                                    controller: tabController,
-                                    labelColor: primary,
-                                    indicatorWeight: 2,
-                                    labelStyle: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                    unselectedLabelColor:
-                                        theme.colorScheme.onSurfaceVariant,
-                                    onTap: (index) {
-                                      final tab = index == 0
-                                          ? UnifiedTab.childCollections
-                                          : UnifiedTab.urls;
-                                      ref
-                                          .read(itemsNotifierProvider(
-                                                  widget.collectionId)
-                                              .notifier)
-                                          .setActiveTab(tab);
-                                    },
-                                    tabs: _buildHubTabs(
-                                      state,
-                                      filteredChildCollections.length,
-                                      state.items.length,
+                                  child: Semantics(
+                                    container: true,
+                                    label: 'Collection tabs',
+                                    child: TabBar(
+                                      controller: tabController,
+                                      labelColor: primary,
+                                      indicatorWeight: 2,
+                                      labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                      unselectedLabelColor:
+                                          theme.colorScheme.onSurfaceVariant,
+                                      onTap: (index) {
+                                        final tab = index == 0
+                                            ? UnifiedTab.childCollections
+                                            : UnifiedTab.urls;
+                                        ref
+                                            .read(itemsNotifierProvider(
+                                                    widget.collectionId)
+                                                .notifier)
+                                            .setActiveTab(tab);
+                                      },
+                                      tabs: _buildHubTabs(
+                                        state,
+                                        filteredChildCollections.length,
+                                        state.items.length,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1397,48 +1403,6 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                 //   ),
                 // );
 
-                final sortButton = PopupMenuButton<UrlSortOption>(
-                  tooltip: 'Quick sort',
-                  onSelected: (sort) {
-                    ref
-                        .read(
-                            itemsNotifierProvider(widget.collectionId).notifier)
-                        .setSortOption(sort);
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: UrlSortOption.position,
-                      child: Text('Manual order'),
-                    ),
-                    PopupMenuItem(
-                      value: UrlSortOption.dateAdded,
-                      child: Text('Recently added'),
-                    ),
-                    PopupMenuItem(
-                      value: UrlSortOption.dateEdited,
-                      child: Text('Recently edited'),
-                    ),
-                    PopupMenuItem(
-                      value: UrlSortOption.mostVisited,
-                      child: Text('Most visited'),
-                    ),
-                    PopupMenuItem(
-                      value: UrlSortOption.alphabeticalAsc,
-                      child: Text('Alphabetical A-Z'),
-                    ),
-                    PopupMenuItem(
-                      value: UrlSortOption.alphabeticalDesc,
-                      child: Text('Alphabetical Z-A'),
-                    ),
-                  ],
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Icon(
-                      Icons.swap_vert_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                );
                 return Row(
                   children: [
                     Expanded(
@@ -1585,10 +1549,16 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.folder_open_rounded,
-                size: 56,
-                color: AppColors.primary.withValues(alpha: 0.35),
+              Image.asset(
+                AppAssets.emptyCollections,
+                width: 180,
+                height: 180,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_not_supported,
+                  size: 180,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -1632,7 +1602,7 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
     Collection? currentCollection,
   ) {
     final childLayoutMode = currentCollection == null
-        ? UrlViewMode.list
+        ? UrlViewMode.icons
         : _childViewModeFromCollection(
             currentCollection.childCollectionsLayout);
 
@@ -1943,10 +1913,16 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  size: 48,
-                  color: AppColors.primary,
+                child: Image.asset(
+                  AppAssets.emptyLinks,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.image_not_supported,
+                    size: 48,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -2015,15 +1991,11 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
   }
 
   Widget _buildListItem(Item item) {
-    final domain = _extractDomain(item.link ?? '');
-    final updatedAgo = _relativeAgo(item.updatedAt);
-    final tags = (item.tags ?? '')
-        .split(',')
-        .map((t) => t.trim())
-        .where((t) => t.isNotEmpty)
-        .toList();
     return Dismissible(
       key: ValueKey('item_${item.id}'),
+      movementDuration: const Duration(milliseconds: 220),
+      resizeDuration: const Duration(milliseconds: 180),
+      crossAxisEndOffset: 0.05,
       background: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
@@ -2058,135 +2030,32 @@ class _ItemsListScreenState extends ConsumerState<ItemsListScreen> {
         _confirmDelete(context, item.id);
         return false;
       },
-      child: InkWell(
+      child: UrlListRowTile(
+        item: item,
         onTap: () => _openItemLink(item),
-        onLongPress: () {
-          _openEditItem(item);
-        },
-        borderRadius: BorderRadius.circular(_radiusMd),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_radiusMd),
-            border: Border.all(
-              color: Theme.of(context)
-                  .colorScheme
-                  .outlineVariant
-                  .withValues(alpha: 0.45),
+        onLongPress: () => _openEditItem(item),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (item.isPinned)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(top: 4, right: 6),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            IconButton(
+              tooltip: 'More actions',
+              icon: Icon(Icons.more_vert, size: 20, color: Colors.grey[400]),
+              onPressed: () => _showItemOptions(context, item),
             ),
-            color: Theme.of(context).colorScheme.surface,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 3,
-                  height: tags.isNotEmpty ? 76 : 60,
-                  margin: const EdgeInsets.only(right: 10, top: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                UrlFaviconTile(item: item, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        '$domain · $updatedAgo',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          ...tags.take(3).map(
-                                (tag) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(tag,
-                                      style: const TextStyle(fontSize: 11)),
-                                ),
-                              ),
-                          if (tags.length > 3)
-                            Text('+${tags.length - 3}',
-                                style: const TextStyle(fontSize: 11)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(item.status)
-                                  .withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              _getStatusText(item.status),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: _getStatusColor(item.status),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                if (item.isPinned)
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.only(top: 4, right: 6),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                IconButton(
-                  icon:
-                      Icon(Icons.more_vert, size: 20, color: Colors.grey[400]),
-                  onPressed: () => _showItemOptions(context, item),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
       ),
     );
-  }
-
-  String _relativeAgo(DateTime value) {
-    final diff = DateTime.now().difference(value);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays < 30) return '${diff.inDays}d ago';
-    return '${(diff.inDays / 30).floor()}mo ago';
   }
 
   Widget _buildIconItem(Item item) {

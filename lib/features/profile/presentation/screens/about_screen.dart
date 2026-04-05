@@ -36,7 +36,7 @@ class AboutScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Image.asset(
-                      AppAssets.appLogoReference,
+                      AppAssets.appLogo,
                       width: 120,
                       height: 120,
                       fit: BoxFit.contain,
@@ -94,16 +94,16 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Built on Curate',
+                'Architecture',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'LinkVault is built on the Curate app foundation — shared architecture, patterns, and utilities '
-                'for a consistent, maintainable product. Curate is our platform layer for link and collection '
-                'experiences; LinkVault is the LinkVault-branded product you are using here.',
+                'LinkVault uses a modular, offline-first architecture with optional cloud sync. '
+                'The app is designed for fast local performance, clear data ownership, and maintainable '
+                'feature boundaries as LinkVault continues to scale.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: cs.onSurfaceVariant,
                   height: 1.45,

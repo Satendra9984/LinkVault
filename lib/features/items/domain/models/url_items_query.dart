@@ -1,10 +1,14 @@
 import '../entities/item.dart';
 import '../url_sort_option.dart';
 
-/// Server-side (or local DB) query for URLs in a single collection.
+/// Server-side (or local DB) query for URLs — scoped to one collection or cross-collection.
+///
+/// When [collectionId] is null the query spans **all** collections owned by the
+/// active user (used by global search). All other filter and sort fields apply
+/// identically in both modes.
 class UrlItemsQuery {
   const UrlItemsQuery({
-    required this.collectionId,
+    this.collectionId,
     required this.limit,
     required this.offset,
     this.status,
@@ -18,7 +22,8 @@ class UrlItemsQuery {
     this.savedBefore,
   });
 
-  final String collectionId;
+  /// null → global cross-collection search; non-null → single-collection hub query.
+  final String? collectionId;
   final int limit;
   final int offset;
   final ItemStatus? status;

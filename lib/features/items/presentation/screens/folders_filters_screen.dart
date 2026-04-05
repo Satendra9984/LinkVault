@@ -40,7 +40,7 @@ class _FoldersFiltersScreenState extends ConsumerState<FoldersFiltersScreen> {
     final ui = ref.read(itemsHubUiNotifierProvider(widget.collectionId));
     final collection = ref.read(collectionByIdProvider(widget.collectionId));
     _layout = _childViewModeFromCollection(
-      collection?.childCollectionsLayout ?? CollectionLayoutMode.list,
+      collection?.childCollectionsLayout ?? CollectionLayoutMode.compactGrid,
     );
     _sort = ui.childFolderSort;
     _includeArchived = ui.childIncludeArchived;
@@ -73,7 +73,7 @@ class _FoldersFiltersScreenState extends ConsumerState<FoldersFiltersScreen> {
 
   void _reset() {
     setState(() {
-      _layout = UrlViewMode.list;
+      _layout = UrlViewMode.icons;
       _sort = ChildFolderSort.titleAsc;
       _includeArchived = false;
       _categories.clear();

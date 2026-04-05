@@ -6,6 +6,7 @@ class EmptyStateView extends StatelessWidget {
   final String message;
   final String? buttonText;
   final VoidCallback? onButtonPressed;
+  final String? illustrationSemanticLabel;
 
   const EmptyStateView({
     super.key,
@@ -14,6 +15,7 @@ class EmptyStateView extends StatelessWidget {
     required this.message,
     this.buttonText,
     this.onButtonPressed,
+    this.illustrationSemanticLabel,
   });
 
   @override
@@ -27,17 +29,24 @@ class EmptyStateView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Safe rendering of the illustration, bounding its size to prevent overflow
-              ConstrainedBox(
-                constraints:
-                    const BoxConstraints(maxHeight: 250, maxWidth: 250),
-                child: Image.asset(
-                  imageAsset,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.image_not_supported,
-                    size: 100,
-                    color: Colors.grey,
+              // Decorative by default; opt in to a spoken label where needed.
+              Semantics(
+                image: illustrationSemanticLabel != null,
+                label: illustrationSemanticLabel,
+                child: ExcludeSemantics(
+                  excluding: illustrationSemanticLabel == null,
+                  child: ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxHeight: 250, maxWidth: 250),
+                    child: Image.asset(
+                      imageAsset,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.image_not_supported,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -66,21 +75,25 @@ class EmptyStateView extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton(
-                    onPressed: onButtonPressed,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                  child: Semantics(
+                    button: true,
+                    label: buttonText,
+                    child: ElevatedButton(
+                      onPressed: onButtonPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        elevation: 2,
                       ),
-                      elevation: 2,
-                    ),
-                    child: Text(
-                      buttonText!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        buttonText!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

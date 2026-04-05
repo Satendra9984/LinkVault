@@ -1,32 +1,39 @@
+/// Central registry for all image assets.
+///
+/// Rules:
+/// - Every file in assets/images/ MUST have a constant here.
+/// - No code outside this file should use a raw 'assets/images/...' string.
+/// - All current images are WebP (smaller, lossless-quality).
+///   The launcher icon uses the original PNG (linkvault_logo.png) because
+///   flutter_launcher_icons requires PNG input.
 class AppAssets {
-  // Base Path
-  static const String _imagesPath = 'assets/images';
-
-  // Onboarding Illustrations
-  static const String onboardingWelcome = '$_imagesPath/onboarding_welcome.png';
-  static const String onboardingSave = '$_imagesPath/onboarding_save.png';
-  static const String onboardingOrganize =
-      '$_imagesPath/onboarding_organize.png';
-  static const String onboardingAct = '$_imagesPath/onboarding_act.png';
-
-  // Empty State Illustrations
-  static const String emptyCollections = '$_imagesPath/empty_collections.png';
-  static const String emptySearch = '$_imagesPath/empty_search.png';
-
-  // Error Illustrations
-  static const String errorNetwork = '$_imagesPath/error_network.png';
-
-  // Monetization & Rewards
-  static const String premiumHeader = '$_imagesPath/premium_header.png';
-  static const String illustrationReward =
-      '$_imagesPath/illustration_reward.png';
-
-  // Branding & Logos
-  static const String appLogoReference = '$_imagesPath/curate_logo_1024.png';
-
-  // Helper method to get asset by name (if needed for dynamic loading)
-  static String getImage(String imageName) => '$_imagesPath/$imageName';
-
-  // Private constructor
   AppAssets._();
+
+  static const String _img = 'assets/images';
+
+  // ── Branding ──────────────────────────────────────────────────────────────
+
+  /// App logo shown in the splash screen and About page (new design).
+  static const String appLogo = '$_img/linkvault_logo.webp';
+
+  /// Launcher logo PNG — used ONLY as the flutter_launcher_icons source.
+  /// Do not reference this from UI code; use [appLogo] instead.
+  static const String appLogoPng = '$_img/linkvault_logo.png';
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+
+  static const String onboardingWelcome  = '$_img/onboarding_welcome.webp';
+  static const String onboardingSave     = '$_img/onboarding_save.webp';
+  static const String onboardingOrganize = '$_img/onboarding_organize.webp';
+  static const String onboardingAct      = '$_img/onboarding_act.webp';
+
+  // ── Empty States ──────────────────────────────────────────────────────────
+
+  static const String emptyCollections = '$_img/empty_collections.webp';
+  static const String emptyLinks       = '$_img/empty_links.webp';
+  static const String emptySearch      = '$_img/empty_search.webp';
+
+  // ── Error States ──────────────────────────────────────────────────────────
+
+  static const String errorNetwork = '$_img/error_network.webp';
 }

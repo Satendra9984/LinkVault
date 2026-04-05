@@ -1,8 +1,8 @@
 # LinkVault — Master Project Plan
 
-**Version:** 1.6  
-**Last Updated:** April 2, 2026  
-**Status:** Active — Sprint 5–8 collections + URL hub **feature-complete in app** (see Sprint sections + April 2026 notes); **Sprint 11–12 (Monetization + Cloud Sync)** implemented in app (see Sprint 11–12 section + [SPRINT_11_12_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_11_12_MONETIZATION_AND_SYNC/SPRINT_11_12_Implementation_Snapshot.md))  
+**Version:** 1.8  
+**Last Updated:** April 4, 2026  
+**Status:** Active — Sprint 5–8 collections + URL hub **feature-complete in app** (see Sprint sections + April 2026 notes); **Sprint 9–10 Week 9 (Global Search)** **feature-complete in app** (RSS Week 10 + structured tags remain open); **Sprint 11–12 (Monetization + Cloud Sync)** implemented in app (see Sprint 11–12 section + [SPRINT_11_12_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_11_12_MONETIZATION_AND_SYNC/SPRINT_11_12_Implementation_Snapshot.md))  
 **Architecture:** Clean Architecture + Feature-First + Curate Foundation
 
 **Execution companion:** [Phase Roadmap, Tasks, Evaluation Gates, and Test Catalog](./Phase_Roadmap_Tasks_and_Test_Catalog.md) — phased checklists, exit gates, and test IDs aligned to this plan.
@@ -55,10 +55,11 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 - Edit Collection screen no longer fetches/displays child URL items inline
 - Cloud URLs path uses **`lv_urls`** in Supabase repository + mappers (not legacy `items` table)
 - **Sprint 11–12:** delta sync service (`CloudDeltaSyncService`), Profile sync card, guest→cloud migration reads **local-only** repos and upserts **`lv_urls`**, downgrade uses **`lv_collections`/`lv_urls`**, RevenueCat `logOut` on sign-out, shared RC stream for subscription-active, AdMob dev test-ID fallback
+- **Sprint 9–10 Week 9 (Global Search):** `/search` hub-parity tabs, tier-aware paginated links (`UrlItemsQuery` null `collectionId`), search history (ObjectBox, 20 entries), root-folder exclusion, automated tests + [Global_Search_Architecture.md](../09_SPRINT_ARCHITECTURE/SPRINT_9_10_GLOBAL_SEARCH/Global_Search_Architecture.md); default compact folders + icon URL grid on hub and search
 
 **Still open (pre-launch QA):**
 - Formal **Sprint 5-6 / 7-8 manual test matrix** sign-off before store submission (spot-checks done in dev)
-- Sprint 9–10 (global search, RSS) and Sprint 13–14 polish/launch items as listed in those sections
+- Sprint 9–10 **Week 10 (RSS)** and Sprint 13–14 polish/launch items as listed in those sections *(Week 9 global search delivered Apr 2026 — see Sprint 9–10 section)*
 
 ---
 
@@ -148,6 +149,8 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 ### Phase 4: Search, Tags, RSS, Share (Weeks 9-10)
 
 **Goal:** Discovery and ingestion features complete (search/filter/sort, RSS, share-to-app).
+
+**Apr 2026:** Week 9 **global search** delivered in app (see Sprint 9–10); Week 10 **RSS** + structured tags remain.
 
 ### Phase 5: Monetization & Cloud Sync (Weeks 11-12)
 
@@ -354,11 +357,52 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 **Week 9: Global Search & Tags**
 
-- [ ] Global search across all collections and URLs (title, description, tags, URL)
-- [ ] Search debouncing 300ms
-- [ ] Filter by: all / unread / read / archived / pinned
-- [ ] Sort by: date added / date modified / most visited / alphabetical
-- [ ] Tags: add comma-separated tags to URLs, filter by tag
+- [x] **Global search refactor (Apr 2026):** `/search` mirrors **Items hub** interaction model — **Collections** and **Links** tabs with **separate** search fields and **separate** full-screen filters (`/search/filters/collections`, `/search/filters/links`). Links search uses **manual submit + clear** (parity with hub URLs); no per-keystroke remote refetch. Collections search filters **as you type** (parity with hub folders).
+- [x] **Tier-aware link query path:** `GlobalSearchItemsDataMode` — premium / non-expired → `itemsRepositoryProvider`; DayPass **expired** (non-premium) → `localItemsRepositoryProvider` for link results only, with in-app banner. Collections list continues to follow existing `collectionsListProvider` / backend selection.
+- [x] **State & providers:** `globalSearchNotifierProvider`, `globalSearchFilteredCollectionsProvider`; `filteredSearchCollectionsProvider` delegates to global collections results (migration-safe). `globalSearchLinksRawItemsProvider` / `globalSearchFilteredLinksProvider` **removed** — replaced by paginated notifier (see query optimization below).
+- [x] **Tests:** `global_search_tier_test`, `global_search_filtering_test`, `global_search_notifier_test` (state + `UrlItemsQuery` null `collectionId`), `go_router_search_filters_route_test`, `global_search_links_notifier_test` (pagination / error / reset), `search_history_repository_test` (in-memory contract mirroring ObjectBox semantics; CI-safe without native `objectbox.dll`).
+- [x] **Hub parity & rendering:** `/search` uses **NestedScrollView** + sliver structure aligned with **Items hub**; **Links** list mode uses shared **`UrlListRowTile`** (bounded height; avoids `UrlPreviewTile` in unbounded lists). Layout (list / grid / icons) controlled **only** from per-tab filter screens (no AppBar layout toggle).
+- [x] **Search history UX & persistence:** `globalSearchNotifierProvider` and `globalSearchLinksNotifierProvider` are **non–auto-dispose** so draft/committed queries and paginated results survive navigation; **`SearchHistoryRepository.maxEntries` = 20**; toolbar hint when draft is uncommitted; chip handler cleanup.
+- [x] **Root / library safety:** `filterAndSortCollectionsForGlobalSearch` excludes **`parentId` null or empty** (root containers never listed); **`_showCollectionOptions`** takes full `Collection` and **hides Delete** for root (defense in depth).
+- [x] **Default density (hub + search):** new and unset layouts default to **compact child folders** and **icon grid URLs** (`CollectionLayoutMode.compactGrid` on new entities; `ItemsState` / `GlobalSearchState` default `UrlViewMode.icons`); filter **Reset** and `filtersActive` baselines aligned.
+- [x] **Architecture doc:** [Global_Search_Architecture.md](../09_SPRINT_ARCHITECTURE/SPRINT_9_10_GLOBAL_SEARCH/Global_Search_Architecture.md) (providers, pagination, tier mode, filter routes).
+- [ ] Tags: add comma-separated tags to URLs, **dedicated tag filter** in global search (text match on `tags` exists; structured tag UX remains)
+
+**Sprint 9-10: Global Search Query Optimization (completed Apr 2026)**
+
+- [x] `UrlItemsQuery.collectionId` made **nullable** — `null` = cross-collection global query; non-null = per-collection hub query (backward-compatible: all existing call sites pass an id explicitly)
+- [x] `queryUrlItems` in `ItemsRepositoryImpl` — `_urlQueryCondition` omits `collectionUid.equals` when `collectionId` is null (full ObjectBox scan with all other filters applied)
+- [x] `queryUrlItems` in `SupabaseItemsRepository` — always filters by `owner_id`; adds `collection_id` filter only when non-null; `getAllItems()` no longer called from global search path
+- [x] `GlobalSearchLinksNotifier` (`globalSearchLinksNotifierProvider`) with `searchAndReset` (page 0, replaces items) + `fetchNextPage` (appends; no-op at end/loading) — page size: **20**
+- [x] Global search links screen wired to `GlobalSearchLinksNotifier`: **scroll notifications** trigger `fetchNextPage` near end of scroll extent; bottom loading indicator shown while `isLoadingMore`
+- [x] `globalSearchLinksRawItemsProvider` and `globalSearchFilteredLinksProvider` removed from `global_search_query_providers.dart`
+
+**DB Cost / Performance impact:**
+
+| Scenario | Before | After |
+|---|---|---|
+| Supabase — user with many URLs | Full `SELECT *` on `lv_urls` every submit | `WHERE owner_id + ilike + LIMIT 20` per page |
+| ObjectBox — large local store | `box.getAll()` all items | `query + offset + limit = 20` rows materialized |
+| Next page (scroll) | Not supported | One additional `LIMIT 20` query |
+| Draft keystrokes | No remote call (select narrowing) | Unchanged — notifier only called on explicit submit |
+| Collections tab | In-memory filter (no change) | No change |
+
+**Advisory DB indexes (apply in Supabase SQL editor — verify against current migration state):**
+
+```sql
+-- Enable pg_trgm extension if not already active
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- GIN trigram indexes for ilike search on title and url
+CREATE INDEX IF NOT EXISTS lv_urls_title_trgm_idx
+  ON lv_urls USING gin(title gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS lv_urls_url_trgm_idx
+  ON lv_urls USING gin(url gin_trgm_ops);
+
+-- owner_id is already indexed via RLS / foreign key; verify with \d lv_urls
+```
+
+> Note: `ilike` without a trgm index is O(n) at the DB layer. With `LIMIT 20` the cost is bounded to materialising the first 20 matching rows, but a trgm index eliminates the full-table scan entirely for large datasets.
 
 **Week 10: RSS Feed Reader**
 
@@ -371,8 +415,8 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 - [ ] Export/import contract finalized (versioned schema, validation, merge/replace behavior)
 
 **Verification:**
-- [ ] Search finds URLs by title, description, tag, domain
-- [ ] Filters/sort work correctly
+- [x] Global search finds URLs by title, description, tags, URL; collections by title/category; domain / status / sort / date filters on Links tab *(automated filtering + tier tests; full device QA optional)*
+- [x] Per-tab filters and sort behave consistently with hub filter sheets *(no collection persistence on global filters — in-memory only)*
 - [ ] RSS feeds load and display
 - [ ] Save to collection from RSS works
 
@@ -417,15 +461,15 @@ A mobile-first app where you save any link, sort it into a **nested collection h
 
 ### Sprint 13: Polish & Testing
 
-- [ ] Loading shimmer animations
-- [ ] Card swipe animations
-- [ ] Smooth push/pop navigation transitions
-- [ ] Empty state illustrations
+- [x] Loading shimmer animations
+- [x] Card swipe animations
+- [x] Smooth push/pop navigation transitions
+- [x] Empty state illustrations
 - [ ] Accessibility: VoiceOver + TalkBack
 - [ ] WCAG AA color contrast
 - [ ] Performance: 60fps, <3s cold start, <100ms search
 - [ ] Unit tests for all use cases
-- [ ] Widget tests for key screens
+- [x] Widget tests for key screens
 - [ ] Manual testing iOS + Android
 
 ---
@@ -537,6 +581,9 @@ enum UserTier {
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.9 | April 4, 2026 | **Sprint 13 polish/testing pass (partial closure):** shimmer-style skeleton pulses, smoother swipe + page transitions, unified empty/error loading states on Search/Collections/Home, initial a11y semantics/focus improvements, and added widget tests (`ProfileScreen`, `EmptyStateView`, `UrlListRowTile`). Added sprint docs: [SPRINT_13_Implementation_Snapshot.md](../09_SPRINT_ARCHITECTURE/SPRINT_13_POLISH_TESTING/SPRINT_13_Implementation_Snapshot.md) and [Manual_QA_Checklist_iOS_Android.md](../09_SPRINT_ARCHITECTURE/SPRINT_13_POLISH_TESTING/Manual_QA_Checklist_iOS_Android.md). |
+| 1.8 | April 4, 2026 | **Sprint 9–10 Week 9 closure:** hub-parity UI (NestedScrollView, `UrlListRowTile`, filter-only layout), search history persistence (`maxEntries` 20, non–auto-dispose notifiers), root-collection exclusion + delete guard, expanded automated tests (links notifier, history contract, `UrlItemsQuery`), default **compact folders + icon URLs** for hub and global search + new collection defaults, [Global_Search_Architecture.md](../09_SPRINT_ARCHITECTURE/SPRINT_9_10_GLOBAL_SEARCH/Global_Search_Architecture.md). **Week 10 RSS** + structured tags still open. |
+| 1.7 | April 4, 2026 | **Sprint 9–10 (Week 9) global search:** two-tab `/search` (Collections + Links), per-tab toolbars and routes `/search/filters/collections` & `/search/filters/links`, tier-aware link source (`GlobalSearchItemsDataMode`), `globalSearch*` providers + tests; legacy `searchNotifierProvider` deprecated. RSS + structured tags remain open. |
 | 1.6 | April 2, 2026 | **Sprint 5–8 plan alignment:** marked `lv_urls` client path + Sprint 5–6 QA table rows complete in app; Sprint 7–8 verification + April 2026 hub items (overlap slivers, pinned app bar, edge-to-edge search padding, manual links search, per-link `open_links_in_override`, root AppBar). Snapshot “still open” narrowed to formal pre-release matrices + later sprints. |
 | 1.5 | March 30, 2026 | **Sprint 11–12 delivery:** Day Pass grace parity, RevenueCat `logOut` on sign-out + single RC stream alias, AdMob dev fallbacks/diagnostics, quota tests, migration via **local-only** repos + `lv_urls`, cloud downgrade to `lv_*`, `CloudDeltaSyncService` + Profile sync UI, `SyncMetadataStore` (prefs) + sign-out clear. |
 | 1.4 | March 30, 2026 | Added Sprint 7-8 implementation snapshot and completed URL/UX/router checklist items: tap `openLinksIn`, long-press **View details**, preload-on-open, shell-vs-root full-screen routing, and Edit Collection simplification; added remaining QA/safe-area follow-ups. |

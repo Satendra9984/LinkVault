@@ -24,8 +24,8 @@ class CollectionModel {
   bool isArchived = false;
   bool isDeleted = false;
 
-  String itemsLayout = CollectionLayoutMode.list;
-  String childCollectionsLayout = CollectionLayoutMode.list;
+  String itemsLayout = CollectionLayoutMode.compactGrid;
+  String childCollectionsLayout = CollectionLayoutMode.compactGrid;
   String itemsSortDefault = CollectionItemsSortDefault.manual;
   String openLinksIn = CollectionOpenLinksIn.inApp;
   bool showLinkPreviews = true;

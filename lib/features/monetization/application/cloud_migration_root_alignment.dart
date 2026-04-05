@@ -64,6 +64,13 @@ abstract final class CloudMigrationRootAlignment {
   /// When the server library root id [serverRootId] differs from the local root
   /// [localRootId], rewrites collection ids and `parent_id` references so the
   /// batch upsert targets a single root row on Supabase.
+  ///
+  /// **Deduplication:** If [collections] contains a row whose `id` is already
+  /// [serverRootId] but is NOT [localRootId] (i.e. the server root was pulled
+  /// from Supabase into ObjectBox by a prior delta-sync pull), that row is
+  /// dropped before remapping. Without this filter the remapped local root
+  /// (L→S) and the original pulled server root (S) would both appear in the
+  /// payload with `parent_id = null`, triggering `assertValidRootRows`.
   static List<Collection> collectionsWithRemappedRootIds(
     List<Collection> collections, {
     required String localRootId,
@@ -76,7 +83,14 @@ abstract final class CloudMigrationRootAlignment {
       return parentId.trim() == localRootId;
     }
 
-    return collections.map((c) {
+    // Drop any collection that already carries the server root id but is not
+    // the local root. This is the "ghost" server root inserted by a delta-sync
+    // pull — the remapped local root covers it in the upsert payload.
+    final deduped = collections
+        .where((c) => !(c.id == serverRootId && c.id != localRootId))
+        .toList();
+
+    return deduped.map((c) {
       final newId = c.id == localRootId ? serverRootId : c.id;
       final newParent = parentRefsLocal(c.parentId) ? serverRootId : c.parentId;
       if (newId == c.id && newParent == c.parentId) return c;

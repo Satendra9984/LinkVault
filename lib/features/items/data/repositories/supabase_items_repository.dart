@@ -34,9 +34,16 @@ class SupabaseItemsRepository implements IItemsRepository {
   @override
   Future<Either<Failure, UrlItemsPage>> queryUrlItems(UrlItemsQuery q) async {
     try {
+      final userId = _userId;
       dynamic builder = _supabase.from('lv_urls').select();
-      builder =
-          builder.eq('collection_id', q.collectionId).eq('is_deleted', false);
+      // owner_id always applied; collection_id added only for per-collection queries.
+      if (userId != null) {
+        builder = builder.eq('owner_id', userId);
+      }
+      if (q.collectionId != null) {
+        builder = builder.eq('collection_id', q.collectionId!);
+      }
+      builder = builder.eq('is_deleted', false);
 
       if (q.status != null) {
         builder = builder.eq('status', _lvStatusString(q.status!));

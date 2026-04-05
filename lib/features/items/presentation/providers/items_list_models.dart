@@ -44,7 +44,7 @@ class ItemsState {
     this.isLoadingMore = false,
     this.statusFilter,
     this.sortOption = UrlSortOption.dateAdded,
-    this.viewMode = UrlViewMode.list,
+    this.viewMode = UrlViewMode.icons,
     this.activeTab = UnifiedTab.childCollections,
     this.urlsDataPhase = UrlsDataPhase.notStarted,
     this.urlsErrorMessage,

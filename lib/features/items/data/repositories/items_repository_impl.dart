@@ -21,8 +21,10 @@ class ItemsRepositoryImpl implements IItemsRepository {
   }
 
   Condition<ItemModel> _urlQueryCondition(UrlItemsQuery q) {
-    Condition<ItemModel> c = ItemModel_.collectionUid.equals(q.collectionId) &
-        ItemModel_.isDeleted.equals(false);
+    Condition<ItemModel> c = ItemModel_.isDeleted.equals(false);
+    if (q.collectionId != null) {
+      c = ItemModel_.collectionUid.equals(q.collectionId!) & c;
+    }
     if (q.status != null) {
       c = c & ItemModel_.dbStatus.equals(q.status!.index);
     }

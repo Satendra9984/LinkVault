@@ -176,12 +176,11 @@ class HomeDashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: libraryRootAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(e.toString(), textAlign: TextAlign.center),
-          ),
+        loading: () => const HomeSectionSkeleton(),
+        error: (e, _) => AppErrorState(
+          error: e,
+          title: 'Could not load your home dashboard',
+          onRetry: () => ref.invalidate(libraryRootCollectionProvider),
         ),
         data: (libraryRoot) => collectionsAsync.when(
           data: (all) {
@@ -367,10 +366,13 @@ class HomeDashboardScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  loading: () => const SliverToBoxAdapter(
+                  loading: () => SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                      child: Center(child: CircularProgressIndicator()),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _EmptySectionCard(
+                        message: 'Loading pinned links...',
+                        icon: Icons.hourglass_top_rounded,
+                      ),
                     ),
                   ),
                   error: (e, _) => SliverToBoxAdapter(

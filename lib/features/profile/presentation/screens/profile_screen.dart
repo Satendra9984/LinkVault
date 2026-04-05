@@ -64,7 +64,13 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Semantics(
+            liveRegion: true,
+            label: 'Loading profile',
+            child: const CircularProgressIndicator(),
+          ),
+        ),
       );
     }
 
@@ -562,13 +568,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         // ── Sign out ─────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: GestureDetector(
-            onTap: () async {
+          child: TextButton(
+            onPressed: () async {
               await ref.read(authNotifierProvider.notifier).signOut();
             },
             child: Text(
               'Sign out',
-              textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.red,
                     fontWeight: FontWeight.w600,

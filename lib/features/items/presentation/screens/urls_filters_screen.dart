@@ -42,7 +42,7 @@ class _UrlsFiltersScreenState extends ConsumerState<UrlsFiltersScreen> {
     final itemsAsync = ref.read(itemsNotifierProvider(widget.collectionId));
     final state = itemsAsync.valueOrNull;
     final ui = ref.read(itemsHubUiNotifierProvider(widget.collectionId));
-    _view = state?.viewMode ?? UrlViewMode.list;
+    _view = state?.viewMode ?? UrlViewMode.icons;
     _sort = state?.sortOption ?? UrlSortOption.dateAdded;
     _status = state?.statusFilter;
     _pinnedOnly = ui.urlPinnedOnly;
@@ -61,7 +61,7 @@ class _UrlsFiltersScreenState extends ConsumerState<UrlsFiltersScreen> {
 
   void _reset() {
     setState(() {
-      _view = UrlViewMode.list;
+      _view = UrlViewMode.icons;
       _sort = UrlSortOption.dateAdded;
       _status = null;
       _pinnedOnly = false;
