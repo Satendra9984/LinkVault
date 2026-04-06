@@ -568,17 +568,69 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         // ── Sign out ─────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: TextButton(
+          child: OutlinedButton.icon(
             onPressed: () async {
-              await ref.read(authNotifierProvider.notifier).signOut();
-            },
-            child: Text(
-              'Sign out',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Sign out?'),
+                  content: const Text(
+                    'You will need to sign in again to access your synced data.',
                   ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      style: TextButton.styleFrom(
+                        foregroundColor: cs.error,
+                      ),
+                      child: const Text('Sign out'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await ref.read(authNotifierProvider.notifier).signOut();
+              }
+            },
+            icon: Icon(Icons.logout_rounded, color: cs.error, size: 18),
+            label: Text(
+              'Sign out',
+              style: TextStyle(
+                color: cs.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: cs.error.withValues(alpha: 0.5)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              minimumSize: const Size(double.infinity, 0),
+            ),
+          ),
+        ),
+
+        const _SectionHeader(title: 'ACCOUNT'),
+        _Card(
+          child: ListTile(
+            leading: Icon(Icons.manage_accounts_outlined, color: cs.error),
+            title: Text(
+              'Account & data deletion',
+              style: TextStyle(
+                color: cs.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: const Text(
+              'Remove your data or close your account permanently.',
+            ),
+            trailing: Icon(Icons.chevron_right, color: cs.error),
+            onTap: () => context.push('/profile/account-deletion'),
           ),
         ),
 

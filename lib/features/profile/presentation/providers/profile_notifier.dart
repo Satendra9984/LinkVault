@@ -155,7 +155,7 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
   }
 
   Future<void> updateProfile(
-      {String? displayName, String? bio, bool? activitySharing}) async {
+      {String? displayName, String? bio, bool? activitySharing,}) async {
     state = const AsyncValue.loading();
 
     final userId = ref.read(currentUserProvider)?.supabaseId;
@@ -206,7 +206,29 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
     });
   }
 
-  Future<void> deleteAccount() async {
+  Future<void> deleteLinkVaultDataOnly() async {
+    final currentObj = state.value;
+    state = AsyncValue.data(currentObj?.copyWith(isLoading: true) ??
+        const ProfileState(isLoading: true));
+
+    final syncUid = ref.read(currentUserProvider)?.supabaseId;
+    final authRepo = ref.read(authRepositoryProvider);
+    final result = await authRepo.deleteLinkVaultData();
+
+    await result.fold(
+      (f) async {
+        state = AsyncValue.data(
+            currentObj?.copyWith(isLoading: false, errorMessage: f.message) ??
+                ProfileState(isLoading: false, errorMessage: f.message));
+      },
+      (_) async {
+        await _runPostDeleteCleanup(syncUid);
+        state = AsyncValue.data(const ProfileState(isLoading: false));
+      },
+    );
+  }
+
+  Future<void> deleteEntireAccount() async {
     final currentObj = state.value;
     state = AsyncValue.data(currentObj?.copyWith(isLoading: true) ??
         const ProfileState(isLoading: true));
@@ -222,19 +244,26 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
                 ProfileState(isLoading: false, errorMessage: f.message));
       },
       (_) async {
-        try {
-          await ref.read(appSettingsRepositoryProvider).clearSessionData();
-          if (syncUid != null) {
-            await SyncMetadataStore().clearForUser(syncUid);
-          }
-          await Purchases.logOut();
-        } catch (e, st) {
-          AppLogger.w('post_delete_account_cleanup_failed $e');
-          AppLogger.e('post_delete_account_cleanup_trace', e, st);
-        }
+        await _runPostDeleteCleanup(syncUid);
         state = AsyncValue.data(const ProfileState(isLoading: false));
       },
     );
+  }
+
+  // Compatibility wrapper while callers migrate to explicit method names.
+  Future<void> deleteAccount() => deleteEntireAccount();
+
+  Future<void> _runPostDeleteCleanup(String? syncUid) async {
+    try {
+      await ref.read(appSettingsRepositoryProvider).clearSessionData();
+      if (syncUid != null) {
+        await SyncMetadataStore().clearForUser(syncUid);
+      }
+      await Purchases.logOut();
+    } catch (e, st) {
+      AppLogger.w('post_delete_account_cleanup_failed $e');
+      AppLogger.e('post_delete_account_cleanup_trace', e, st);
+    }
   }
 }
 

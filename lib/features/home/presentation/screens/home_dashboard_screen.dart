@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:link_vault/core/constants/app_assets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -575,14 +576,20 @@ class _EmptyHomeBody extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.collections_bookmark_outlined,
-                  size: 72,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                Image.asset(
+                  AppAssets.emptyCollections,
+                  width: 180,
+                  height: 180,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.image_not_supported,
+                    size: 100,
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Save your first link',
+                  'No folders yet',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

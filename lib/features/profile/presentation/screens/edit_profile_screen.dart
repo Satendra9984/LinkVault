@@ -92,33 +92,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         .uploadAvatar(File(compressedFile.path));
   }
 
-  void _confirmDeleteAccount() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account?'),
-        content: const Text(
-          'Are you sure you want to permanently delete your account? '
-          'This action cannot be undone and all your data will be immediately wiped.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              ref.read(profileNotifierProvider.notifier).deleteAccount();
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete Forever'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -243,13 +216,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
             ),
             child: ListTile(
-              leading: const Icon(Icons.delete_outline_rounded,
-                  color: Colors.red),
-              title: const Text('Delete account',
-                  style: TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.w600)),
+              leading:
+                  const Icon(Icons.delete_sweep_outlined, color: Colors.red),
+              title: const Text(
+                'Delete or close account',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: const Text(
+                'Review options and choose what to remove.',
+              ),
               trailing: const Icon(Icons.chevron_right, color: Colors.red),
-              onTap: _confirmDeleteAccount,
+              onTap: () => context.push('/profile/account-deletion'),
             ),
           ),
           const SizedBox(height: 32),

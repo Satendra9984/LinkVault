@@ -65,6 +65,7 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(
           isLoading: false,
           errorMessage: failure.message,
+          otpSent: false,
         );
       },
       (_) {

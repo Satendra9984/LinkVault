@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_assets.dart';
 import '../../domain/repositories/i_auth_repository.dart';
 import '../providers/auth_notifier.dart';
 
@@ -28,18 +29,10 @@ class WelcomeScreen extends ConsumerWidget {
               const Spacer(flex: 3),
 
               // ── Logo + brand ───────────────────────────────────────────
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: cs.primary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.collections_bookmark_rounded,
-                  color: Colors.white,
-                  size: 36,
-                ),
+              Image.asset(
+                AppAssets.appLogo,
+                width: 120,
+                height: 120,
               ),
               const SizedBox(height: 20),
               Text(

@@ -29,6 +29,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/account_deletion_screen.dart';
 import '../../features/profile/presentation/screens/app_settings_screen.dart';
 import '../../features/profile/presentation/screens/about_screen.dart';
 import '../../features/profile/presentation/screens/legal_policy_screen.dart';
@@ -297,6 +298,10 @@ GoRouter createAppRouter(ProviderContainer container) {
         // parentNavigatorKey: _rootNavigatorKey,
         path: '/profile/edit',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/account-deletion',
+        builder: (context, state) => const AccountDeletionScreen(),
       ),
       GoRoute(
         // parentNavigatorKey: _rootNavigatorKey,

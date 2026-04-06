@@ -13,6 +13,7 @@ class SupabaseAuthRepository implements IAuthRepository {
   final sb.SupabaseClient _supabase;
 
   static const _premiumEntitlement = 'premium';
+  static const _otpRedirectUri = 'com.vicharshala.linkvault://login-callback/';
 
   SupabaseAuthRepository(this._supabase);
 
@@ -55,14 +56,13 @@ class SupabaseAuthRepository implements IAuthRepository {
     required AppOtpType type,
   }) async {
     try {
-      final shouldCreate = type == AppOtpType.signup;
       AppLogger.d(
-        'AuthRepo: Requesting OTP for $email (AppOtpType: $type, shouldCreateUser: $shouldCreate)',
+        'AuthRepo: Requesting OTP for $email (AppOtpType: $type, shouldCreateUser: true)',
       );
-
       await _supabase.auth.signInWithOtp(
         email: email,
-        shouldCreateUser: shouldCreate,
+        shouldCreateUser: true,
+        emailRedirectTo: _otpRedirectUri,
       );
 
       AppLogger.i('AuthRepo: OTP successfully sent to $email');
@@ -92,18 +92,12 @@ class SupabaseAuthRepository implements IAuthRepository {
     required AppOtpType type,
   }) async {
     try {
-      final sbOtpType = switch (type) {
-        AppOtpType.signup => sb.OtpType.signup,
-        AppOtpType.magiclink => sb.OtpType.magiclink,
-      };
-
       AppLogger.d(
-          'AuthRepo: Verifying OTP for $email. Length: ${otp.length}, passing explicit sb.OtpType: $sbOtpType');
-
+          'AuthRepo: Verifying OTP for $email. Length: ${otp.length}, using OtpType.email');
       final response = await _supabase.auth.verifyOTP(
         email: email,
         token: otp,
-        type: sbOtpType,
+        type: sb.OtpType.email,
       );
 
       final user = response.user;
@@ -234,6 +228,35 @@ class SupabaseAuthRepository implements IAuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, void>> deleteLinkVaultData() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        return Left(AuthFailure('Cannot delete LinkVault data: not signed in',
+            code: 'no_session'));
+      }
+
+      AppLogger.i(
+          'AuthRepo: Initiating LinkVault-only data deletion for user: ${user.id}');
+
+      await _supabase.rpc('lv_delete_linkvault_data');
+      await _cleanupLinkVaultStorage();
+
+      AppLogger.i(
+          'AuthRepo: LinkVault data cleanup completed. Wiping local auth session...');
+      await _supabase.auth.signOut();
+
+      return const Right(null);
+    } on sb.AuthException catch (e) {
+      return Left(AuthFailure(_mapAuthError(e.message),
+          code: e.statusCode ?? 'unknown'));
+    } catch (e, st) {
+      return Left(UnexpectedFailure('Failed to delete LinkVault data',
+          error: e, stackTrace: st));
+    }
+  }
+
   // ── Private Helpers ────────────────────────────────────────────────────────
 
   /// A sentinel AuthUser returned while OAuth browser is open.
@@ -248,6 +271,18 @@ class SupabaseAuthRepository implements IAuthRepository {
       return info.entitlements.active.containsKey(_premiumEntitlement);
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<void> _cleanupLinkVaultStorage() async {
+    try {
+      final response = await _supabase.functions.invoke('lv-delete-storage');
+      final payload = response.data;
+      AppLogger.i('AuthRepo: lv-delete-storage invoke result: $payload');
+    } catch (e, st) {
+      // Storage deletion is best-effort; DB cleanup already completed.
+      AppLogger.w('AuthRepo: lv-delete-storage invoke failed: $e');
+      AppLogger.e('AuthRepo: lv-delete-storage invoke failed trace', e, st);
     }
   }
 

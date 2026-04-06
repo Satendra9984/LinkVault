@@ -52,7 +52,7 @@ class _AuthEmailScreenState extends ConsumerState<AuthEmailScreen> {
     await notifier.signInWithOTP(email: email, type: _currentType);
     if (ref.read(authNotifierProvider).otpSent) {
       if (!mounted) return;
-      context.go(
+      context.push(
         '/auth/verify',
         extra: AuthVerifyScreenParams(email: email, type: _currentType),
       );

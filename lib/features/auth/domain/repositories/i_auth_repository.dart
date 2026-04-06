@@ -32,6 +32,10 @@ abstract class IAuthRepository {
 
   Future<Either<Failure, void>> signOut();
 
+  /// Deletes LinkVault-owned application data only (tables, storage assets),
+  /// while keeping the shared auth account intact.
+  Future<Either<Failure, void>> deleteLinkVaultData();
+
   /// Natively deletes the user's `auth.users` record via an RPC.
   /// The `ON DELETE CASCADE` rule will wipe `user_profiles`, `collections`, etc.
   Future<Either<Failure, void>> deleteAccount();
